@@ -60,7 +60,8 @@
   .smscard .row{font-size:12.5px;color:#33414f;line-height:1.5}
   .smscard .lnk{color:var(--sky);font-weight:700}
   .smscard .stop{font-size:10.5px;color:var(--navy-soft);margin-top:8px;border-top:1px solid var(--line);padding-top:7px}
-  .matchcard{position:absolute;right:-6px;bottom:46px;width:230px;background:#fff;border-radius:16px;padding:15px;box-shadow:var(--shadow-lg);border:1px solid var(--line)}
+  /* match-kort flyttet IND i telefon-skærmen (flyder under SMS-kortet) */
+  .matchcard{margin:14px 14px 0;background:#fff;border-radius:16px;padding:15px;box-shadow:0 8px 20px rgba(13,27,42,.1);border:1px solid var(--line)}
   .matchcard .top{display:flex;align-items:center;gap:7px;font-weight:800;font-family:'Plus Jakarta Sans';font-size:14px;margin-bottom:9px}
   .matchcard .top .tick{width:20px;height:20px;border-radius:50%;background:var(--teal);display:flex;align-items:center;justify-content:center}
   .matchcard h4{font-size:14px;font-weight:800;margin-bottom:2px}
@@ -214,16 +215,7 @@
   .ok.show{display:block}
   .ok .ck{width:56px;height:56px;border-radius:50%;background:var(--teal);margin:0 auto 14px;display:flex;align-items:center;justify-content:center}
 
-  /* footer */
-  footer{background:var(--navy);color:#9FB2C9;padding:0 0 36px}
-  .fbanner{background:linear-gradient(120deg,#0D1B2A,#13314d);text-align:center;padding:26px 26px;border-bottom:1px solid rgba(255,255,255,.08)}
-  .fbanner .l{display:inline-flex;align-items:center;gap:12px;color:#fff;font-family:'Plus Jakarta Sans';font-weight:700;font-size:clamp(16px,2vw,20px)}
-  .foot{display:flex;flex-wrap:wrap;justify-content:space-between;gap:20px;padding-top:34px}
-  .foot .logo{color:#fff}
-  .foot .logo .dk{color:var(--sky-200)}
-  .flinks{display:flex;flex-wrap:wrap;gap:22px;font-size:14px}
-  .flinks a:hover{color:#fff}
-  .fcred{width:100%;border-top:1px solid rgba(255,255,255,.08);padding-top:18px;margin-top:8px;font-size:12.5px;color:#73869c}
+  /* footer ligger nu i delt komponent (footer.css, .birdly-footer) */
 
   .reveal{opacity:0;transform:translateY(22px);transition:opacity .7s,transform .7s}
   .reveal.in{opacity:1;transform:none}
@@ -235,7 +227,6 @@
     .pain-grid,.steps,.vals,.tiers{grid-template-columns:1fr}
     .vals{grid-template-columns:1fr 1fr}
     section{padding:64px 0}
-    .matchcard{right:0}
   }
   @media(max-width:520px){.vals{grid-template-columns:1fr}}
 }

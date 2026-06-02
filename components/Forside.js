@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Footer from "./Footer";
 import "../app/forside.css";
 
 const brands = [
@@ -27,9 +28,9 @@ const quickQs = [
 function botReply(text) {
   const t = (text || "").toLowerCase();
   if (/(pris|koste|kr|betal|moms|gratis|prøve)/.test(t))
-    return "De første <b>14 dage er gratis</b>. Derefter overgår du til prisen for din plan, som trækkes automatisk den 1. i måneden: Spurv 349,-, Eagle 499,- eller Albatros 1.199,- pr. md. (ekskl. moms). Ingen binding — opsig med 30 dages varsel.";
-  if (/(pakke|spurv|eagle|albatros|region|storebælt|dækning|hele danmark)/.test(t))
-    return "Vi har tre pakker:<br><b>Spurv</b> — udbud i én region, du selv vælger.<br><b>Eagle</b> — alle regioner vest eller øst for Storebælt.<br><b>Albatros</b> — udbud i hele Danmark.";
+    return "De første <b>14 dage er gratis</b>. Derefter overgår du til prisen for din plan, som trækkes automatisk den 1. i måneden: Spurv 349,-, Falk 499,- eller Albatros 1.199,- pr. md. (ekskl. moms). Ingen binding — opsig med 30 dages varsel.";
+  if (/(pakke|spurv|falk|eagle|albatros|region|storebælt|dækning|hele danmark)/.test(t))
+    return "Vi har tre pakker:<br><b>Spurv</b> — udbud i én region, du selv vælger.<br><b>Falk</b> — alle regioner vest eller øst for Storebælt.<br><b>Albatros</b> — udbud i hele Danmark.";
   if (/(opsig|stop|afmeld|stoppe|fortryd)/.test(t))
     return "Det er nemt: skriv <b>STOP</b> på en SMS, brug opsigelsesboksen nederst på siden, eller klik linket i bunden af vores mails. 30 dages varsel. Lige så simpelt som at tilmelde sig.";
   if (/(login|log ind|konto|kodeord|opsætning|platform)/.test(t))
@@ -138,6 +139,7 @@ export default function Forside() {
             <a href="#priser">Priser</a>
             <a href="#faq">FAQ</a>
             <a href="#om">Om os</a>
+            <Link href="/udbud-for-alle">Udbud er for alle</Link>
           </nav>
           <div className="right">
             <Link href="/tilmeld" className="nav-cta">Kom i gang</Link>
@@ -183,20 +185,20 @@ export default function Forside() {
                     <span className="nm">BIRDLY</span><span className="tm">nu</span>
                   </div>
                   <div className="t">Nyt udbudsmatch</div>
-                  <div className="row">Aarhus Kommune<br />Renovering af skoler<br />Frist: 14.08.2024<br /><span className="lnk">birdly.dk/m/abc123</span></div>
+                  <div className="row">Aarhus Kommune<br />Renovering af skoler<br />Frist: 14.08.2026<br /><span className="lnk">birdly.dk/m/abc123</span></div>
                   <div className="stop">Svar STOP for at afmelde</div>
+                </div>
+                <div className="matchcard">
+                  <div className="top"><span className="tick"><svg width="12" viewBox="0 0 20 20"><path d="M5 10.5l3 3 7-8" stroke="#fff" strokeWidth="2.4" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg></span> Dit match</div>
+                  <h4>Renovering af skoler</h4>
+                  <div className="muni">Aarhus Kommune</div>
+                  <div className="li"><svg viewBox="0 0 16 16"><rect x="2" y="3" width="12" height="11" rx="2" fill="none" stroke="#FF6B6B" strokeWidth="1.6" /><path d="M2 6h12M6 1.5v3M10 1.5v3" stroke="#FF6B6B" strokeWidth="1.6" strokeLinecap="round" /></svg> Frist: 14.08.2026</div>
+                  <div className="li"><svg viewBox="0 0 16 16"><path d="M8 1v14M4 5l4-4 4 4" stroke="#00B3A6" strokeWidth="1.6" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg> Budget: 25–40 mio. kr.</div>
+                  <Link className="see" href="/tilmeld">Se udbuddet →</Link>
                 </div>
               </div>
             </div>
             <div className="bubble"><svg width="22" viewBox="0 0 24 24" fill="none"><path d="M4 5h16v11H8l-4 4V5z" fill="#fff" /></svg><span className="badge">1</span></div>
-            <div className="matchcard">
-              <div className="top"><span className="tick"><svg width="12" viewBox="0 0 20 20"><path d="M5 10.5l3 3 7-8" stroke="#fff" strokeWidth="2.4" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg></span> Dit match</div>
-              <h4>Renovering af skoler</h4>
-              <div className="muni">Aarhus Kommune</div>
-              <div className="li"><svg viewBox="0 0 16 16"><rect x="2" y="3" width="12" height="11" rx="2" fill="none" stroke="#FF6B6B" strokeWidth="1.6" /><path d="M2 6h12M6 1.5v3M10 1.5v3" stroke="#FF6B6B" strokeWidth="1.6" strokeLinecap="round" /></svg> Frist: 14.08.2024</div>
-              <div className="li"><svg viewBox="0 0 16 16"><path d="M8 1v14M4 5l4-4 4 4" stroke="#00B3A6" strokeWidth="1.6" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg> Budget: 25–40 mio. kr.</div>
-              <Link className="see" href="/tilmeld">Se udbuddet →</Link>
-            </div>
           </div>
         </div>
       </section>
@@ -283,7 +285,7 @@ export default function Forside() {
                 <span className="ico"><svg width="18" viewBox="0 0 24 24" fill="none"><path d="M4 20V8l8-5 8 5v12" stroke="#0D1B2A" strokeWidth="1.7" strokeLinejoin="round" /><path d="M9 20v-6h6v6" stroke="#0D1B2A" strokeWidth="1.7" /></svg></span>
                 <div>
                   <div className="ttl">Renovering af skoler</div>
-                  <div className="meta">Aarhus Kommune · Frist: 14.08.2024 kl. 12.00</div>
+                  <div className="meta">Aarhus Kommune · Frist: 14.08.2026 kl. 12.00</div>
                   <Link className="seebtn" href="/tilmeld">Se udbuddet</Link>
                 </div>
               </div>
@@ -302,10 +304,10 @@ export default function Forside() {
             <p className="lead">Vi gør én ting — og gør den enkelt. Det er hele idéen bag Birdly.</p>
           </div>
           <div className="vals">
-            <div className="vcard reveal"><div className="ic"><svg width="20" viewBox="0 0 28 28" fill="none"><path d="M4 16C8 10 11 10 14 14" stroke="#2EB7FF" strokeWidth="2.4" strokeLinecap="round" /><path d="M14 14C17 10 20 10 24 16" stroke="#2EB7FF" strokeWidth="2.4" strokeLinecap="round" /></svg></div><h4>Direkte</h4><p>Vi siger det, som det er. Kort, klart og uden omsvøb.</p></div>
-            <div className="vcard reveal"><div className="ic"><svg width="20" viewBox="0 0 24 24" fill="none"><path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z" fill="none" stroke="#2EB7FF" strokeWidth="2" strokeLinejoin="round" /></svg></div><h4>Frisk</h4><p>Moderne, energisk og fremadskuende — ikke en støvet portal.</p></div>
-            <div className="vcard reveal"><div className="ic"><svg width="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#2EB7FF" strokeWidth="2" /><path d="M8 12l3 3 5-6" stroke="#2EB7FF" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg></div><h4>Enkel</h4><p>Komplekst gjort simpelt. Overblik på få sekunder.</p></div>
-            <div className="vcard reveal"><div className="ic"><svg width="20" viewBox="0 0 24 24" fill="none"><path d="M12 2l8 3v6c0 5-3.5 8-8 11-4.5-3-8-6-8-11V5l8-3z" stroke="#2EB7FF" strokeWidth="2" fill="none" strokeLinejoin="round" /></svg></div><h4>Tryg</h4><p>Pålidelig, transparent og til at stole på.</p></div>
+            <div className="vcard reveal"><div className="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M3 12h10" stroke="#2EB7FF" strokeWidth="2.2" strokeLinecap="round" /><path d="M11 7.5l4.5 4.5L11 16.5" stroke="#2EB7FF" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /><circle cx="20" cy="12" r="1.9" fill="#00B3A6" /></svg></div><h4>Direkte</h4><p>Vi siger det, som det er. Kort, klart og uden omsvøb.</p></div>
+            <div className="vcard reveal"><div className="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M19 4C11 4 5 10 5 18c8 0 14-6 14-14z" stroke="#2EB7FF" strokeWidth="2" strokeLinejoin="round" /><path d="M17.5 5.5L7 16" stroke="#00B3A6" strokeWidth="1.8" strokeLinecap="round" /><path d="M13.6 6.3h-2.3M11 9H8.7M8.7 11.6H6.4" stroke="#00B3A6" strokeWidth="1.5" strokeLinecap="round" /></svg></div><h4>Frisk</h4><p>Moderne, energisk og fremadskuende — ikke en støvet portal.</p></div>
+            <div className="vcard reveal"><div className="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><rect x="3" y="8" width="18" height="9" rx="4.5" stroke="#2EB7FF" strokeWidth="2" /><circle cx="16.5" cy="12.5" r="2.7" fill="#00B3A6" /></svg></div><h4>Enkel</h4><p>Komplekst gjort simpelt. Overblik på få sekunder.</p></div>
+            <div className="vcard reveal"><div className="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M12 3l7 2.6v5.4c0 4.3-3 7.4-7 9-4-1.6-7-4.7-7-9V5.6L12 3z" stroke="#2EB7FF" strokeWidth="2" strokeLinejoin="round" /><path d="M9 12l2.2 2.2L15 9.8" stroke="#00B3A6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg></div><h4>Tryg</h4><p>Pålidelig, transparent og til at stole på.</p></div>
           </div>
         </div>
       </section>
@@ -321,43 +323,43 @@ export default function Forside() {
           <div className="tiers">
             <div className="tier reveal">
               <div className="bird"><svg width="22" viewBox="0 0 28 28" fill="none"><path d="M4 16C8 10 11 10 14 14" stroke="#2EB7FF" strokeWidth="2.4" strokeLinecap="round" /><path d="M14 14C17 10 20 10 24 16" stroke="#2EB7FF" strokeWidth="2.4" strokeLinecap="round" /></svg> Birdly Spurv</div>
-              <div className="desc">Til dig, der vil have udbud i én region.</div>
+              <div className="desc">Til de meget lokale.</div>
               <div className="amt">349<span> kr./md</span></div>
               <div className="exm">ekskl. moms · gratis i 14 dage</div>
               <ul>
-                <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg> Kommunale & statslige udbud i <b>én region</b>, du selv vælger</li>
-                <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg> SMS + mail ved match</li>
-                <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg> Resumé, dato og link</li>
-                <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg> Ingen binding</li>
+                <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>Kommunale &amp; statslige udbud i <b>én region</b>, du selv vælger</span></li>
+                <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>SMS + mail ved match</span></li>
+                <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>Resumé, dato og link</span></li>
+                <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>Ingen binding</span></li>
               </ul>
               <Link href="/tilmeld" className="btn btn-ghost">Start gratis</Link>
             </div>
 
             <div className="tier feat reveal">
-              <span className="tag">MEST VALGT</span>
-              <div className="bird"><svg width="22" viewBox="0 0 28 28" fill="none"><path d="M3 15C8 8 12 8 14 13" stroke="#00B3A6" strokeWidth="2.6" strokeLinecap="round" /><path d="M14 13C16 8 20 8 25 15" stroke="#0D1B2A" strokeWidth="2.6" strokeLinecap="round" /></svg> Birdly Eagle</div>
-              <div className="desc">Til dig, der dækker hele din side af landet.</div>
+              <span className="tag">MEST POPULÆRE</span>
+              <div className="bird"><svg width="22" viewBox="0 0 28 28" fill="none"><path d="M3 15C8 8 12 8 14 13" stroke="#00B3A6" strokeWidth="2.6" strokeLinecap="round" /><path d="M14 13C16 8 20 8 25 15" stroke="#0D1B2A" strokeWidth="2.6" strokeLinecap="round" /></svg> Birdly Falk</div>
+              <div className="desc">Til de regionale.</div>
               <div className="amt">499<span> kr./md</span></div>
               <div className="exm">ekskl. moms · gratis i 14 dage</div>
               <ul>
-                <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg> Alt i Spurv</li>
-                <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg> Alle regioner <b>vest eller øst for Storebælt</b></li>
-                <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg> Flere matches — større område</li>
-                <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg> Ingen binding</li>
+                <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>Alt i Spurv</span></li>
+                <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>Alle regioner <b>vest eller øst for Storebælt</b></span></li>
+                <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>Flere matches — større område</span></li>
+                <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>Ingen binding</span></li>
               </ul>
               <Link href="/tilmeld" className="btn btn-teal">Start gratis</Link>
             </div>
 
             <div className="tier reveal">
               <div className="bird"><svg width="22" viewBox="0 0 28 28" fill="none"><path d="M2 15C8 7 13 7 14 13" stroke="#0D1B2A" strokeWidth="2.6" strokeLinecap="round" /><path d="M14 13C15 7 20 7 26 15" stroke="#2EB7FF" strokeWidth="2.6" strokeLinecap="round" /></svg> Birdly Albatros</div>
-              <div className="desc">Til dig, der vil have det fulde overblik.</div>
+              <div className="desc">Til de landsdækkende.</div>
               <div className="amt">1.199<span> kr./md</span></div>
               <div className="exm">ekskl. moms · gratis i 14 dage</div>
               <ul>
-                <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg> Alt i Eagle</li>
-                <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg> Udbud i <b>hele Danmark</b></li>
-                <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg> Det bedste overblik på markedet</li>
-                <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg> Ingen binding</li>
+                <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>Alt i Falk</span></li>
+                <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>Udbud i <b>hele Danmark</b></span></li>
+                <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>Det bedste overblik på markedet</span></li>
+                <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>Ingen binding</span></li>
               </ul>
               <Link href="/tilmeld" className="btn btn-ghost">Start gratis</Link>
             </div>
@@ -398,7 +400,7 @@ export default function Forside() {
             <details className="reveal"><summary>Får jeg kun relevante udbud? <span className="pm">+</span></summary><p>Ja. Vi sender kun udbud i dit fag, dit område og din størrelse. Ikke en eneste besked, der ikke passer til dig.</p></details>
             <details className="reveal"><summary>Hvor hurtigt får jeg besked? <span className="pm">+</span></summary><p>Samme dag, udbuddet kommer ud. Tit endda før — vi fanger også de indkøb, det offentlige har på vej.</p></details>
             <details className="reveal"><summary>Hvad koster det? <span className="pm">+</span></summary><p>De første 14 dage er gratis. Derefter overgår det til prisen for din valgte plan — fra 349 kr. om måneden (ekskl. moms) — som trækkes den 1. i måneden. Uden binding.</p></details>
-            <details className="reveal"><summary>Hvad er forskellen på pakkerne? <span className="pm">+</span></summary><p>Spurv dækker én region, du selv vælger. Eagle dækker alle regioner vest eller øst for Storebælt. Albatros dækker hele Danmark.</p></details>
+            <details className="reveal"><summary>Hvad er forskellen på pakkerne? <span className="pm">+</span></summary><p>Spurv dækker én region, du selv vælger. Falk dækker alle regioner vest eller øst for Storebælt. Albatros dækker hele Danmark.</p></details>
             <details className="reveal"><summary>Hvor kommer udbuddene fra? <span className="pm">+</span></summary><p>Fra de officielle kilder: udbud.dk og EU's database TED. Offentlige udbud skal være åbne for alle — så det er helt lovligt.</p></details>
             <details className="reveal"><summary>Hvordan opsiger jeg? <span className="pm">+</span></summary><p>SMS'erne kan afmeldes ved at skrive STOP. Du kan også opsige nederst på siden her — og der er et synligt link i bunden af alle vores mails og i hvert match, du har modtaget. Opsigelse skal være lige så simpel som tilmelding.</p></details>
           </div>
@@ -458,31 +460,7 @@ export default function Forside() {
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer>
-        <div className="fbanner">
-          <span className="l">
-            <svg width="24" viewBox="0 0 28 28" fill="none"><path d="M4 16C8 10 11 10 14 14" stroke="#7FD0FF" strokeWidth="2.4" strokeLinecap="round" /><path d="M14 14C17 10 20 10 24 16" stroke="#7FD0FF" strokeWidth="2.4" strokeLinecap="round" /></svg>
-            Vi matcher. Du handler. Sammen skaber vi værdi for det offentlige.
-          </span>
-        </div>
-        <div className="wrap foot">
-          <a href="#" className="logo dpl" style={{ fontSize: 20 }}>
-            <svg width="28" height="24" viewBox="0 0 48 40" fill="none"><path d="M4 31 Q24 27 46 6 Q27 15 9 27 Z" fill="#7FD0FF" /><path d="M6 35 Q22 32 39 18 Q25 23 11 31 Z" fill="#2EB7FF" opacity=".85" /></svg>
-            <span>Birdly<span className="dk">.dk</span></span>
-          </a>
-          <div className="flinks">
-            <a href="#hvorfor">Hvorfor Birdly</a>
-            <a href="#hvordan">Hvordan virker det</a>
-            <a href="#priser">Priser</a>
-            <a href="#faq">FAQ</a>
-            <a href="#om">Om os</a>
-            <a href="#opsigelse">Opsigelse</a>
-            <a href="mailto:hello@birdly.dk">hello@birdly.dk</a>
-          </div>
-          <div className="fcred">Udbudsdata fra udbud.dk og EU/TED. © Birdly. Mere relevans. Mindre bøvl. Ingen spam.</div>
-        </div>
-      </footer>
+      <Footer />
 
       {/* CHAT SUPPORT WIDGET */}
       <button className="chat-launcher" id="chatLauncher" aria-label="Åbn support-chat" onClick={() => (chatOpen ? setChatOpen(false) : openChat())}>

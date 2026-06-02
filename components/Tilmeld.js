@@ -111,7 +111,7 @@ export default function Tilmeld() {
               <label className={"plan" + (plan === "spurv" ? " on" : "")} data-plan="spurv"><input type="radio" name="plan" value="spurv" checked={plan === "spurv"} onChange={() => setPlan("spurv")} />
                 <div className="nm">Spurv</div><div className="pr">349<span> kr./md</span></div><div className="ds">Udbud i én region, du selv vælger.</div></label>
               <label className={"plan" + (plan === "eagle" ? " on" : "")} data-plan="eagle"><input type="radio" name="plan" value="eagle" checked={plan === "eagle"} onChange={() => setPlan("eagle")} /><span className="feat">MEST VALGT</span>
-                <div className="nm">Eagle</div><div className="pr">499<span> kr./md</span></div><div className="ds">Alle regioner vest eller øst for Storebælt.</div></label>
+                <div className="nm">Falk</div><div className="pr">499<span> kr./md</span></div><div className="ds">Alle regioner vest eller øst for Storebælt.</div></label>
               <label className={"plan" + (plan === "albatros" ? " on" : "")} data-plan="albatros"><input type="radio" name="plan" value="albatros" checked={plan === "albatros"} onChange={() => setPlan("albatros")} />
                 <div className="nm">Albatros</div><div className="pr">1.199<span> kr./md</span></div><div className="ds">Udbud i hele Danmark.</div></label>
             </div>
