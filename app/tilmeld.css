@@ -1,0 +1,97 @@
+/* ============================================================
+   Tilmelding — ordret CSS fra tilmeld-html, scoped under .birdly-tilmeld.
+   Delt base (reset, :root, body-font, a) ligger i globals.css.
+   ============================================================ */
+.birdly-tilmeld{ background:var(--sky-soft); min-height:100vh; }
+
+.birdly-tilmeld{
+  h1,h2,h3,h4{font-family:'Plus Jakarta Sans','Inter',sans-serif;font-weight:800;line-height:1.1;letter-spacing:-.02em}
+  .wrap{max-width:760px;margin:0 auto;padding:0 22px}
+
+  header{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:30}
+  .bar{max-width:1100px;margin:0 auto;padding:14px 22px;display:flex;align-items:center;justify-content:space-between}
+  .logo{display:flex;align-items:center;gap:9px;font-family:'Plus Jakarta Sans';font-weight:800;font-size:21px;letter-spacing:-.03em}
+  .logo .dk{color:var(--sky)}
+  .back{font-size:14px;font-weight:600;color:var(--navy-soft)}
+  .back:hover{color:var(--navy)}
+
+  .top{text-align:center;padding:44px 0 8px}
+  .top .ey{display:inline-block;background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 15px;font-size:13px;font-weight:600;color:var(--teal);margin-bottom:16px}
+  .top h1{font-size:clamp(28px,4vw,40px)}
+  .top p{color:var(--navy-soft);font-size:17px;margin:12px auto 0;max-width:46ch}
+
+  .card{background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:30px;margin:28px 0}
+  .sec{margin-bottom:30px}
+  .sec:last-child{margin-bottom:0}
+  .sec .h{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+  .sec .h .n{width:26px;height:26px;border-radius:8px;background:var(--sky);color:#fff;font-family:'Plus Jakarta Sans';font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex:0 0 26px}
+  .sec .h h3{font-size:18px}
+  .sec .sub{color:var(--navy-soft);font-size:14px;margin:0 0 16px 36px}
+  .note{font-size:13px;color:var(--navy-soft);background:var(--sky-soft);border-left:3px solid var(--sky);border-radius:0 8px 8px 0;padding:10px 13px;margin-top:10px;line-height:1.5}
+  .note b{color:var(--navy)}
+  .warn{background:#FFF4F0;border-left-color:var(--coral)}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .fg{margin-bottom:14px}
+  .fg label{display:block;font-size:13px;font-weight:600;margin-bottom:6px}
+  .fg input,.fg select{width:100%;padding:13px 14px;border:1.5px solid var(--line);border-radius:11px;font-size:16px;font-family:inherit;background:#fff;color:var(--navy)}
+  .fg input:focus,.fg select:focus{outline:none;border-color:var(--sky)}
+
+  .chk-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+  .chk{display:flex;align-items:center;gap:8px;border:1.5px solid var(--line);border-radius:11px;padding:11px 12px;font-size:14px;font-weight:500;cursor:pointer;transition:border-color .15s,background .15s}
+  .chk:hover{border-color:var(--sky-200)}
+  .chk input{accent-color:var(--teal);width:16px;height:16px}
+  .chk.on{border-color:var(--teal);background:#F1FFFD}
+
+  /* slider */
+  .slider-val{font-family:'Plus Jakarta Sans';font-weight:800;font-size:22px;color:var(--teal-dk);margin-bottom:6px}
+  input[type=range]{width:100%;accent-color:var(--teal);height:6px}
+  .range-ends{display:flex;justify-content:space-between;font-size:12px;color:var(--navy-soft);margin-top:4px}
+
+  /* plan cards */
+  .plans{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .plan{border:1.5px solid var(--line);border-radius:14px;padding:16px;cursor:pointer;transition:border-color .15s,box-shadow .15s;position:relative}
+  .plan:hover{border-color:var(--sky-200)}
+  .plan.on{border-color:var(--teal);box-shadow:0 0 0 3px rgba(0,179,166,.12)}
+  .plan input{position:absolute;opacity:0}
+  .plan .nm{font-family:'Plus Jakarta Sans';font-weight:800;font-size:16px;display:flex;align-items:center;gap:7px}
+  .plan .pr{font-family:'Plus Jakarta Sans';font-weight:800;font-size:22px;margin:6px 0 2px}
+  .plan .pr span{font-size:13px;font-weight:600;color:var(--navy-soft)}
+  .plan .ds{font-size:12.5px;color:var(--navy-soft)}
+  .plan .feat{position:absolute;top:-10px;right:10px;background:var(--teal);color:#fff;font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px;font-family:'Plus Jakarta Sans'}
+
+  /* expect box */
+  .expect{background:var(--navy);color:#fff;border-radius:16px;padding:24px}
+  .expect h4{color:#fff;font-size:17px;margin-bottom:6px;display:flex;align-items:center;gap:9px}
+  .expect p{color:#C3D2E4;font-size:14.5px}
+  .expect ul{list-style:none;margin-top:14px;display:flex;flex-direction:column;gap:10px}
+  .expect li{display:flex;gap:10px;font-size:14.5px;color:#E7EEF6}
+  .expect li svg{flex:0 0 20px;margin-top:2px}
+
+  .billing{display:flex;gap:11px;align-items:flex-start;background:#FFFBEF;border:1px solid #F2E6C2;border-radius:12px;padding:14px 16px;font-size:14px;color:#6b5a2b}
+  .billing svg{flex:0 0 20px;margin-top:2px}
+
+  .consent{display:flex;gap:9px;font-size:13px;color:var(--navy-soft);margin:18px 0 16px;align-items:flex-start}
+  .consent input{margin-top:3px;accent-color:var(--teal)}
+  .submit{width:100%;background:var(--teal);color:#fff;border:0;padding:17px;border-radius:13px;font-family:'Plus Jakarta Sans';font-size:17px;font-weight:700;cursor:pointer;box-shadow:0 10px 24px rgba(0,179,166,.28);transition:transform .15s}
+  .submit:hover{transform:translateY(-2px)}
+  .trust{display:flex;flex-wrap:wrap;gap:8px 18px;justify-content:center;margin-top:14px;font-size:13px;color:var(--navy-soft)}
+
+  .disclaimer{font-size:12px;line-height:1.6;color:#8A93A1;max-width:760px;margin:6px auto 0;padding:0 22px 50px}
+
+  .ok{display:none;text-align:center;padding:20px 6px}
+  .ok.show{display:block}
+  .ok .ck{width:58px;height:58px;border-radius:50%;background:var(--teal);margin:0 auto 14px;display:flex;align-items:center;justify-content:center}
+  .ok h2{font-size:24px}
+  .ok p{color:var(--navy-soft);margin-top:8px}
+
+  @media(max-width:640px){
+    .grid2,.plans{grid-template-columns:1fr}
+    .chk-grid{grid-template-columns:1fr 1fr}
+  }
+  .pay-methods{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+  .pm-tab{border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:10px 15px;font-family:'Inter';font-weight:600;font-size:14px;color:var(--navy-soft);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:7px}
+  .pm-tab.on{border-color:var(--teal);color:var(--teal-dk);background:#F1FFFD}
+  .pay-element{border:1.5px dashed var(--sky-200);border-radius:12px;background:var(--sky-soft);padding:24px 18px;text-align:center;color:var(--navy-soft);font-size:14px;display:flex;align-items:center;justify-content:center;gap:10px;min-height:96px}
+  .pay-secure{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--navy-soft);margin-top:12px}
+}
