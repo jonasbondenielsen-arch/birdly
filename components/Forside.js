@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Footer from "./Footer";
+import { insertRow } from "../lib/supabase";
 import "../app/forside.css";
 
 const brands = [
@@ -99,6 +100,11 @@ export default function Forside() {
     if (!text) return;
     setMessages((m) => [...m, { who: "user", html: text }]);
     setChatInput("");
+    // Log beskeden i support_messages (source='chat', status='ny' => opfylder anon-RLS).
+    // Fire-and-forget: chat-UX må aldrig blokere/fejle, hvis logningen svigter.
+    insertRow("support_messages", { message: text, source: "chat", status: "ny" }).catch(
+      () => {}
+    );
     setTimeout(() => {
       setMessages((m) => [...m, { who: "bot", html: botReply(text) }]);
     }, 450);

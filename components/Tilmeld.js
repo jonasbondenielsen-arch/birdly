@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import Link from "next/link";
+import { insertRow } from "../lib/supabase";
 import "../app/tilmeld.css";
 
 const fag = [
@@ -22,10 +23,14 @@ export default function Tilmeld() {
   const [pm, setPm] = useState("kort");
   const [ok1, setOk1] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const cvrRef = useRef(null);
+  const firmaRef = useRef(null);
+  const navnRef = useRef(null);
   const mailRef = useRef(null);
   const mobilRef = useRef(null);
+  const regionRef = useRef(null);
 
   function toggleFag(f) {
     setFagSel((s) => ({ ...s, [f]: !s[f] }));
@@ -42,17 +47,63 @@ export default function Tilmeld() {
     setMaxIdx(v);
   }
 
-  function onSubmit() {
+  // Dækning/område udledes af planen: Albatros = hele DK (intet valg),
+  // Spurv/Falk = værdien fra region-select'en.
+  function daekningFor(p) {
+    if (p === "albatros") return "Hele Danmark";
+    return regionRef.current?.value || null;
+  }
+
+  async function onSubmit() {
     const cvr = (cvrRef.current?.value || "").trim();
+    const firma = (firmaRef.current?.value || "").trim();
+    const navn = (navnRef.current?.value || "").trim();
     const mail = (mailRef.current?.value || "").trim();
     const mobil = (mobilRef.current?.value || "").trim();
-    const fagValgt = Object.values(fagSel).filter(Boolean).length;
+    const fagListe = fag.filter((f) => fagSel[f]);
     if (cvr.length !== 8) { alert("Skriv et gyldigt CVR-nummer (8 cifre)."); return; }
     if (!mail || !mobil) { alert("Udfyld email og mobilnummer."); return; }
-    if (fagValgt === 0) { alert("Vælg mindst ét fag, så vi ved, hvad vi skal matche dig med."); return; }
+    if (fagListe.length === 0) { alert("Vælg mindst ét fag, så vi ved, hvad vi skal matche dig med."); return; }
     if (!ok1) { alert("Sæt venligst flueben i samtykke."); return; }
-    setSubmitted(true);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    if (saving) return;
+
+    // Rå tilmeldingsdata (plan/dækning/fag/beløb) i signup_data (jsonb).
+    // Admin (service-key) provisionerer match_settings/subscription herfra.
+    const signup_data = {
+      plan,
+      dækning: daekningFor(plan),
+      fag: fagListe,
+      beløb: {
+        min_label: bands[minIdx],
+        max_label: maxBands[maxIdx],
+        min_idx: minIdx,
+        max_idx: maxIdx,
+      },
+    };
+
+    setSaving(true);
+    try {
+      // status='trial' + ingen billing_customer_id => opfylder anon-RLS-policyen.
+      // insertRow bruger return=minimal, så rækken læses ikke tilbage.
+      await insertRow("subscribers", {
+        cvr,
+        company_name: firma || null,
+        contact_name: navn || null,
+        email: mail,
+        phone: mobil,
+        status: "trial",
+        signup_data,
+      });
+      setSubmitted(true);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch (err) {
+      alert(
+        "Ups — vi kunne ikke gemme din tilmelding lige nu. Prøv igen om lidt, " +
+        "eller skriv til support@birdly.dk.\n\n(" + (err?.message || "ukendt fejl") + ")"
+      );
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -82,8 +133,8 @@ export default function Tilmeld() {
             <p className="sub">Vi henter automatisk dit fag og område fra dit CVR — du bekræfter bagefter.</p>
             <div className="grid2">
               <div className="fg"><label htmlFor="cvr">CVR-nummer</label><input id="cvr" ref={cvrRef} inputMode="numeric" maxLength={8} placeholder="12345678" /></div>
-              <div className="fg"><label htmlFor="firma">Virksomhedsnavn</label><input id="firma" placeholder="Firma ApS" /></div>
-              <div className="fg"><label htmlFor="navn">Kontaktperson</label><input id="navn" placeholder="Fornavn Efternavn" /></div>
+              <div className="fg"><label htmlFor="firma">Virksomhedsnavn</label><input id="firma" ref={firmaRef} placeholder="Firma ApS" /></div>
+              <div className="fg"><label htmlFor="navn">Kontaktperson</label><input id="navn" ref={navnRef} placeholder="Fornavn Efternavn" /></div>
               <div className="fg"><label htmlFor="mail">Email</label><input id="mail" ref={mailRef} type="email" placeholder="dig@firma.dk" /></div>
               <div className="fg"><label htmlFor="mobil">Mobilnummer (til SMS)</label><input id="mobil" ref={mobilRef} type="tel" placeholder="12 34 56 78" /></div>
             </div>
@@ -119,7 +170,7 @@ export default function Tilmeld() {
               {plan === "spurv" && (
                 <>
                   <label htmlFor="region">Vælg din region</label>
-                  <select id="region" defaultValue="Region Hovedstaden">
+                  <select id="region" ref={regionRef} defaultValue="Region Hovedstaden">
                     <option>Region Hovedstaden</option>
                     <option>Region Sjælland</option>
                     <option>Region Syddanmark</option>
@@ -131,7 +182,7 @@ export default function Tilmeld() {
               {plan === "eagle" && (
                 <>
                   <label htmlFor="region">Vælg din side af Storebælt</label>
-                  <select id="region" defaultValue="Øst for Storebælt (Hovedstaden + Sjælland)">
+                  <select id="region" ref={regionRef} defaultValue="Øst for Storebælt (Hovedstaden + Sjælland)">
                     <option>Øst for Storebælt (Hovedstaden + Sjælland)</option>
                     <option>Vest for Storebælt (Syd-, Midt- &amp; Nordjylland)</option>
                   </select>
@@ -210,7 +261,7 @@ export default function Tilmeld() {
 
           <label className="consent"><input type="checkbox" id="ok1" checked={ok1} onChange={(e) => setOk1(e.target.checked)} /> Jeg accepterer <Link href="/handelsbetingelser" style={{ color: "var(--sky)", fontWeight: 600 }}>handelsbetingelser</Link> og <Link href="/privatlivspolitik" style={{ color: "var(--sky)", fontWeight: 600 }}>privatlivspolitik</Link>, og at SMS og mail er en del af tjenesten.</label>
 
-          <button type="button" className="submit" id="go" onClick={onSubmit}>Start min gratis prøveperiode →</button>
+          <button type="button" className="submit" id="go" onClick={onSubmit} disabled={saving}>{saving ? "Sender …" : "Start min gratis prøveperiode →"}</button>
           <div className="trust">
             <span>✓ Gratis i 14 dage</span><span>✓ Ingen binding</span><span>✓ Opsig med 30 dages varsel</span>
           </div>
