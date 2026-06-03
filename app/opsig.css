@@ -32,6 +32,7 @@
 .birdly-opsig .opsig-count{font-size:12px;color:#8a96a8;margin-top:6px;text-align:right}
 .birdly-opsig .opsig-count.max{color:#FF6B6B;font-weight:600}
 
+.birdly-opsig .opsig-err{background:#FFF1EC;color:#c8552e;border:1px solid #f6d3c6;border-radius:10px;padding:10px 12px;font-size:13px;margin-top:16px}
 .birdly-opsig .opsig-actions{display:flex;flex-direction:column;gap:10px;margin-top:22px}
 .birdly-opsig .opsig-keep{background:#00B3A6;color:#fff;border:0;border-radius:12px;padding:13px;
   font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:15px;cursor:pointer;transition:background .15s}

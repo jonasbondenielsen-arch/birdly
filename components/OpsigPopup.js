@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { insertRow } from "../lib/supabase";
 import "../app/opsig.css";
 
 // Opsigelses-feedback-popup. DELTRIN 1: ren UI, ingen DB/mail.
@@ -41,6 +42,8 @@ export default function OpsigPopup({ open, email, onClose }) {
   const [reason, setReason] = useState("");
   const [detail, setDetail] = useState("");
   const [confirmed, setConfirmed] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState("");
 
   // Reset every time the popup is (re)opened.
   useEffect(() => {
@@ -48,6 +51,8 @@ export default function OpsigPopup({ open, email, onClose }) {
       setReason("");
       setDetail("");
       setConfirmed(false);
+      setSaving(false);
+      setErr("");
     }
   }, [open]);
 
@@ -73,10 +78,33 @@ export default function OpsigPopup({ open, email, onClose }) {
     setDetail(v);
   }
 
-  function onConfirm() {
-    // DELTRIN 1 (statisk): vis bare "tjek din mail"-tilstanden — INGEN DB/mail.
-    // Trin 1 (insert pending-anmodning + send magisk link) tilføjes i Deltrin 2/3.
-    setConfirmed(true);
+  async function onConfirm() {
+    if (saving) return;
+    const mail = (email || "").trim();
+    if (!mail) {
+      setErr("Skriv din email i opsigelsesboksen først.");
+      return;
+    }
+    setErr("");
+    setSaving(true);
+    try {
+      // Trin 1: insert en pending-anmodning via anon (write-only, RLS tillader
+      // kun status='pending' uden token/subscriber). Vi afslører IKKE om mailen
+      // findes hos os — server-side (Edge Function) slår kunden op og sender
+      // først bekræftelseslinket der. Selve opsigelsen sker FØRST når kunden
+      // klikker linket (Trin 2). return=minimal: rækken læses ikke tilbage.
+      await insertRow("cancellation_requests", {
+        email: mail,
+        reason,
+        detail: detail.trim() || null,
+        status: "pending",
+      });
+      setConfirmed(true);
+    } catch {
+      setErr("Noget gik galt — prøv igen, eller skriv til support@birdly.dk.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -126,12 +154,14 @@ export default function OpsigPopup({ open, email, onClose }) {
               </div>
             )}
 
+            {err && <p className="opsig-err">{err}</p>}
+
             <div className="opsig-actions">
               <button type="button" className="opsig-keep" onClick={onClose}>
                 Behold mit abonnement
               </button>
-              <button type="button" className="opsig-confirm" disabled={!reason} onClick={onConfirm}>
-                Bekræft opsigelse
+              <button type="button" className="opsig-confirm" disabled={!reason || saving} onClick={onConfirm}>
+                {saving ? "Sender …" : "Bekræft opsigelse"}
               </button>
             </div>
           </>
