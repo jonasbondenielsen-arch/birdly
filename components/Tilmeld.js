@@ -161,7 +161,7 @@ export default function Tilmeld() {
             <div className="plans">
               <label className={"plan" + (plan === "spurv" ? " on" : "")} data-plan="spurv"><input type="radio" name="plan" value="spurv" checked={plan === "spurv"} onChange={() => setPlan("spurv")} />
                 <div className="nm">Spurv</div><div className="pr">349<span> kr./md</span></div><div className="ds">Udbud i én region, du selv vælger.</div></label>
-              <label className={"plan" + (plan === "eagle" ? " on" : "")} data-plan="eagle"><input type="radio" name="plan" value="eagle" checked={plan === "eagle"} onChange={() => setPlan("eagle")} /><span className="feat">MEST VALGT</span>
+              <label className={"plan" + (plan === "eagle" ? " on" : "")} data-plan="eagle"><input type="radio" name="plan" value="eagle" checked={plan === "eagle"} onChange={() => setPlan("eagle")} /><span className="feat">MEST POPULÆRE</span>
                 <div className="nm">Falk</div><div className="pr">499<span> kr./md</span></div><div className="ds">Alle regioner vest eller øst for Storebælt.</div></label>
               <label className={"plan" + (plan === "albatros" ? " on" : "")} data-plan="albatros"><input type="radio" name="plan" value="albatros" checked={plan === "albatros"} onChange={() => setPlan("albatros")} />
                 <div className="nm">Albatros</div><div className="pr">1.199<span> kr./md</span></div><div className="ds">Udbud i hele Danmark.</div></label>
@@ -261,9 +261,9 @@ export default function Tilmeld() {
 
           <label className="consent"><input type="checkbox" id="ok1" checked={ok1} onChange={(e) => setOk1(e.target.checked)} /> Jeg accepterer <Link href="/handelsbetingelser" style={{ color: "var(--sky)", fontWeight: 600 }}>handelsbetingelser</Link> og <Link href="/privatlivspolitik" style={{ color: "var(--sky)", fontWeight: 600 }}>privatlivspolitik</Link>, og at SMS og mail er en del af tjenesten.</label>
 
-          <button type="button" className="submit" id="go" onClick={onSubmit} disabled={saving}>{saving ? "Sender …" : "Start min gratis prøveperiode →"}</button>
+          <button type="button" className="submit" id="go" onClick={onSubmit} disabled={saving}>{saving ? "Sender …" : "Opret Birdly nu – gratis de første 14 dage →"}</button>
           <div className="trust">
-            <span>✓ Gratis i 14 dage</span><span>✓ Ingen binding</span><span>✓ Opsig med 30 dages varsel</span>
+            <span>✓ Gratis de første 14 dage</span><span>✓ Ingen binding</span><span>✓ Opsig med 30 dages varsel</span>
           </div>
         </div>
 
