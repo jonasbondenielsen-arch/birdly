@@ -188,8 +188,6 @@
   .cancel-form input:focus{outline:none;border-color:var(--sky)}
   .cancel-form button{flex:1 1 100%;background:var(--navy);color:#fff;border:0;padding:15px;border-radius:11px;font-family:'Plus Jakarta Sans';font-weight:700;font-size:15px;cursor:pointer;transition:transform .15s}
   .cancel-form button:hover{transform:translateY(-1px)}
-  .cdone{display:none;color:var(--teal-dk);font-weight:600;margin-top:16px}
-  .cdone.show{display:block}
   .psst{font-family:'Caveat',cursive;font-size:26px;color:var(--teal);margin-top:20px;line-height:1.2}
 
   /* signup */

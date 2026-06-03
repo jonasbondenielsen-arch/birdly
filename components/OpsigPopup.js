@@ -1,0 +1,158 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import "../app/opsig.css";
+
+// Opsigelses-feedback-popup. DELTRIN 1: ren UI, ingen DB/mail.
+// Når flowet wires (Deltrin 2/3): "Bekræft opsigelse" inserter en pending-
+// anmodning via anon (write-only) og en server-side Edge Function sender det
+// magiske bekræftelseslink. Den offentlige side må ALDRIG opsige direkte.
+
+const REASONS = [
+  { key: "dyr", label: "For dyrt i forhold til værdien", ctx: "Hvad ville en fair pris være for dig?" },
+  { key: "faa", label: "Jeg fik for få relevante match", ctx: "Hvilket fag eller område savnede du match i?" },
+  { key: "irrelevant", label: "Matchene ramte ved siden af mit fag eller område", ctx: "Hvad ramte forkert?" },
+  { key: "vaerdi", label: "Det skabte ikke nok værdi for min forretning", ctx: "Hvad skulle der til, for at det gav værdi?" },
+  { key: "anden", label: "Jeg bruger en anden løsning nu", ctx: "Hvilken løsning skiftede du til?" },
+  { key: "behov", label: "Jeg har ikke behov lige nu", ctx: "Må vi sige til, når det bliver relevant igen?" },
+  { key: "andet", label: "Andet", ctx: "Fortæl os gerne mere" },
+];
+const MAX_WORDS = 250;
+
+function countWords(s) {
+  return (s.trim().match(/\S+/g) || []).length;
+}
+// Keep the first `max` words (preserves whitespace between them).
+function truncateWords(s, max) {
+  const parts = s.split(/(\s+)/);
+  let count = 0;
+  let out = "";
+  for (const p of parts) {
+    if (/\S/.test(p)) {
+      if (count >= max) break;
+      count++;
+    }
+    out += p;
+  }
+  return out;
+}
+
+export default function OpsigPopup({ open, email, onClose }) {
+  const [reason, setReason] = useState("");
+  const [detail, setDetail] = useState("");
+  const [confirmed, setConfirmed] = useState(false);
+
+  // Reset every time the popup is (re)opened.
+  useEffect(() => {
+    if (open) {
+      setReason("");
+      setDetail("");
+      setConfirmed(false);
+    }
+  }, [open]);
+
+  // Escape to close.
+  useEffect(() => {
+    if (!open) return undefined;
+    function onKey(e) {
+      if (e.key === "Escape") onClose();
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
+
+  if (!open) return null;
+
+  const current = REASONS.find((r) => r.key === reason);
+  const isAndet = reason === "andet";
+  const words = countWords(detail);
+
+  function onDetailChange(v) {
+    // "Andet" er en textarea med maks 250 ord — stop input ved grænsen.
+    if (isAndet && countWords(v) > MAX_WORDS) v = truncateWords(v, MAX_WORDS);
+    setDetail(v);
+  }
+
+  function onConfirm() {
+    // DELTRIN 1 (statisk): vis bare "tjek din mail"-tilstanden — INGEN DB/mail.
+    // Trin 1 (insert pending-anmodning + send magisk link) tilføjes i Deltrin 2/3.
+    setConfirmed(true);
+  }
+
+  return (
+    <div className="birdly-opsig">
+      <div className="opsig-bg" onClick={onClose} />
+      <div className="opsig-modal" role="dialog" aria-modal="true" aria-label="Opsig Birdly">
+        <button className="opsig-x" aria-label="Luk" onClick={onClose}>✕</button>
+
+        {!confirmed ? (
+          <>
+            <h3>Inden du går</h3>
+            <p className="opsig-sub">
+              Vi bliver kede af at miste dig. Vil du kort fortælle os hvorfor? Det hjælper os med at gøre Birdly bedre.
+            </p>
+
+            <div className="opsig-reasons">
+              {REASONS.map((r) => (
+                <label key={r.key} className={"opsig-reason" + (reason === r.key ? " on" : "")}>
+                  <input
+                    type="radio"
+                    name="opsig-reason"
+                    value={r.key}
+                    checked={reason === r.key}
+                    onChange={() => {
+                      setReason(r.key);
+                      setDetail("");
+                    }}
+                  />
+                  <span>{r.label}</span>
+                </label>
+              ))}
+            </div>
+
+            {current && (
+              <div className="opsig-detail">
+                <label>
+                  {current.ctx} <span className="opt">(valgfrit)</span>
+                </label>
+                {isAndet ? (
+                  <>
+                    <textarea value={detail} onChange={(e) => onDetailChange(e.target.value)} placeholder="Skriv her …" />
+                    <div className={"opsig-count" + (words >= MAX_WORDS ? " max" : "")}>{words} / {MAX_WORDS} ord</div>
+                  </>
+                ) : (
+                  <input type="text" value={detail} onChange={(e) => onDetailChange(e.target.value)} placeholder="Skriv her …" />
+                )}
+              </div>
+            )}
+
+            <div className="opsig-actions">
+              <button type="button" className="opsig-keep" onClick={onClose}>
+                Behold mit abonnement
+              </button>
+              <button type="button" className="opsig-confirm" disabled={!reason} onClick={onConfirm}>
+                Bekræft opsigelse
+              </button>
+            </div>
+          </>
+        ) : (
+          <div className="opsig-bye">
+            <h3>Nu letter du fra reden 🐦</h3>
+            <p>
+              Vi bliver kede af at se dig flyve videre — men vi forstår det godt. Tak, fordi du fløj med et stykke af
+              vejen. Der er altid en plads på pinden, hvis du får lyst til at vende tilbage.
+            </p>
+            <div className="opsig-note">
+              <b>Sidste skridt:</b> Vi har sendt et bekræftelseslink til din e-mail. Klik på linket for at gøre
+              opsigelsen endelig — <b>den er ikke gennemført, før du har bekræftet.</b> Kan du ikke se mailen inden for
+              et par minutter, så kig lige i dit <b>spamfilter</b>.
+            </div>
+            <div className="opsig-actions">
+              <button type="button" className="opsig-keep" onClick={onClose}>Luk</button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,46 @@
+/* ============================================================================
+   Opsigelses-feedback-popup (Birdly-brand). Scoped under .birdly-opsig.
+   Deltrin 1: ren UI — ingen DB/mail endnu.
+   ============================================================================ */
+.birdly-opsig .opsig-bg{position:fixed;inset:0;background:rgba(13,27,42,.5);z-index:200;animation:opsigfade .2s ease}
+.birdly-opsig .opsig-modal{position:fixed;z-index:201;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:min(480px,calc(100vw - 32px));max-height:calc(100vh - 48px);overflow-y:auto;background:#fff;
+  border-radius:20px;padding:28px;box-shadow:0 24px 60px rgba(13,27,42,.28);
+  font-family:'Inter',system-ui,sans-serif;color:#0D1B2A;animation:opsigpop .22s ease}
+@keyframes opsigfade{from{opacity:0}to{opacity:1}}
+@keyframes opsigpop{from{opacity:0;transform:translate(-50%,-46%)}to{opacity:1;transform:translate(-50%,-50%)}}
+
+.birdly-opsig .opsig-x{position:absolute;top:14px;right:14px;background:#F2F4F7;border:0;width:32px;height:32px;
+  border-radius:9px;cursor:pointer;font-size:15px;color:#5A6678}
+.birdly-opsig h3{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:22px;letter-spacing:-.02em;margin:0 0 6px}
+.birdly-opsig .opsig-sub{font-size:14px;color:#5A6678;line-height:1.5;margin-bottom:18px}
+
+.birdly-opsig .opsig-reasons{display:flex;flex-direction:column;gap:8px}
+.birdly-opsig .opsig-reason{display:flex;align-items:center;gap:10px;padding:12px 14px;border:1.5px solid #E4E9F0;
+  border-radius:12px;cursor:pointer;font-size:14px;transition:border-color .15s,background .15s}
+.birdly-opsig .opsig-reason:hover{border-color:#2EB7FF}
+.birdly-opsig .opsig-reason.on{border-color:#00B3A6;background:#EAF6FF}
+.birdly-opsig .opsig-reason input{accent-color:#00B3A6;width:auto;flex:0 0 auto}
+
+.birdly-opsig .opsig-detail{margin-top:14px}
+.birdly-opsig .opsig-detail label{display:block;font-size:13px;font-weight:600;margin-bottom:6px;color:#0D1B2A}
+.birdly-opsig .opsig-detail .opt{font-weight:400;color:#8a96a8}
+.birdly-opsig .opsig-detail input,.birdly-opsig .opsig-detail textarea{width:100%;border:1.5px solid #E4E9F0;
+  border-radius:10px;padding:11px 13px;font-family:inherit;font-size:14px;color:#0D1B2A}
+.birdly-opsig .opsig-detail textarea{min-height:96px;resize:vertical;line-height:1.5}
+.birdly-opsig .opsig-detail input:focus,.birdly-opsig .opsig-detail textarea:focus{outline:none;border-color:#2EB7FF}
+.birdly-opsig .opsig-count{font-size:12px;color:#8a96a8;margin-top:6px;text-align:right}
+.birdly-opsig .opsig-count.max{color:#FF6B6B;font-weight:600}
+
+.birdly-opsig .opsig-actions{display:flex;flex-direction:column;gap:10px;margin-top:22px}
+.birdly-opsig .opsig-keep{background:#00B3A6;color:#fff;border:0;border-radius:12px;padding:13px;
+  font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:15px;cursor:pointer;transition:background .15s}
+.birdly-opsig .opsig-keep:hover{background:#009186}
+.birdly-opsig .opsig-confirm{background:none;border:0;color:#FF6B6B;font-size:13.5px;font-weight:600;cursor:pointer;
+  padding:6px;font-family:inherit}
+.birdly-opsig .opsig-confirm:disabled{color:#c2c9d4;cursor:default}
+
+.birdly-opsig .opsig-bye h3{margin-bottom:10px}
+.birdly-opsig .opsig-bye p{font-size:14px;color:#5A6678;line-height:1.6;margin-bottom:16px}
+.birdly-opsig .opsig-note{background:#EAF6FF;border:1px solid #cfe9fb;border-radius:12px;padding:14px;
+  font-size:13.5px;line-height:1.55;color:#0D1B2A;margin-bottom:18px}

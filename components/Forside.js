@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Footer from "./Footer";
+import OpsigPopup from "./OpsigPopup";
 import { insertRow } from "../lib/supabase";
 import "../app/forside.css";
 
@@ -44,7 +45,7 @@ function botReply(text) {
 }
 
 export default function Forside() {
-  const [cancelDone, setCancelDone] = useState(false);
+  const [cancelOpen, setCancelOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [chatStarted, setChatStarted] = useState(false);
   const [messages, setMessages] = useState([]);
@@ -116,7 +117,10 @@ export default function Forside() {
       alert("Skriv din email for at opsige.");
       return;
     }
-    setCancelDone(true);
+    // To-trins-opsigelse: åbn feedback-popup'en (Trin 1). Selve opsigelsen sker
+    // FØRST når kunden klikker bekræftelseslinket i mailen (Trin 2) — bygges i
+    // Deltrin 2/3. Den offentlige side opsiger aldrig direkte.
+    setCancelOpen(true);
   }
 
   return (
@@ -457,18 +461,24 @@ export default function Forside() {
           <div className="cbox reveal">
             <h2>Bye bye, Birdly 👋</h2>
             <p className="lead">Ja — hos os er det lige så nemt at opsige, som det var at tilmelde sig. Måske endda nemmere. Skriv dine oplysninger her, så opsiger vi med 30 dages varsel.</p>
-            <div className="cancel-form" style={cancelDone ? { display: "none" } : undefined}>
+            <div className="cancel-form">
               <input id="cMail" ref={cMailRef} type="email" placeholder="Din email" />
               <input id="cTlf" type="tel" placeholder="Dit telefonnummer" />
               <button type="button" id="cGo" onClick={onCancel}>Opsig Birdly</button>
             </div>
-            <p className={"cdone" + (cancelDone ? " show" : "")} id="cDone">Tak — din opsigelse er registreret. Du er aktiv 30 dage endnu.</p>
             <p className="psst">Psst … vi håber at se dig snart igen.</p>
           </div>
         </div>
       </section>
 
       <Footer />
+
+      {/* OPSIGELSES-FEEDBACK-POPUP (Trin 1 — feedback + "tjek din mail") */}
+      <OpsigPopup
+        open={cancelOpen}
+        email={cMailRef.current?.value || ""}
+        onClose={() => setCancelOpen(false)}
+      />
 
       {/* CHAT SUPPORT WIDGET */}
       <button className="chat-launcher" id="chatLauncher" aria-label="Åbn support-chat" onClick={() => (chatOpen ? setChatOpen(false) : openChat())}>
