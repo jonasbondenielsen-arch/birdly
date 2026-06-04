@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Footer from "./Footer";
+import { Logo } from "./Logo";
 import "../app/udbud.css";
 
 export default function UdbudForAlle() {
@@ -7,10 +8,7 @@ export default function UdbudForAlle() {
     <div className="birdly-udbud">
       <header>
         <div className="bar">
-          <Link href="/" className="logo">
-            <svg width="30" height="26" viewBox="0 0 48 40" fill="none"><defs><linearGradient id="wg" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stopColor="#0D1B2A" /><stop offset=".45" stopColor="#2EB7FF" /><stop offset="1" stopColor="#9BDCFF" /></linearGradient></defs><path d="M4 31 Q24 27 46 6 Q27 15 9 27 Z" fill="url(#wg)" /><path d="M6 35 Q22 32 39 18 Q25 23 11 31 Z" fill="#00B3A6" opacity=".85" /></svg>
-            <span>Birdly<span className="dk">.dk</span></span>
-          </Link>
+          <Logo height={30} />
           <nav className="nav">
             <a href="/#hvorfor">Hvorfor Birdly</a>
             <a href="/#hvordan">Hvordan virker det</a>

@@ -27,6 +27,8 @@
 .birdly-betingelser a.card:hover{transform:translateY(-3px);box-shadow:var(--shadow);border-color:transparent}
 .birdly-betingelser .card .ic{width:54px;height:54px;border-radius:15px;background:var(--sky-soft);display:grid;place-items:center;margin-bottom:16px}
 .birdly-betingelser .card .ic svg{width:27px;height:27px;color:var(--sky)}
+/* Vilkår-kortet: fugle-mærket som ikon (egen brandfarvet flise — gennemsigtig .ic) */
+.birdly-betingelser .card .ic.ic-bird{background:transparent}
 .birdly-betingelser .card h3{font-family:'Plus Jakarta Sans';font-weight:700;font-size:16px;margin-bottom:6px;line-height:1.25}
 .birdly-betingelser .card p{font-size:13.5px;color:var(--navy-soft);margin-bottom:18px;flex:1;line-height:1.55}
 .birdly-betingelser .card .btn{background:var(--sky-soft);color:var(--teal-dk);border:0;border-radius:10px;padding:10px 22px;font-family:'Plus Jakarta Sans';font-weight:700;font-size:13.5px;text-decoration:none}

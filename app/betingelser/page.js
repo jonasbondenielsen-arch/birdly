@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Footer from "../../components/Footer";
+import { Logo, BirdMark } from "../../components/Logo";
 import "../betingelser.css";
 
 export const metadata = {
@@ -16,13 +17,6 @@ const ICONS = {
       <path d="M20.24 12.24a6 6 0 00-8.49-8.49L5 10.5V19h8.5z" />
       <path d="M16 8L2 22" />
       <path d="M17.5 15H9" />
-    </svg>
-  ),
-  // Vilkår for brug → BIRDLY-mærket (samme fugl som header-logoet), i brandfarver
-  bird: (
-    <svg viewBox="0 0 48 40" fill="none" style={{ width: "32px", height: "27px" }}>
-      <path d="M4 31 Q24 27 46 6 Q27 15 9 27 Z" fill="#2EB7FF" />
-      <path d="M6 35 Q22 32 39 18 Q25 23 11 31 Z" fill="#00B3A6" opacity=".9" />
     </svg>
   ),
   // Privatlivspolitik → skjold m. flueben
@@ -64,10 +58,7 @@ export default function BetingelserPage() {
     <div className="birdly-betingelser">
       <header>
         <div className="bar">
-          <Link href="/" className="logo">
-            <svg width="30" height="26" viewBox="0 0 48 40" fill="none"><defs><linearGradient id="wg" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stopColor="#0D1B2A" /><stop offset=".45" stopColor="#2EB7FF" /><stop offset="1" stopColor="#9BDCFF" /></linearGradient></defs><path d="M4 31 Q24 27 46 6 Q27 15 9 27 Z" fill="url(#wg)" /><path d="M6 35 Q22 32 39 18 Q25 23 11 31 Z" fill="url(#wg)" opacity=".8" /></svg>
-            <span>Birdly<span className="dk">.dk</span></span>
-          </Link>
+          <Logo height={30} />
           <Link href="/" className="back">← Tilbage til forsiden</Link>
         </div>
       </header>
@@ -89,7 +80,7 @@ export default function BetingelserPage() {
           </Link>
 
           <Link href="/vilkaar-for-brug" className="card">
-            <div className="ic">{ICONS.bird}</div>
+            <div className="ic ic-bird"><BirdMark size={48} /></div>
             <h3>Vilkår for brug af birdly.dk</h3>
             <p>Reglerne for at bruge hjemmesiden og tjenesten.</p>
             <span className="btn">Klik her</span>
