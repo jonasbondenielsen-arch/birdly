@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Footer from "./Footer";
 import OpsigPopup from "./OpsigPopup";
+import { Logo } from "./Logo";
 import { insertRow } from "../lib/supabase";
 import "../app/forside.css";
 
@@ -128,21 +129,7 @@ export default function Forside() {
       {/* HEADER */}
       <header>
         <div className="wrap bar">
-          <a href="#" className="logo">
-            <svg width="34" height="30" viewBox="0 0 48 40" fill="none" aria-hidden="true">
-              <defs>
-                <linearGradient id="wg" x1="0" y1="1" x2="1" y2="0">
-                  <stop offset="0" stopColor="#0D1B2A" />
-                  <stop offset=".45" stopColor="#2EB7FF" />
-                  <stop offset="1" stopColor="#9BDcFF" />
-                </linearGradient>
-              </defs>
-              <path d="M4 31 Q24 27 46 6 Q27 15 9 27 Z" fill="url(#wg)" />
-              <path d="M6 35 Q22 32 39 18 Q25 23 11 31 Z" fill="url(#wg)" opacity=".8" />
-              <path d="M8 39 Q20 37 31 28 Q21 31 12 35 Z" fill="url(#wg)" opacity=".6" />
-            </svg>
-            <span>Birdly<span className="dk">.dk</span></span>
-          </a>
+          <Logo height={32} />
           <nav className="menu">
             <a href="#hvorfor">Hvorfor Birdly</a>
             <a href="#hvordan">Hvordan virker det</a>

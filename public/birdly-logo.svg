@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="420" viewBox="0 0 1600 420" fill="none">
+  <defs>
+    <linearGradient id="birdWingTop" x1="110" y1="80" x2="360" y2="170" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#7FD4FF"/>
+      <stop offset="1" stop-color="#42B6F6"/>
+    </linearGradient>
+    <linearGradient id="birdWingBottom" x1="170" y1="170" x2="330" y2="345" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#2FB3F4"/>
+      <stop offset="1" stop-color="#0C8EF1"/>
+    </linearGradient>
+    <linearGradient id="birdCenter" x1="250" y1="120" x2="310" y2="280" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#36B9FF"/>
+      <stop offset="1" stop-color="#0E7AEF"/>
+    </linearGradient>
+    <linearGradient id="birdFold" x1="240" y1="220" x2="330" y2="250" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0B83F2"/>
+      <stop offset="1" stop-color="#1475E8"/>
+    </linearGradient>
+    <linearGradient id="birdHead" x1="280" y1="118" x2="360" y2="150" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#29B7FF"/>
+      <stop offset="1" stop-color="#2999F8"/>
+    </linearGradient>
+    <linearGradient id="wordDark" x1="486" y1="110" x2="1055" y2="338" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0D274A"/>
+      <stop offset="1" stop-color="#031A36"/>
+    </linearGradient>
+    <linearGradient id="wordBlue" x1="1068" y1="110" x2="1300" y2="330" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#46B8FF"/>
+      <stop offset="1" stop-color="#2EA8F4"/>
+    </linearGradient>
+    <style>
+      .brand { font-family: Inter, Manrope, system-ui, -apple-system, Segoe UI, Arial, sans-serif; font-weight: 800; letter-spacing: -0.04em; }
+    </style>
+  </defs>
+
+  <!-- Icon -->
+  <g transform="translate(82 53)">
+    <path d="M41 127H232C256 127 275 123 292 113L326 93C336 87 334 72 323 69H283C266 69 253 64 240 54L218 37C200 23 176 15 149 15H23C7 15 0 35 12 46L82 110C102 128 128 137 156 137H41C41 137 41 129 41 127Z" fill="url(#birdWingTop)"/>
+    <path d="M216 15C230 20 240 31 243 48C247 70 242 98 223 122L123 229C114 239 119 255 133 255H183C203 255 222 245 233 227L293 126C301 112 306 96 306 80V66C306 37 282 15 253 15H216Z" fill="url(#birdCenter)"/>
+    <path d="M242 51C248 73 241 100 224 121L123 229C114 239 119 255 133 255H183C203 255 222 245 233 227L280 147C253 138 221 136 188 141L160 145L242 51Z" fill="url(#birdWingBottom)"/>
+    <path d="M232 164C205 167 179 172 154 179L207 182C240 184 269 194 296 214L304 191C307 182 307 173 304 164L300 151C278 156 255 160 232 164Z" fill="url(#birdFold)" opacity="0.95"/>
+    <path d="M278 69H349C359 69 362 82 354 88L319 113C306 122 292 127 277 127H254C266 113 274 95 278 69Z" fill="url(#birdHead)"/>
+  </g>
+
+  <!-- Wordmark -->
+  <text x="460" y="253" font-size="196" class="brand" fill="url(#wordDark)">Birdly</text>
+  <text x="1034" y="253" font-size="196" class="brand" fill="url(#wordBlue)">.dk</text>
+</svg>

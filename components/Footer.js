@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BirdMark } from "./Logo";
 import "../app/footer.css";
 
 /* Delt footer for forside og /udbud-for-alle.
@@ -15,7 +16,7 @@ export default function Footer() {
       </div>
       <div className="foot">
         <Link href="/" className="flogo">
-          <svg width="28" height="24" viewBox="0 0 48 40" fill="none"><path d="M4 31 Q24 27 46 6 Q27 15 9 27 Z" fill="#7FD0FF" /><path d="M6 35 Q22 32 39 18 Q25 23 11 31 Z" fill="#2EB7FF" opacity=".85" /></svg>
+          <BirdMark size={30} />
           <span>Birdly<span className="dk">.dk</span></span>
         </Link>
         <div className="flinks">
