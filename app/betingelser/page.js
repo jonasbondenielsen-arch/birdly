@@ -10,13 +10,15 @@ export const metadata = {
 
 // Card icons in the site's own outline style (inline SVG, stroke-width 2,
 // currentColor). Motifs match Dinero's themes, drawn in OUR style/brand colors.
+// Rene, ensartede ikoner: viewBox 24, stroke-width 2, runde hjørner. Vilkår-kortet
+// bruger fugle-mærket (<BirdMark>) i stedet for et af disse.
 const ICONS = {
-  // Handelsbetingelser → fjerpen (quill)
-  feather: (
+  // Handelsbetingelser → dokument/aftale m. flueben
+  doc: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M20.24 12.24a6 6 0 00-8.49-8.49L5 10.5V19h8.5z" />
-      <path d="M16 8L2 22" />
-      <path d="M17.5 15H9" />
+      <path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z" />
+      <path d="M14 3v5h5" />
+      <path d="M8.5 14l2.2 2.2L15 12" />
     </svg>
   ),
   // Privatlivspolitik → skjold m. flueben
@@ -35,12 +37,12 @@ const ICONS = {
       <circle cx="15" cy="9" r="1" fill="currentColor" />
     </svg>
   ),
-  // Sikkerhed og drift → vejkegle
-  cone: (
+  // Sikkerhed og drift → hængelås m. nøglehul
+  lock: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 3l5 16H7z" />
-      <path d="M5 19h14" />
-      <path d="M9.3 11h5.4M8.3 15h7.4" />
+      <rect x="4.5" y="10.5" width="15" height="9.5" rx="2.5" />
+      <path d="M8 10.5V7a4 4 0 018 0v3.5" />
+      <path d="M12 14v2.5" />
     </svg>
   ),
   // Underdatabehandlere → server/database
@@ -73,7 +75,7 @@ export default function BetingelserPage() {
         <div className="cards">
 
           <Link href="/handelsbetingelser" className="card featured">
-            <div className="ic">{ICONS.feather}</div>
+            <div className="ic">{ICONS.doc}</div>
             <h3>Handelsbetingelser</h3>
             <p>Vilkår for abonnement, prøveperiode, betaling og opsigelse.</p>
             <span className="btn">Klik her</span>
@@ -101,7 +103,7 @@ export default function BetingelserPage() {
           </Link>
 
           <Link href="/sikkerhed-og-drift" className="card">
-            <div className="ic">{ICONS.cone}</div>
+            <div className="ic">{ICONS.lock}</div>
             <h3>Sikkerhed og drift</h3>
             <p>Hvordan vi beskytter data: EU-hosting, kryptering og adgangsstyring.</p>
             <span className="btn">Klik her</span>
