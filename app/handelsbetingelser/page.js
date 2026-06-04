@@ -1,10 +1,11 @@
-import LegalPlaceholder from "../../components/LegalPlaceholder";
+import LegalDoc from "../../components/LegalDoc";
+import { readLegal } from "../../lib/legal";
 
 export const metadata = {
   title: "Handelsbetingelser — Birdly",
-  description: "Birdlys handelsbetingelser. Indhold på vej.",
+  description: "Birdlys handelsbetingelser: abonnement, prøveperiode, betaling og opsigelse.",
 };
 
 export default function Page() {
-  return <LegalPlaceholder title="Handelsbetingelser" />;
+  return <LegalDoc markdown={readLegal("handelsbetingelser")} />;
 }

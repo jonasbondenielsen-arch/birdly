@@ -1,10 +1,11 @@
-import LegalPlaceholder from "../../components/LegalPlaceholder";
+import LegalDoc from "../../components/LegalDoc";
+import { readLegal } from "../../lib/legal";
 
 export const metadata = {
   title: "Cookiepolitik — Birdly",
-  description: "Birdlys cookiepolitik. Indhold på vej.",
+  description: "Hvilke cookies Birdly bruger, og hvordan du styrer dit samtykke.",
 };
 
 export default function Page() {
-  return <LegalPlaceholder title="Cookiepolitik" />;
+  return <LegalDoc markdown={readLegal("cookiepolitik")} />;
 }

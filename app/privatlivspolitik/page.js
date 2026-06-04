@@ -1,10 +1,11 @@
-import LegalPlaceholder from "../../components/LegalPlaceholder";
+import LegalDoc from "../../components/LegalDoc";
+import { readLegal } from "../../lib/legal";
 
 export const metadata = {
   title: "Privatlivspolitik — Birdly",
-  description: "Birdlys privatlivspolitik. Indhold på vej.",
+  description: "Sådan behandler Birdly personoplysninger, og dine rettigheder.",
 };
 
 export default function Page() {
-  return <LegalPlaceholder title="Privatlivspolitik" />;
+  return <LegalDoc markdown={readLegal("privatlivspolitik")} />;
 }

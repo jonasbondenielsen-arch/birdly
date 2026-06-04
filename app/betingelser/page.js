@@ -4,23 +4,35 @@ import "../betingelser.css";
 
 export const metadata = {
   title: "Betingelser & sikkerhed — Birdly",
-  description: "Birdlys vilkår og sikkerhed: handelsbetingelser, privatlivspolitik og cookiepolitik.",
+  description: "Birdlys vilkår og sikkerhed: handelsbetingelser, vilkår for brug, privatlivspolitik, cookiepolitik, sikkerhed og drift samt underdatabehandlere.",
 };
 
 // Card icons in the site's own outline style (inline SVG, stroke-width 2,
-// currentColor). Motifs per brief: dokument, skjold, cookie, hængelås, noder.
+// currentColor). Motifs match Dinero's themes, drawn in OUR style/brand colors.
 const ICONS = {
-  doc: (
+  // Handelsbetingelser → fjerpen (quill)
+  feather: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M8 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2h-2M9 3h6v3H9zM8 12h8M8 16h6" />
+      <path d="M20.24 12.24a6 6 0 00-8.49-8.49L5 10.5V19h8.5z" />
+      <path d="M16 8L2 22" />
+      <path d="M17.5 15H9" />
     </svg>
   ),
+  // Vilkår for brug → BIRDLY-mærket (samme fugl som header-logoet), i brandfarver
+  bird: (
+    <svg viewBox="0 0 48 40" fill="none" style={{ width: "32px", height: "27px" }}>
+      <path d="M4 31 Q24 27 46 6 Q27 15 9 27 Z" fill="#2EB7FF" />
+      <path d="M6 35 Q22 32 39 18 Q25 23 11 31 Z" fill="#00B3A6" opacity=".9" />
+    </svg>
+  ),
+  // Privatlivspolitik → skjold m. flueben
   shieldCheck: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M12 3l7 3v6c0 4.4-3 7.4-7 9-4-1.6-7-4.6-7-9V6l7-3z" />
       <path d="M9 12l2 2 4-4" />
     </svg>
   ),
+  // Cookiepolitik → cookie
   cookie: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <circle cx="12" cy="12" r="9" />
@@ -29,18 +41,20 @@ const ICONS = {
       <circle cx="15" cy="9" r="1" fill="currentColor" />
     </svg>
   ),
-  lock: (
+  // Sikkerhed og drift → vejkegle
+  cone: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="5" y="11" width="14" height="9" rx="2" />
-      <path d="M8 11V8a4 4 0 018 0v3" />
+      <path d="M12 3l5 16H7z" />
+      <path d="M5 19h14" />
+      <path d="M9.3 11h5.4M8.3 15h7.4" />
     </svg>
   ),
-  nodes: (
+  // Underdatabehandlere → server/database
+  database: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="6" cy="6" r="2.3" />
-      <circle cx="18" cy="6" r="2.3" />
-      <circle cx="12" cy="18" r="2.3" />
-      <path d="M8 6h8M7.4 7.8l3.4 8.4M16.6 7.8l-3.4 8.4" />
+      <ellipse cx="12" cy="6" rx="7" ry="3" />
+      <path d="M5 6v6c0 1.66 3.13 3 7 3s7-1.34 7-3V6" />
+      <path d="M5 12v6c0 1.66 3.13 3 7 3s7-1.34 7-3v-6" />
     </svg>
   ),
 };
@@ -68,9 +82,16 @@ export default function BetingelserPage() {
         <div className="cards">
 
           <Link href="/handelsbetingelser" className="card featured">
-            <div className="ic">{ICONS.doc}</div>
+            <div className="ic">{ICONS.feather}</div>
             <h3>Handelsbetingelser</h3>
             <p>Vilkår for abonnement, prøveperiode, betaling og opsigelse.</p>
+            <span className="btn">Klik her</span>
+          </Link>
+
+          <Link href="/vilkaar-for-brug" className="card">
+            <div className="ic">{ICONS.bird}</div>
+            <h3>Vilkår for brug af birdly.dk</h3>
+            <p>Reglerne for at bruge hjemmesiden og tjenesten.</p>
             <span className="btn">Klik her</span>
           </Link>
 
@@ -88,21 +109,19 @@ export default function BetingelserPage() {
             <span className="btn">Klik her</span>
           </Link>
 
-          <div className="card soon">
-            <div className="ic">{ICONS.lock}</div>
-            <span className="badge-soon">KOMMER SENERE</span>
+          <Link href="/sikkerhed-og-drift" className="card">
+            <div className="ic">{ICONS.cone}</div>
             <h3>Sikkerhed og drift</h3>
             <p>Hvordan vi beskytter data: EU-hosting, kryptering og adgangsstyring.</p>
             <span className="btn">Klik her</span>
-          </div>
+          </Link>
 
-          <div className="card soon">
-            <div className="ic">{ICONS.nodes}</div>
-            <span className="badge-soon">KOMMER SENERE</span>
+          <Link href="/underdatabehandlere" className="card">
+            <div className="ic">{ICONS.database}</div>
             <h3>Underdatabehandlere</h3>
             <p>Liste over de leverandører, der behandler data på vores vegne.</p>
             <span className="btn">Klik her</span>
-          </div>
+          </Link>
 
         </div>
       </div>
