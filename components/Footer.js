@@ -33,9 +33,15 @@ export default function Footer() {
           <a href="[GOOGLE-ANMELDELSER-URL]" aria-label="Birdly på Google anmeldelser"><svg width="18" viewBox="0 0 24 24" fill="none" stroke="#cdd8e6" strokeWidth="1.9"><path d="M20 12a8 8 0 10-2.4 5.7" strokeLinecap="round" /><path d="M20.5 12H13" strokeLinecap="round" /></svg></a>
           <a href="[TRUSTPILOT-URL]" aria-label="Birdly på Trustpilot"><svg width="18" viewBox="0 0 24 24"><path d="M12 3l2.6 5.6 6.1.7-4.5 4.1 1.2 6L12 16.9 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z" fill="#cdd8e6" /></svg></a>
         </div>
+        <div className="flegal">
+          <b>Juridisk</b>
+          <Link href="/betingelser">Betingelser &amp; sikkerhed</Link>
+          <Link href="/handelsbetingelser">Handelsbetingelser</Link>
+          <Link href="/privatlivspolitik">Privatlivspolitik</Link>
+          <Link href="/cookiepolitik">Cookiepolitik</Link>
+        </div>
         <div className="fcompany">
-          <b>Birdly [ApS]</b> · CVR [8-cifret CVR] · [Vejnavn nr., postnr. by] · <a href="mailto:hello@birdly.dk">hello@birdly.dk</a> · [+45 00 00 00 00]<br />
-          <Link href="/handelsbetingelser">Handelsbetingelser</Link> · <Link href="/privatlivspolitik">Privatlivspolitik</Link>
+          <b>Birdly [ApS]</b> · CVR [8-cifret CVR] · [Vejnavn nr., postnr. by] · <a href="mailto:hello@birdly.dk">hello@birdly.dk</a> · [+45 00 00 00 00]
         </div>
         <div className="fcred">Udbudsdata fra udbud.dk og EU/TED. © Birdly. Mere relevans. Mindre bøvl. Ingen spam.</div>
       </div>
