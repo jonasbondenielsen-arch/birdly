@@ -111,7 +111,7 @@ export default function Tilmeld() {
     <div className="birdly-tilmeld">
       <header>
         <div className="bar">
-          <Logo height={30} />
+          <Logo height={32} />
           <Link href="/" className="back">← Tilbage til forsiden</Link>
         </div>
       </header>

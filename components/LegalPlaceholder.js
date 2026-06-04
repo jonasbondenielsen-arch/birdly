@@ -7,7 +7,7 @@ export default function LegalPlaceholder({ title }) {
     <div className="birdly-legal">
       <header>
         <div className="bar">
-          <Logo height={30} />
+          <Logo height={32} />
           <Link href="/" className="back">← Tilbage til forsiden</Link>
         </div>
       </header>

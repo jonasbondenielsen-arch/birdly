@@ -8,7 +8,7 @@ export default function UdbudForAlle() {
     <div className="birdly-udbud">
       <header>
         <div className="bar">
-          <Logo height={30} />
+          <Logo height={32} />
           <nav className="nav">
             <a href="/#hvorfor">Hvorfor Birdly</a>
             <a href="/#hvordan">Hvordan virker det</a>

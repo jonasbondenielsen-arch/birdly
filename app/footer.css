@@ -1,24 +1,31 @@
 /* ============================================================
-   Delt footer — bruges på forside og /udbud-for-alle ("samme footer").
-   Selvstændigt scoped under .birdly-footer, så den er uafhængig af side-wrapper.
+   Delt footer — ren, rolig opstilling (link-kolonner + bundbånd).
+   Mørk navy bg, stram spacing, markant lavere end før. Responsiv.
+   Scoped under .birdly-footer.
    ============================================================ */
-.birdly-footer{background:var(--navy);color:#9FB2C9;padding:0 0 36px}
-.birdly-footer .fbanner{background:linear-gradient(120deg,#0D1B2A,#13314d);text-align:center;padding:26px 26px;border-bottom:1px solid rgba(255,255,255,.08)}
-.birdly-footer .fbanner .l{display:inline-flex;align-items:center;gap:12px;color:#fff;font-family:'Plus Jakarta Sans';font-weight:700;font-size:clamp(16px,2vw,20px)}
-.birdly-footer .foot{max-width:1180px;margin:0 auto;padding:34px 26px 0;display:flex;flex-wrap:wrap;justify-content:space-between;gap:20px}
-.birdly-footer .flogo{display:flex;align-items:center;gap:10px;font-family:'Plus Jakarta Sans';font-weight:800;font-size:20px;letter-spacing:-.03em;color:#fff}
-.birdly-footer .flogo .dk{color:var(--sky-200)}
-.birdly-footer .flinks{display:flex;flex-wrap:wrap;gap:22px;font-size:14px}
-.birdly-footer .flinks a{color:#9FB2C9}
-.birdly-footer .flinks a:hover{color:#fff}
-.birdly-footer .fsocial{display:flex;gap:10px;width:100%;margin-top:4px}
-.birdly-footer .fsocial a{width:38px;height:38px;border-radius:10px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;transition:background .15s}
-.birdly-footer .fsocial a:hover{background:rgba(255,255,255,.15)}
-.birdly-footer .flegal{width:100%;display:flex;flex-wrap:wrap;align-items:center;gap:18px;font-size:14px;border-top:1px solid rgba(255,255,255,.08);padding-top:18px;margin-top:8px}
-.birdly-footer .flegal b{font-family:'Plus Jakarta Sans';font-weight:700;color:#c3d2e4;font-size:14px}
-.birdly-footer .flegal a{color:#9FB2C9}
-.birdly-footer .flegal a:hover{color:#fff}
-.birdly-footer .fcompany{width:100%;font-size:13px;color:#90a2b8;line-height:1.7;border-top:1px solid rgba(255,255,255,.08);padding-top:18px;margin-top:8px}
-.birdly-footer .fcompany b{color:#c3d2e4;font-weight:600}
-.birdly-footer .fcompany a{color:#90a2b8;text-decoration:underline}
-.birdly-footer .fcred{width:100%;border-top:1px solid rgba(255,255,255,.08);padding-top:18px;margin-top:8px;font-size:12.5px;color:#73869c}
+.birdly-footer{background:var(--navy);color:#9FB2C9;padding:38px 0 26px}
+.birdly-footer .finner{max-width:1100px;margin:0 auto;padding:0 26px}
+
+/* link-kolonner (luftig, venstrejusteret) */
+.birdly-footer .fcols{display:flex;gap:72px;flex-wrap:wrap;padding-bottom:26px;border-bottom:1px solid rgba(255,255,255,.08)}
+.birdly-footer .fcol{display:flex;flex-direction:column;gap:9px}
+.birdly-footer .fcol b{font-family:'Plus Jakarta Sans';font-weight:700;color:#fff;font-size:14px;margin-bottom:5px}
+.birdly-footer .fcol a{color:#9FB2C9;font-size:14px;transition:color .15s}
+.birdly-footer .fcol a:hover{color:#fff}
+
+/* bundbånd: logo venstre · firma centreret · sociale højre */
+.birdly-footer .fbottom{display:flex;align-items:center;justify-content:space-between;gap:20px;padding-top:22px;flex-wrap:wrap}
+.birdly-footer .fmark{display:flex;align-items:center;gap:9px;color:#fff;font-family:'Plus Jakarta Sans';font-weight:800;font-size:18px;letter-spacing:-.03em}
+.birdly-footer .fmark .dk{color:var(--sky-200)}
+.birdly-footer .fcompany{flex:1;min-width:240px;text-align:center;font-size:13px;color:#8da0b6;line-height:1.7}
+.birdly-footer .fcompany a{color:#8da0b6;text-decoration:underline}
+.birdly-footer .fcompany a:hover{color:#fff}
+.birdly-footer .fsocial{display:flex;gap:10px}
+.birdly-footer .fsocial a{width:34px;height:34px;border-radius:50%;border:1px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;color:#9FB2C9;transition:background .15s,color .15s,border-color .15s}
+.birdly-footer .fsocial a:hover{background:rgba(255,255,255,.10);color:#fff;border-color:rgba(255,255,255,.3)}
+
+@media(max-width:760px){
+  .birdly-footer .fcols{gap:40px}
+  .birdly-footer .fbottom{flex-direction:column;align-items:flex-start;gap:16px}
+  .birdly-footer .fcompany{text-align:left;min-width:0}
+}

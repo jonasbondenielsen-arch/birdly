@@ -23,8 +23,9 @@ export function Logo({ height = 30, linkHome = true, className = "" }) {
 }
 
 export function BirdMark({ size = 30, alt = "Birdly", className = "" }) {
+  // Højde-baseret + auto bredde, så fuglens proportioner bevares (ikke kvadratisk).
   // eslint-disable-next-line @next/next/no-img-element
   return (
-    <img src="/favicon-bird-square.svg" alt={alt} width={size} height={size} style={{ width: size, height: size, display: "block" }} className={className} />
+    <img src="/birdly-bird.svg" alt={alt} style={{ height: size, width: "auto", display: "block" }} className={className} />
   );
 }

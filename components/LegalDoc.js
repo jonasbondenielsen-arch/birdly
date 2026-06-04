@@ -21,7 +21,7 @@ export default function LegalDoc({ markdown }) {
     <div className="birdly-legaldoc">
       <header>
         <div className="bar">
-          <Logo height={30} />
+          <Logo height={32} />
           <Link href="/betingelser" className="back">← Betingelser &amp; sikkerhed</Link>
         </div>
       </header>
