@@ -1,9 +1,28 @@
 import "./globals.css";
 
+// Standard-metadata for hele sitet (undersider med egen title/description
+// overstyrer disse). metadataBase gør og:image/relative URL'er absolutte.
+const SITE_TITLE = "Offentlige opgaver direkte på SMS | Birdly";
+const SITE_DESCRIPTION =
+  "Få besked, når kommuner, regioner og staten har en opgave, der passer til dit fag og dit område. Birdly sender dig en SMS — gratis i 14 dage.";
+
 export const metadata = {
-  title: "Birdly — offentlige udbud direkte på SMS",
-  description:
-    "Birdly finder offentlige opgaver fra kommuner, regioner og staten, der passer til dit fag og dit område — og sender dig en SMS, når der er et match. Ingen portal, ingen søgning, ingen sælgere.",
+  metadataBase: new URL("https://birdly.dk"),
+  title: SITE_TITLE,
+  description: SITE_DESCRIPTION,
+  openGraph: {
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    type: "website",
+    locale: "da_DK",
+    siteName: "Birdly",
+    url: "https://birdly.dk",
+  },
+  twitter: {
+    card: "summary",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+  },
 };
 
 export default function RootLayout({ children }) {

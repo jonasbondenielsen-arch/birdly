@@ -1,9 +1,9 @@
 import Forside from "../components/Forside";
 
 export const metadata = {
-  title: "Birdly — offentlige udbud direkte på SMS",
+  title: "Offentlige opgaver direkte på SMS | Birdly",
   description:
-    "Birdly finder offentlige opgaver fra kommuner, regioner og staten, der passer til dit fag og dit område — og sender dig en SMS, når der er et match. Ingen portal, ingen søgning, ingen sælgere.",
+    "Få besked, når kommuner, regioner og staten har en opgave, der passer til dit fag og dit område. Birdly sender dig en SMS — gratis i 14 dage.",
 };
 
 export default function Page() {
