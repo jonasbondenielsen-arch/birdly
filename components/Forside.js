@@ -9,10 +9,10 @@ import { insertRow } from "../lib/supabase";
 import "../app/forside.css";
 
 const brands = [
-  "Murer", "Tømrer", "Elektriker", "VVS", "Maler", "Anlægsgartner",
-  "Kloak & anlæg", "Brolægger", "Tagdækker", "Smed", "Glarmester",
-  "Rengøring", "IT & web", "Vinduespudser", "Maskinstation", "Snedker",
-  "Transport", "Catering", "Vagt & sikring", "Gulvlægger",
+  "Tømrer/snedker", "Murer", "Maler", "VVS", "Elektriker", "Entreprenør/anlæg",
+  "Kloak/jord", "Glarmester", "Rengøring", "Affald/miljø", "Anlægsgartner",
+  "Transport", "Arkitekt", "Ingeniør/rådgiver", "IT & software", "Service & vedligehold",
+  "Revisor/advokat/forretningsservice", "Mad & catering", "Møbler & inventar", "Vagt & sikring",
 ];
 
 const quickQs = [
@@ -28,6 +28,15 @@ const quickQs = [
    Fx: fetch('/api/support', {method:'POST', body: JSON.stringify({message:text})})
        → returnér svaret som tekst/HTML. Behold visningen i addMsg(...,'bot').
    ===================================================================== */
+// Åbningstid: man–fre 08–18 (lokal tid). Kun til at vælge fallback-tekst —
+// rører ikke svar-logikken eller at assistenten er AI-drevet.
+function withinOpeningHours() {
+  const now = new Date();
+  const day = now.getDay(); // 0 = søndag, 6 = lørdag
+  const hour = now.getHours();
+  return day >= 1 && day <= 5 && hour >= 8 && hour < 18;
+}
+
 function botReply(text) {
   const t = (text || "").toLowerCase();
   if (/(pris|koste|kr|betal|moms|gratis|prøve)/.test(t))
@@ -42,7 +51,9 @@ function botReply(text) {
     return "Vi henter udbud fra de officielle kilder: <b>udbud.dk</b> og EU’s database <b>TED</b>. Offentlige udbud skal være åbne for alle.";
   if (/(virker|hvordan|kom i gang|tilmeld|start|hurtig|hvornår|besked)/.test(t))
     return "Du udfylder få oplysninger (fag, område, størrelse) — det tager 2 min. Så holder vi øje for dig og sender en <b>SMS + kort mail</b> med resumé, frist og link, så snart der er et match.";
-  return "Godt spørgsmål! Vores AI-assistent er snart klar til at svare på det med det samme. Indtil da kan du skrive til <b>support@birdly.dk</b>, så vender vi tilbage hurtigt. 🐦";
+  return withinOpeningHours()
+    ? "Hej! Jeg er Birdlys assistent 🕊️ — spørg løs, eller skriv til <b>support@birdly.dk</b>."
+    : "Lige nu er fuglen fløjet 🕊️ Vi er online alle hverdage kl. 08:00–18:00 og er tilbage på pinden i morgen. Skriv endelig dit spørgsmål eller send en mail til <b>support@birdly.dk</b> — så vender vi tilbage.";
 }
 
 export default function Forside() {
@@ -154,12 +165,12 @@ export default function Forside() {
               </svg>{" "}
               Brevduen for offentlige udbud
             </span>
-            <h1>Udbud er besværlige.<br />Birdly gør det <span className="sky-em">enkelt.</span></h1>
-            <p className="sub">Vi matcher din virksomhed med relevante, konkrete udbud — og sender dig én SMS og én kort mail. Ingen login. Ingen spam. Ingen sælgere.</p>
+            <h1>Offentlige opgaver.<br />Direkte på <span className="sky-em">SMS.</span></h1>
+            <p className="sub">Kommuner, regioner og staten køber hver dag ind hos private firmaer. Birdly finder de opgaver, der passer til dit fag og dit område — og sender dig en SMS, når der er et match. Ingen portal. Ingen søgning. Ingen sælgere.</p>
             <div className="checks">
               <span>
                 <svg width="20" viewBox="0 0 20 20"><circle cx="10" cy="10" r="10" fill="#00B3A6" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#fff" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg>{" "}
-                Kun relevante matches
+                Kun opgaver, der passer til dig
               </span>
               <span>
                 <svg width="20" viewBox="0 0 20 20"><circle cx="10" cy="10" r="10" fill="#00B3A6" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#fff" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg>{" "}
@@ -205,24 +216,24 @@ export default function Forside() {
         <div className="wrap">
           <div className="center reveal">
             <span className="kick">Kender du det?</span>
-            <h2 className="big">At finde de rigtige udbud tager tid,<br />du ikke har.</h2>
-            <p className="lead">Mulighederne er der — men de drukner i støj, tunge portaler og høje priser.</p>
+            <h2 className="big">Opgaverne er der.<br />De er bare svære at finde.</h2>
+            <p className="lead">Mange firmaer går glip af gode opgaver fra det offentlige — de ligger spredt, og fristen er der, før man opdager dem.</p>
           </div>
           <div className="pain-grid">
             <div className="pcard reveal">
               <div className="ic"><svg width="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#FF6B6B" strokeWidth="2" /><path d="M12 7v5l3 2" stroke="#FF6B6B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg></div>
               <h3>Du ser det for sent</h3>
-              <p>Fristen er tit lige om hjørnet, før du overhovedet opdager udbuddet.</p>
+              <p>Fristen er der tit, før du overhovedet opdager opgaven.</p>
             </div>
             <div className="pcard reveal">
               <div className="ic"><svg width="22" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h10" stroke="#FF6B6B" strokeWidth="2" strokeLinecap="round" /></svg></div>
               <h3>Portalerne er tunge</h3>
-              <p>Indviklede hjemmesider og login. Du bruger timer på at lede — og opgiver til sidst.</p>
+              <p>Indviklede sider og login. Du bruger timer på at lede.</p>
             </div>
             <div className="pcard reveal">
               <div className="ic"><svg width="22" viewBox="0 0 24 24" fill="none"><path d="M12 2v20M7 6h7a3 3 0 010 6H8a3 3 0 000 6h8" stroke="#FF6B6B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg></div>
               <h3>De store er dyre</h3>
-              <p>Høje priser og lange bindinger — før du så meget som har vundet en opgave.</p>
+              <p>Høje priser og lange bindinger — før du ved, om det er noget for dig.</p>
             </div>
           </div>
         </div>
@@ -286,7 +297,7 @@ export default function Forside() {
                   <Link className="seebtn" href="/tilmeld">Se udbuddet</Link>
                 </div>
               </div>
-              <div className="sign">Vi matcher — du vinder.<br />Venlig hilsen<br /><b>Birdly Teamet</b></div>
+              <div className="sign">Vi finder — du vælger.<br />Venlig hilsen<br /><b>Birdly Teamet</b></div>
             </div>
           </div>
         </div>
@@ -394,12 +405,12 @@ export default function Forside() {
           </div>
           <div className="faq-list">
             <details className="reveal"><summary>Skal jeg logge ind på en platform? <span className="pm">+</span></summary><p>Nej — og det er helt bevidst. Der er rigeligt med platforme i forvejen, og vi tror ikke, verden bliver hverken nemmere eller bedre af endnu én. Birdly er det stik modsatte: vi har pakket alt det tekniske væk, så du kun får én konkret besked på sms og mail, når et udbud matcher dig. Hverken mere eller mindre — ingen login, ingen dashboards, intet bøvl.</p></details>
-            <details className="reveal"><summary>Får jeg kun relevante udbud? <span className="pm">+</span></summary><p>Ja. Vi sender kun udbud i dit fag, dit område og din størrelse. Ikke en eneste besked, der ikke passer til dig.</p></details>
+            <details className="reveal"><summary>Får jeg kun relevante udbud? <span className="pm">+</span></summary><p>Vi sender kun besked, når en opgave matcher det, du har valgt. Vil du have flere eller færre beskeder, kan du altid ændre dine valg.</p></details>
             <details className="reveal"><summary>Hvor mange sms'er får jeg? <span className="pm">+</span></summary><p>Du får kun besked, når et helt konkret udbud matcher de kriterier, du selv har sat — fag, område og beløb. Hvor mange det bliver, afhænger derfor af, hvor mange relevante udbud der dukker op i din valgte region. Er det for meget eller for lidt, kan du altid justere dine kriterier, så de bliver bredere eller mere snævre. Og skulle du få nok, stopper du beskederne med det samme ved at svare STOP på en sms.</p></details>
-            <details className="reveal"><summary>Hvor hurtigt får jeg besked? <span className="pm">+</span></summary><p>Samme dag, udbuddet kommer ud. Tit endda før — vi fanger også de indkøb, det offentlige har på vej.</p></details>
+            <details className="reveal"><summary>Hvor hurtigt får jeg besked? <span className="pm">+</span></summary><p>Som regel samme dag, opgaven bliver lagt op. Nogle gange fanger vi også opgaver, der er på vej.</p></details>
             <details className="reveal"><summary>Hvad koster det? <span className="pm">+</span></summary><p>De første 14 dage er gratis. Derefter overgår det til prisen for din valgte plan — fra 349 kr. om måneden (ekskl. moms) — som trækkes den 1. i måneden. Uden binding.</p></details>
             <details className="reveal"><summary>Hvad er forskellen på pakkerne? <span className="pm">+</span></summary><p>Spurv dækker én region, du selv vælger. Falk dækker alle regioner vest eller øst for Storebælt. Albatros dækker hele Danmark.</p></details>
-            <details className="reveal"><summary>Hvor kommer udbuddene fra? <span className="pm">+</span></summary><p>Fra de officielle kilder: udbud.dk og EU's database TED. Offentlige udbud skal være åbne for alle — så det er helt lovligt. Vi holder også øje med de indkøb, der varsles som forhåndsmeddelelser, før de bliver til et egentligt udbud — så du kan være på forkant, allerede inden opgaven officielt er sendt i udbud.</p></details>
+            <details className="reveal"><summary>Hvor kommer udbuddene fra? <span className="pm">+</span></summary><p>Et udbud er bare en opgave fra en kommune, region eller staten, som private firmaer kan byde på — fra et nyt tag på en skole til rengøring af et rådhus. Vi henter dem fra de officielle kilder: udbud.dk og EU's database TED. Offentlige udbud skal være åbne for alle — så det er helt lovligt. Vi holder også øje med de indkøb, der varsles som forhåndsmeddelelser, før de bliver til et egentligt udbud — så du kan være på forkant, allerede inden opgaven officielt er sendt i udbud.</p></details>
             <details className="reveal"><summary>Hvordan opsiger jeg? <span className="pm">+</span></summary><p>Opsigelse hos Birdly er lige så simpelt, som da du meldte dig til. Du finder opsigelsesrubrikken nederst her på siden, og i bunden af alle vores mails er der et direkte link til opsigelse. Og det bedste? Hos os er du en fri fugl — ingen binding, kun 30 dages opsigelse.</p></details>
             <details className="reveal"><summary>Kan I også hjælpe os med at byde på opgaver? <span className="pm">+</span></summary><p>Ikke endnu — men det er på radaren. Birdly er et nyt produkt på det danske marked, og vores første prioritet har været at gøre det enkelt for danske SMV'er overhovedet at finde de rigtige udbud. På sigt kigger vi ind i selve det at byde, for vi synes, hele verdenen omkring kommunale og statslige udbud er for bøvlet og kompleks. Vi tror på, at alle virksomheder skal have lige adgang til at byde på offentlige opgaver — ikke kun dem med en stor tilbudsafdeling.</p></details>
           </div>
@@ -500,7 +511,7 @@ export default function Forside() {
           />
           <button id="chatSend" aria-label="Send besked" onClick={() => handleUser(chatInput)}><svg width="20" viewBox="0 0 24 24" fill="none"><path d="M3 11l18-8-8 18-2-7-8-3z" fill="#fff" /></svg></button>
         </div>
-        <div className="chat-note">Drevet af Birdly · AI-assistent på vej</div>
+        <div className="chat-note">Drevet af Birdly</div>
       </div>
     </div>
   );
