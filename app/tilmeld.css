@@ -95,3 +95,93 @@
   .pay-element{border:1.5px dashed var(--sky-200);border-radius:12px;background:var(--sky-soft);padding:24px 18px;text-align:center;color:var(--navy-soft);font-size:14px;display:flex;align-items:center;justify-content:center;gap:10px;min-height:96px}
   .pay-secure{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--navy-soft);margin-top:12px}
 }
+
+/* ============================================================
+   Trin 4 — flerstegs-flow (stepper, fag-blokke, pakke-reveal, summary, nav)
+   ============================================================ */
+.birdly-tilmeld{
+  /* Trinindikator */
+  .stepper{display:flex;gap:6px;list-style:none;max-width:760px;margin:26px auto 0;padding:0 22px}
+  .stepitem{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;position:relative}
+  .stepitem .dot{width:30px;height:30px;border-radius:50%;background:#fff;border:1.5px solid var(--line);color:var(--navy-soft);font-family:'Plus Jakarta Sans';font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center;z-index:2}
+  .stepitem .lbl{font-size:12px;font-weight:600;color:var(--navy-soft);text-align:center}
+  .stepitem::before{content:"";position:absolute;top:15px;left:-50%;width:100%;height:2px;background:var(--line);z-index:1}
+  .stepitem:first-child::before{display:none}
+  .stepitem.on .dot{background:var(--sky);border-color:var(--sky);color:#fff}
+  .stepitem.on .lbl{color:var(--navy)}
+  .stepitem.done .dot{background:var(--teal);border-color:var(--teal);color:#fff}
+  .stepitem.done::before{background:var(--teal)}
+
+  /* Fag-chips */
+  .fagchips{display:flex;flex-wrap:wrap;gap:9px}
+  .fagchip{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:9px 15px;font-size:14px;font-weight:600;color:var(--navy);cursor:pointer;transition:border-color .15s,background .15s}
+  .fagchip:hover{border-color:var(--sky-200)}
+  .fagchip.on{border-color:var(--teal);background:#F1FFFD;color:var(--teal-dk)}
+
+  /* Fag-blok m. områder */
+  .fag-block{border:1.5px solid var(--line);border-radius:14px;padding:16px;margin-top:14px}
+  .fag-block-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+  .fag-block-h h4{font-size:16px}
+  .takeall{border:1px solid var(--teal);background:#fff;color:var(--teal-dk);border-radius:8px;padding:7px 12px;font-size:12.5px;font-weight:700;cursor:pointer}
+  .takeall:hover{background:#F1FFFD}
+  .area-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+  .area{display:flex;gap:9px;align-items:flex-start;border:1.5px solid var(--line);border-radius:11px;padding:11px 12px;cursor:pointer;transition:border-color .15s,background .15s}
+  .area:hover{border-color:var(--sky-200)}
+  .area.on{border-color:var(--teal);background:#F1FFFD}
+  .area input{accent-color:var(--teal);width:16px;height:16px;margin-top:2px;flex:0 0 16px}
+  .area-title{display:block;font-size:14px;font-weight:600;color:var(--navy)}
+  .area-sub{display:block;font-size:11.5px;color:var(--navy-soft);margin-top:1px;line-height:1.35}
+
+  /* Bredde-valg */
+  .bredde{margin-top:18px;border-top:1px solid var(--line);padding-top:16px}
+  .bredde-q{font-size:14px;font-weight:700;margin-bottom:10px}
+  .bredde-opt{display:flex;gap:10px;align-items:flex-start;border:1.5px solid var(--line);border-radius:11px;padding:12px 14px;margin-bottom:9px;cursor:pointer;font-size:13.5px;color:var(--navy-soft)}
+  .bredde-opt input{accent-color:var(--teal);margin-top:2px}
+  .bredde-opt b{color:var(--navy)}
+  .bredde-opt.on{border-color:var(--teal);background:#F1FFFD}
+
+  /* Geografi */
+  .region-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+  .hele-dk{display:flex;gap:10px;align-items:center;border:1.5px solid var(--line);border-radius:11px;padding:12px 14px;margin-top:12px;cursor:pointer;font-size:14px;color:var(--navy-soft)}
+  .hele-dk input{accent-color:var(--teal)}
+  .hele-dk b{color:var(--navy)}
+  .hele-dk.on{border-color:var(--teal);background:#F1FFFD}
+
+  /* Pakke-reveal */
+  .pkg-reveal{margin-top:18px;background:var(--navy);color:#fff;border-radius:16px;padding:22px 24px;text-align:center}
+  .pkg-name{font-family:'Plus Jakarta Sans';font-weight:800;font-size:15px;letter-spacing:.04em;text-transform:uppercase;color:var(--sky-200)}
+  .pkg-price{font-family:'Plus Jakarta Sans';font-weight:800;font-size:34px;margin:4px 0 2px}
+  .pkg-price span{font-size:15px;font-weight:600;color:#C3D2E4}
+  .pkg-text{font-size:14px;color:#E7EEF6;margin-top:4px}
+
+  /* Summary (trin 4) */
+  .summary{border:1.5px solid var(--line);border-radius:14px;overflow:hidden}
+  .srow{display:flex;gap:14px;padding:12px 16px;border-bottom:1px solid var(--line);font-size:14px}
+  .srow:last-child{border-bottom:0}
+  .srow .sk{flex:0 0 120px;font-weight:700;color:var(--navy-soft)}
+  .srow .sv{flex:1;color:var(--navy)}
+  .srow.hl{background:var(--sky-soft);font-weight:700}
+
+  .amount-box{margin-top:16px;border:1.5px solid var(--line);border-radius:12px;padding:12px 16px}
+  .amount-box summary{cursor:pointer;font-size:14px;font-weight:600;color:var(--navy)}
+
+  .notify-row{display:flex;align-items:center;gap:16px;margin-top:16px;flex-wrap:wrap}
+  .notify-q{font-size:14px;font-weight:700}
+  .chk-inline{display:flex;align-items:center;gap:7px;font-size:14px;font-weight:600;cursor:pointer}
+  .chk-inline input{accent-color:var(--teal);width:16px;height:16px}
+
+  /* Step-nav */
+  .stepnav{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:24px}
+  .btn-back{background:#fff;border:1.5px solid var(--line);color:var(--navy-soft);padding:14px 22px;border-radius:12px;font-family:'Plus Jakarta Sans';font-weight:700;font-size:15px;cursor:pointer}
+  .btn-back:hover{border-color:var(--sky-200);color:var(--navy)}
+  .btn-next{background:var(--teal);color:#fff;border:0;padding:15px 28px;border-radius:12px;font-family:'Plus Jakarta Sans';font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 8px 20px rgba(0,179,166,.26);transition:transform .15s}
+  .btn-next:hover{transform:translateY(-2px)}
+  .btn-next:disabled{opacity:.6;cursor:default;transform:none}
+
+  @media(max-width:640px){
+    .area-grid,.region-grid{grid-template-columns:1fr}
+    .stepitem .lbl{font-size:10.5px}
+    .srow{flex-direction:column;gap:2px}
+    .srow .sk{flex:none}
+  }
+}
