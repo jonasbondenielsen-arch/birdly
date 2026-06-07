@@ -50,6 +50,21 @@ export default function Tilmeld() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [cvrState, setCvrState] = useState({ loading: false, branchekode: null, found: null, msg: "" });
+  // Inline feltfejl (trin 1) — vises LIGE under det relevante felt, ikke som banner.
+  const [fieldErr, setFieldErr] = useState({});
+  const fieldRules = {
+    cvr: (v) => (digits(v).length === 8 ? "" : "Skriv et gyldigt CVR-nummer (8 cifre)."),
+    email: (v) => (EMAIL_RE.test(String(v).trim()) ? "" : "Skriv en gyldig e-mail."),
+    phone: (v) => (digits(v).length === 8 ? "" : "Skriv et gyldigt mobilnummer (8 cifre)."),
+  };
+  // Vis fejl ved blur (tomt/ugyldigt felt).
+  function validateField(name, value) {
+    setFieldErr((p) => ({ ...p, [name]: fieldRules[name](value) }));
+  }
+  // Ryd en feltfejl, så snart værdien bliver gyldig (mens man retter).
+  function clearIfValid(name, value) {
+    setFieldErr((p) => (p[name] && !fieldRules[name](value) ? { ...p, [name]: "" } : p));
+  }
 
   // Trin 2 — arbejdsområder
   const [fagSel, setFagSel] = useState({});   // fag_key -> bool
@@ -152,9 +167,10 @@ export default function Tilmeld() {
   function next() {
     setErr("");
     if (step === 1) {
-      if (digits(cvr).length !== 8) return setErr("Skriv et gyldigt CVR-nummer (8 cifre).");
-      if (!EMAIL_RE.test(email.trim())) return setErr("Skriv en gyldig e-mail.");
-      if (digits(phone).length !== 8) return setErr("Skriv et gyldigt mobilnummer (8 cifre).");
+      // Markér ALLE manglende/forkerte felter inline (ikke én samlet banner).
+      const fe = { cvr: fieldRules.cvr(cvr), email: fieldRules.email(email), phone: fieldRules.phone(phone) };
+      setFieldErr(fe);
+      if (fe.cvr || fe.email || fe.phone) return;
     }
     if (step === 2) {
       if (selectedFagKeys.length === 0) return setErr("Vælg mindst ét fag.");
@@ -252,15 +268,32 @@ export default function Tilmeld() {
                     <div className="fg">
                       <label htmlFor="cvr">CVR-nummer</label>
                       <input id="cvr" inputMode="numeric" maxLength={8} placeholder="12345678" value={cvr}
-                        onChange={(e) => setCvr(e.target.value)} onBlur={(e) => lookupCvr(e.target.value)} />
+                        aria-invalid={!!fieldErr.cvr}
+                        onChange={(e) => { setCvr(e.target.value); clearIfValid("cvr", e.target.value); }}
+                        onBlur={(e) => { lookupCvr(e.target.value); validateField("cvr", e.target.value); }} />
+                      {fieldErr.cvr && <div className="field-err">{fieldErr.cvr}</div>}
                     </div>
                     <div className="fg">
                       <label htmlFor="firma">Virksomhedsnavn</label>
                       <input id="firma" placeholder="Firma" value={company} onChange={(e) => setCompany(e.target.value)} />
                     </div>
                     <div className="fg"><label htmlFor="navn">Kontaktperson</label><input id="navn" placeholder="Fornavn Efternavn" value={contact} onChange={(e) => setContact(e.target.value)} /></div>
-                    <div className="fg"><label htmlFor="mail">E-mail</label><input id="mail" type="email" placeholder="dig@firma.dk" value={email} onChange={(e) => setEmail(e.target.value)} /></div>
-                    <div className="fg"><label htmlFor="mobil">Mobilnummer (til SMS)</label><input id="mobil" type="tel" placeholder="12 34 56 78" value={phone} onChange={(e) => setPhone(e.target.value)} /></div>
+                    <div className="fg">
+                      <label htmlFor="mail">E-mail</label>
+                      <input id="mail" type="email" placeholder="dig@firma.dk" value={email}
+                        aria-invalid={!!fieldErr.email}
+                        onChange={(e) => { setEmail(e.target.value); clearIfValid("email", e.target.value); }}
+                        onBlur={(e) => validateField("email", e.target.value)} />
+                      {fieldErr.email && <div className="field-err">{fieldErr.email}</div>}
+                    </div>
+                    <div className="fg">
+                      <label htmlFor="mobil">Mobilnummer (til SMS)</label>
+                      <input id="mobil" type="tel" placeholder="12 34 56 78" value={phone}
+                        aria-invalid={!!fieldErr.phone}
+                        onChange={(e) => { setPhone(e.target.value); clearIfValid("phone", e.target.value); }}
+                        onBlur={(e) => validateField("phone", e.target.value)} />
+                      {fieldErr.phone && <div className="field-err">{fieldErr.phone}</div>}
+                    </div>
                   </div>
                   {cvrState.loading && <div className="note">Slår CVR op …</div>}
                   {!cvrState.loading && cvrState.msg && (
