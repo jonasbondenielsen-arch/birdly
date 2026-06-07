@@ -40,7 +40,7 @@ function withinOpeningHours() {
 function botReply(text) {
   const t = (text || "").toLowerCase();
   if (/(pris|koste|kr|betal|moms|gratis|prøve)/.test(t))
-    return "De første <b>14 dage er gratis</b>. Derefter overgår du til prisen for din plan, som trækkes automatisk den 1. i måneden: Spurv 349,-, Falk 499,- eller Albatros 1.199,- pr. md. (ekskl. moms). Ingen binding — opsig med 30 dages varsel.";
+    return "De første <b>14 dage er gratis</b>. Derefter overgår du til prisen for din plan, som trækkes automatisk efter prøveperioden og fornyes hver måned: Spurv 349,-, Falk 499,- eller Albatros 1.199,- pr. md. (ekskl. moms). Ingen binding — opsig med 30 dages varsel.";
   if (/(pakke|spurv|falk|eagle|albatros|region|storebælt|dækning|hele danmark)/.test(t))
     return "Vi har tre pakker:<br><b>Spurv</b> — udbud i én region, du selv vælger.<br><b>Falk</b> — alle regioner vest eller øst for Storebælt.<br><b>Albatros</b> — udbud i hele Danmark.";
   if (/(opsig|stop|afmeld|stoppe|fortryd)/.test(t))
@@ -326,7 +326,7 @@ export default function Forside() {
           <div className="center reveal">
             <span className="kick">Priser</span>
             <h2 className="big">Vælg din rækkevidde.</h2>
-            <p className="lead">Gratis de første 14 dage. Derefter overgår du til prisen for din valgte plan, der trækkes den 1. i måneden. Ingen binding — skift eller stop, når du vil.</p>
+            <p className="lead">Gratis de første 14 dage. Opsiger du inden for prøveperioden, betaler du ikke noget. Fortsætter du, trækkes prisen for din valgte plan automatisk efter de 14 dage — og derefter hver måned. Ingen binding — skift eller stop, når du vil.</p>
           </div>
           <div className="tiers">
             <div className="tier reveal">
@@ -372,7 +372,7 @@ export default function Forside() {
               <Link href="/tilmeld" className="btn btn-ghost">Start gratis</Link>
             </div>
           </div>
-          <p className="price-note">Alle priser er ekskl. moms. De første 14 dage er gratis. Derefter trækkes prisen for din plan automatisk den 1. i hver måned — opsig når du vil med 30 dages varsel.</p>
+          <p className="price-note">Alle priser er ekskl. moms. De første 14 dage er gratis — opsiger du inden da, trækkes der intet. Derefter trækkes prisen for din plan automatisk og fornyes hver måned. Opsig når du vil med 30 dages varsel.</p>
         </div>
       </section>
 
@@ -408,7 +408,7 @@ export default function Forside() {
             <details className="reveal"><summary>Får jeg kun relevante udbud? <span className="pm">+</span></summary><p>Vi sender kun besked, når en opgave matcher det, du har valgt. Vil du have flere eller færre beskeder, kan du altid ændre dine valg.</p></details>
             <details className="reveal"><summary>Hvor mange sms'er får jeg? <span className="pm">+</span></summary><p>Du får kun besked, når et helt konkret udbud matcher de kriterier, du selv har sat — fag, område og beløb. Hvor mange det bliver, afhænger derfor af, hvor mange relevante udbud der dukker op i din valgte region. Er det for meget eller for lidt, kan du altid justere dine kriterier, så de bliver bredere eller mere snævre. Og skulle du få nok, stopper du beskederne med det samme ved at svare STOP på en sms.</p></details>
             <details className="reveal"><summary>Hvor hurtigt får jeg besked? <span className="pm">+</span></summary><p>Som regel samme dag, opgaven bliver lagt op. Nogle gange fanger vi også opgaver, der er på vej.</p></details>
-            <details className="reveal"><summary>Hvad koster det? <span className="pm">+</span></summary><p>De første 14 dage er gratis. Derefter overgår det til prisen for din valgte plan — fra 349 kr. om måneden (ekskl. moms) — som trækkes den 1. i måneden. Uden binding.</p></details>
+            <details className="reveal"><summary>Hvad koster det? <span className="pm">+</span></summary><p>De første 14 dage er gratis. Derefter overgår det til prisen for din valgte plan — fra 349 kr. om måneden (ekskl. moms) — som trækkes automatisk efter prøveperioden og fornyes hver måned. Uden binding.</p></details>
             <details className="reveal"><summary>Hvad er forskellen på pakkerne? <span className="pm">+</span></summary><p>Spurv dækker én region, du selv vælger. Falk dækker alle regioner vest eller øst for Storebælt. Albatros dækker hele Danmark.</p></details>
             <details className="reveal"><summary>Hvor kommer udbuddene fra? <span className="pm">+</span></summary><p>Et udbud er bare en opgave fra en kommune, region eller staten, som private firmaer kan byde på — fra et nyt tag på en skole til rengøring af et rådhus. Vi henter dem fra de officielle kilder: udbud.dk og EU's database TED. Offentlige udbud skal være åbne for alle — så det er helt lovligt. Vi holder også øje med de indkøb, der varsles som forhåndsmeddelelser, før de bliver til et egentligt udbud — så du kan være på forkant, allerede inden opgaven officielt er sendt i udbud.</p></details>
             <details className="reveal"><summary>Hvordan opsiger jeg? <span className="pm">+</span></summary><p>Opsigelse hos Birdly er lige så simpelt, som da du meldte dig til. Du finder opsigelsesrubrikken nederst her på siden, og i bunden af alle vores mails er der et direkte link til opsigelse. Og det bedste? Hos os er du en fri fugl — ingen binding, kun 30 dages opsigelse.</p></details>
