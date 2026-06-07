@@ -1,6 +1,6 @@
 # Handelsbetingelser for Birdly
 
-**Gældende fra 4. juni 2026. Senest opdateret 4. juni 2026. Erstatter alle tidligere versioner.**
+**Gældende fra 7. juni 2026. Senest opdateret 7. juni 2026. Erstatter alle tidligere versioner.**
 
 ---
 
@@ -45,14 +45,14 @@
 3.4 Automatiseret udtræk, scraping eller videresalg af Tjenestens beskeder/data til tredjemand er ikke tilladt.
 
 ## 4. Gratis prøveperiode
-4.1 Nye kunder får en gratis prøveperiode på minimum 14 dage fra tilmelding. I prøveperioden opkræves der ikke betaling.
+4.1 Nye kunder får en gratis prøveperiode på 14 dage regnet fra tilmelding. I prøveperioden opkræves der ingen betaling. Opsiger du inden for prøveperioden, opkræves du ikke, og Abonnementet ophører ved prøveperiodens udløb.
 
-4.2 Medmindre du opsiger inden prøveperiodens udløb, overgår Abonnementet automatisk til et betalt Abonnement. Første opkrævning sker ved den førstkommende månedsopkrævning (den 1. i måneden) efter prøveperiodens udløb, jf. pkt. 5.2. Tilmeldingstidspunktet kan derfor betyde, at den gratis periode i praksis er længere end 14 dage, men aldrig kortere.
+4.2 Medmindre du opsiger inden prøveperiodens udløb, overgår Abonnementet automatisk til et betalt Abonnement. Den første opkrævning sker umiddelbart efter prøveperiodens udløb, dvs. dagen efter de 14 gratis dage, jf. pkt. 5.2.
 
 ## 5. Pris og betaling
 5.1 De til enhver tid gældende priser fremgår af birdly.dk, ekskl. moms i DKK.
 
-5.2 Abonnementsbeløbet opkræves forud, månedligt, via Frisbii (med MobilePay og betalingskort som betalingsmetoder). Ved tilmelding giver du Birdly tilladelse til løbende at trække abonnementsbeløbet. Beløbet trækkes den 1. i måneden, eller den nærmeste forudgående bankdag, hvis den 1. ikke er en bankdag. Der fremsendes faktura til den oplyste e-mailadresse.
+5.2 Abonnementsbeløbet opkræves forud for hver abonnementsperiode via Frisbii (med MobilePay og betalingskort som betalingsmetoder). Ved tilmelding giver du Birdly tilladelse til løbende at trække abonnementsbeløbet. Den første betaling sker efter prøveperiodens udløb, jf. pkt. 4.2, og herefter fornyes Abonnementet automatisk og opkræves månedligt på den tilbagevendende betalingsdato, der følger af din tilmeldingsdato. Der fremsendes faktura til den oplyste e-mailadresse.
 
 5.3 Vi forbeholder os retten til at ændre sammensætning, indhold og priser med varsel pr. e-mail eller ved opslag på birdly.dk. Væsentlige ændringer, herunder prisændringer, varsles 30 dage før ikrafttræden, og du kan opsige inden ændringen træder i kraft.
 
@@ -63,7 +63,7 @@
 
 6.2 Opsigelse sker via opsigelsesfunktionen på birdly.dk, hvor du bekræfter opsigelsen via et link sendt til din e-mail. Opsigelsen er først gennemført, når du har klikket bekræftelseslinket.
 
-6.3 Abonnementet er aktivt perioden ud i overensstemmelse med opsigelsesvarslet, og der refunderes ikke for en allerede påbegyndt og betalt abonnementsperiode.
+6.3 Da Abonnementet betales forud, er den indeværende periode allerede dækket. Ved opsigelse beholder du adgangen perioden ud i overensstemmelse med opsigelsesvarslet, der foretages ikke yderligere træk, og der refunderes ikke for en allerede påbegyndt og betalt abonnementsperiode.
 
 6.4 Birdly kan opsige et Abonnement med 3 måneders varsel, og uden varsel ved Kundens konkurs, insolvens eller væsentlig misligholdelse af disse betingelser.
 
