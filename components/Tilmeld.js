@@ -38,7 +38,7 @@ const MAX_BANDS = [
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const digits = (s) => String(s || "").replace(/\D/g, "");
 
-export default function Tilmeld() {
+export default function Tilmeld({ initialFag = null }) {
   const [step, setStep] = useState(1);
   const [catalog, setCatalog] = useState(null);
   const [catErr, setCatErr] = useState("");
@@ -90,6 +90,13 @@ export default function Tilmeld() {
   useEffect(() => {
     fetchCatalog().then(setCatalog).catch((e) => setCatErr(e.message));
   }, []);
+
+  // Forudvælg fag fra ?fag= (branchesidernes CTA), når kataloget er hentet.
+  useEffect(() => {
+    if (initialFag && catalog && (catalog.fag || []).some((f) => f.key === initialFag)) {
+      setFagSel((s) => (s[initialFag] ? s : { ...s, [initialFag]: true }));
+    }
+  }, [catalog, initialFag]);
 
   const fagByKey = useMemo(() => {
     const m = {};

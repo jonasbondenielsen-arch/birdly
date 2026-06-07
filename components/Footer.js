@@ -18,6 +18,7 @@ export default function Footer() {
             <a href="/#priser">Priser</a>
             <a href="/#faq">FAQ</a>
             <a href="/#om">Om os</a>
+            <Link href="/brancher">For dit fag</Link>
             <Link href="/udbud-for-alle">Udbud er for alle</Link>
             <a href="/#opsigelse">Opsigelse</a>
           </div>

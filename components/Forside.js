@@ -8,11 +8,28 @@ import { Logo } from "./Logo";
 import { insertRow } from "../lib/supabase";
 import "../app/forside.css";
 
+// Slider-chips → links til hver branchesides (/fag/[slug]). Udseende/animation uændret.
 const brands = [
-  "Tømrer/snedker", "Murer", "Maler", "VVS", "Elektriker", "Entreprenør/anlæg",
-  "Kloak/jord", "Glarmester", "Rengøring", "Affald/miljø", "Anlægsgartner",
-  "Transport", "Arkitekt", "Ingeniør/rådgiver", "IT & software", "Service & vedligehold",
-  "Revisor/advokat/forretningsservice", "Mad & catering", "Møbler & inventar", "Vagt & sikring",
+  { label: "Tømrer/snedker", slug: "toemrer" },
+  { label: "Murer", slug: "murer" },
+  { label: "Maler", slug: "maler" },
+  { label: "VVS", slug: "vvs" },
+  { label: "Elektriker", slug: "elektriker" },
+  { label: "Entreprenør/anlæg", slug: "entreprenor" },
+  { label: "Kloak/jord", slug: "kloak" },
+  { label: "Glarmester", slug: "glarmester" },
+  { label: "Rengøring", slug: "rengoring" },
+  { label: "Affald/miljø", slug: "affald" },
+  { label: "Anlægsgartner", slug: "anlaegsgartner" },
+  { label: "Transport", slug: "transport" },
+  { label: "Arkitekt", slug: "arkitekt" },
+  { label: "Ingeniør/rådgiver", slug: "ingenior" },
+  { label: "IT & software", slug: "it" },
+  { label: "Service & vedligehold", slug: "service" },
+  { label: "Revisor/advokat/forretningsservice", slug: "forretningsservice" },
+  { label: "Mad & catering", slug: "catering" },
+  { label: "Møbler & inventar", slug: "inventar" },
+  { label: "Vagt & sikring", slug: "vagt" },
 ];
 
 const quickQs = [
@@ -263,7 +280,7 @@ export default function Forside() {
         </div>
         <div className="track" id="t1">
           {brands.concat(brands).map((b, i) => (
-            <span className="chip" key={i}><i></i>{b}</span>
+            <Link className="chip" href={"/fag/" + b.slug} key={i}><i></i>{b.label}</Link>
           ))}
         </div>
       </section>
