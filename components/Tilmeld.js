@@ -461,6 +461,7 @@ export default function Tilmeld({ initialFag = null }) {
                     <div className="srow"><span className="sk">Kontakt</span><span className="sv">{[contact, email, digits(phone)].filter(Boolean).join(" · ") || "—"}</span></div>
                     <div className="srow"><span className="sk">Fag & områder</span><span className="sv">
                       {selectedFagKeys.map((k) => {
+                        if (k === "andet") return <div key={k}><b>Andet</b> — bredt udvalg af bygge- og anlægsopgaver (vi bygger dit fag ind snart)</div>;
                         const f = fagByKey[k];
                         const chosen = (f?.smal || []).filter((a) => areaSel[k + "::" + a.cpv]).map((a) => a.kunde_titel);
                         return <div key={k}><b>{f?.label_da || k}</b>{chosen.length ? ": " + chosen.join(", ") : " (alle relevante udbud)"}</div>;
