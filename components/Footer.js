@@ -2,37 +2,41 @@ import Link from "next/link";
 import { BirdMark } from "./Logo";
 import "../app/footer.css";
 
-/* Delt footer — ren, rolig opstilling: link-kolonner øverst, og et bundbånd med
-   logo til venstre, firmaoplysninger centreret og sociale ikoner til højre.
+/* Delt footer — kompakt og centreret: alle navigations-links i én vandret,
+   centreret række øverst, en tynd skillelinje, og nederst tre zoner (logo +
+   Juridisk til venstre, firmaoplysninger i midten, sociale ikoner til højre).
    Sociale URL'er er PLADSHOLDERE indtil Jonas leverer dem. Firmaoplysninger:
    enkeltmandsvirksomhed (ingen "ApS", intet registreringsnummer). */
 export default function Footer() {
   return (
     <footer className="birdly-footer">
       <div className="finner">
-        <div className="fcols">
-          <div className="fcol">
-            <b>Birdly</b>
-            <a href="/#hvorfor">Hvorfor Birdly</a>
-            <a href="/#hvordan">Hvordan virker det</a>
-            <a href="/#priser">Priser</a>
-            <a href="/#faq">FAQ</a>
-            <a href="/#om">Om os</a>
-            <Link href="/brancher">For dit fag</Link>
-            <Link href="/udbud-for-alle">Udbud er for alle</Link>
-            <a href="/#opsigelse">Opsigelse</a>
-          </div>
-          <div className="fcol">
-            <b>Juridisk</b>
-            <Link href="/betingelser">Betingelser &amp; sikkerhed</Link>
-          </div>
-        </div>
+        {/* Øverst: alle links i én centreret, wrappende række */}
+        <nav className="flinks">
+          <a href="/#hvorfor">Hvorfor Birdly</a>
+          <a href="/#hvordan">Hvordan virker det</a>
+          <a href="/#priser">Priser</a>
+          <a href="/#faq">FAQ</a>
+          <a href="/#om">Om os</a>
+          <Link href="/brancher">For dit fag</Link>
+          <Link href="/udbud-for-alle">Udbud er for alle</Link>
+          <a href="/#opsigelse">Opsigelse</a>
+        </nav>
 
+        <div className="fdiv" />
+
+        {/* Nederst: tre zoner */}
         <div className="fbottom">
-          <Link href="/" className="fmark" aria-label="Birdly forside">
-            <BirdMark size={30} />
-            <span>Birdly<span className="dk">.dk</span></span>
-          </Link>
+          <div className="fleft">
+            <Link href="/" className="fmark" aria-label="Birdly forside">
+              <BirdMark size={30} />
+              <span>Birdly<span className="dk">.dk</span></span>
+            </Link>
+            <div className="fjur">
+              <b>Juridisk</b>
+              <Link href="/betingelser">Betingelser &amp; sikkerhed</Link>
+            </div>
+          </div>
 
           <div className="fcompany">
             Birdly.dk · CVR 35764283 · Fjordvej 4, 4300 Holbæk<br />

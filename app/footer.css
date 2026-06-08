@@ -1,22 +1,29 @@
 /* ============================================================
-   Delt footer — ren, rolig opstilling (link-kolonner + bundbånd).
-   Mørk navy bg, stram spacing, markant lavere end før. Responsiv.
+   Delt footer — kompakt og centreret. Mørk navy bg.
+   Øverst: alle links i én centreret, wrappende række.
+   Skillelinje. Nederst: logo+Juridisk venstre · firma midt · sociale højre.
    Scoped under .birdly-footer.
    ============================================================ */
-.birdly-footer{background:var(--navy);color:#9FB2C9;padding:38px 0 26px}
+.birdly-footer{background:var(--navy);color:#9FB2C9;padding:48px 0 36px}
 .birdly-footer .finner{max-width:1100px;margin:0 auto;padding:0 26px}
 
-/* link-kolonner (luftig, venstrejusteret) */
-.birdly-footer .fcols{display:flex;gap:72px;flex-wrap:wrap;padding-bottom:26px;border-bottom:1px solid rgba(255,255,255,.08)}
-.birdly-footer .fcol{display:flex;flex-direction:column;gap:9px}
-.birdly-footer .fcol b{font-family:'Plus Jakarta Sans';font-weight:700;color:#fff;font-size:14px;margin-bottom:5px}
-.birdly-footer .fcol a{color:#9FB2C9;font-size:14px;transition:color .15s}
-.birdly-footer .fcol a:hover{color:#fff}
+/* Øverst: vandrette, centrerede links (wrapper med god luft) */
+.birdly-footer .flinks{display:flex;flex-wrap:wrap;justify-content:center;gap:18px 38px;padding-bottom:30px}
+.birdly-footer .flinks a{color:#9FB2C9;font-size:14px;font-weight:500;transition:color .15s}
+.birdly-footer .flinks a:hover{color:#fff}
 
-/* bundbånd: logo venstre · firma centreret · sociale højre */
-.birdly-footer .fbottom{display:flex;align-items:center;justify-content:space-between;gap:20px;padding-top:22px;flex-wrap:wrap}
+/* Skillelinje */
+.birdly-footer .fdiv{border-top:1px solid rgba(255,255,255,.10)}
+
+/* Nederst: tre zoner, justeret til bunden */
+.birdly-footer .fbottom{display:flex;align-items:flex-end;justify-content:space-between;gap:28px;padding-top:32px;flex-wrap:wrap}
+.birdly-footer .fleft{display:flex;flex-direction:column;gap:14px}
 .birdly-footer .fmark{display:flex;align-items:center;gap:9px;color:#fff;font-family:'Plus Jakarta Sans';font-weight:800;font-size:18px;letter-spacing:-.03em}
 .birdly-footer .fmark .dk{color:var(--sky-200)}
+.birdly-footer .fjur{display:flex;flex-direction:column;gap:7px}
+.birdly-footer .fjur b{font-family:'Plus Jakarta Sans';font-weight:700;color:#fff;font-size:13px;letter-spacing:.05em;text-transform:uppercase}
+.birdly-footer .fjur a{color:#9FB2C9;font-size:14px;transition:color .15s}
+.birdly-footer .fjur a:hover{color:#fff}
 .birdly-footer .fcompany{flex:1;min-width:240px;text-align:center;font-size:13px;color:#8da0b6;line-height:1.7}
 .birdly-footer .fcompany a{color:#8da0b6;text-decoration:underline}
 .birdly-footer .fcompany a:hover{color:#fff}
@@ -25,7 +32,8 @@
 .birdly-footer .fsocial a:hover{background:rgba(255,255,255,.10);color:#fff;border-color:rgba(255,255,255,.3)}
 
 @media(max-width:760px){
-  .birdly-footer .fcols{gap:40px}
-  .birdly-footer .fbottom{flex-direction:column;align-items:flex-start;gap:16px}
-  .birdly-footer .fcompany{text-align:left;min-width:0}
+  .birdly-footer .fbottom{flex-direction:column;align-items:center;gap:22px;text-align:center}
+  .birdly-footer .fleft{align-items:center}
+  .birdly-footer .fcompany{min-width:0}
+  .birdly-footer .fsocial{justify-content:center}
 }
