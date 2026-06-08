@@ -119,6 +119,12 @@
   .fagchip:hover{border-color:var(--sky-200)}
   .fagchip.on{border-color:var(--teal);background:#F1FFFD;color:var(--teal-dk)}
 
+  /* valgte fag som fjernbare tags (dropdown-vælger) */
+  .fagtags{display:flex;flex-wrap:wrap;gap:9px;margin-top:14px}
+  .fagtag{display:inline-flex;align-items:center;gap:8px;border:1.5px solid var(--teal);background:#F1FFFD;color:var(--teal-dk);border-radius:999px;padding:8px 8px 8px 15px;font-size:14px;font-weight:600}
+  .fagtag button{border:0;background:rgba(0,179,166,.15);color:var(--teal-dk);width:20px;height:20px;border-radius:50%;cursor:pointer;font-size:15px;line-height:1;display:flex;align-items:center;justify-content:center}
+  .fagtag button:hover{background:rgba(0,179,166,.32)}
+
   /* Fag-blok m. områder */
   .fag-block{border:1.5px solid var(--line);border-radius:14px;padding:16px;margin-top:14px}
   .fag-block-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;flex-wrap:wrap}

@@ -126,7 +126,16 @@ export default function Tilmeld({ initialFag = null }) {
       const r = await fetch(`/api/cvr?cvr=${d}`).then((x) => x.json());
       if (r.found) {
         if (r.name && !company.trim()) setCompany(r.name);
-        const guesses = catalog?.branchekode_fag?.[r.branchekode] || [];
+        let guesses = catalog?.branchekode_fag?.[r.branchekode] || [];
+        if (!guesses.length && r.branchekode) {
+          // Fald tilbage på 4-cifret branchekode-prefix, hvis 6-cifret ikke matcher.
+          const p4 = r.branchekode.slice(0, 4);
+          const set = new Set();
+          for (const [code, fags] of Object.entries(catalog?.branchekode_fag || {})) {
+            if (code.slice(0, 4) === p4) fags.forEach((f) => set.add(f));
+          }
+          guesses = [...set];
+        }
         if (guesses.length) setFagSel((prev) => { const n = { ...prev }; guesses.forEach((k) => (n[k] = true)); return n; });
         const guessLabels = guesses.map((k) => fagByKey[k]?.label_da || k);
         setCvrState({
@@ -313,21 +322,40 @@ export default function Tilmeld({ initialFag = null }) {
               {step === 2 && (
                 <div className="sec">
                   <div className="h"><span className="n">2</span><h3>Dine arbejdsområder</h3></div>
-                  <p className="sub">Vælg dit fag — vælg gerne flere. Hvert fag folder sine egne områder ud, så du kun ser det, der er relevant for dig.</p>
+                  <p className="sub">Vælg din branche fra listen — du kan tilføje flere. Hvert fag folder sine egne områder ud, så du kun ser det, der er relevant for dig.</p>
 
                   {!catalog && !catErr && <div className="note">Henter fag …</div>}
 
                   {catalog && (
                     <>
-                      <div className="fagchips">
-                        {catalog.fag.map((f) => (
-                          <button type="button" key={f.key} className={"fagchip" + (fagSel[f.key] ? " on" : "")} onClick={() => toggleFag(f.key)}>
-                            {fagSel[f.key] ? "✓ " : "+ "}{f.label_da}
-                          </button>
-                        ))}
+                      {/* Dropdown: tilføj en branche ad gangen (allerede valgte vises ikke i listen) */}
+                      <div className="fg" style={{ maxWidth: 440 }}>
+                        <label htmlFor="fagvaelg">Tilføj din branche</label>
+                        <select
+                          id="fagvaelg"
+                          value=""
+                          onChange={(e) => { if (e.target.value) setFagSel((s) => ({ ...s, [e.target.value]: true })); }}
+                        >
+                          <option value="">Vælg din branche …</option>
+                          {[...catalog.fag.map((f) => ({ key: f.key, label: f.label_da })), { key: "andet", label: "Andet — mit fag er ikke på listen" }]
+                            .filter((o) => !fagSel[o.key])
+                            .map((o) => <option key={o.key} value={o.key}>{o.label}</option>)}
+                        </select>
                       </div>
 
-                      {selectedFagKeys.length === 0 && <div className="note" style={{ marginTop: 14 }}>Vælg mindst ét fag ovenfor for at se områderne.</div>}
+                      {/* Valgte fag som fjernbare tags */}
+                      {selectedFagKeys.length > 0 && (
+                        <div className="fagtags">
+                          {selectedFagKeys.map((key) => (
+                            <span className="fagtag" key={key}>
+                              {key === "andet" ? "Andet" : (fagByKey[key]?.label_da || key)}
+                              <button type="button" onClick={() => toggleFag(key)} aria-label="Fjern">×</button>
+                            </span>
+                          ))}
+                        </div>
+                      )}
+
+                      {selectedFagKeys.length === 0 && <div className="note" style={{ marginTop: 14 }}>Vælg din branche i listen for at se områderne.</div>}
 
                       {selectedFagKeys.map((key) => {
                         const f = fagByKey[key];
@@ -357,9 +385,25 @@ export default function Tilmeld({ initialFag = null }) {
                                 );
                               })}
                             </div>
+                            {(() => {
+                              // Niche-note: kun ved 1-3 valgte koder når faget har flere end 3
+                              // (ellers er der ikke noget at skrue på). Opdaterer dynamisk.
+                              const cnt = f.smal.filter((a) => areaSel[key + "::" + a.cpv]).length;
+                              return f.smal.length > 3 && cnt >= 1 && cnt <= 3 ? (
+                                <div className="note" style={{ marginTop: 10 }}>
+                                  Du har valgt få områder her. Det giver færre, men meget præcise udbud. Vil du have flere, kan du vælge flere til — eller justere det senere.
+                                </div>
+                              ) : null;
+                            })()}
                           </div>
                         );
                       })}
+
+                      {fagSel.andet && (
+                        <div className="note" style={{ marginTop: 14 }}>
+                          Vi dækker ikke helt dit fag endnu — men det er på vej. Du kommer i gang med et bredt udvalg af offentlige opgaver, og vi sætter snart søgningen op, så den passer mere præcist til netop din branche. Så sender vi dig en mail, hvor du selv kan vælge til.
+                        </div>
+                      )}
 
                       <div className="bredde">
                         <div className="bredde-q">Hvor bredt vil du fange byggeudbud?</div>
