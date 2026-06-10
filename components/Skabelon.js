@@ -105,6 +105,19 @@ function fmtBytes(b) {
 }
 const emailOk = (v) => !v || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 
+// Telefon → læsbart internationalt format. Dansk 8-cifret → "+45 40123456"; allerede
+// internationale numre (+ / 00) bevares — klar til udenlandske numre.
+function fmtPhoneDisplay(raw) {
+  if (!raw) return "";
+  const s = String(raw).trim();
+  if (s.startsWith("+")) return s;
+  const d = s.replace(/\D/g, "");
+  if (d.startsWith("00")) return "+" + d.slice(2);
+  if (d.length === 8) return "+45 " + d;
+  if (d.length === 10 && d.startsWith("45")) return "+45 " + d.slice(2);
+  return s;
+}
+
 // Fil-upload pr. sektion. Privat bucket via Edge Function; server-side type+10MB-check.
 function FileUpload({ token, section, initial }) {
   const [files, setFiles] = useState(initial || []);
@@ -211,7 +224,7 @@ export default function Skabelon({ token, data }) {
   const toggle = (k) => setDone((s) => ({ ...s, [k]: !s[k] }));
 
   const cust = (data && data.customer) || {};
-  const [contact, setContact] = useState({ name: cust.contact_name || "", phone: cust.phone || "", email: cust.email || "", dept: "" });
+  const [contact, setContact] = useState({ name: cust.contact_name || "", phone: fmtPhoneDisplay(cust.phone), email: cust.email || "", dept: "" });
   const [bidMode, setBidMode] = useState("alene"); // alene | konsortium
   const [relyCapacity, setRelyCapacity] = useState(false); // baserer sig på andres kapacitet
   const [consent, setConsent] = useState(false);
