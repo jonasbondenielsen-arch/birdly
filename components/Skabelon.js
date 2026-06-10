@@ -125,6 +125,42 @@ function FileUpload({ token, section, initial }) {
   );
 }
 
+// Valgfri pris-tabel (hjælperedskab — erstatter ALDRIG ordregiverens tilbudsliste).
+// Post · Mængde · Enhedspris · Beløb (auto = mængde×enhedspris) + autosum.
+function PriceTable() {
+  const [rows, setRows] = useState([{ post: "", qty: "", unit: "" }]);
+  const num = (v) => { const x = Number(String(v).replace(/\./g, "").replace(",", ".")); return Number.isFinite(x) ? x : 0; };
+  const amount = (r) => num(r.qty) * num(r.unit);
+  const total = rows.reduce((s, r) => s + amount(r), 0);
+  const set = (i, k, v) => setRows((rs) => rs.map((r, j) => (j === i ? { ...r, [k]: v } : r)));
+  const cell = { padding: "4px" };
+  const inp = { ...INPUT, padding: "8px 10px" };
+  return (
+    <div style={{ marginTop: 10 }}>
+      <div style={{ overflowX: "auto" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14, minWidth: 470 }}>
+          <thead><tr style={{ color: MUTED, textAlign: "left" }}><th style={cell}>Post</th><th style={{ ...cell, width: 80 }}>Mængde</th><th style={{ ...cell, width: 110 }}>Enhedspris</th><th style={{ ...cell, width: 110, textAlign: "right" }}>Beløb</th><th /></tr></thead>
+          <tbody>
+            {rows.map((r, i) => (
+              <tr key={i}>
+                <td style={cell}><input value={r.post} onChange={(e) => set(i, "post", e.target.value)} style={inp} placeholder="Beskrivelse" /></td>
+                <td style={cell}><input value={r.qty} onChange={(e) => set(i, "qty", e.target.value)} inputMode="decimal" style={inp} /></td>
+                <td style={cell}><input value={r.unit} onChange={(e) => set(i, "unit", e.target.value)} inputMode="decimal" style={inp} /></td>
+                <td style={{ ...cell, textAlign: "right", fontWeight: 600, color: NAVY }}>{new Intl.NumberFormat("da-DK").format(Math.round(amount(r)))}</td>
+                <td style={cell}>{rows.length > 1 && <button onClick={() => setRows((rs) => rs.filter((_, j) => j !== i))} aria-label="Fjern række" style={{ border: 0, background: "none", color: MUTED, cursor: "pointer" }}>✕</button>}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 10, gap: 12, flexWrap: "wrap" }}>
+        <button onClick={() => setRows((rs) => [...rs, { post: "", qty: "", unit: "" }])} style={BTN_OUTLINE}>+ Tilføj række</button>
+        <div style={{ fontWeight: 700, color: NAVY }}>Sum: {new Intl.NumberFormat("da-DK").format(Math.round(total))} DKK</div>
+      </div>
+    </div>
+  );
+}
+
 const EXCLUSION_GROUNDS = [
   "Domme for korruption, bestikkelse eller svig",
   "Hvidvask eller finansiering af terrorisme",
@@ -145,6 +181,8 @@ export default function Skabelon({ token, data }) {
 
   const cust = (data && data.customer) || {};
   const [contact, setContact] = useState({ name: cust.contact_name || "", phone: cust.phone || "", email: cust.email || "", dept: "" });
+  const [bidMode, setBidMode] = useState("alene"); // alene | konsortium
+  const [relyCapacity, setRelyCapacity] = useState(false); // baserer sig på andres kapacitet
 
   if (!data || !data.found) {
     return (
@@ -258,14 +296,42 @@ export default function Skabelon({ token, data }) {
         <Row label="Sprog"><Chip state="amber" /></Row>
         <Row label="Format & vedståelse"><Chip state="amber" /></Row>
         <CheckInMaterial>Sprog, afleveringsformat og vedståelsesperiode står i udbudsbetingelserne — tjek dem, før du sender.</CheckInMaterial>
-        <ul style={{ listStyle: "none", padding: 0, margin: "14px 0 0" }}>
+
+        {/* Betingelser der styrer tjeklisten + erklæringer */}
+        <div style={{ background: "#F6F8FA", border: "1px solid " + LINE, borderRadius: 10, padding: "12px 14px", marginTop: 14 }}>
+          <div style={{ fontWeight: 700, color: NAVY, marginBottom: 8 }}>Hvordan byder du?</div>
+          <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+            <label style={{ display: "inline-flex", gap: 7, alignItems: "center", cursor: "pointer", color: INK }}><input type="radio" name="bidmode" checked={bidMode === "alene"} onChange={() => setBidMode("alene")} /> Jeg byder alene</label>
+            <label style={{ display: "inline-flex", gap: 7, alignItems: "center", cursor: "pointer", color: INK }}><input type="radio" name="bidmode" checked={bidMode === "konsortium"} onChange={() => setBidMode("konsortium")} /> Vi byder i konsortium</label>
+          </div>
+          <label style={{ display: "inline-flex", gap: 7, alignItems: "flex-start", cursor: "pointer", color: INK, marginTop: 10 }}><input type="checkbox" checked={relyCapacity} onChange={(e) => setRelyCapacity(e.target.checked)} style={{ marginTop: 3 }} /> Jeg baserer mig på andres økonomiske eller tekniske kapacitet (fx en underleverandør)</label>
+        </div>
+
+        <div style={{ fontWeight: 700, color: NAVY, margin: "16px 0 4px" }}>Påkrævet <span style={{ fontWeight: 400, color: MUTED, fontSize: 13 }}>— uden disse afvises tilbuddet</span></div>
+        <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
           <Check>Tilbud afgivet inden fristen: <b>{fmtDate(n.deadline)}</b></Check>
           <Check>Tilbud afleveret elektronisk i ordregiverens udbudssystem</Check>
+          <Check>Korrekt sprog (se udbudsbetingelser)</Check>
           <Check>ESPD udfyldt og vedlagt</Check>
           <Check>Komplet, udfyldt tilbudsliste vedlagt (ordregiverens format)</Check>
-          <Check>Alle krævede bilag og erklæringer vedlagt</Check>
+          {selection.length > 0 && <Check>Referencer iht. udbuddets mindstekrav</Check>}
         </ul>
-        <Note>Den fulde, betingede tjekliste (alene/konsortium, erklæringer) kommer i næste trin.</Note>
+
+        {(bidMode === "konsortium" || relyCapacity) && (
+          <>
+            <div style={{ fontWeight: 700, color: NAVY, margin: "14px 0 4px" }}>Påkrævet for dig <span style={{ fontWeight: 400, color: MUTED, fontSize: 13 }}>— ud fra dine valg ovenfor</span></div>
+            <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+              {bidMode === "konsortium" && <Check>Konsortieerklæring (alle deltagere hæfter solidarisk)</Check>}
+              {relyCapacity && <Check>Støtteerklæring fra den/de virksomhed(er), du baserer dig på</Check>}
+            </ul>
+          </>
+        )}
+
+        <div style={{ fontWeight: 700, color: NAVY, margin: "14px 0 4px" }}>Anbefalet <span style={{ fontWeight: 400, color: MUTED, fontSize: 13 }}>— styrker tilbuddet</span></div>
+        <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+          <Check>Kort følgebrev</Check>
+          <Check>Ingen forbehold over for udbudsmaterialet</Check>
+        </ul>
       </Section>
 
       {/* 3. ESPD */}
@@ -316,14 +382,19 @@ export default function Skabelon({ token, data }) {
       {/* 4. Tilbudsliste / Pris */}
       <Section k="pris" label="Sektion 3" title="Tilbudsliste / Pris" note="Prisen afleveres næsten altid i ordregiverens egen tilbudsliste. Vi viser ALDRIG en standard-liste — hent ordregiverens, udfyld den, og læg den ved.">
         <div style={{ marginBottom: 8 }}><Chip state="amber" /></div>
-        <CheckInMaterial>Hent ordregiverens tilbudsliste i materialet og udfyld den i deres format.{n.amount != null ? ` Anslået værdi i udbuddet: ${fmtKr(n.amount, n.currency)}${priceCrit ? ` · Pris vægter ${priceCrit.weight}%.` : "."}` : ""}</CheckInMaterial>
-        <div style={{ fontWeight: 700, color: NAVY, marginTop: 14 }}>Upload udfyldt prisbilag <span style={{ marginLeft: 6 }}><Chip state="blue" reason="Ordregiverens egen tilbudsliste" /></span></div>
+        <CheckInMaterial>Hent ordregiverens tilbudsliste i materialet og udfyld den i deres format — det er den, der skal afleveres.{n.amount != null ? ` Anslået værdi i udbuddet: ${fmtKr(n.amount, n.currency)}${priceCrit ? ` · Pris vægter ${priceCrit.weight}%.` : "."}` : ""}</CheckInMaterial>
+
+        <div style={{ fontWeight: 700, color: NAVY, marginTop: 16 }}>1 · Upload udfyldt prisbilag <span style={{ marginLeft: 6 }}><Chip state="blue" reason="Ordregiverens egen tilbudsliste — det vigtigste" /></span></div>
+        <p style={{ color: MUTED, fontSize: 13, margin: "4px 0 0" }}>Hent ordregiverens tilbudsliste (Excel/PDF) i materialet, udfyld den, og læg den her. Den skal afleveres i ordregiverens eget format.</p>
         <FileUpload token={token} section="pris" initial={filesFor("pris")} />
-        <div style={{ marginTop: 14 }}>
-          <label style={LBL}>Din samlede tilbudspris <span style={{ marginLeft: 6 }}><Chip state="blue" reason="Kun du kender din pris" /></span></label>
-          <input style={INPUT} inputMode="numeric" placeholder="fx 1.250.000 DKK" />
-        </div>
-        <p style={{ color: MUTED, fontSize: 12.5, marginTop: 10, fontStyle: "italic" }}>Valgfri pris-tabel kommer i næste trin. Birdly rører aldrig tallene — alt indtastes/uploades af dig.</p>
+
+        <div style={{ fontWeight: 700, color: NAVY, marginTop: 18 }}>2 · Samlet tilbudspris <span style={{ marginLeft: 6 }}><Chip state="blue" reason="Kun du kender din pris" /></span></div>
+        <input style={{ ...INPUT, marginTop: 8 }} inputMode="numeric" placeholder="fx 1.250.000 DKK" />
+
+        <div style={{ fontWeight: 700, color: NAVY, marginTop: 18 }}>3 · Valgfri pris-tabel <span style={{ marginLeft: 6 }}><Chip state="blue" reason="Til dine egne beregninger" /></span></div>
+        <div style={{ background: "#FFF6E9", border: "1px solid #F3D9A8", borderRadius: 10, padding: "9px 12px", marginTop: 8, color: "#92670A", fontSize: 13 }}>Kun et hjælperedskab til dine egne beregninger — den <b>erstatter ikke</b> ordregiverens tilbudsliste, som stadig skal udfyldes og uploades ovenfor.</div>
+        <PriceTable />
+        <p style={{ color: MUTED, fontSize: 12.5, marginTop: 10, fontStyle: "italic" }}>Birdly rører aldrig tallene — alt indtastes/uploades af dig.</p>
       </Section>
 
       {/* 5. Tilbudsbeskrivelse (kvalitet) */}
@@ -349,10 +420,31 @@ export default function Skabelon({ token, data }) {
         </Section>
       )}
 
-      {/* 6. Erklæringer */}
-      <Section k="erklaeringer" label="Sektion 5" title="Erklæringer" note="Afhængigt af hvordan du byder, skal du måske vedlægge særlige erklæringer.">
-        <div style={{ marginBottom: 8 }}><Chip state="blue" reason="Udfyldes + underskrives af dig" /></div>
-        <CheckInMaterial>De konkrete erklæringer (fx konsortie-, støtte- og sanktionserklæring) afhænger af, om du byder alene eller sammen med andre. Det betingede flow kommer i næste trin — indtil da kan du vedhæfte de erklæringer, udbuddet kræver.</CheckInMaterial>
+      {/* 6. Erklæringer (betinget af valgene i tjeklisten) */}
+      <Section k="erklaeringer" label="Sektion 5" title="Erklæringer" note="Vi viser kun de erklæringer, der er relevante ud fra dine valg under 'Hvordan byder du?' i Formalia-sektionen.">
+        <div style={{ marginBottom: 10 }}><Chip state="blue" reason="Udfyldes + underskrives af dig" /></div>
+        <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+          <li style={{ padding: "10px 0", borderBottom: "1px solid #F0F2F5" }}>
+            <div style={{ fontWeight: 700, color: NAVY }}>Sanktionserklæring (Rusland, art. 5k)</div>
+            <div style={{ color: MUTED, fontSize: 13.5, lineHeight: 1.5 }}>Bekræfter at virksomheden ikke er omfattet af de russiske sanktioner. Kræves i stort set alle EU-udbud.</div>
+          </li>
+          {bidMode === "konsortium" && (
+            <li style={{ padding: "10px 0", borderBottom: "1px solid #F0F2F5" }}>
+              <div style={{ fontWeight: 700, color: NAVY }}>Konsortieerklæring</div>
+              <div style={{ color: MUTED, fontSize: 13.5, lineHeight: 1.5 }}>Alle konsortiedeltagere hæfter solidarisk og udpeger en fælles befuldmægtiget.</div>
+            </li>
+          )}
+          {relyCapacity && (
+            <li style={{ padding: "10px 0", borderBottom: "1px solid #F0F2F5" }}>
+              <div style={{ fontWeight: 700, color: NAVY }}>Støtteerklæring</div>
+              <div style={{ color: MUTED, fontSize: 13.5, lineHeight: 1.5 }}>Den virksomhed, du baserer dig på, forpligter sig til at stille sin kapacitet til rådighed for kontrakten.</div>
+            </li>
+          )}
+        </ul>
+        {bidMode === "alene" && !relyCapacity && (
+          <p style={{ color: MUTED, fontSize: 13, fontStyle: "italic", marginTop: 10 }}>Du byder alene og baserer dig ikke på andre — så konsortie- og støtteerklæring er ikke relevant for dig.</p>
+        )}
+        <CheckInMaterial>Den præcise ordlyd og evt. ordregiver-skabeloner for erklæringerne ligger i udbudsmaterialet. Hent dem, udfyld, underskriv — og vedhæft dem her.</CheckInMaterial>
         <FileUpload token={token} section="erklaeringer" initial={filesFor("erklaeringer")} />
       </Section>
 
