@@ -69,6 +69,13 @@ function Chip({ state, reason }) {
     </span>
   );
 }
+// Kompakt per-felt-markør (til kontaktfelterne): grøn hvis forudfyldt fra kundens
+// profil, blå hvis kunden selv skal udfylde.
+function MiniChip({ on }) {
+  return on
+    ? <span style={{ fontSize: 11, fontWeight: 700, color: "#197A66", marginLeft: 6 }}>🟢 fra din profil</span>
+    : <span style={{ fontSize: 11, fontWeight: 700, color: "#1366A6", marginLeft: 6 }}>🔵 udfyld selv</span>;
+}
 function Note({ children }) {
   return (
     <div style={{ display: "flex", gap: 9, alignItems: "flex-start", background: "#F6F8FA", border: "1px solid " + LINE, borderRadius: 10, padding: "10px 12px", margin: "10px 0 14px", color: MUTED, fontSize: 13.5, lineHeight: 1.5 }}>
@@ -370,13 +377,14 @@ export default function Skabelon({ token, data }) {
       <Section k="espd" label="Sektion 2" title="ESPD — standarderklæring" note="En standarderklæring om din virksomhed. Vi har sat svarene til det normale for en almindelig dansk virksomhed — tjek, at det passer for jer.">
         <Row label="Virksomhed">{c.company_name || "—"}{c.cvr ? ` · CVR ${c.cvr}` : ""} <span style={{ marginLeft: 8 }}><Chip state="green" /></span></Row>
 
-        <div style={{ fontWeight: 700, color: NAVY, margin: "14px 0 6px" }}>Jeres kontaktperson <span style={{ marginLeft: 8 }}><Chip state={contact.name || contact.email ? "green" : "blue"} reason="Udfyld det vi mangler" /></span></div>
+        <div style={{ fontWeight: 700, color: NAVY, margin: "14px 0 6px" }}>Jeres kontaktperson</div>
+        <p style={{ color: MUTED, fontSize: 13, margin: "0 0 10px" }}>Vi har sat det ind, vi kender fra din tilmelding — tjek det og udfyld resten.</p>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-          <div><label style={LBL}>Navn</label><input style={INPUT} value={contact.name} onChange={(e) => setContact({ ...contact, name: e.target.value })} placeholder="Fulde navn" /></div>
-          <div><label style={LBL}>Afdeling (valgfri)</label><input style={INPUT} value={contact.dept} onChange={(e) => setContact({ ...contact, dept: e.target.value })} placeholder="fx Indkøb" /></div>
-          <div><label style={LBL}>Telefon</label><input style={INPUT} value={contact.phone} onChange={(e) => setContact({ ...contact, phone: e.target.value })} inputMode="tel" placeholder="+45 …" /></div>
+          <div><label style={LBL}>Navn <MiniChip on={!!c.contact_name} /></label><input style={INPUT} value={contact.name} onChange={(e) => setContact({ ...contact, name: e.target.value })} placeholder="Fulde navn" /></div>
+          <div><label style={LBL}>Afdeling (valgfri) <MiniChip on={false} /></label><input style={INPUT} value={contact.dept} onChange={(e) => setContact({ ...contact, dept: e.target.value })} placeholder="fx Indkøb" /></div>
+          <div><label style={LBL}>Telefon <MiniChip on={!!c.phone} /></label><input style={INPUT} value={contact.phone} onChange={(e) => setContact({ ...contact, phone: e.target.value })} inputMode="tel" placeholder="+45 …" /></div>
           <div>
-            <label style={LBL}>E-mail</label>
+            <label style={LBL}>E-mail <MiniChip on={!!c.email} /></label>
             <input style={{ ...INPUT, borderColor: emailOk(contact.email) ? LINE : "#E0A800" }} value={contact.email} onChange={(e) => setContact({ ...contact, email: e.target.value })} inputMode="email" placeholder="navn@firma.dk" />
             {!emailOk(contact.email) && <div style={{ color: "#92670A", fontSize: 12, marginTop: 4 }}>Ser ikke ud som en e-mail — tjek lige.</div>}
           </div>
