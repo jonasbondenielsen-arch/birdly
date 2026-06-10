@@ -175,6 +175,16 @@ function PriceTable() {
   );
 }
 
+const SECTION_NAMES = {
+  resume: "Resumé",
+  formalia: "Formalia & tjekliste",
+  espd: "ESPD",
+  pris: "Tilbudsliste / Pris",
+  kvalitet: "Tilbudsbeskrivelse",
+  erklaeringer: "Erklæringer",
+  kontrakt: "Kontraktvilkår",
+};
+
 const EXCLUSION_GROUNDS = [
   "Domme for korruption, bestikkelse eller svig",
   "Hvidvask eller finansiering af terrorisme",
@@ -475,6 +485,25 @@ export default function Skabelon({ token, data }) {
         <div style={{ marginBottom: 8 }}><Chip state="amber" /></div>
         <CheckInMaterial>Standardkontrakt, betalingsvilkår, bod, ansvar og øvrige væsentlige vilkår står i kontraktudkastet i materialet. Ved at afgive tilbud accepterer du vilkårene.</CheckInMaterial>
       </Section>
+
+      {/* Blød påmindelse om uafkrydsede sektioner (blokerer IKKE — kun samtykke spærrer) */}
+      {(() => {
+        const missing = CONTENT.filter((k) => !done[k]);
+        if (missing.length === 0) {
+          return (
+            <div className="no-print" style={{ ...CARD, background: "#E5F7EF", borderColor: "#BFE9E0", color: "#197A66", fontWeight: 600 }}>
+              ✓ Du har gennemgået alle {CONTENT.length} sektioner. Godt arbejde!
+            </div>
+          );
+        }
+        return (
+          <div className="no-print" style={{ ...CARD, background: "#FFF6E9", borderColor: "#F3D9A8" }}>
+            <div style={{ color: "#92670A", fontWeight: 700 }}>Du mangler at gennemgå {missing.length} af {CONTENT.length} sektioner</div>
+            <div style={{ color: "#92670A", fontSize: 14, marginTop: 6 }}>{missing.map((k) => SECTION_NAMES[k] || k).join(", ")}.</div>
+            <div style={{ color: MUTED, fontSize: 13, marginTop: 8, fontStyle: "italic" }}>Du kan stadig gemme et halvt udkast og vende tilbage senere — det er bare en venlig påmindelse.</div>
+          </div>
+        );
+      })()}
 
       {/* Samtykke-boks + PDF (skjult i selve PDF'en) */}
       <div className="no-print" style={{ ...CARD, background: "#F2FBF9", borderColor: "#BFE9E0" }}>
