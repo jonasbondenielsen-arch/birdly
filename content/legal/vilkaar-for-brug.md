@@ -26,6 +26,17 @@ Birdly kan ikke holdes ansvarlig for din brug af Tjenesten eller for, at din bru
 ## Udelukkelse ved misbrug
 Ved mistanke om misbrug, ulovlig anvendelse eller overtrædelse af disse vilkår forbeholder Birdly sig retten til med øjeblikkelig virkning og uden varsel at lukke din adgang til birdly.dk og til Tjenesten samt at opsige dit abonnement. Birdly kan i den forbindelse ikke gøres ansvarlig for tab som følge af en sådan udelukkelse.
 
+## Bud-skabelonen — anvendelse og ansvar
+Birdlys bud-skabelon stilles til rådighed som et uforpligtende hjælpe- og vejledningsværktøj, der har til formål at gøre det lettere for brugeren at komme i gang med at afgive tilbud på offentlige udbud. Skabelonen er udarbejdet på grundlag af de offentligt tilgængelige oplysninger i udbudsbekendtgørelsen og udgør hverken juridisk, økonomisk eller udbudsteknisk rådgivning.
+
+Skabelonen erstatter ikke det fulde, bindende udbudsmateriale, som ordregiveren stiller til rådighed, og Birdly indestår ikke for, at skabelonen afspejler samtlige krav, vilkår eller frister i det enkelte udbud. Det påhviler alene brugeren som tilbudsgiver at sikre, at tilbuddet er korrekt, fuldstændigt og konditionsmæssigt, herunder at samtlige krav i udbudsmaterialet er opfyldt — også krav, som Birdly ikke har eller kan have kendskab til.
+
+Oplysninger, der er forudfyldt af Birdly — herunder oplysninger hentet fra offentlige registre — er vejledende og skal kontrolleres af brugeren før afgivelse af tilbud. Birdly påtager sig intet ansvar for rigtigheden, fuldstændigheden eller anvendeligheden af de forudfyldte oplysninger, for brugerens egne indtastninger eller uploadede filer, eller for tilbuddets gyldighed, behandling eller udfald.
+
+Brugeren er selv ansvarlig for indhold, som brugeren indtaster eller uploader i skabelonen, og må ikke uploade materiale, som brugeren ikke har ret til at anvende, eller som er ulovligt eller krænker tredjemands rettigheder.
+
+Birdly fraskriver sig i videst muligt omfang efter dansk ret ethvert ansvar for direkte og indirekte tab, herunder tabt fortjeneste, mistede kontrakter eller følgeskader, der måtte opstå som følge af brugen af bud-skabelonen. Brugen sker på brugerens eget ansvar og risiko.
+
 ## Ændringer
 Vi kan til enhver tid ændre disse vilkår. De gældende vilkår er altid tilgængelige på birdly.dk. Fortsat brug efter en ændring udgør accept af de ændrede vilkår.
 
