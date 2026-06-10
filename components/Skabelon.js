@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Logo } from "./Logo";
+import { uploadTenderFile, deleteTenderFile } from "../lib/share";
 
 // Bud-skabelon (Fase D / stop-point #2: tre-tilstands-markering + sektionsstruktur).
 // ALT forudfyldt læses dynamisk per udbud fra get-shared-notice — intet hardkodes,
@@ -75,6 +76,54 @@ function CheckInMaterial({ children }) {
     <div style={{ background: "#FFF6E9", border: "1px solid #F3D9A8", borderRadius: 10, padding: "10px 12px", color: "#92670A", fontSize: 13.5, lineHeight: 1.5, marginTop: 8 }}>{children}</div>
   );
 }
+function fmtBytes(b) {
+  if (!b) return "";
+  if (b < 1024) return b + " B";
+  if (b < 1048576) return Math.round(b / 1024) + " KB";
+  return (b / 1048576).toFixed(1) + " MB";
+}
+const emailOk = (v) => !v || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+
+// Fil-upload pr. sektion. Privat bucket via Edge Function; server-side type+10MB-check.
+function FileUpload({ token, section, initial }) {
+  const [files, setFiles] = useState(initial || []);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+  async function onPick(e) {
+    const f = e.target.files && e.target.files[0];
+    e.target.value = "";
+    if (!f) return;
+    setBusy(true); setErr("");
+    try { const row = await uploadTenderFile(token, section, f); setFiles((x) => [...x, row]); }
+    catch (ex) { setErr(ex.message || "Upload fejlede."); }
+    finally { setBusy(false); }
+  }
+  async function remove(id) {
+    setErr("");
+    try { await deleteTenderFile(token, id); setFiles((x) => x.filter((f) => f.id !== id)); }
+    catch (ex) { setErr(ex.message || "Kunne ikke slette."); }
+  }
+  return (
+    <div style={{ marginTop: 10 }}>
+      <label style={{ ...BTN_OUTLINE, display: "inline-block", cursor: "pointer" }}>
+        {busy ? "Uploader …" : "📎 Vedhæft fil"}
+        <input type="file" accept=".pdf,.docx,.xlsx,.doc,.xls,.jpg,.jpeg,.png" onChange={onPick} disabled={busy} style={{ display: "none" }} />
+      </label>
+      <span style={{ color: MUTED, fontSize: 12, marginLeft: 10 }}>pdf, docx, xlsx, jpg, png · maks 10 MB</span>
+      {err && <div style={{ color: "#B3261E", fontSize: 13, marginTop: 6 }}>{err}</div>}
+      {files.length > 0 && (
+        <ul style={{ listStyle: "none", padding: 0, margin: "10px 0 0" }}>
+          {files.map((f) => (
+            <li key={f.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, padding: "8px 11px", background: "#F6F8FA", border: "1px solid " + LINE, borderRadius: 9, marginBottom: 6 }}>
+              <span style={{ fontSize: 14, color: INK, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>📄 {f.file_name} <span style={{ color: MUTED }}>{f.size_bytes ? "· " + fmtBytes(f.size_bytes) : ""}</span></span>
+              <button onClick={() => remove(f.id)} aria-label="Fjern fil" style={{ border: 0, background: "none", color: MUTED, cursor: "pointer", fontSize: 16, flex: "0 0 auto" }}>✕</button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
 
 const EXCLUSION_GROUNDS = [
   "Domme for korruption, bestikkelse eller svig",
@@ -94,6 +143,9 @@ export default function Skabelon({ token, data }) {
   const doneCount = CONTENT.filter((k) => done[k]).length;
   const toggle = (k) => setDone((s) => ({ ...s, [k]: !s[k] }));
 
+  const cust = (data && data.customer) || {};
+  const [contact, setContact] = useState({ name: cust.contact_name || "", phone: cust.phone || "", email: cust.email || "", dept: "" });
+
   if (!data || !data.found) {
     return (
       <main style={{ ...WRAP, textAlign: "center" }}>
@@ -105,6 +157,8 @@ export default function Skabelon({ token, data }) {
 
   const n = data.notice || {};
   const c = data.customer || {};
+  const allFiles = Array.isArray(data.files) ? data.files : [];
+  const filesFor = (sec) => allFiles.filter((f) => f.section === sec);
   const cvrLookup = c.cvr ? `https://datacvr.virk.dk/enhed/virksomhed/${encodeURIComponent(c.cvr)}` : null;
   const award = Array.isArray(n.award_criteria) ? n.award_criteria : [];
   const priceCrit = award.find((a) => a.type === "price");
@@ -217,7 +271,20 @@ export default function Skabelon({ token, data }) {
       {/* 3. ESPD */}
       <Section k="espd" label="Sektion 2" title="ESPD — standarderklæring" note="En standarderklæring om din virksomhed. Vi har sat svarene til det normale for en almindelig dansk virksomhed — tjek, at det passer for jer.">
         <Row label="Virksomhed">{c.company_name || "—"}{c.cvr ? ` · CVR ${c.cvr}` : ""} <span style={{ marginLeft: 8 }}><Chip state="green" /></span></Row>
-        <div style={{ fontWeight: 700, color: NAVY, margin: "14px 0 6px" }}>Udelukkelsesgrunde <span style={{ marginLeft: 8 }}><Chip state="green" /></span></div>
+
+        <div style={{ fontWeight: 700, color: NAVY, margin: "14px 0 6px" }}>Jeres kontaktperson <span style={{ marginLeft: 8 }}><Chip state={contact.name || contact.email ? "green" : "blue"} reason="Udfyld det vi mangler" /></span></div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+          <div><label style={LBL}>Navn</label><input style={INPUT} value={contact.name} onChange={(e) => setContact({ ...contact, name: e.target.value })} placeholder="Fulde navn" /></div>
+          <div><label style={LBL}>Afdeling (valgfri)</label><input style={INPUT} value={contact.dept} onChange={(e) => setContact({ ...contact, dept: e.target.value })} placeholder="fx Indkøb" /></div>
+          <div><label style={LBL}>Telefon</label><input style={INPUT} value={contact.phone} onChange={(e) => setContact({ ...contact, phone: e.target.value })} inputMode="tel" placeholder="+45 …" /></div>
+          <div>
+            <label style={LBL}>E-mail</label>
+            <input style={{ ...INPUT, borderColor: emailOk(contact.email) ? LINE : "#E0A800" }} value={contact.email} onChange={(e) => setContact({ ...contact, email: e.target.value })} inputMode="email" placeholder="navn@firma.dk" />
+            {!emailOk(contact.email) && <div style={{ color: "#92670A", fontSize: 12, marginTop: 4 }}>Ser ikke ud som en e-mail — tjek lige.</div>}
+          </div>
+        </div>
+
+        <div style={{ fontWeight: 700, color: NAVY, margin: "16px 0 6px" }}>Udelukkelsesgrunde <span style={{ marginLeft: 8 }}><Chip state="green" /></span></div>
         <p style={{ color: INK, lineHeight: 1.6, margin: "0 0 10px" }}>Bekræft, at ingen af disse gælder din virksomhed (standard: <b>Nej</b> til alle):</p>
         <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
           {EXCLUSION_GROUNDS.map((g, i) => (
@@ -236,17 +303,27 @@ export default function Skabelon({ token, data }) {
           <CheckInMaterial>Mindstekrav til egnethed (fx omsætning, referencer) står i udbudsbetingelserne — vi kan ikke læse dem sikkert fra bekendtgørelsen.</CheckInMaterial>
         )}
         <div style={{ fontWeight: 700, color: NAVY, margin: "16px 0 6px" }}>Referencer <span style={{ marginLeft: 8 }}><Chip state="blue" reason="Kun du kender jeres opgaver" /></span></div>
-        <p style={{ color: MUTED, fontSize: 13, fontStyle: "italic", margin: 0 }}>Du tilføjer dine referencer (og evt. vedhæfter dokumentation) i næste trin.</p>
+        <p style={{ color: MUTED, fontSize: 13, margin: "0 0 8px" }}>Beskriv lignende opgaver — og vedhæft evt. dokumentation.</p>
+        {[1, 2, 3].map((i) => (
+          <div key={i} style={{ marginBottom: 10 }}>
+            <label style={LBL}>Reference {i}</label>
+            <textarea style={{ ...INPUT, minHeight: 60, resize: "vertical" }} placeholder="Kunde · opgave · værdi · årstal · kort beskrivelse" />
+          </div>
+        ))}
+        <FileUpload token={token} section="referencer" initial={filesFor("referencer")} />
       </Section>
 
       {/* 4. Tilbudsliste / Pris */}
       <Section k="pris" label="Sektion 3" title="Tilbudsliste / Pris" note="Prisen afleveres næsten altid i ordregiverens egen tilbudsliste. Vi viser ALDRIG en standard-liste — hent ordregiverens, udfyld den, og læg den ved.">
         <div style={{ marginBottom: 8 }}><Chip state="amber" /></div>
-        <CheckInMaterial>Hent ordregiverens tilbudsliste i materialet og udfyld den i deres format. Upload + valgfri pris-tabel kommer i næste trin.{n.amount != null ? ` Anslået værdi i udbuddet: ${fmtKr(n.amount, n.currency)}${priceCrit ? ` · Pris vægter ${priceCrit.weight}%.` : "."}` : ""}</CheckInMaterial>
-        <div style={{ marginTop: 12 }}>
+        <CheckInMaterial>Hent ordregiverens tilbudsliste i materialet og udfyld den i deres format.{n.amount != null ? ` Anslået værdi i udbuddet: ${fmtKr(n.amount, n.currency)}${priceCrit ? ` · Pris vægter ${priceCrit.weight}%.` : "."}` : ""}</CheckInMaterial>
+        <div style={{ fontWeight: 700, color: NAVY, marginTop: 14 }}>Upload udfyldt prisbilag <span style={{ marginLeft: 6 }}><Chip state="blue" reason="Ordregiverens egen tilbudsliste" /></span></div>
+        <FileUpload token={token} section="pris" initial={filesFor("pris")} />
+        <div style={{ marginTop: 14 }}>
           <label style={LBL}>Din samlede tilbudspris <span style={{ marginLeft: 6 }}><Chip state="blue" reason="Kun du kender din pris" /></span></label>
           <input style={INPUT} inputMode="numeric" placeholder="fx 1.250.000 DKK" />
         </div>
+        <p style={{ color: MUTED, fontSize: 12.5, marginTop: 10, fontStyle: "italic" }}>Valgfri pris-tabel kommer i næste trin. Birdly rører aldrig tallene — alt indtastes/uploades af dig.</p>
       </Section>
 
       {/* 5. Tilbudsbeskrivelse (kvalitet) */}
@@ -263,6 +340,7 @@ export default function Skabelon({ token, data }) {
             <label style={LBL}>Jeres beskrivelse <span style={{ marginLeft: 6 }}><Chip state="blue" reason="Jeres substans og erfaring" /></span></label>
             <textarea style={{ ...INPUT, minHeight: 110, resize: "vertical" }} placeholder="Beskriv jeres faglige kvalifikationer, erfaring og tilgang …" />
           </div>
+          <FileUpload token={token} section="kvalitet" initial={filesFor("kvalitet")} />
         </Section>
       )}
       {onlyPrice && (
@@ -274,7 +352,8 @@ export default function Skabelon({ token, data }) {
       {/* 6. Erklæringer */}
       <Section k="erklaeringer" label="Sektion 5" title="Erklæringer" note="Afhængigt af hvordan du byder, skal du måske vedlægge særlige erklæringer.">
         <div style={{ marginBottom: 8 }}><Chip state="blue" reason="Udfyldes + underskrives af dig" /></div>
-        <CheckInMaterial>De konkrete erklæringer (fx konsortie-, støtte- og sanktionserklæring) afhænger af, om du byder alene eller sammen med andre. Det betingede flow + relevante skabeloner kommer i næste trin.</CheckInMaterial>
+        <CheckInMaterial>De konkrete erklæringer (fx konsortie-, støtte- og sanktionserklæring) afhænger af, om du byder alene eller sammen med andre. Det betingede flow kommer i næste trin — indtil da kan du vedhæfte de erklæringer, udbuddet kræver.</CheckInMaterial>
+        <FileUpload token={token} section="erklaeringer" initial={filesFor("erklaeringer")} />
       </Section>
 
       {/* 7. Kontraktvilkår */}
