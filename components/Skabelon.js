@@ -25,6 +25,20 @@ const BTN_OUTLINE = { display: "inline-block", color: NAVY, fontWeight: 600, bor
 const INPUT = { width: "100%", padding: "11px 13px", border: "1px solid " + LINE, borderRadius: 10, fontSize: 15, boxSizing: "border-box", fontFamily: "inherit" };
 const LBL = { display: "block", fontSize: 13, color: MUTED, marginBottom: 5 };
 
+// Print-stylesheet: skjul UI-chrome (knapper, upload-felter, "gennemgået", progress,
+// samtykke-boksen selv) og rens felterne, så "Gem som PDF" giver et pænt dokument.
+const PRINT_CSS = `
+@media screen { .print-only { display: none !important; } }
+@media print {
+  .no-print { display: none !important; }
+  .print-only { display: block !important; }
+  body { background: #fff !important; }
+  input, textarea, select { border: 1px solid #D7DCE2 !important; box-shadow: none !important; color: #1B2733 !important; }
+  textarea { height: auto !important; min-height: 0 !important; overflow: visible !important; }
+  section, .skab-card { box-shadow: none !important; break-inside: avoid; }
+  @page { margin: 15mm; }
+}`;
+
 function fmtDate(iso) {
   if (!iso) return "—";
   const d = new Date(iso);
@@ -105,11 +119,11 @@ function FileUpload({ token, section, initial }) {
   }
   return (
     <div style={{ marginTop: 10 }}>
-      <label style={{ ...BTN_OUTLINE, display: "inline-block", cursor: "pointer" }}>
+      <label className="no-print" style={{ ...BTN_OUTLINE, display: "inline-block", cursor: "pointer" }}>
         {busy ? "Uploader …" : "📎 Vedhæft fil"}
         <input type="file" accept=".pdf,.docx,.xlsx,.doc,.xls,.jpg,.jpeg,.png" onChange={onPick} disabled={busy} style={{ display: "none" }} />
       </label>
-      <span style={{ color: MUTED, fontSize: 12, marginLeft: 10 }}>pdf, docx, xlsx, jpg, png · maks 10 MB</span>
+      <span className="no-print" style={{ color: MUTED, fontSize: 12, marginLeft: 10 }}>pdf, docx, xlsx, jpg, png · maks 10 MB</span>
       {err && <div style={{ color: "#B3261E", fontSize: 13, marginTop: 6 }}>{err}</div>}
       {files.length > 0 && (
         <ul style={{ listStyle: "none", padding: 0, margin: "10px 0 0" }}>
@@ -183,6 +197,7 @@ export default function Skabelon({ token, data }) {
   const [contact, setContact] = useState({ name: cust.contact_name || "", phone: cust.phone || "", email: cust.email || "", dept: "" });
   const [bidMode, setBidMode] = useState("alene"); // alene | konsortium
   const [relyCapacity, setRelyCapacity] = useState(false); // baserer sig på andres kapacitet
+  const [consent, setConsent] = useState(false);
 
   if (!data || !data.found) {
     return (
@@ -211,7 +226,7 @@ export default function Skabelon({ token, data }) {
       <section style={CARD}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, flexWrap: "wrap" }}>
           <div><div style={SECTION_LABEL}>{label}</div><h2 style={H2}>{title}</h2></div>
-          <label style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 13.5, color: done[k] ? "#197A66" : MUTED, cursor: "pointer", whiteSpace: "nowrap" }}>
+          <label className="no-print" style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 13.5, color: done[k] ? "#197A66" : MUTED, cursor: "pointer", whiteSpace: "nowrap" }}>
             <input type="checkbox" checked={!!done[k]} onChange={() => toggle(k)} style={{ width: 17, height: 17 }} /> Gennemgået
           </label>
         </div>
@@ -223,7 +238,14 @@ export default function Skabelon({ token, data }) {
 
   return (
     <main style={WRAP}>
+      <style dangerouslySetInnerHTML={{ __html: PRINT_CSS }} />
       <div style={{ display: "flex", justifyContent: "center", margin: "12px 0 18px" }}><Logo /></div>
+
+      {/* Print-header (kun i PDF) */}
+      <div className="print-only" style={{ marginBottom: 14 }}>
+        <div style={{ fontSize: 18, fontWeight: 700, color: NAVY }}>Tilbudsudkast — {n.title || "udbud"}</div>
+        <div style={{ color: MUTED, fontSize: 13 }}>{c.company_name || ""}{c.cvr ? ` · CVR ${c.cvr}` : ""} · Ordregiver: {n.buyer_name || "—"} · Frist: {fmtDate(n.deadline)}</div>
+      </div>
 
       {/* Disclaimer B */}
       <div style={{ background: "#FBFCFD", border: "1px solid " + LINE, borderRadius: 12, padding: "13px 16px", color: MUTED, fontSize: 13, lineHeight: 1.55 }}>
@@ -243,12 +265,12 @@ export default function Skabelon({ token, data }) {
           <li>🔵 <b>Udfyld selv.</b> Det, kun du kender — fx din pris og dine referencer.</li>
         </ul>
         <p style={{ color: INK, lineHeight: 1.6, margin: "10px 0 0" }}>Følg trinene fra toppen. Til sidst gemmer du det hele som PDF.</p>
-        <div style={{ marginTop: 14, fontSize: 14, fontWeight: 700, color: NAVY }}>{doneCount} af {CONTENT.length} sektioner gennemgået</div>
-        <div style={{ height: 8, background: "#DCEFEA", borderRadius: 999, marginTop: 6, overflow: "hidden" }}><div style={{ height: "100%", width: `${(doneCount / CONTENT.length) * 100}%`, background: TEAL, transition: "width .2s" }} /></div>
+        <div className="no-print" style={{ marginTop: 14, fontSize: 14, fontWeight: 700, color: NAVY }}>{doneCount} af {CONTENT.length} sektioner gennemgået</div>
+        <div className="no-print" style={{ height: 8, background: "#DCEFEA", borderRadius: 999, marginTop: 6, overflow: "hidden" }}><div style={{ height: "100%", width: `${(doneCount / CONTENT.length) * 100}%`, background: TEAL, transition: "width .2s" }} /></div>
       </div>
 
       {/* Kom godt i gang + knap-række */}
-      <div style={CARD}>
+      <div className="no-print" style={CARD}>
         <div style={SECTION_LABEL}>Start her</div>
         <h2 style={H2}>Sådan kommer du i gang</h2>
         <ol style={{ paddingLeft: 20, lineHeight: 1.65, color: INK, margin: "8px 0 0" }}>
@@ -454,7 +476,45 @@ export default function Skabelon({ token, data }) {
         <CheckInMaterial>Standardkontrakt, betalingsvilkår, bod, ansvar og øvrige væsentlige vilkår står i kontraktudkastet i materialet. Ved at afgive tilbud accepterer du vilkårene.</CheckInMaterial>
       </Section>
 
-      <p style={{ textAlign: "center", color: MUTED, fontSize: 12.5, marginTop: 20 }}>Skabelonen er et hjælpeværktøj — det bindende materiale ligger hos ordregiveren. · Upload, pris-modeller og PDF kommer i de næste trin.</p>
+      {/* Samtykke-boks + PDF (skjult i selve PDF'en) */}
+      <div className="no-print" style={{ ...CARD, background: "#F2FBF9", borderColor: "#BFE9E0" }}>
+        <p style={{ color: INK, lineHeight: 1.6, margin: "0 0 12px" }}>
+          Vi har hjulpet dig så langt, vi kan. Resten — og ansvaret for, at tilbuddet er korrekt og fuldstændigt — ligger
+          hos dig som tilbudsgiver. Sæt kryds for at bekræfte, før du gemmer.
+        </p>
+        <label style={{ display: "flex", gap: 10, alignItems: "flex-start", cursor: "pointer", color: INK, fontSize: 13.5, lineHeight: 1.55 }}>
+          <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} style={{ marginTop: 3, width: 18, height: 18, flex: "0 0 auto" }} />
+          <span>
+            Jeg er indforstået med, at denne skabelon alene er et vejledende hjælpeværktøj fra Birdly, der skal gøre det lettere
+            at komme i gang med at afgive tilbud. Skabelonen er udarbejdet på grundlag af de offentligt tilgængelige oplysninger
+            i udbudsbekendtgørelsen og erstatter ikke det fulde, bindende udbudsmateriale, som ordregiveren stiller til rådighed.
+            Det er alene mit ansvar som tilbudsgiver at sikre, at mit tilbud er korrekt og fuldstændigt og opfylder samtlige krav
+            i udbuddet — herunder krav, som Birdly ikke har kendskab til. Birdly fraskriver sig ethvert ansvar for oplysningernes
+            rigtighed og for tilbuddets gyldighed eller udfald.
+          </span>
+        </label>
+        <div style={{ marginTop: 16 }}>
+          <button
+            onClick={() => { if (consent) window.print(); }}
+            disabled={!consent}
+            style={{ ...(consent ? BTN_PRIMARY : { ...BTN_PRIMARY, background: "#C7D0D8", cursor: "not-allowed" }), border: 0, fontSize: 16, padding: "14px 24px" }}
+          >
+            Gem som PDF
+          </button>
+          {!consent && <span style={{ color: MUTED, fontSize: 13, marginLeft: 12 }}>Sæt kryds ovenfor for at låse op.</span>}
+          <p style={{ color: MUTED, fontSize: 12.5, marginTop: 10, fontStyle: "italic" }}>Vælg "Gem som PDF" i print-dialogen. Vedhæftede dokumentfiler følger med som navne — selve filerne uploader du i udbudssystemet.</p>
+        </div>
+      </div>
+
+      {/* Samtykke-linje der følger med i PDF'en */}
+      <div className="print-only" style={{ marginTop: 18, paddingTop: 12, borderTop: "1px solid " + LINE, color: MUTED, fontSize: 11.5, lineHeight: 1.5 }}>
+        Dette udkast er et vejledende hjælpeværktøj fra Birdly, udarbejdet på grundlag af de offentligt tilgængelige oplysninger
+        i udbudsbekendtgørelsen. Det erstatter ikke det fulde, bindende udbudsmateriale fra ordregiveren. Det er alene
+        tilbudsgivers ansvar at sikre, at tilbuddet er korrekt, fuldstændigt og opfylder samtlige krav i udbuddet. Birdly
+        fraskriver sig ethvert ansvar for oplysningernes rigtighed og for tilbuddets gyldighed eller udfald.
+      </div>
+
+      <p className="no-print" style={{ textAlign: "center", color: MUTED, fontSize: 12.5, marginTop: 20 }}>Skabelonen er et hjælpeværktøj — det bindende materiale ligger hos ordregiveren.</p>
     </main>
   );
 }
