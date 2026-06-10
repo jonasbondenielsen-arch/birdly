@@ -88,6 +88,13 @@
 
 9.4 Birdlys samlede erstatningsansvar er uanset ansvarsgrundlag beløbsmæssigt begrænset til det beløb, du har betalt for Tjenesten de seneste 12 måneder, dog maksimalt 5.000 DKK. Intet i betingelserne begrænser ansvar, der ikke kan fraskrives efter dansk ret.
 
+## Levering og ansvar for bud-skabelonen
+Bud-skabelonen leveres "som den er og forefindes" (as-is) og uden nogen form for garanti for et bestemt resultat, herunder at brugeren prækvalificeres, afgiver et konditionsmæssigt tilbud eller vinder en kontrakt. Skabelonens indhold genereres på grundlag af offentligt tilgængelige udbudsdata, og Birdly indestår ikke for disse datas rigtighed, fuldstændighed, aktualitet eller tilgængelighed.
+
+Birdly kan ikke holdes ansvarlig for fejl, mangler eller udfald, der følger af forudfyldte oplysninger, af brugerens egne indtastninger eller uploadede filer, eller af ændringer i udbudsmaterialet hos ordregiveren (herunder rettelsesblade, spørgsmål/svar og tillæg), som Birdly ikke har kendskab til.
+
+Birdly fraskriver sig i videst muligt omfang efter dansk ret ethvert ansvar for direkte og indirekte tab, herunder tabt fortjeneste, mistede kontrakter og følgeskader, der måtte udspringe af brugen af bud-skabelonen. Intet i disse betingelser begrænser et ansvar, der efter ufravigelig lovgivning ikke kan fraskrives.
+
 ## 10. Immaterielle rettigheder
 10.1 Tjenesten, herunder software, design og varemærket Birdly, tilhører eller er licenseret til Birdly. Der overdrages ingen immaterielle rettigheder til dig ved brug af Tjenesten.
 
