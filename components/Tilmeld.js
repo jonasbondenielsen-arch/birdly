@@ -348,7 +348,7 @@ export default function Tilmeld({ initialFag = null }) {
                       <label htmlFor="cvr">CVR-nummer</label>
                       <input id="cvr" inputMode="numeric" maxLength={8} placeholder="12345678" value={cvr}
                         aria-invalid={!!fieldErr.cvr}
-                        onChange={(e) => { setCvr(e.target.value); clearIfValid("cvr", e.target.value); }}
+                        onChange={(e) => { const v = digits(e.target.value).slice(0, 8); setCvr(v); clearIfValid("cvr", v); }}
                         onBlur={(e) => { lookupCvr(e.target.value); validateField("cvr", e.target.value); }} />
                       {fieldErr.cvr && <div className="field-err">{fieldErr.cvr}</div>}
                     </div>
