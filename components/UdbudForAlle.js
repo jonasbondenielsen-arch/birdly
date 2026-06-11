@@ -108,6 +108,47 @@ export default function UdbudForAlle() {
         </div>
       </section>
 
+      {/* SKABELON — Sådan virker skabelonen (kompakt: tekst venstre, udsnit m. 3 farve-tilstande højre) */}
+      <section className="skabsec">
+        <div className="wrap">
+          <div className="sk-grid">
+            <div className="sk-copy">
+              <span className="sk-label">Sådan virker skabelonen</span>
+              <div className="lead">Et udkast, der er det meste af vejen klar</div>
+              <p className="body">Sammen med dit udbudsmatch får du en skabelon, hvor vi allerede har forberedt det meste — krav, frister og det formelle. Med farver kan du altid se, hvad vi har udfyldt, og hvad der er dit.</p>
+              <ul className="sk-checks">
+                <li><svg viewBox="0 0 20 20" width="18"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg> Det formelle er sat op for dig</li>
+                <li><svg viewBox="0 0 20 20" width="18"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg> Vi siger ærligt, hvad du selv skal tjekke</li>
+                <li><svg viewBox="0 0 20 20" width="18"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg> Gem som pdf, klar til at aflevere</li>
+              </ul>
+              <p className="sk-honest">Vi gør cirka 70 % klar. De sidste 30 % — din pris, dine referencer og det faglige — er dit. Vi laver ikke dit udbud for dig.</p>
+            </div>
+            <div className="sk-card">
+              <div className="sk-cardh">Bud-skabelon · uddrag</div>
+              <div className="sk-row green">
+                <span className="sk-tag">🟢 Udfyldt af Birdly</span>
+                <span className="sk-val">Frist: 14. august 2026 · ESPD påkrævet · Sjælland</span>
+              </div>
+              <div className="sk-row amber">
+                <span className="sk-tag">🟡 Tjek i materialet</span>
+                <span className="sk-val">Tekniske mindstekrav</span>
+                <span className="sk-note">Står i materialet hos ordregiveren</span>
+              </div>
+              <div className="sk-row blue">
+                <span className="sk-tag">🔵 Udfyld selv</span>
+                <span className="sk-val">Din pris &amp; dine referencer</span>
+                <div className="sk-field">Skriv din pris her …</div>
+              </div>
+              <div className="sk-legend">
+                <span><i className="dot green"></i> Vi har udfyldt</span>
+                <span><i className="dot amber"></i> Tjek i materialet</span>
+                <span><i className="dot blue"></i> Du udfylder selv</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section className="cta">
         <div className="wrap">
           <h2>Giv din virksomhed en fair chance</h2>
