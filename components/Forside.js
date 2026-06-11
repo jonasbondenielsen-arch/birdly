@@ -253,6 +253,7 @@ export default function Forside() {
               <p>Høje priser og lange bindinger — før du ved, om det er noget for dig.</p>
             </div>
           </div>
+          <p className="pain-bridge reveal">Vi gør det hurtigt og enkelt — med en skabelon, der har det meste af tilbuddet klar, så du sparer timer.</p>
         </div>
       </section>
 
@@ -268,6 +269,7 @@ export default function Forside() {
             <div className="stp reveal"><div className="num">1</div><h3>Udfyld få oplysninger</h3><p>Fag, område og størrelse. Det tager to minutter — og du skal ikke logge ind.</p></div>
             <div className="stp reveal"><div className="num">2</div><h3>Vi holder øje for dig</h3><p>Birdly følger alle nye offentlige udbud hver dag — også dem, der er på vej.</p></div>
             <div className="stp reveal"><div className="num">3</div><h3>Du får en SMS</h3><p>Er der et match, får du en SMS og en kort mail med resumé, frist og link.</p></div>
+            <div className="stp reveal"><div className="num">4</div><h3>Vi hjælper dig i mål</h3><p>Du får en skabelon, hvor det meste af tilbuddet allerede er sat op. Du udfylder resten og gemmer som pdf.</p></div>
           </div>
         </div>
       </section>
@@ -297,6 +299,7 @@ export default function Forside() {
                 <li><span className="t"><svg width="15" viewBox="0 0 20 20"><path d="M5 10.5l3 3 7-8" stroke="#00B3A6" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg></span> Resumé på 3 linjer</li>
                 <li><span className="t"><svg width="15" viewBox="0 0 20 20"><path d="M5 10.5l3 3 7-8" stroke="#00B3A6" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg></span> Frist og dato</li>
                 <li><span className="t"><svg width="15" viewBox="0 0 20 20"><path d="M5 10.5l3 3 7-8" stroke="#00B3A6" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg></span> Direkte link til udbuddet</li>
+                <li><span className="t"><svg width="15" viewBox="0 0 20 20"><path d="M5 10.5l3 3 7-8" stroke="#00B3A6" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg></span> Bud-skabelon, klar til at udfylde</li>
               </ul>
             </div>
             <div className="mailcard reveal">

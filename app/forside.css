@@ -287,3 +287,11 @@ body.chat-open .chat-panel{opacity:1;transform:none;pointer-events:auto}
   .skab-legend i.yellow{background:#E0A800}
   @media(max-width:920px){.skab-grid{grid-template-columns:1fr;gap:34px}}
 }
+
+/* Stop-point 2: bro-linje under "Kender du det?" + 4. trin-boks (4 kort).
+   Additivt — overstyrer kun .steps' kolonneantal; mobil stabler stadig. */
+.birdly-home{
+  .pain .pain-bridge{text-align:center;max-width:62ch;margin:34px auto 0;color:var(--navy-soft);font-size:16.5px;font-weight:500}
+  .steps{grid-template-columns:repeat(4,1fr)}
+  @media(max-width:920px){.steps{grid-template-columns:1fr}}
+}
