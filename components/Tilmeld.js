@@ -38,6 +38,29 @@ const MAX_BANDS = [
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const digits = (s) => String(s || "").replace(/\D/g, "");
 
+// Telefon → internationalt E.164-format ("+45…"). Numre med landekode (ledende
+// "+" eller "00") bevarer deres kode (svensk +46, norsk +47, UK +44 osv.).
+// Et dansk 8-cifret nummer UDEN kode antages at være +45.
+function normalizePhone(raw) {
+  let s = String(raw || "").trim();
+  if (!s) return "";
+  let hasCode = s.startsWith("+");
+  if (s.startsWith("00")) { hasCode = true; s = s.slice(2); }   // 00-præfiks = international
+  const d = s.replace(/\D/g, "");
+  if (!d) return "";
+  if (hasCode) return "+" + d;            // landekode allerede angivet
+  if (d.length === 8) return "+45" + d;   // dansk nummer uden kode → antag +45
+  return "+" + d;                          // øvrige uden "+": antag koden er med i tallet
+}
+// Gyldigt, hvis det normaliserede nummer holder sig inden for E.164 (8–15 cifre
+// inkl. landekode). Dansk +45 + 8 cifre = 10; udenlandske numre passer typisk i 10–14.
+function isValidPhone(raw) {
+  const n = normalizePhone(raw);
+  if (!n.startsWith("+")) return false;
+  const len = n.slice(1).length;
+  return len >= 8 && len <= 15;
+}
+
 export default function Tilmeld({ initialFag = null }) {
   const [step, setStep] = useState(1);
   const [catalog, setCatalog] = useState(null);
@@ -55,7 +78,7 @@ export default function Tilmeld({ initialFag = null }) {
   const fieldRules = {
     cvr: (v) => (digits(v).length === 8 ? "" : "Skriv et gyldigt CVR-nummer (8 cifre)."),
     email: (v) => (EMAIL_RE.test(String(v).trim()) ? "" : "Skriv en gyldig e-mail."),
-    phone: (v) => (digits(v).length === 8 ? "" : "Skriv et gyldigt mobilnummer (8 cifre)."),
+    phone: (v) => (isValidPhone(v) ? "" : "Skriv et gyldigt mobilnummer — udenlandske numre med landekode (fx +46, +47, +44)."),
   };
   // Vis fejl ved blur (tomt/ugyldigt felt).
   function validateField(name, value) {
@@ -213,7 +236,7 @@ export default function Tilmeld({ initialFag = null }) {
       cvr: digits(cvr),
       contact_name: contact.trim() || null,
       email: email.trim(),
-      phone: digits(phone),
+      phone: normalizePhone(phone),
       fag_keys: selectedFagKeys,
       cpv_selections: cpvSelections,
       bredde,
@@ -304,7 +327,7 @@ export default function Tilmeld({ initialFag = null }) {
                     </div>
                     <div className="fg">
                       <label htmlFor="mobil">Mobilnummer (til SMS)</label>
-                      <input id="mobil" type="tel" placeholder="12 34 56 78" value={phone}
+                      <input id="mobil" type="tel" placeholder="12 34 56 78 (udenlandsk: +46 …)" value={phone}
                         aria-invalid={!!fieldErr.phone}
                         onChange={(e) => { setPhone(e.target.value); clearIfValid("phone", e.target.value); }}
                         onBlur={(e) => validateField("phone", e.target.value)} />
@@ -458,7 +481,7 @@ export default function Tilmeld({ initialFag = null }) {
 
                   <div className="summary">
                     <div className="srow"><span className="sk">Virksomhed</span><span className="sv">{company || "—"}{cvr ? " · CVR " + digits(cvr) : ""}</span></div>
-                    <div className="srow"><span className="sk">Kontakt</span><span className="sv">{[contact, email, digits(phone)].filter(Boolean).join(" · ") || "—"}</span></div>
+                    <div className="srow"><span className="sk">Kontakt</span><span className="sv">{[contact, email, normalizePhone(phone)].filter(Boolean).join(" · ") || "—"}</span></div>
                     <div className="srow"><span className="sk">Fag & områder</span><span className="sv">
                       {selectedFagKeys.map((k) => {
                         if (k === "andet") return <div key={k}><b>Andet</b> — bredt udvalg af bygge- og anlægsopgaver (vi bygger dit fag ind snart)</div>;
