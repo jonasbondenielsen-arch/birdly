@@ -262,14 +262,14 @@ export default function Forside() {
         <div className="wrap">
           <div className="center reveal">
             <span className="kick">Hvordan virker det</span>
-            <h2 className="big">Fra besvær til besked — på tre trin.</h2>
+            <h2 className="big">Fra besvær til besked.</h2>
             <p className="lead">Du gør det nemme. Vi gør resten. Du hører kun fra os, når der er et match.</p>
           </div>
           <div className="steps">
             <div className="stp reveal"><div className="num">1</div><h3>Udfyld få oplysninger</h3><p>Fag, område og størrelse. Det tager to minutter — og du skal ikke logge ind.</p></div>
             <div className="stp reveal"><div className="num">2</div><h3>Vi holder øje for dig</h3><p>Birdly følger alle nye offentlige udbud hver dag — også dem, der er på vej.</p></div>
             <div className="stp reveal"><div className="num">3</div><h3>Du får en SMS</h3><p>Er der et match, får du en SMS og en kort mail med resumé, frist og link.</p></div>
-            <div className="stp reveal"><div className="num">4</div><h3>Vi hjælper dig i mål</h3><p>Du får en skabelon, hvor det meste af tilbuddet allerede er sat op. Du udfylder resten og gemmer som pdf.</p></div>
+            <div className="stp reveal"><div className="num">4</div><h3>Vi hjælper dig i mål</h3><p>Skabelonen følger med i linket. Brug den eller lad være — men den sparer mange for timers arbejde.</p></div>
           </div>
         </div>
       </section>
@@ -357,10 +357,10 @@ export default function Forside() {
             <p className="lead">Vi gør én ting — og gør den enkelt. Det er hele idéen bag Birdly.</p>
           </div>
           <div className="vals">
-            <div className="vcard reveal"><div className="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M3 12h10" stroke="#2EB7FF" strokeWidth="2.2" strokeLinecap="round" /><path d="M11 7.5l4.5 4.5L11 16.5" stroke="#2EB7FF" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /><circle cx="20" cy="12" r="1.9" fill="#00B3A6" /></svg></div><h4>Direkte</h4><p>Vi siger det, som det er. Kort, klart og uden omsvøb.</p></div>
-            <div className="vcard reveal"><div className="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M19 4C11 4 5 10 5 18c8 0 14-6 14-14z" stroke="#2EB7FF" strokeWidth="2" strokeLinejoin="round" /><path d="M17.5 5.5L7 16" stroke="#00B3A6" strokeWidth="1.8" strokeLinecap="round" /><path d="M13.6 6.3h-2.3M11 9H8.7M8.7 11.6H6.4" stroke="#00B3A6" strokeWidth="1.5" strokeLinecap="round" /></svg></div><h4>Frisk</h4><p>Moderne, energisk og fremadskuende — ikke en støvet portal.</p></div>
-            <div className="vcard reveal"><div className="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><rect x="3" y="8" width="18" height="9" rx="4.5" stroke="#2EB7FF" strokeWidth="2" /><circle cx="16.5" cy="12.5" r="2.7" fill="#00B3A6" /></svg></div><h4>Enkel</h4><p>Komplekst gjort simpelt. Overblik på få sekunder.</p></div>
-            <div className="vcard reveal"><div className="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M12 3l7 2.6v5.4c0 4.3-3 7.4-7 9-4-1.6-7-4.7-7-9V5.6L12 3z" stroke="#2EB7FF" strokeWidth="2" strokeLinejoin="round" /><path d="M9 12l2.2 2.2L15 9.8" stroke="#00B3A6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg></div><h4>Tryg</h4><p>Pålidelig, transparent og til at stole på.</p></div>
+            <div className="vcard reveal"><div className="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M3 12h10" stroke="#2EB7FF" strokeWidth="2.2" strokeLinecap="round" /><path d="M11 7.5l4.5 4.5L11 16.5" stroke="#2EB7FF" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /><circle cx="20" cy="12" r="1.9" fill="#00B3A6" /></svg></div><h4>Ingen login</h4><p>Ingen portal at logge ind på. Du får alt i en SMS og en mail.</p></div>
+            <div className="vcard reveal"><div className="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M19 4C11 4 5 10 5 18c8 0 14-6 14-14z" stroke="#2EB7FF" strokeWidth="2" strokeLinejoin="round" /><path d="M17.5 5.5L7 16" stroke="#00B3A6" strokeWidth="1.8" strokeLinecap="round" /><path d="M13.6 6.3h-2.3M11 9H8.7M8.7 11.6H6.4" stroke="#00B3A6" strokeWidth="1.5" strokeLinecap="round" /></svg></div><h4>Frie fugle</h4><p>Ingen binding. Opsig når du vil — vi holder på dig med produktet, ikke en kontrakt.</p></div>
+            <div className="vcard reveal"><div className="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><rect x="3" y="8" width="18" height="9" rx="4.5" stroke="#2EB7FF" strokeWidth="2" /><circle cx="16.5" cy="12.5" r="2.7" fill="#00B3A6" /></svg></div><h4>Åben og ærlig</h4><p>Ingen sælgere, ingen dyre konsulenter. Du ser præcis, hvad du får.</p></div>
+            <div className="vcard reveal"><div className="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M12 3l7 2.6v5.4c0 4.3-3 7.4-7 9-4-1.6-7-4.7-7-9V5.6L12 3z" stroke="#2EB7FF" strokeWidth="2" strokeLinejoin="round" /><path d="M9 12l2.2 2.2L15 9.8" stroke="#00B3A6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg></div><h4>Skarp pris</h4><p>Ingen tung organisation eller fancy hovedkontor — derfor nok de billigste på det, vi gør.</p></div>
           </div>
         </div>
       </section>

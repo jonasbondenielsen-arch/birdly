@@ -49,6 +49,7 @@ export default function UdbudForAlle() {
           <ul className="list">
             <li><svg viewBox="0 0 24 24" width="24"><circle cx="12" cy="12" r="11" fill="#00B3A6" /><path d="M7 12.5l3 3 7-7.5" stroke="#fff" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg> En <b>SMS</b> med det samme, hvis du ønsker det — så du er blandt de første, der ved det.</li>
             <li><svg viewBox="0 0 24 24" width="24"><circle cx="12" cy="12" r="11" fill="#00B3A6" /><path d="M7 12.5l3 3 7-7.5" stroke="#fff" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg> En <b>mail</b> med et kort resumé af opgaven, fristen og et direkte link til udbuddet.</li>
+            <li><svg viewBox="0 0 24 24" width="24"><circle cx="12" cy="12" r="11" fill="#00B3A6" /><path d="M7 12.5l3 3 7-7.5" stroke="#fff" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg> En <b>skabelon</b> til selve buddet, hvor det meste allerede står klar — du udfylder bare resten.</li>
           </ul>
           <p className="body" style={{ marginTop: 20 }}>Så kan I tage den derfra internt. <b>Ingen platform at logge ind på. Ingen daglig søgning. Ingen spildte aftener.</b></p>
         </div>
@@ -90,6 +91,7 @@ export default function UdbudForAlle() {
                 <li><svg viewBox="0 0 20 20" width="18"><circle cx="10" cy="10" r="9" fill="none" stroke="#B4BCC8" strokeWidth="1.6" /><path d="M7 7l6 6M13 7l-6 6" stroke="#B4BCC8" strokeWidth="1.6" strokeLinecap="round" /></svg> Endeløse lister at lede i</li>
                 <li><svg viewBox="0 0 20 20" width="18"><circle cx="10" cy="10" r="9" fill="none" stroke="#B4BCC8" strokeWidth="1.6" /><path d="M7 7l6 6M13 7l-6 6" stroke="#B4BCC8" strokeWidth="1.6" strokeLinecap="round" /></svg> Sælgere, moduler og binding</li>
                 <li><svg viewBox="0 0 20 20" width="18"><circle cx="10" cy="10" r="9" fill="none" stroke="#B4BCC8" strokeWidth="1.6" /><path d="M7 7l6 6M13 7l-6 6" stroke="#B4BCC8" strokeWidth="1.6" strokeLinecap="round" /></svg> Dyre konsulenttimer</li>
+                <li><svg viewBox="0 0 20 20" width="18"><circle cx="10" cy="10" r="9" fill="none" stroke="#B4BCC8" strokeWidth="1.6" /><path d="M7 7l6 6M13 7l-6 6" stroke="#B4BCC8" strokeWidth="1.6" strokeLinecap="round" /></svg> En portal du skal logge ind på og lære at kende</li>
               </ul>
             </div>
             <div className="col us">
@@ -99,6 +101,7 @@ export default function UdbudForAlle() {
                 <li><svg viewBox="0 0 20 20" width="18"><circle cx="10" cy="10" r="9" fill="#00B3A6" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#fff" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg> Kun de match, der passer til jer</li>
                 <li><svg viewBox="0 0 20 20" width="18"><circle cx="10" cy="10" r="9" fill="#00B3A6" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#fff" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg> Ingen sælgere, ingen binding</li>
                 <li><svg viewBox="0 0 20 20" width="18"><circle cx="10" cy="10" r="9" fill="#00B3A6" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#fff" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg> Fast, lav pris — opsig når du vil</li>
+                <li><svg viewBox="0 0 20 20" width="18"><circle cx="10" cy="10" r="9" fill="#00B3A6" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#fff" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg> En åben skabelon til buddet — uden login</li>
               </ul>
             </div>
           </div>
