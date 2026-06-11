@@ -320,6 +320,31 @@ export default function Forside() {
         </div>
       </section>
 
+      {/* SKABELON — Din bud-skabelon (vis forskellen: grøn = udfyldt af Birdly, gul = udfyld selv) */}
+      <section className="skab" id="skabelon">
+        <div className="wrap">
+          <div className="skab-grid">
+            <div className="skab-copy reveal">
+              <span className="kick">Din bud-skabelon</span>
+              <h2>Vi finder ikke bare udbuddet — vi hjælper dig i gang</h2>
+              <p>Når vi sender dig et relevant udbud, har vi allerede gjort cirka 70 % af tilbuddet klar — krav, frister og det formelle. De sidste 30 % er det, kun du kender: din pris, dine referencer og din beskrivelse af opgaven.</p>
+              <p className="skab-honest">Vi laver ikke dit udbud for dig — men vi gør det meste af benarbejdet, så du hurtigt kan komme i gang.</p>
+            </div>
+            <div className="skab-card reveal">
+              <div className="skab-cardh">
+                <span className="ic"><svg width="17" viewBox="0 0 28 28" fill="none"><path d="M4 17C8 11 11 11 14 15" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" /><path d="M14 15C17 11 20 11 24 17" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" /></svg></span>
+                <b>Bud-skabelon</b><span className="ex">uddrag</span>
+              </div>
+              <div className="skab-row green"><span className="skab-state">🟢 Udfyldt af Birdly</span><span className="skab-val">Ordregiver, frist &amp; krav</span></div>
+              <div className="skab-row green"><span className="skab-state">🟢 Udfyldt af Birdly</span><span className="skab-val">ESPD &amp; formalia</span></div>
+              <div className="skab-row yellow"><span className="skab-state">🟡 Udfyld selv</span><span className="skab-val">Din pris</span></div>
+              <div className="skab-row yellow"><span className="skab-state">🟡 Udfyld selv</span><span className="skab-val">Dine referencer</span></div>
+              <div className="skab-legend"><span><i className="dot green"></i> Udfyldt af Birdly</span><span><i className="dot yellow"></i> Udfyld selv</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* VALUES */}
       <section>
         <div className="wrap">
@@ -355,6 +380,7 @@ export default function Forside() {
                 <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>Kommunale &amp; statslige udbud i <b>én region</b>, du selv vælger</span></li>
                 <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>SMS + mail ved match</span></li>
                 <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>Resumé, dato og link</span></li>
+                <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>Bud-skabelon inkluderet</span></li>
                 <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>Ingen binding</span></li>
               </ul>
               <Link href="/tilmeld" className="btn btn-ghost">Start gratis</Link>
@@ -370,6 +396,7 @@ export default function Forside() {
                 <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>Alt i Spurv</span></li>
                 <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>Alle regioner <b>vest eller øst for Storebælt</b></span></li>
                 <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>Flere matches — større område</span></li>
+                <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>Bud-skabelon inkluderet</span></li>
                 <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>Ingen binding</span></li>
               </ul>
               <Link href="/tilmeld" className="btn btn-teal">Start gratis</Link>
@@ -384,6 +411,7 @@ export default function Forside() {
                 <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>Alt i Falk</span></li>
                 <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>Udbud i <b>hele Danmark</b></span></li>
                 <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>Det bedste overblik på markedet</span></li>
+                <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>Bud-skabelon inkluderet</span></li>
                 <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>Ingen binding</span></li>
               </ul>
               <Link href="/tilmeld" className="btn btn-ghost">Start gratis</Link>

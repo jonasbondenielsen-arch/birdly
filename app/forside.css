@@ -260,3 +260,30 @@ body.chat-open .chat-panel{opacity:1;transform:none;pointer-events:auto}
 .chat-foot button{background:var(--teal);border:0;width:46px;border-radius:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex:0 0 46px}
 .chat-note{font-size:11px;color:var(--navy-soft);text-align:center;padding:8px 0 11px;background:#fff}
 @media(max-width:520px){.chat-panel{right:12px;left:12px;bottom:86px;width:auto;height:72vh}.chat-launcher{right:14px;bottom:14px}}
+
+/* ============================================================
+   Skabelon-sektion ("Din bud-skabelon") — additiv, scoped under .birdly-home.
+   Genbruger skabelonens grøn/gul-farver (grøn=udfyldt af Birdly, gul=udfyld selv).
+   ============================================================ */
+.birdly-home{
+  .skab-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:46px;align-items:center}
+  .skab-copy h2{font-size:clamp(27px,3.2vw,38px)}
+  .skab-copy p{color:var(--navy-soft);font-size:17px;margin-top:14px}
+  .skab-copy .skab-honest{font-size:15px;color:var(--navy-soft);background:var(--sky-soft);border-left:3px solid var(--teal);border-radius:0 10px 10px 0;padding:12px 15px;margin-top:18px}
+  .skab-card{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:20px;box-shadow:var(--shadow)}
+  .skab-cardh{display:flex;align-items:center;gap:9px;border-bottom:1px solid var(--line);padding-bottom:13px;margin-bottom:14px;font-family:'Plus Jakarta Sans';font-weight:800}
+  .skab-cardh .ic{width:30px;height:30px;border-radius:9px;background:var(--sky);display:flex;align-items:center;justify-content:center}
+  .skab-cardh .ex{margin-left:auto;font-size:12px;font-weight:600;color:var(--navy-soft)}
+  .skab-row{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid var(--line);border-radius:11px;padding:11px 13px;margin-bottom:9px}
+  .skab-row.green{background:#E5F7EF;border-color:#BFE9DA}
+  .skab-row.yellow{background:#FDF3DC;border-color:#F3DDA8}
+  .skab-state{font-size:12.5px;font-weight:700;white-space:nowrap}
+  .skab-row.green .skab-state{color:#197A66}
+  .skab-row.yellow .skab-state{color:#92670A}
+  .skab-val{font-size:13.5px;color:var(--navy);text-align:right}
+  .skab-legend{display:flex;gap:18px;flex-wrap:wrap;margin-top:14px;font-size:12.5px;color:var(--navy-soft)}
+  .skab-legend i.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:middle}
+  .skab-legend i.green{background:#197A66}
+  .skab-legend i.yellow{background:#E0A800}
+  @media(max-width:920px){.skab-grid{grid-template-columns:1fr;gap:34px}}
+}
