@@ -2,7 +2,7 @@
    Tilmelding — ordret CSS fra tilmeld-html, scoped under .birdly-tilmeld.
    Delt base (reset, :root, body-font, a) ligger i globals.css.
    ============================================================ */
-.birdly-tilmeld{ background:var(--sky-soft); min-height:100vh; }
+.birdly-tilmeld{ position:relative; isolation:isolate; background:linear-gradient(160deg, var(--sky-soft), var(--sky-200) 180%); min-height:100vh; }
 
 .birdly-tilmeld{
   h1,h2,h3,h4{font-family:'Plus Jakarta Sans','Inter',sans-serif;font-weight:800;line-height:1.1;letter-spacing:-.02em}
@@ -191,4 +191,25 @@
     .srow{flex-direction:column;gap:2px}
     .srow .sk{flex:none}
   }
+}
+
+/* ============================================================
+   Brand-baggrund bag signup-kortet (additivt). Diskret brevdue-watermark
+   (eksisterende /birdly-bird.svg) i nederste højre hjørne, BAG kortet
+   (z-index:-1 ift. .birdly-tilmeld's isolation). Kun gradient på mobil.
+   ============================================================ */
+.birdly-tilmeld::before{
+  content:"";
+  position:fixed;
+  right:-28px;
+  bottom:-22px;
+  width:300px;
+  aspect-ratio:657 / 579;            /* bevarer brevduens proportioner (fra birdly-bird.svg) */
+  background:url('/birdly-bird.svg') no-repeat center / contain;
+  opacity:.06;                        /* meget svagt — anes, ikke ses */
+  z-index:-1;                         /* bag kortet, over gradienten */
+  pointer-events:none;
+}
+@media(max-width:640px){
+  .birdly-tilmeld::before{ display:none; }   /* mobil: kun gradienten, watermark skjult */
 }
