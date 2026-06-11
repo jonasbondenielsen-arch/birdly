@@ -223,7 +223,6 @@ export default function Forside() {
                 </div>
               </div>
             </div>
-            <div className="bubble"><svg width="22" viewBox="0 0 24 24" fill="none"><path d="M4 5h16v11H8l-4 4V5z" fill="#fff" /></svg><span className="badge">1</span></div>
           </div>
         </div>
       </section>

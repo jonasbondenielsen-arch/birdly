@@ -69,8 +69,6 @@
   .matchcard .li{display:flex;gap:7px;font-size:12px;align-items:center;margin-bottom:5px}
   .matchcard .li svg{flex:0 0 14px}
   .matchcard .see{color:var(--sky);font-weight:700;font-size:12.5px;margin-top:8px;display:inline-block}
-  .bubble{position:absolute;right:14px;top:30px;width:46px;height:46px;border-radius:50%;background:var(--sky);display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-lg);z-index:5}
-  .bubble .badge{position:absolute;top:-4px;right:-4px;width:20px;height:20px;border-radius:50%;background:var(--coral);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;border:2px solid #fff}
 
   /* generic section */
   section{padding:90px 0}
