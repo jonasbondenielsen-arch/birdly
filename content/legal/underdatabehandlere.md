@@ -1,6 +1,6 @@
 # Underdatabehandlere
 
-**Sidst opdateret 4. juni 2026.**
+**Sidst opdateret 11. juni 2026.**
 
 For at kunne levere Birdly anvender vi en række betroede underdatabehandlere, der behandler personoplysninger på vores vegne under databehandleraftaler. Nedenfor finder du den aktuelle liste. Klik på navnet for at besøge den enkelte leverandørs hjemmeside.
 
@@ -8,7 +8,7 @@ For at kunne levere Birdly anvender vi en række betroede underdatabehandlere, d
 |---|---|---|
 | [Supabase](https://supabase.com) | Database og backend | Paris, Frankrig (EU) |
 | [Vercel](https://vercel.com) | Hosting af hjemmeside og applikation | EU |
-| [Sure SMS](https://www.suresms.com) | Udsendelse af SMS-beskeder til kunder | Danmark |
+| [SureSMS](https://www.suresms.com) | Udsendelse af SMS-beskeder til kunder | Danmark |
 | [Resend](https://resend.com) | Udsendelse af e-mail (system-mails) | EU/USA |
 | [Frisbii](https://www.frisbii.com) | Betalingsafvikling og abonnementshåndtering | Danmark/EU |
 | [MobilePay](https://www.mobilepay.dk) | Betalingsmetode | Danmark |

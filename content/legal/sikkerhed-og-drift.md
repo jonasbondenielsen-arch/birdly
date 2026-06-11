@@ -1,6 +1,6 @@
 # Sikkerhed og drift
 
-**Sidst opdateret 4. juni 2026.**
+**Sidst opdateret 11. juni 2026.**
 
 Hos Birdly tager vi sikkerheden af dine data alvorligt. Her kan du læse, hvordan vi beskytter og sikrer tilgængeligheden af dine oplysninger.
 
@@ -20,7 +20,7 @@ Vi tilstræber høj oppetid, men der kan forekomme driftsuregelmæssigheder i fo
 Data sikkerhedskopieres løbende, så oplysninger kan genskabes, hvis uheldet er ude.
 
 ## Underleverandører
-Vi anvender betroede databehandlere til hosting (Supabase, Vercel), udsendelse af SMS (Sure SMS) og e-mail (Resend) samt betaling (Frisbii og MobilePay). Du kan se den aktuelle liste i dokumentet "Underdatabehandlere", og du kan læse mere om vores behandling af personoplysninger i privatlivspolitikken.
+Vi anvender betroede databehandlere til hosting (Supabase, Vercel), udsendelse af SMS (SureSMS) og e-mail (Resend) samt betaling (Frisbii, MobilePay og Clearhaus). Du kan se den aktuelle liste i dokumentet "Underdatabehandlere", og du kan læse mere om vores behandling af personoplysninger i privatlivspolitikken.
 
 ## Spørgsmål
 Har du spørgsmål til sikkerhed og drift, er du velkommen til at kontakte os på support@birdly.dk.
