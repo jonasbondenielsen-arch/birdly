@@ -238,21 +238,21 @@ export default function Forside() {
           <div className="pain-grid">
             <div className="pcard reveal">
               <div className="ic"><svg width="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#FF6B6B" strokeWidth="2" /><path d="M12 7v5l3 2" stroke="#FF6B6B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg></div>
-              <h3>Du ser det for sent</h3>
+              <h3>Du ser dem for sent</h3>
               <p>Fristen er der tit, før du overhovedet opdager opgaven.</p>
             </div>
             <div className="pcard reveal">
               <div className="ic"><svg width="22" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h10" stroke="#FF6B6B" strokeWidth="2" strokeLinecap="round" /></svg></div>
-              <h3>Portalerne er tunge</h3>
-              <p>Indviklede sider og login. Du bruger timer på at lede.</p>
+              <h3>De ligger spredt</h3>
+              <p>Udbuddene er fordelt på tunge portaler med login. At holde øje koster timer hver uge.</p>
             </div>
             <div className="pcard reveal">
-              <div className="ic"><svg width="22" viewBox="0 0 24 24" fill="none"><path d="M12 2v20M7 6h7a3 3 0 010 6H8a3 3 0 000 6h8" stroke="#FF6B6B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg></div>
-              <h3>De store er dyre</h3>
-              <p>Høje priser og lange bindinger — før du ved, om det er noget for dig.</p>
+              <div className="ic"><svg width="22" viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="#FF6B6B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /><path d="M14 2v6h6" stroke="#FF6B6B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /><path d="M16 13H8M16 17H8M10 9H8" stroke="#FF6B6B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg></div>
+              <h3>Buddet tager tid</h3>
+              <p>Når du endelig finder en opgave, æder selve tilbuddet de timer, du ikke har.</p>
             </div>
           </div>
-          <p className="pain-bridge reveal">Vi gør det hurtigt og enkelt — med en skabelon, der har det meste af tilbuddet klar, så du sparer timer.</p>
+          <p className="pain-bridge reveal">Du får beskeden om de rette opgaver — og en skabelon klar, hvis du vil byde. Resten bestemmer du selv.</p>
         </div>
       </section>
 
