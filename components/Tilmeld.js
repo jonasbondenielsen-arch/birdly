@@ -38,28 +38,61 @@ const MAX_BANDS = [
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const digits = (s) => String(s || "").replace(/\D/g, "");
 
-// Telefon → internationalt E.164-format ("+45…"). Numre med landekode (ledende
-// "+" eller "00") bevarer deres kode (svensk +46, norsk +47, UK +44 osv.).
-// Et dansk 8-cifret nummer UDEN kode antages at være +45.
-function normalizePhone(raw) {
+// Landekoder til telefon-vælgeren. Danmark står først (default). Nordisk +
+// bredere EU/EØS-udvalg. Søgbar via type-ahead på landenavnet i <select>.
+const DIAL_CODES = [
+  { iso: "DK", flag: "🇩🇰", name: "Danmark", code: "+45" },
+  { iso: "SE", flag: "🇸🇪", name: "Sverige", code: "+46" },
+  { iso: "NO", flag: "🇳🇴", name: "Norge", code: "+47" },
+  { iso: "FI", flag: "🇫🇮", name: "Finland", code: "+358" },
+  { iso: "IS", flag: "🇮🇸", name: "Island", code: "+354" },
+  { iso: "FO", flag: "🇫🇴", name: "Færøerne", code: "+298" },
+  { iso: "GL", flag: "🇬🇱", name: "Grønland", code: "+299" },
+  { iso: "DE", flag: "🇩🇪", name: "Tyskland", code: "+49" },
+  { iso: "NL", flag: "🇳🇱", name: "Holland", code: "+31" },
+  { iso: "BE", flag: "🇧🇪", name: "Belgien", code: "+32" },
+  { iso: "GB", flag: "🇬🇧", name: "Storbritannien", code: "+44" },
+  { iso: "IE", flag: "🇮🇪", name: "Irland", code: "+353" },
+  { iso: "FR", flag: "🇫🇷", name: "Frankrig", code: "+33" },
+  { iso: "ES", flag: "🇪🇸", name: "Spanien", code: "+34" },
+  { iso: "PT", flag: "🇵🇹", name: "Portugal", code: "+351" },
+  { iso: "IT", flag: "🇮🇹", name: "Italien", code: "+39" },
+  { iso: "AT", flag: "🇦🇹", name: "Østrig", code: "+43" },
+  { iso: "CH", flag: "🇨🇭", name: "Schweiz", code: "+41" },
+  { iso: "PL", flag: "🇵🇱", name: "Polen", code: "+48" },
+  { iso: "CZ", flag: "🇨🇿", name: "Tjekkiet", code: "+420" },
+  { iso: "EE", flag: "🇪🇪", name: "Estland", code: "+372" },
+  { iso: "LV", flag: "🇱🇻", name: "Letland", code: "+371" },
+  { iso: "LT", flag: "🇱🇹", name: "Litauen", code: "+370" },
+];
+
+// Nummer-feltet er KUN cifre — landekoden styres alene af vælgeren. Indsætter
+// nogen et helt internationalt nummer (+ / 00 / landekode), fjernes præfikset, så
+// vi aldrig får dobbelt landekode. National trunk-0 (SE/NO/UK skriver ofte 0
+// foran) fjernes også — danske numre har aldrig et 0 foran.
+function sanitizeNationalNumber(raw, dialCode) {
   let s = String(raw || "").trim();
-  if (!s) return "";
-  let hasCode = s.startsWith("+");
-  if (s.startsWith("00")) { hasCode = true; s = s.slice(2); }   // 00-præfiks = international
-  const d = s.replace(/\D/g, "");
-  if (!d) return "";
-  if (hasCode) return "+" + d;            // landekode allerede angivet
-  if (d.length === 8) return "+45" + d;   // dansk nummer uden kode → antag +45
-  return "+" + d;                          // øvrige uden "+": antag koden er med i tallet
+  let intl = s.startsWith("+");
+  if (s.startsWith("00")) { intl = true; s = s.slice(2); }
+  let d = s.replace(/\D/g, "");
+  const code = String(dialCode).replace(/\D/g, "");
+  if (intl && code && d.startsWith(code)) d = d.slice(code.length); // fjern indsat landekode
+  return d.replace(/^0+/, "");                                       // fjern national trunk-0
 }
-// Gyldigt, hvis det normaliserede nummer holder sig inden for E.164 (8–15 cifre
-// inkl. landekode). Dansk +45 + 8 cifre = 10; udenlandske numre passer typisk i 10–14.
-function isValidPhone(raw) {
-  const n = normalizePhone(raw);
-  if (!n.startsWith("+")) return false;
-  const len = n.slice(1).length;
-  return len >= 8 && len <= 15;
+// Fuldt E.164 = landekode + nationalt nummer. Dansk kræver præcis 8 cifre;
+// udenlandske numre valideres bredt mod E.164 (8–15 cifre inkl. landekode).
+function isValidFullPhone(dialCode, national) {
+  const code = String(dialCode).replace(/\D/g, "");
+  const n = String(national || "").replace(/\D/g, "");
+  if (!n) return false;
+  if (dialCode === "+45") return n.length === 8;
+  const total = code.length + n.length;
+  return total >= 8 && total <= 15;
 }
+// Sammensæt til E.164-streng, fx "+45" + "40576934" → "+4540576934".
+const toE164 = (dialCode, national) => dialCode + String(national || "").replace(/\D/g, "");
+const phoneErrMsg = (dialCode) =>
+  dialCode === "+45" ? "Skriv et gyldigt mobilnummer (8 cifre)." : "Skriv et gyldigt mobilnummer med landekode.";
 
 export default function Tilmeld({ initialFag = null }) {
   const [step, setStep] = useState(1);
@@ -71,14 +104,14 @@ export default function Tilmeld({ initialFag = null }) {
   const [cvr, setCvr] = useState("");
   const [contact, setContact] = useState("");
   const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
+  const [dial, setDial] = useState("+45");   // landekode-vælger, default Danmark
+  const [phone, setPhone] = useState("");     // KUN nationale cifre (uden landekode)
   const [cvrState, setCvrState] = useState({ loading: false, branchekode: null, found: null, msg: "" });
   // Inline feltfejl (trin 1) — vises LIGE under det relevante felt, ikke som banner.
   const [fieldErr, setFieldErr] = useState({});
   const fieldRules = {
     cvr: (v) => (digits(v).length === 8 ? "" : "Skriv et gyldigt CVR-nummer (8 cifre)."),
     email: (v) => (EMAIL_RE.test(String(v).trim()) ? "" : "Skriv en gyldig e-mail."),
-    phone: (v) => (isValidPhone(v) ? "" : "Skriv et gyldigt mobilnummer — udenlandske numre med landekode (fx +46, +47, +44)."),
   };
   // Vis fejl ved blur (tomt/ugyldigt felt).
   function validateField(name, value) {
@@ -87,6 +120,13 @@ export default function Tilmeld({ initialFag = null }) {
   // Ryd en feltfejl, så snart værdien bliver gyldig (mens man retter).
   function clearIfValid(name, value) {
     setFieldErr((p) => (p[name] && !fieldRules[name](value) ? { ...p, [name]: "" } : p));
+  }
+  // Telefon valideres på landekode + nummer (begge eksplicit, da state er async).
+  function validatePhone(dialCode, national) {
+    setFieldErr((p) => ({ ...p, phone: isValidFullPhone(dialCode, national) ? "" : phoneErrMsg(dialCode) }));
+  }
+  function clearPhoneIfValid(dialCode, national) {
+    setFieldErr((p) => (p.phone && isValidFullPhone(dialCode, national) ? { ...p, phone: "" } : p));
   }
 
   // Trin 2 — arbejdsområder
@@ -207,7 +247,7 @@ export default function Tilmeld({ initialFag = null }) {
     setErr("");
     if (step === 1) {
       // Markér ALLE manglende/forkerte felter inline (ikke én samlet banner).
-      const fe = { cvr: fieldRules.cvr(cvr), email: fieldRules.email(email), phone: fieldRules.phone(phone) };
+      const fe = { cvr: fieldRules.cvr(cvr), email: fieldRules.email(email), phone: isValidFullPhone(dial, phone) ? "" : phoneErrMsg(dial) };
       setFieldErr(fe);
       if (fe.cvr || fe.email || fe.phone) return;
     }
@@ -236,7 +276,7 @@ export default function Tilmeld({ initialFag = null }) {
       cvr: digits(cvr),
       contact_name: contact.trim() || null,
       email: email.trim(),
-      phone: normalizePhone(phone),
+      phone: toE164(dial, phone),
       fag_keys: selectedFagKeys,
       cpv_selections: cpvSelections,
       bredde,
@@ -327,10 +367,21 @@ export default function Tilmeld({ initialFag = null }) {
                     </div>
                     <div className="fg">
                       <label htmlFor="mobil">Mobilnummer (til SMS)</label>
-                      <input id="mobil" type="tel" placeholder="12 34 56 78 (udenlandsk: +46 …)" value={phone}
-                        aria-invalid={!!fieldErr.phone}
-                        onChange={(e) => { setPhone(e.target.value); clearIfValid("phone", e.target.value); }}
-                        onBlur={(e) => validateField("phone", e.target.value)} />
+                      <div style={{ display: "flex", gap: 8 }}>
+                        <select aria-label="Landekode" value={dial}
+                          style={{ flex: "0 0 auto", width: "auto", maxWidth: 190 }}
+                          onChange={(e) => { setDial(e.target.value); clearPhoneIfValid(e.target.value, phone); }}
+                          onBlur={() => validatePhone(dial, phone)}>
+                          {DIAL_CODES.map((c) => (
+                            <option key={c.iso} value={c.code}>{c.flag} {c.name} {c.code}</option>
+                          ))}
+                        </select>
+                        <input id="mobil" type="tel" inputMode="numeric" placeholder="40 57 69 34" value={phone}
+                          aria-invalid={!!fieldErr.phone}
+                          style={{ flex: "1 1 auto", minWidth: 0 }}
+                          onChange={(e) => { const v = sanitizeNationalNumber(e.target.value, dial); setPhone(v); clearPhoneIfValid(dial, v); }}
+                          onBlur={() => validatePhone(dial, phone)} />
+                      </div>
                       {fieldErr.phone && <div className="field-err">{fieldErr.phone}</div>}
                     </div>
                   </div>
@@ -481,7 +532,7 @@ export default function Tilmeld({ initialFag = null }) {
 
                   <div className="summary">
                     <div className="srow"><span className="sk">Virksomhed</span><span className="sv">{company || "—"}{cvr ? " · CVR " + digits(cvr) : ""}</span></div>
-                    <div className="srow"><span className="sk">Kontakt</span><span className="sv">{[contact, email, normalizePhone(phone)].filter(Boolean).join(" · ") || "—"}</span></div>
+                    <div className="srow"><span className="sk">Kontakt</span><span className="sv">{[contact, email, phone ? toE164(dial, phone) : ""].filter(Boolean).join(" · ") || "—"}</span></div>
                     <div className="srow"><span className="sk">Fag & områder</span><span className="sv">
                       {selectedFagKeys.map((k) => {
                         if (k === "andet") return <div key={k}><b>Andet</b> — bredt udvalg af bygge- og anlægsopgaver (vi bygger dit fag ind snart)</div>;
