@@ -1,6 +1,6 @@
 # Handelsbetingelser for Birdly
 
-**Gældende fra 7. juni 2026. Senest opdateret 7. juni 2026. Erstatter alle tidligere versioner.**
+**Gældende fra 7. juni 2026. Senest opdateret 15. juni 2026. Erstatter alle tidligere versioner.**
 
 ---
 
@@ -8,7 +8,7 @@
 
 **Tjenesten / Birdly:** Notifikationstjenesten Birdly, der overvåger offentlige udbud og sender besked (SMS og/eller e-mail), når et udbud matcher Kundens opsatte kriterier.
 
-**Abonnement:** Den løbende aftale om adgang til Tjenesten i en valgt pakke (Spurv, Falk eller Albatros).
+**Abonnement:** Den løbende aftale om adgang til Tjenesten.
 
 **Kunden / du:** Den virksomhed, der opretter og betaler et Abonnement.
 
@@ -32,11 +32,10 @@
 
 2.3 Vi bestræber os på at sende relevante matches, men kan ikke garantere fuldstændighed, korrekthed eller rettidighed, herunder at samtlige relevante udbud fanges. Matches og beskeder skal alene betragtes som vejledende. Du er selv ansvarlig for at verificere oplysninger i det officielle udbudsmateriale og for at overholde frister.
 
-## 3. Abonnement og pakker
-3.1 Birdly tilbydes i følgende pakker:
-- **Spurv** – 349 kr./md. – overvågning af én region.
-- **Falk** – 499 kr./md. – overvågning vest eller øst for Storebælt.
-- **Albatros** – 1.199 kr./md. – overvågning af hele Danmark.
+## 3. Abonnement og pris
+3.1 Birdly tilbydes som ét abonnement med adgang til alle Tjenestens funktioner. Geografisk dækning (én eller flere regioner eller hele Danmark) er inkluderet og påvirker ikke prisen. Abonnementet kan betales:
+- **Månedligt** – 299 kr./md.
+- **Årligt (forudbetalt)** – 2.990 kr./år, svarende til en besparelse på ca. 17 % i forhold til månedlig betaling.
 
 3.2 Alle priser er angivet i danske kroner (DKK) og ekskl. moms.
 
@@ -52,7 +51,7 @@
 ## 5. Pris og betaling
 5.1 De til enhver tid gældende priser fremgår af birdly.dk, ekskl. moms i DKK.
 
-5.2 Abonnementsbeløbet opkræves forud for hver abonnementsperiode via Frisbii (med MobilePay og betalingskort som betalingsmetoder). Ved tilmelding giver du Birdly tilladelse til løbende at trække abonnementsbeløbet. Den første betaling sker efter prøveperiodens udløb, jf. pkt. 4.2, og herefter fornyes Abonnementet automatisk og opkræves månedligt på den tilbagevendende betalingsdato, der følger af din tilmeldingsdato. Der fremsendes faktura til den oplyste e-mailadresse.
+5.2 Abonnementsbeløbet opkræves forud for hver abonnementsperiode via Frisbii (med MobilePay og betalingskort som betalingsmetoder). Ved tilmelding giver du Birdly tilladelse til løbende at trække abonnementsbeløbet. Den første betaling sker efter prøveperiodens udløb, jf. pkt. 4.2, og herefter fornyes Abonnementet automatisk og opkræves for den valgte periode (månedligt eller årligt) på den tilbagevendende betalingsdato, der følger af din tilmeldingsdato. Der fremsendes faktura til den oplyste e-mailadresse.
 
 5.3 Vi forbeholder os retten til at ændre sammensætning, indhold og priser med varsel pr. e-mail eller ved opslag på birdly.dk. Væsentlige ændringer, herunder prisændringer, varsles 30 dage før ikrafttræden, og du kan opsige inden ændringen træder i kraft.
 
