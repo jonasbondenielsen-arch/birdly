@@ -6,6 +6,7 @@ import Footer from "./Footer";
 import OpsigPopup from "./OpsigPopup";
 import { Logo } from "./Logo";
 import { insertRow } from "../lib/supabase";
+import { PLAN, priceText } from "../lib/pakke";
 import "../app/forside.css";
 
 // Slider-chips → links til hver branchesides (/fag/[slug]). Udseende/animation uændret.
@@ -57,9 +58,9 @@ function withinOpeningHours() {
 function botReply(text) {
   const t = (text || "").toLowerCase();
   if (/(pris|koste|kr|betal|moms|gratis|prøve)/.test(t))
-    return "De første <b>14 dage er gratis</b>. Derefter overgår du til prisen for din plan, som trækkes automatisk efter prøveperioden og fornyes hver måned: Spurv 349,-, Falk 499,- eller Albatros 1.199,- pr. md. (ekskl. moms). Ingen binding — opsig med 30 dages varsel.";
-  if (/(pakke|spurv|falk|eagle|albatros|region|storebælt|dækning|hele danmark)/.test(t))
-    return "Vi har tre pakker:<br><b>Spurv</b> — udbud i én region, du selv vælger.<br><b>Falk</b> — alle regioner vest eller øst for Storebælt.<br><b>Albatros</b> — udbud i hele Danmark.";
+    return "De første <b>14 dage er gratis</b>. Derefter koster Birdly <b>299 kr./md.</b> eller <b>2.990 kr./år</b> (ekskl. moms) — alt inkluderet. Vælger du årligt, sparer du ~17 % (svarer til 2 måneder gratis). Ingen binding — opsig med 30 dages varsel.";
+  if (/(pakke|spurv|falk|eagle|albatros|region|storebælt|dækning|hele danmark|tier)/.test(t))
+    return "Der er <b>én pakke</b> med alt inkluderet — 299 kr./md. eller 2.990 kr./år (ekskl. moms). Du vælger selv, om du vil dække <b>én region eller hele Danmark</b>, og det er den samme pris uanset.";
   if (/(opsig|stop|afmeld|stoppe|fortryd)/.test(t))
     return "Det er nemt: skriv <b>STOP</b> på en SMS, brug opsigelsesboksen nederst på siden, eller klik linket i bunden af vores mails. 30 dages varsel. Lige så simpelt som at tilmelde sig.";
   if (/(login|log ind|konto|kodeord|opsætning|platform)/.test(t))
@@ -368,58 +369,28 @@ export default function Forside() {
       <section className="pricing" id="priser">
         <div className="wrap">
           <div className="center reveal">
-            <span className="kick">Priser</span>
-            <h2 className="big">Vælg din rækkevidde.</h2>
-            <p className="lead">Gratis de første 14 dage. Opsiger du inden for prøveperioden, betaler du ikke noget. Fortsætter du, trækkes prisen for din valgte plan automatisk efter de 14 dage — og derefter hver måned. Ingen binding — skift eller stop, når du vil.</p>
+            <span className="kick">Pris</span>
+            <h2 className="big">Én pris. Alt inkluderet.</h2>
+            <p className="lead">Ingen pakker at vælge mellem, ingen tilvalg. Du får det hele — uanset om du dækker én region eller hele Danmark, til samme pris. Gratis de første 14 dage; opsiger du inden, betaler du intet. Ingen binding.</p>
           </div>
-          <div className="tiers">
-            <div className="tier reveal">
-              <div className="bird"><svg width="22" viewBox="0 0 28 28" fill="none"><path d="M4 16C8 10 11 10 14 14" stroke="#2EB7FF" strokeWidth="2.4" strokeLinecap="round" /><path d="M14 14C17 10 20 10 24 16" stroke="#2EB7FF" strokeWidth="2.4" strokeLinecap="round" /></svg> Birdly Spurv</div>
-              <div className="desc">Til de meget lokale.</div>
-              <div className="amt">349<span> kr./md</span></div>
-              <div className="exm">ekskl. moms · gratis i 14 dage</div>
-              <ul>
-                <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>Kommunale &amp; statslige udbud i <b>én region</b>, du selv vælger</span></li>
-                <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>SMS + mail ved match</span></li>
-                <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>Resumé, dato og link</span></li>
-                <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>Bud-skabelon inkluderet</span></li>
-                <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>Ingen binding</span></li>
-              </ul>
-              <Link href="/tilmeld" className="btn btn-ghost">Start gratis</Link>
-            </div>
-
+          <div className="tiers single">
             <div className="tier feat reveal">
-              <span className="tag">MEST POPULÆRE</span>
-              <div className="bird"><svg width="22" viewBox="0 0 28 28" fill="none"><path d="M3 15C8 8 12 8 14 13" stroke="#00B3A6" strokeWidth="2.6" strokeLinecap="round" /><path d="M14 13C16 8 20 8 25 15" stroke="#0D1B2A" strokeWidth="2.6" strokeLinecap="round" /></svg> Birdly Falk</div>
-              <div className="desc">Til de regionale.</div>
-              <div className="amt">499<span> kr./md</span></div>
-              <div className="exm">ekskl. moms · gratis i 14 dage</div>
+              <span className="tag">ALT INKLUDERET</span>
+              <div className="bird"><svg width="22" viewBox="0 0 28 28" fill="none"><path d="M3 15C8 8 12 8 14 13" stroke="#00B3A6" strokeWidth="2.6" strokeLinecap="round" /><path d="M14 13C16 8 20 8 25 15" stroke="#0D1B2A" strokeWidth="2.6" strokeLinecap="round" /></svg> Birdly</div>
+              <div className="desc">Én pakke med det hele. Samme pris, uanset om du dækker én region eller hele Danmark.</div>
+              <div className="amt">{PLAN.monthly}<span> kr./md</span></div>
+              <div className="exm">eller <b>{priceText.yearly}</b> — {priceText.saveLong} · ekskl. moms · gratis i 14 dage</div>
               <ul>
-                <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>Alt i Spurv</span></li>
-                <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>Alle regioner <b>vest eller øst for Storebælt</b></span></li>
-                <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>Flere matches — større område</span></li>
+                <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>Alle kommunale &amp; statslige udbud — i <b>din region eller hele Danmark</b>, samme pris</span></li>
+                <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>SMS + mail ved match — resumé, dato og link</span></li>
                 <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>Bud-skabelon inkluderet</span></li>
-                <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>Ingen binding</span></li>
+                <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>Betal månedligt — eller spar ~17 % på årsbetaling</span></li>
+                <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>14 dage gratis · ingen binding · opsig når som helst</span></li>
               </ul>
-              <Link href="/tilmeld" className="btn btn-teal">Start gratis</Link>
-            </div>
-
-            <div className="tier reveal">
-              <div className="bird"><svg width="22" viewBox="0 0 28 28" fill="none"><path d="M2 15C8 7 13 7 14 13" stroke="#0D1B2A" strokeWidth="2.6" strokeLinecap="round" /><path d="M14 13C15 7 20 7 26 15" stroke="#2EB7FF" strokeWidth="2.6" strokeLinecap="round" /></svg> Birdly Albatros</div>
-              <div className="desc">Til de landsdækkende.</div>
-              <div className="amt">1.199<span> kr./md</span></div>
-              <div className="exm">ekskl. moms · gratis i 14 dage</div>
-              <ul>
-                <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>Alt i Falk</span></li>
-                <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>Udbud i <b>hele Danmark</b></span></li>
-                <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>Det bedste overblik på markedet</span></li>
-                <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>Bud-skabelon inkluderet</span></li>
-                <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>Ingen binding</span></li>
-              </ul>
-              <Link href="/tilmeld" className="btn btn-ghost">Start gratis</Link>
+              <Link href="/tilmeld" className="btn btn-teal">Start gratis i 14 dage</Link>
             </div>
           </div>
-          <p className="price-note">Alle priser er ekskl. moms. De første 14 dage er gratis — opsiger du inden da, trækkes der intet. Derefter trækkes prisen for din plan automatisk og fornyes hver måned. Opsig når du vil med 30 dages varsel.</p>
+          <p className="price-note">Alle priser er ekskl. moms. De første 14 dage er gratis — opsiger du inden da, trækkes der intet. Derefter trækkes <b>299 kr./md.</b> (eller <b>2.990 kr./år</b>) automatisk efter prøveperioden. Opsig når du vil med 30 dages varsel.</p>
         </div>
       </section>
 
@@ -455,8 +426,8 @@ export default function Forside() {
             <details className="reveal"><summary>Får jeg kun relevante udbud? <span className="pm">+</span></summary><p>Vi sender kun besked, når en opgave matcher det, du har valgt. Vil du have flere eller færre beskeder, kan du altid ændre dine valg.</p></details>
             <details className="reveal"><summary>Hvor mange sms'er får jeg? <span className="pm">+</span></summary><p>Du får kun besked, når et helt konkret udbud matcher de kriterier, du selv har sat — fag, område og beløb. Hvor mange det bliver, afhænger derfor af, hvor mange relevante udbud der dukker op i din valgte region. Er det for meget eller for lidt, kan du altid justere dine kriterier, så de bliver bredere eller mere snævre. Og skulle du få nok, stopper du beskederne med det samme ved at svare STOP på en sms.</p></details>
             <details className="reveal"><summary>Hvor hurtigt får jeg besked? <span className="pm">+</span></summary><p>Som regel samme dag, opgaven bliver lagt op. Nogle gange fanger vi også opgaver, der er på vej.</p></details>
-            <details className="reveal"><summary>Hvad koster det? <span className="pm">+</span></summary><p>De første 14 dage er gratis. Derefter overgår det til prisen for din valgte plan — fra 349 kr. om måneden (ekskl. moms) — som trækkes automatisk efter prøveperioden og fornyes hver måned. Uden binding.</p></details>
-            <details className="reveal"><summary>Hvad er forskellen på pakkerne? <span className="pm">+</span></summary><p>Spurv dækker én region, du selv vælger. Falk dækker alle regioner vest eller øst for Storebælt. Albatros dækker hele Danmark.</p></details>
+            <details className="reveal"><summary>Hvad koster det? <span className="pm">+</span></summary><p>De første 14 dage er gratis. Derefter koster Birdly <b>299 kr./md.</b> eller <b>2.990 kr./år</b> (ekskl. moms) — alt inkluderet. Vælger du årligt, sparer du ~17 % (svarer til 2 måneder gratis). Ingen binding.</p></details>
+            <details className="reveal"><summary>Er der flere pakker at vælge mellem? <span className="pm">+</span></summary><p>Nej — der er kun én pakke med alt inkluderet. Du vælger selv, om du vil dække én region eller hele Danmark, og det koster det samme uanset. Ingen tiers, intet tilvalg — bare én simpel pris.</p></details>
             <details className="reveal"><summary>Hvor kommer udbuddene fra? <span className="pm">+</span></summary><p>Et udbud er bare en opgave fra en kommune, region eller staten, som private firmaer kan byde på — fra et nyt tag på en skole til rengøring af et rådhus. Vi henter dem fra de officielle kilder: udbud.dk og EU's database TED. Offentlige udbud skal være åbne for alle — så det er helt lovligt. Vi holder også øje med de indkøb, der varsles som forhåndsmeddelelser, før de bliver til et egentligt udbud — så du kan være på forkant, allerede inden opgaven officielt er sendt i udbud.</p></details>
             <details className="reveal"><summary>Hvordan opsiger jeg? <span className="pm">+</span></summary><p>Opsigelse hos Birdly er lige så simpelt, som da du meldte dig til. Du finder opsigelsesrubrikken nederst her på siden, og i bunden af alle vores mails er der et direkte link til opsigelse. Og det bedste? Hos os er du en fri fugl — ingen binding, kun 30 dages opsigelse.</p></details>
             <details className="reveal"><summary>Kan I også hjælpe os med at byde på opgaver? <span className="pm">+</span></summary><p>Ikke endnu — men det er på radaren. Birdly er et nyt produkt på det danske marked, og vores første prioritet har været at gøre det enkelt for danske SMV'er overhovedet at finde de rigtige udbud. På sigt kigger vi ind i selve det at byde, for vi synes, hele verdenen omkring kommunale og statslige udbud er for bøvlet og kompleks. Vi tror på, at alle virksomheder skal have lige adgang til at byde på offentlige opgaver — ikke kun dem med en stor tilbudsafdeling.</p></details>

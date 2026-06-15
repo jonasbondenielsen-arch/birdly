@@ -135,6 +135,7 @@
   /* pricing */
   .pricing{background:var(--grey)}
   .tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:50px;align-items:stretch}
+  .tiers.single{grid-template-columns:minmax(0,460px);justify-content:center}
   .tier{background:#fff;border:1px solid var(--line);border-radius:22px;padding:30px;box-shadow:var(--shadow);display:flex;flex-direction:column}
   .tier.feat{border:2px solid var(--teal);box-shadow:0 24px 60px rgba(0,179,166,.18);position:relative}
   .tier .tag{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--teal);color:#fff;font-family:'Plus Jakarta Sans';font-weight:700;font-size:12px;letter-spacing:.04em;padding:5px 14px;border-radius:999px}
