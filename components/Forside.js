@@ -7,6 +7,8 @@ import OpsigPopup from "./OpsigPopup";
 import { Logo } from "./Logo";
 import { insertRow } from "../lib/supabase";
 import { PLAN, YEARLY_SAVING, priceText } from "../lib/pakke";
+import LaunchBanner from "./LaunchBanner";
+import LaunchStreamer from "./LaunchStreamer";
 import "../app/forside.css";
 
 // Slider-chips → links til hver branchesides (/fag/[slug]). Udseende/animation uændret.
@@ -155,23 +157,27 @@ export default function Forside() {
 
   return (
     <div className="birdly-home">
-      {/* HEADER */}
-      <header>
-        <div className="wrap bar">
-          <Logo height={32} />
-          <nav className="menu">
-            <a href="#hvorfor">Hvorfor Birdly</a>
-            <a href="#hvordan">Hvordan virker det</a>
-            <a href="#priser">Priser</a>
-            <a href="#faq">FAQ</a>
-            <a href="#om">Om os</a>
-            <Link href="/udbud-for-alle">Udbud er for alle</Link>
-          </nav>
-          <div className="right">
-            <Link href="/tilmeld" className="nav-cta">Kom i gang</Link>
+      {/* Sticky stak: launch-banner (kun i launch-fasen) + header følges ad ned ved scroll. */}
+      <div className="topstack">
+        <LaunchBanner />
+        {/* HEADER */}
+        <header>
+          <div className="wrap bar">
+            <Logo height={32} />
+            <nav className="menu">
+              <a href="#hvorfor">Hvorfor Birdly</a>
+              <a href="#hvordan">Hvordan virker det</a>
+              <a href="#priser">Priser</a>
+              <a href="#faq">FAQ</a>
+              <a href="#om">Om os</a>
+              <Link href="/udbud-for-alle">Udbud er for alle</Link>
+            </nav>
+            <div className="right">
+              <Link href="/tilmeld" className="nav-cta">Kom i gang</Link>
+            </div>
           </div>
-        </div>
-      </header>
+        </header>
+      </div>
 
       {/* HERO */}
       <section className="hero" style={{ padding: 0 }}>
@@ -373,6 +379,8 @@ export default function Forside() {
             <h2 className="big">Én pakke med det hele</h2>
             <p className="lead">Samme pris, uanset om du dækker din egen region eller hele Danmark.</p>
           </div>
+
+          <LaunchStreamer />
 
           <div className="price-duo">
             {/* Boks A — månedligt */}
