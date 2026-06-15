@@ -149,6 +149,24 @@
   .tier li svg{flex:0 0 18px;margin-top:3px}
   .tier .btn{width:100%}
   .price-note{text-align:center;color:var(--navy-soft);font-size:14px;margin-top:24px}
+  /* Pris — to bokse (md/år) + "det får du"-boks */
+  .pill-incl{display:inline-block;background:#E6FFFB;color:var(--teal-dk);font-family:'Plus Jakarta Sans';font-weight:700;font-size:12px;letter-spacing:.06em;padding:6px 14px;border-radius:999px;margin-bottom:14px}
+  .price-duo{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px;max-width:720px;margin:42px auto 0;align-items:stretch}
+  .pbox{position:relative;background:#fff;border:1px solid var(--line);border-radius:22px;padding:32px 28px;box-shadow:var(--shadow);display:flex;flex-direction:column;text-align:center}
+  .pbox.feat{border:2px solid var(--sky);box-shadow:0 24px 60px rgba(46,183,255,.16)}
+  .pbox .psave{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--sky);color:#fff;font-family:'Plus Jakarta Sans';font-weight:700;font-size:12px;letter-spacing:.04em;padding:5px 14px;border-radius:999px}
+  .pbox .plabel{font-family:'Plus Jakarta Sans';font-weight:700;font-size:13px;letter-spacing:.08em;color:var(--teal);margin-bottom:10px}
+  .pbox .pamt{font-family:'Plus Jakarta Sans';font-weight:800;font-size:48px;line-height:1;color:var(--navy)}
+  .pbox .pamt span{font-size:16px;font-weight:600;color:var(--navy-soft);margin-left:7px;letter-spacing:0}
+  .pbox .pnote{font-size:13.5px;color:var(--navy-soft);margin-top:12px;min-height:42px}
+  .pbox .pfoot{margin-top:auto;padding-top:22px}
+  .pbox .pbtn{width:100%}
+  .pbox .psub{font-size:12.5px;color:var(--navy-soft);margin-top:11px}
+  .price-incl{max-width:720px;margin:24px auto 0;background:var(--sky-soft);border:1px solid var(--line);border-radius:18px;padding:24px 28px}
+  .price-incl h3{font-size:17px;text-align:center;margin-bottom:16px}
+  .price-incl ul{list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:12px 26px}
+  .price-incl li{display:flex;gap:10px;font-size:14.5px;align-items:flex-start;color:var(--navy)}
+  .price-incl li svg{flex:0 0 18px;margin-top:3px}
 
   /* about */
   .about{background:var(--navy);color:#fff}
@@ -222,6 +240,7 @@
     .hero-grid,.ex-grid,.about-grid,.su-grid{grid-template-columns:1fr;gap:40px}
     .stage{order:-1}
     .pain-grid,.steps,.vals,.tiers{grid-template-columns:1fr}
+    .price-duo,.price-incl ul{grid-template-columns:1fr}
     .vals{grid-template-columns:1fr 1fr}
     section{padding:64px 0}
   }

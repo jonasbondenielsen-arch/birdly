@@ -6,7 +6,7 @@ import Footer from "./Footer";
 import OpsigPopup from "./OpsigPopup";
 import { Logo } from "./Logo";
 import { insertRow } from "../lib/supabase";
-import { PLAN, priceText } from "../lib/pakke";
+import { PLAN, YEARLY_SAVING, priceText } from "../lib/pakke";
 import "../app/forside.css";
 
 // Slider-chips → links til hver branchesides (/fag/[slug]). Udseende/animation uændret.
@@ -369,28 +369,50 @@ export default function Forside() {
       <section className="pricing" id="priser">
         <div className="wrap">
           <div className="center reveal">
-            <span className="kick">Pris</span>
-            <h2 className="big">Én pris. Alt inkluderet.</h2>
-            <p className="lead">Ingen pakker at vælge mellem, ingen tilvalg. Du får det hele — uanset om du dækker én region eller hele Danmark, til samme pris. Gratis de første 14 dage; opsiger du inden, betaler du intet. Ingen binding.</p>
+            <span className="pill-incl">ALT INKLUDERET</span>
+            <h2 className="big">Én pakke med det hele</h2>
+            <p className="lead">Samme pris, uanset om du dækker din egen region eller hele Danmark.</p>
           </div>
-          <div className="tiers single">
-            <div className="tier feat reveal">
-              <span className="tag">ALT INKLUDERET</span>
-              <div className="bird"><svg width="22" viewBox="0 0 28 28" fill="none"><path d="M3 15C8 8 12 8 14 13" stroke="#00B3A6" strokeWidth="2.6" strokeLinecap="round" /><path d="M14 13C16 8 20 8 25 15" stroke="#0D1B2A" strokeWidth="2.6" strokeLinecap="round" /></svg> Birdly</div>
-              <div className="desc">Én pakke med det hele. Samme pris, uanset om du dækker én region eller hele Danmark.</div>
-              <div className="amt">{PLAN.monthly}<span> kr./md</span></div>
-              <div className="exm">eller <b>{priceText.yearly}</b> — {priceText.saveLong} · ekskl. moms · gratis i 14 dage</div>
-              <ul>
-                <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>Alle kommunale &amp; statslige udbud — i <b>din region eller hele Danmark</b>, samme pris</span></li>
-                <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>SMS + mail ved match — resumé, dato og link</span></li>
-                <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>Bud-skabelon inkluderet</span></li>
-                <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>Betal månedligt — eller spar ~17 % på årsbetaling</span></li>
-                <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>14 dage gratis · ingen binding · opsig når som helst</span></li>
-              </ul>
-              <Link href="/tilmeld" className="btn btn-teal">Start gratis i 14 dage</Link>
+
+          <div className="price-duo">
+            {/* Boks A — månedligt */}
+            <div className="pbox reveal">
+              <div className="plabel">MÅNEDLIGT</div>
+              <div className="pamt">{PLAN.monthly}<span>kr/md</span></div>
+              <div className="pnote">Ekskl. moms · ingen binding</div>
+              <div className="pfoot">
+                <Link href="/tilmeld" className="btn btn-teal pbtn">Start gratis i 14 dage</Link>
+                <div className="psub">Opsig når som helst med 30 dages varsel.</div>
+              </div>
+            </div>
+
+            {/* Boks B — årligt (fremhævet) */}
+            <div className="pbox feat reveal">
+              <span className="psave">SPAR ~{YEARLY_SAVING.pct} %</span>
+              <div className="plabel">ÅRLIGT</div>
+              <div className="pamt">{PLAN.yearly.toLocaleString("da-DK")}<span>kr/år</span></div>
+              <div className="pnote">Betal for 10 måneder, få 12 · spar {YEARLY_SAVING.amount} kr · ekskl. moms</div>
+              <div className="pfoot">
+                <Link href="/tilmeld" className="btn btn-teal pbtn">Start gratis i 14 dage</Link>
+                {/* TODO jura: "betales forud" er en blød, MIDLERTIDIG formulering. Den præcise
+                    ordlyd om 12-måneders binding på årsabonnement skal bekræftes af advokat før launch. */}
+                <div className="psub">Årsabonnement — betales forud.</div>
+              </div>
             </div>
           </div>
-          <p className="price-note">Alle priser er ekskl. moms. De første 14 dage er gratis — opsiger du inden da, trækkes der intet. Derefter trækkes <b>299 kr./md.</b> (eller <b>2.990 kr./år</b>) automatisk efter prøveperioden. Opsig når du vil med 30 dages varsel.</p>
+
+          <div className="price-incl reveal">
+            <h3>Det får du — uanset hvad du vælger</h3>
+            <ul>
+              <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>Alle kommunale &amp; statslige udbud — i <b>din region eller hele Danmark</b>, samme pris</span></li>
+              <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>SMS + mail ved match — resumé, dato og link</span></li>
+              <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>Bud-skabelon inkluderet</span></li>
+              <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>Betal månedligt — eller spar ~{YEARLY_SAVING.pct} % på årsbetaling</span></li>
+              <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>14 dage gratis · ingen binding · opsig når som helst</span></li>
+            </ul>
+          </div>
+
+          <p className="price-note">De første 14 dage er gratis — opsiger du inden da, trækkes der intet. Alle priser er ekskl. moms.</p>
         </div>
       </section>
 
