@@ -21,7 +21,7 @@
 ## 1. Accept af betingelserne
 1.1 Disse betingelser tiltrædes ved tilmelding til Tjenesten på birdly.dk.
 
-1.2 Betingelserne er gældende mellem Birdly.dk, CVR-nr. 35764283, Fjordvej 4, 4300 Holbæk ("vi", "os", "Birdly") og dig som Kunde.
+1.2 Betingelserne er gældende mellem Birdly.dk, Fjordvej 4, 4300 Holbæk ("vi", "os", "Birdly") og dig som Kunde. <!-- CVR sættes tilbage når Virk har godkendt: "CVR-nr. 35764283, " efter "Birdly.dk," -->
 
 1.3 Tjenesten tilbydes udelukkende til erhvervsdrivende (business to business). Ved tilmelding bekræfter du, at du tegner Abonnementet som led i din virksomheds erhverv, og at du er bemyndiget til at indgå aftalen på virksomhedens vegne. Da der er tale om et erhvervskøb, gælder der ingen forbrugerfortrydelsesret.
 
@@ -104,4 +104,4 @@ Birdly fraskriver sig i videst muligt omfang efter dansk ret ethvert ansvar for 
 12.1 Aftalen er underlagt dansk ret. Opstår der uenighed, afgøres den ved Retten i Holbæk som første instans.
 
 ## 13. Kontakt
-Birdly.dk, CVR 35764283, Fjordvej 4, 4300 Holbæk. Henvendelser: support@birdly.dk.
+Birdly.dk, Fjordvej 4, 4300 Holbæk. Henvendelser: support@birdly.dk. <!-- CVR sættes tilbage når Virk har godkendt: "CVR 35764283, " efter "Birdly.dk," -->

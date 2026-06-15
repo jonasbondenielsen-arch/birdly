@@ -2,7 +2,7 @@
 
 **Sidst opdateret 4. juni 2026.**
 
-birdly.dk udbydes af Birdly.dk, Fjordvej 4, 4300 Holbæk, CVR-nr. 35764283. Kontakt: support@birdly.dk.
+birdly.dk udbydes af Birdly.dk, Fjordvej 4, 4300 Holbæk. Kontakt: support@birdly.dk. <!-- CVR sættes tilbage når Virk har godkendt: ", CVR-nr. 35764283" efter "4300 Holbæk" -->
 
 Ved at bruge birdly.dk accepterer du disse vilkår, og du bekræfter, at du overholder alle gældende love og regler for brugen. Hvis du ikke kan acceptere vilkårene, skal du straks forlade birdly.dk.
 
