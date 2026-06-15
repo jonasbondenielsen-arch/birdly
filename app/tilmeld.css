@@ -71,6 +71,11 @@
 
   .billing{display:flex;gap:11px;align-items:flex-start;background:#FFFBEF;border:1px solid #F2E6C2;border-radius:12px;padding:14px 16px;font-size:14px;color:#6b5a2b}
   .billing svg{flex:0 0 20px;margin-top:2px}
+  /* Launch-fase: velkomstboks i stedet for betalings-blok (ingen kort) */
+  .welcome-box{background:var(--sky-soft);border:1px solid var(--sky-200,#BFE6FF);border-radius:16px;padding:20px 22px;margin-top:4px}
+  .welcome-box h4{font-family:'Plus Jakarta Sans';font-weight:800;font-size:19px;color:var(--navy);margin-bottom:10px}
+  .welcome-box p{font-size:14.5px;line-height:1.55;color:var(--navy);margin:0 0 10px}
+  .welcome-box .wb-foot{font-weight:700;color:var(--teal-dk);margin-bottom:0}
 
   .consent{display:flex;gap:9px;font-size:13px;color:var(--navy-soft);margin:18px 0 16px;align-items:flex-start}
   .consent input{margin-top:3px;accent-color:var(--teal)}
