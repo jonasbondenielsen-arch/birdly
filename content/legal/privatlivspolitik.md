@@ -1,6 +1,6 @@
 # Privatlivspolitik for Birdly
 
-**Sidst opdateret 11. juni 2026.**
+**Sidst opdateret 15. juni 2026.**
 
 Denne privatlivspolitik beskriver, hvordan Birdly.dk behandler personoplysninger i forbindelse med tjenesten Birdly og hjemmesiden birdly.dk.
 
@@ -11,7 +11,7 @@ Birdly.dk, CVR-nr. 35764283, Fjordvej 4, 4300 Holbæk, er dataansvarlig for beha
 Vi behandler de oplysninger, du selv giver os ved tilmelding og brug af Tjenesten:
 
 - **Kontaktoplysninger:** navn, virksomhed, e-mailadresse og telefonnummer.
-- **Abonnementsoplysninger:** valgt pakke, dine matchkriterier (fag/branche, geografi, beløb) og abonnementsstatus.
+- **Abonnementsoplysninger:** dine matchkriterier (fag/branche, geografi, beløb), valgt betalingsinterval og abonnementsstatus.
 - **Kommunikationsdata:** beskeder du sender os via support, og log over de beskeder, vi sender til dig (SMS/e-mail).
 - **Betalingsoplysninger:** håndteres af vores betalingsudbyder. Vi opbevarer ikke selv fulde kortoplysninger.
 - **Tekniske data:** ved besøg på birdly.dk, herunder via cookies, jf. vores cookiepolitik.
