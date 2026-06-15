@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Logo } from "./Logo";
 import { fetchCatalog, submitSignup } from "../lib/catalog";
 import { PLAN, YEARLY_SAVING, priceText, planForInterval } from "../lib/pakke";
+import { useLaunch } from "./useLaunch";
 import "../app/tilmeld.css";
 
 // 4-trins tilmeldingsflow. Katalog (fag + CPV + branchekode-map + regioner)
@@ -95,6 +96,7 @@ const phoneErrMsg = (dialCode) =>
   dialCode === "+45" ? "Skriv et gyldigt mobilnummer (8 cifre)." : "Skriv et gyldigt mobilnummer med landekode.";
 
 export default function Tilmeld({ initialFag = null }) {
+  const { active: launchActive } = useLaunch(); // 30-dages launch-fase (gratis, uden kort)
   const [step, setStep] = useState(1);
   const [catalog, setCatalog] = useState(null);
   const [catErr, setCatErr] = useState("");
@@ -274,7 +276,9 @@ export default function Tilmeld({ initialFag = null }) {
     setErr("");
     if (!terms) return setErr("Sæt venligst flueben i samtykke for at fortsætte.");
     if (saving) return;
-    const pkg = planForInterval(billing); // én pakke; interval = kundens betalingsvalg
+    // Launch-fase: ingen kort, ingen pakke/betalings-samtykke — kun en gratis 30-dages
+    // adgang. Ellers: én pakke med kundens valgte betalingsinterval.
+    const pkg = launchActive ? null : planForInterval(billing);
     const payload = {
       company_name: company.trim() || null,
       cvr: digits(cvr),
@@ -293,6 +297,7 @@ export default function Tilmeld({ initialFag = null }) {
       terms_accepted: terms,
       cvr_branchekode: cvrState.branchekode,
       package: pkg,
+      launch_free: launchActive,
     };
     setSaving(true);
     try {
@@ -316,7 +321,7 @@ export default function Tilmeld({ initialFag = null }) {
       </header>
 
       <div className="top">
-        <span className="ey">🐦 Gratis i 14 dage — ingen binding</span>
+        <span className="ey">{launchActive ? "🐦 30 dage gratis — helt uden kort" : "🐦 Gratis i 14 dage — ingen binding"}</span>
         <h1>Opret din profil</h1>
         <p>Jo mere præcist du udfylder, jo bedre match. Vi sender dig kun udbud, der rent faktisk passer til din virksomhed.</p>
       </div>
@@ -534,7 +539,7 @@ export default function Tilmeld({ initialFag = null }) {
               {step === 4 && (
                 <div className="sec">
                   <div className="h"><span className="n">4</span><h3>Bekræft din tilmelding</h3></div>
-                  <p className="sub">Tjek dine valg. Du betaler intet i dag — de første 14 dage er gratis.</p>
+                  <p className="sub">{launchActive ? "Tjek dine valg. Ingen kort, ingen betaling — de første 30 dage er helt gratis." : "Tjek dine valg. Du betaler intet i dag — de første 14 dage er gratis."}</p>
 
                   <div className="summary">
                     <div className="srow"><span className="sk">Virksomhed</span><span className="sv">{company || "—"}{cvr ? " · CVR " + digits(cvr) : ""}</span></div>
@@ -549,7 +554,7 @@ export default function Tilmeld({ initialFag = null }) {
                     </span></div>
                     <div className="srow"><span className="sk">Bredde</span><span className="sv">{bredde === "alle" ? "Alle bygge-udbud" : "Kun fagentrepriser"}</span></div>
                     <div className="srow"><span className="sk">Område</span><span className="sv">{heleDk ? "Hele Danmark" : selectedRegionKeys.map((k) => regionLabels[k]).join(", ") || "—"}</span></div>
-                    <div className="srow hl"><span className="sk">Abonnement</span><span className="sv">Birdly — alt inkluderet · {billing === "yearly" ? priceText.yearly : priceText.monthly} (ex. moms)</span></div>
+                    <div className="srow hl"><span className="sk">Abonnement</span><span className="sv">{launchActive ? "Birdly — 30 dage gratis, helt uden kort" : "Birdly — alt inkluderet · " + (billing === "yearly" ? priceText.yearly : priceText.monthly) + " (ex. moms)"}</span></div>
                   </div>
 
                   <details className="amount-box">
@@ -565,17 +570,19 @@ export default function Tilmeld({ initialFag = null }) {
                     <div className="note">Udbud uden oplyst beløb sendes altid — vi sorterer dem ikke fra.</div>
                   </details>
 
-                  <div className="bredde">
-                    <div className="bredde-q">Betaling — samme pakke, du vælger bare frekvens</div>
-                    <label className={"bredde-opt" + (billing === "monthly" ? " on" : "")}>
-                      <input type="radio" name="billing" checked={billing === "monthly"} onChange={() => setBilling("monthly")} />
-                      <span><b>Månedligt — {priceText.monthly}</b> (ex. moms). Fuldt fleksibelt.</span>
-                    </label>
-                    <label className={"bredde-opt" + (billing === "yearly" ? " on" : "")}>
-                      <input type="radio" name="billing" checked={billing === "yearly"} onChange={() => setBilling("yearly")} />
-                      <span><b>Årligt — {priceText.yearly}</b> (ex. moms). <i>{priceText.saveLong}</i></span>
-                    </label>
-                  </div>
+                  {!launchActive && (
+                    <div className="bredde">
+                      <div className="bredde-q">Betaling — samme pakke, du vælger bare frekvens</div>
+                      <label className={"bredde-opt" + (billing === "monthly" ? " on" : "")}>
+                        <input type="radio" name="billing" checked={billing === "monthly"} onChange={() => setBilling("monthly")} />
+                        <span><b>Månedligt — {priceText.monthly}</b> (ex. moms). Fuldt fleksibelt.</span>
+                      </label>
+                      <label className={"bredde-opt" + (billing === "yearly" ? " on" : "")}>
+                        <input type="radio" name="billing" checked={billing === "yearly"} onChange={() => setBilling("yearly")} />
+                        <span><b>Årligt — {priceText.yearly}</b> (ex. moms). <i>{priceText.saveLong}</i></span>
+                      </label>
+                    </div>
+                  )}
 
                   <div className="notify-row">
                     <span className="notify-q">Sådan vil jeg have besked:</span>
@@ -583,10 +590,20 @@ export default function Tilmeld({ initialFag = null }) {
                     <label className="chk-inline"><input type="checkbox" checked={notifyEmail} onChange={(e) => setNotifyEmail(e.target.checked)} /> E-mail</label>
                   </div>
 
-                  <div className="billing">
-                    <svg viewBox="0 0 24 24" width="20" fill="none"><circle cx="12" cy="12" r="9" stroke="#B58A2E" strokeWidth="1.8" /><path d="M12 8v5M12 16h.01" stroke="#B58A2E" strokeWidth="1.8" strokeLinecap="round" /></svg>
-                    <div>Du betaler <b>intet i dag</b>. De første <b>14 dage er gratis</b> — opsiger du inden, trækkes du aldrig. Herefter fortsætter dit abonnement til <b>{billing === "yearly" ? priceText.yearly : priceText.monthly} (ex. moms)</b>, første betaling efter prøveperioden. Du kan opsige når som helst. Betaling tilkobles senere.</div>
-                  </div>
+                  {launchActive ? (
+                    <div className="welcome-box">
+                      <h4>Velkommen til Birdly 🐦</h4>
+                      <p>Du er <b>blandt de allerførste virksomheder</b> på Birdly — og det er vi glade for.</p>
+                      <p>De næste <b>30 dage er gratis, helt uden kort</b>. Du får adgang til det hele med det samme: vi holder øje med alle offentlige udbud og sender dig besked, så snart der er en opgave, der passer til dit fag.</p>
+                      <p>Som en af de første betyder din mening ekstra meget. Et par dage før din gratis periode slutter, sender vi dig en kort mail — du fortæller os, hvad der virker, og hvad vi kan gøre bedre. Vil du fortsætte, er der et link, så du nemt kan komme videre.</p>
+                      <p className="wb-foot">Ingen binding. Ingen overraskelser. Bare Birdly.</p>
+                    </div>
+                  ) : (
+                    <div className="billing">
+                      <svg viewBox="0 0 24 24" width="20" fill="none"><circle cx="12" cy="12" r="9" stroke="#B58A2E" strokeWidth="1.8" /><path d="M12 8v5M12 16h.01" stroke="#B58A2E" strokeWidth="1.8" strokeLinecap="round" /></svg>
+                      <div>Du betaler <b>intet i dag</b>. De første <b>14 dage er gratis</b> — opsiger du inden, trækkes du aldrig. Herefter fortsætter dit abonnement til <b>{billing === "yearly" ? priceText.yearly : priceText.monthly} (ex. moms)</b>, første betaling efter prøveperioden. Du kan opsige når som helst. Betaling tilkobles senere.</div>
+                    </div>
+                  )}
 
                   <label className="consent"><input type="checkbox" checked={marketing} onChange={(e) => setMarketing(e.target.checked)} /> Ja tak — Birdly må sende mig gode råd og nyheder på mail (kan altid frameldes). Valgfrit.</label>
                   <label className="consent"><input type="checkbox" checked={terms} onChange={(e) => setTerms(e.target.checked)} /> Jeg accepterer <Link href="/handelsbetingelser" style={{ color: "var(--sky)", fontWeight: 600 }}>handelsbetingelser</Link> og <Link href="/privatlivspolitik" style={{ color: "var(--sky)", fontWeight: 600 }}>privatlivspolitik</Link>, og at SMS og mail er en del af tjenesten.</label>
@@ -598,12 +615,12 @@ export default function Tilmeld({ initialFag = null }) {
                 {step > 1 ? <button type="button" className="btn-back" onClick={back}>← Tilbage</button> : <span />}
                 {step < 4
                   ? <button type="button" className="btn-next" onClick={next}>Videre →</button>
-                  : <button type="button" className="btn-next" onClick={onSubmit} disabled={saving}>{saving ? "Opretter …" : "Opret Birdly — gratis i 14 dage →"}</button>}
+                  : <button type="button" className="btn-next" onClick={onSubmit} disabled={saving}>{saving ? "Opretter …" : launchActive ? "Kom i gang — 30 dage gratis →" : "Opret Birdly — gratis i 14 dage →"}</button>}
               </div>
             </div>
 
             <div className="trust">
-              <span>✓ Gratis de første 14 dage</span><span>✓ Ingen binding</span><span>✓ Opsig når som helst</span>
+              <span>{launchActive ? "✓ 30 dage gratis, uden kort" : "✓ Gratis de første 14 dage"}</span><span>✓ Ingen binding</span><span>✓ Opsig når som helst</span>
             </div>
           </>
         )}
@@ -611,8 +628,12 @@ export default function Tilmeld({ initialFag = null }) {
         {submitted && (
           <div className="card ok show">
             <div className="ck"><svg viewBox="0 0 24 24" width="30"><path d="M5 13l4 4 10-11" fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" /></svg></div>
-            <h2>Velkommen til Birdly!</h2>
-            <p>Vi er i gang med at holde øje for dig. Du hører fra os på SMS og mail, så snart der er et udbud, der passer. De første 14 dage er gratis.</p>
+            <h2>{launchActive ? "Tak — du er med! 🎉" : "Velkommen til Birdly!"}</h2>
+            {launchActive ? (
+              <p>Velkommen ombord. Vi er allerede begyndt at holde øje med udbud for dig. Så snart der dukker en relevant opgave op i dit fag og område, får du besked. Hold øje med din indbakke — og din mening undervejs hjælper os med at gøre Birdly bedre.</p>
+            ) : (
+              <p>Vi er i gang med at holde øje for dig. Du hører fra os på SMS og mail, så snart der er et udbud, der passer. De første 14 dage er gratis.</p>
+            )}
           </div>
         )}
       </div>
