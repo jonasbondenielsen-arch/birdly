@@ -170,22 +170,33 @@
   /* Launch-fase — sticky stak (banner + header), nedtællings-ur + pris-streamer */
   .topstack{position:sticky;top:0;z-index:90}
   .topstack > header{position:static;top:auto}
-  .launch-bar{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:9px 16px;min-height:46px;padding:7px 16px;background:var(--navy);color:#fff;font-family:'Inter',sans-serif;font-size:14px;line-height:1.25;text-align:center}
-  .launch-bar .lb-msg b{color:#fff}
-  .launch-bar .lb-cta{flex:0 0 auto;background:var(--teal);color:#fff;font-family:'Plus Jakarta Sans';font-weight:700;font-size:13px;padding:7px 16px;border-radius:999px;text-decoration:none;transition:transform .15s;box-shadow:0 8px 18px rgba(0,179,166,.3)}
+  /* Premiere-topbanner: stort, navy-gradient, fremhævede sekunder. */
+  .launch-bar{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:10px 20px;min-height:60px;padding:12px 22px;background:linear-gradient(90deg,var(--navy) 0%,#185FA5 100%);color:#fff;font-family:'Inter',sans-serif;font-size:16px;line-height:1.3;text-align:center}
+  .launch-bar .lb-msg{font-weight:600}
+  .launch-bar .lb-msg b{color:#fff;font-weight:800}
+  .launch-bar .lb-cta{flex:0 0 auto;background:var(--teal);color:#fff;font-family:'Plus Jakarta Sans';font-weight:700;font-size:14.5px;padding:10px 20px;border-radius:999px;text-decoration:none;transition:transform .15s;box-shadow:0 8px 18px rgba(0,179,166,.3)}
   .launch-bar .lb-cta:hover{transform:translateY(-1px)}
   .cd{display:inline-flex;gap:6px;font-variant-numeric:tabular-nums}
-  .cd-u{background:rgba(255,255,255,.12);border-radius:7px;padding:3px 7px;font-size:12.5px;font-weight:600;white-space:nowrap}
+  .cd-u{background:rgba(255,255,255,.14);border-radius:8px;padding:5px 9px;font-size:14.5px;font-weight:600;white-space:nowrap}
   .cd-u b{font-family:'Plus Jakarta Sans';font-weight:800;color:var(--sky-200)}
-  .launch-streamer{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:8px 14px;max-width:720px;margin:30px auto 0;padding:13px 20px;border-radius:14px;background:linear-gradient(100deg,var(--teal),var(--teal-dk));color:#fff;font-size:14.5px;text-align:center;box-shadow:0 12px 30px rgba(0,179,166,.22)}
-  .launch-streamer b{color:#fff}
-  .launch-streamer .cd-u{background:rgba(255,255,255,.18)}
-  .launch-streamer .cd-u b{color:#fff}
+  .launch-bar .cd-sec{background:rgba(46,183,255,.22)}        /* fremhæv sekund-feltet */
+  .launch-bar .cd-sec b{color:var(--sky)}
+  /* Pris-banner ved pris-sektionen: lys teal-grøn, to linjer. Samme ur-kilde. */
+  .launch-streamer{max-width:720px;margin:30px auto 0;padding:16px 22px;border-radius:14px;background:#E1F5EE;border:1.5px solid var(--teal);color:var(--navy);text-align:center;box-shadow:0 10px 26px rgba(0,179,166,.14)}
+  .launch-streamer .ls-main{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:9px;font-size:16px;font-weight:600}
+  .launch-streamer .ls-main b{color:var(--teal-dk);font-weight:800}
+  .launch-streamer .ls-sub{margin-top:8px;font-size:13.5px;color:var(--navy-soft)}
+  .launch-streamer .cd-u{background:rgba(0,179,166,.13)}
+  .launch-streamer .cd-u b{color:var(--teal-dk)}
+  .launch-streamer .cd-sec b{color:var(--teal-dk)}
   @media(max-width:640px){
-    .launch-bar{font-size:12.5px;gap:7px 10px;padding:8px 12px}
-    .launch-bar .lb-cta{font-size:12px;padding:6px 13px}
-    .cd-u{padding:2px 5px;font-size:11.5px}
-    .launch-streamer{font-size:13px;margin-top:24px;padding:12px 14px}
+    .launch-bar{font-size:14px;gap:6px 10px;padding:11px 12px}
+    .launch-bar .lb-msg{flex:1 1 100%}                        /* tekst over uret på mobil */
+    .launch-bar .lb-cta{font-size:13px;padding:8px 15px}
+    .cd-u{padding:3px 6px;font-size:13px}
+    .launch-streamer{margin-top:24px;padding:14px 16px}
+    .launch-streamer .ls-main{font-size:14.5px}
+    .launch-streamer .ls-sub{font-size:12.5px}
   }
 
   /* about */

@@ -34,7 +34,7 @@ export default function Countdown({ deadline, onExpire }) {
       <span className="cd-u"><b>{d}</b>d</span>
       <span className="cd-u"><b>{pad(h)}</b>t</span>
       <span className="cd-u"><b>{pad(m)}</b>m</span>
-      <span className="cd-u"><b>{pad(sec)}</b>s</span>
+      <span className="cd-u cd-sec"><b>{pad(sec)}</b>s</span>
     </span>
   );
 }

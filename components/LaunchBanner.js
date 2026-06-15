@@ -10,7 +10,7 @@ export default function LaunchBanner() {
   if (!active) return null;
   return (
     <div className="launch-bar" role="region" aria-label="Tidlig adgang">
-      <span className="lb-msg">🐦 Birdly er åben for de første — <b>30 dage gratis, helt uden kort.</b> Tilbuddet slutter om:</span>
+      <span className="lb-msg">🐦 <b>Birdly.dk har Danmarkspremiere</b> — gratis så længe nedtællingen kører. Skynd dig at prøve!</span>
       <Countdown deadline={deadline} />
       <Link href="/tilmeld" className="lb-cta">Kom i gang</Link>
     </div>
