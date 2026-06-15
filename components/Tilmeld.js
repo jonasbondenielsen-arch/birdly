@@ -4,14 +4,14 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Logo } from "./Logo";
 import { fetchCatalog, submitSignup } from "../lib/catalog";
-import { derivePackage, packageMessage } from "../lib/pakke";
+import { PLAN, YEARLY_SAVING, priceText, planForInterval } from "../lib/pakke";
 import "../app/tilmeld.css";
 
 // 4-trins tilmeldingsflow. Katalog (fag + CPV + branchekode-map + regioner)
 // hentes fra get-catalog. CVR-opslag via /api/cvr. Tilmelding gemmes atomisk
 // via signup-Edge Function. Pakken UDLEDES af geografivalget (lib/pakke.js).
 
-const STEPS = ["Virksomhed", "Arbejdsområder", "Geografi & pakke", "Bekræft"];
+const STEPS = ["Virksomhed", "Arbejdsområder", "Geografi", "Bekræft & betaling"];
 
 // Valgfrit beløbsinterval (kan springes over). null = ingen grænse.
 const MIN_BANDS = [
@@ -141,6 +141,7 @@ export default function Tilmeld({ initialFag = null }) {
   // Trin 4 — bekræft
   const [minIdx, setMinIdx] = useState(0);
   const [maxIdx, setMaxIdx] = useState(0);
+  const [billing, setBilling] = useState("monthly"); // "monthly" | "yearly" — kun frekvens, samme pakke
   const [notifyEmail, setNotifyEmail] = useState(true);
   const [notifySms, setNotifySms] = useState(true);
   const [marketing, setMarketing] = useState(false);
@@ -178,7 +179,10 @@ export default function Tilmeld({ initialFag = null }) {
     () => [...new Set(Object.keys(areaSel).filter((k) => areaSel[k]).map((k) => k.split("::")[1]))],
     [areaSel]
   );
-  const pkgMsg = packageMessage(selectedRegionKeys, heleDk, regionLabels);
+  // Områdetekst til opsummering (geografi styrer kun matching, ikke pris).
+  const omraadeText = heleDk
+    ? "Hele Danmark"
+    : selectedRegionKeys.map((k) => regionLabels[k]).join(", ");
 
   // ---- CVR-opslag ----
   async function lookupCvr(raw) {
@@ -270,7 +274,7 @@ export default function Tilmeld({ initialFag = null }) {
     setErr("");
     if (!terms) return setErr("Sæt venligst flueben i samtykke for at fortsætte.");
     if (saving) return;
-    const pkg = derivePackage(selectedRegionKeys, heleDk);
+    const pkg = planForInterval(billing); // én pakke; interval = kundens betalingsvalg
     const payload = {
       company_name: company.trim() || null,
       cvr: digits(cvr),
@@ -499,7 +503,7 @@ export default function Tilmeld({ initialFag = null }) {
               {step === 3 && (
                 <div className="sec">
                   <div className="h"><span className="n">3</span><h3>Hvor vil du have udbud fra?</h3></div>
-                  <p className="sub">Vælg din region — eller flere. Din pakke beregnes automatisk ud fra dit valg.</p>
+                  <p className="sub">Vælg din region — eller flere, eller hele Danmark. Området bestemmer hvilke udbud du får; <b>prisen er den samme uanset dækning</b>.</p>
 
                   <div className="region-grid">
                     {(catalog?.regions || []).map((r) => (
@@ -514,11 +518,13 @@ export default function Tilmeld({ initialFag = null }) {
                     <span><b>Hele Danmark</b> — alle fem regioner.</span>
                   </label>
 
-                  {pkgMsg && (
+                  {(heleDk || selectedRegionKeys.length > 0) && (
                     <div className="pkg-reveal">
-                      <div className="pkg-name">{pkgMsg.pkg.label}</div>
-                      <div className="pkg-price">{pkgMsg.pkg.price.toLocaleString("da-DK")}<span> kr./md</span></div>
-                      <div className="pkg-text">{pkgMsg.text} Gratis de første 14 dage.</div>
+                      <div className="pkg-name">Alt inkluderet</div>
+                      <div className="pkg-price">{PLAN.monthly.toLocaleString("da-DK")}<span> kr./md</span></div>
+                      <div className="pkg-text">
+                        {omraadeText} — samme pris som alle andre. {priceText.perMonthBoth} (ex. moms). <b>{priceText.saveLong}</b> Gratis de første 14 dage.
+                      </div>
                     </div>
                   )}
                 </div>
@@ -543,7 +549,7 @@ export default function Tilmeld({ initialFag = null }) {
                     </span></div>
                     <div className="srow"><span className="sk">Bredde</span><span className="sv">{bredde === "alle" ? "Alle bygge-udbud" : "Kun fagentrepriser"}</span></div>
                     <div className="srow"><span className="sk">Område</span><span className="sv">{heleDk ? "Hele Danmark" : selectedRegionKeys.map((k) => regionLabels[k]).join(", ") || "—"}</span></div>
-                    <div className="srow hl"><span className="sk">Pakke</span><span className="sv">{pkgMsg ? pkgMsg.pkg.label + " — " + pkgMsg.pkg.price.toLocaleString("da-DK") + " kr./md" : "—"}</span></div>
+                    <div className="srow hl"><span className="sk">Abonnement</span><span className="sv">Birdly — alt inkluderet · {billing === "yearly" ? priceText.yearly : priceText.monthly} (ex. moms)</span></div>
                   </div>
 
                   <details className="amount-box">
@@ -559,6 +565,18 @@ export default function Tilmeld({ initialFag = null }) {
                     <div className="note">Udbud uden oplyst beløb sendes altid — vi sorterer dem ikke fra.</div>
                   </details>
 
+                  <div className="bredde">
+                    <div className="bredde-q">Betaling — samme pakke, du vælger bare frekvens</div>
+                    <label className={"bredde-opt" + (billing === "monthly" ? " on" : "")}>
+                      <input type="radio" name="billing" checked={billing === "monthly"} onChange={() => setBilling("monthly")} />
+                      <span><b>Månedligt — {priceText.monthly}</b> (ex. moms). Fuldt fleksibelt.</span>
+                    </label>
+                    <label className={"bredde-opt" + (billing === "yearly" ? " on" : "")}>
+                      <input type="radio" name="billing" checked={billing === "yearly"} onChange={() => setBilling("yearly")} />
+                      <span><b>Årligt — {priceText.yearly}</b> (ex. moms). <i>{priceText.saveLong}</i></span>
+                    </label>
+                  </div>
+
                   <div className="notify-row">
                     <span className="notify-q">Sådan vil jeg have besked:</span>
                     <label className="chk-inline"><input type="checkbox" checked={notifySms} onChange={(e) => setNotifySms(e.target.checked)} /> SMS</label>
@@ -567,7 +585,7 @@ export default function Tilmeld({ initialFag = null }) {
 
                   <div className="billing">
                     <svg viewBox="0 0 24 24" width="20" fill="none"><circle cx="12" cy="12" r="9" stroke="#B58A2E" strokeWidth="1.8" /><path d="M12 8v5M12 16h.01" stroke="#B58A2E" strokeWidth="1.8" strokeLinecap="round" /></svg>
-                    <div>Du betaler <b>intet i dag</b>. De første <b>14 dage er gratis</b> — opsiger du inden, trækkes du aldrig. Herefter fortsætter dit abonnement på <b>{pkgMsg ? pkgMsg.pkg.label : "den valgte pakke"}</b>, første betaling efter prøveperioden. Du kan opsige når som helst. Betaling tilkobles senere.</div>
+                    <div>Du betaler <b>intet i dag</b>. De første <b>14 dage er gratis</b> — opsiger du inden, trækkes du aldrig. Herefter fortsætter dit abonnement til <b>{billing === "yearly" ? priceText.yearly : priceText.monthly} (ex. moms)</b>, første betaling efter prøveperioden. Du kan opsige når som helst. Betaling tilkobles senere.</div>
                   </div>
 
                   <label className="consent"><input type="checkbox" checked={marketing} onChange={(e) => setMarketing(e.target.checked)} /> Ja tak — Birdly må sende mig gode råd og nyheder på mail (kan altid frameldes). Valgfrit.</label>
