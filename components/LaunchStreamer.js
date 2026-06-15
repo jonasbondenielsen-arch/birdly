@@ -11,7 +11,7 @@ export default function LaunchStreamer() {
   const { active, deadline } = useLaunch();
   if (!active) return null;
   return (
-    <div className="launch-streamer reveal">
+    <div className="launch-streamer">
       <div className="ls-main">🎉 <b>Lige nu: Birdly er gratis</b> så længe nedtællingen kører — <Countdown deadline={deadline} /></div>
       <div className="ls-sub">Når den udløber, gælder de almindelige vilkår: 14 dages gratis prøve, derefter {PLAN.monthly} kr/md (eller {PLAN.yearly.toLocaleString("da-DK")} kr/år).</div>
     </div>
