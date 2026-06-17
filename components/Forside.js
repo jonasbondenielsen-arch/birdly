@@ -82,7 +82,8 @@ export default function Forside() {
   const [chatStarted, setChatStarted] = useState(false);
   const [messages, setMessages] = useState([]);
   const [chatInput, setChatInput] = useState("");
-  const cMailRef = useRef(null);
+  const [cMail, setCMail] = useState("");      // opsig-email = KONTROLLERET state (ikke ref)
+  const [cancelErr, setCancelErr] = useState(""); // synlig inline-fejl (ikke blokerbar alert)
   const bodyRef = useRef(null);
 
   /* scroll-reveal (IntersectionObserver) */
@@ -144,14 +145,17 @@ export default function Forside() {
   }
 
   function onCancel() {
-    const m = (cMailRef.current?.value || "").trim();
+    const m = cMail.trim();
     if (!m) {
-      alert("Skriv din email for at opsige.");
+      // Synlig fejl i boksen (en gentaget alert kan blive blokeret af browseren →
+      // så ligner et klik "intet sker"). Åbner IKKE popup'en uden email.
+      setCancelErr("Skriv din email for at opsige.");
       return;
     }
     // To-trins-opsigelse: åbn feedback-popup'en (Trin 1). Selve opsigelsen sker
-    // FØRST når kunden klikker bekræftelseslinket i mailen (Trin 2) — bygges i
-    // Deltrin 2/3. Den offentlige side opsiger aldrig direkte.
+    // FØRST når kunden klikker bekræftelseslinket i mailen (Trin 2). Den
+    // offentlige side opsiger aldrig direkte.
+    setCancelErr("");
     setCancelOpen(true);
   }
 
@@ -511,10 +515,12 @@ export default function Forside() {
             <h2>Bye bye, Birdly 👋</h2>
             <p className="lead">Ja — hos os er det lige så nemt at opsige, som det var at tilmelde sig. Måske endda nemmere. Skriv dine oplysninger her, så opsiger vi med 30 dages varsel.</p>
             <div className="cancel-form">
-              <input id="cMail" ref={cMailRef} type="email" placeholder="Din email" />
+              <input id="cMail" type="email" placeholder="Din email" value={cMail}
+                onChange={(e) => { setCMail(e.target.value); if (cancelErr) setCancelErr(""); }} />
               <input id="cTlf" type="tel" placeholder="Dit telefonnummer" />
               <button type="button" id="cGo" onClick={onCancel}>Opsig Birdly</button>
             </div>
+            {cancelErr && <p style={{ color: "#c8552e", fontSize: 13, margin: "10px 0 0" }}>{cancelErr}</p>}
             <p className="psst">Psst … vi håber at se dig snart igen.</p>
           </div>
         </div>
@@ -525,7 +531,7 @@ export default function Forside() {
       {/* OPSIGELSES-FEEDBACK-POPUP (Trin 1 — feedback + "tjek din mail") */}
       <OpsigPopup
         open={cancelOpen}
-        email={cMailRef.current?.value || ""}
+        email={cMail}
         onClose={() => setCancelOpen(false)}
       />
 
