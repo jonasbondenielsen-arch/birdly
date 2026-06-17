@@ -167,15 +167,12 @@ export default function OpsigPopup({ open, email, onClose }) {
           </>
         ) : (
           <div className="opsig-bye">
-            <h3>Nu letter du fra reden 🐦</h3>
-            <p>
-              Vi bliver kede af at se dig flyve videre — men vi forstår det godt. Tak, fordi du fløj med et stykke af
-              vejen. Der er altid en plads på pinden, hvis du får lyst til at vende tilbage.
-            </p>
+            <h3>Vi har sendt dig en mail 🕊️</h3>
             <div className="opsig-note">
-              <b>Sidste skridt:</b> Vi har sendt et bekræftelseslink til din e-mail. Klik på linket for at gøre
-              opsigelsen endelig — <b>den er ikke gennemført, før du har bekræftet.</b> Kan du ikke se mailen inden for
-              et par minutter, så kig lige i dit <b>spamfilter</b>.
+              Vi er kede af at du vil flyve fra reden, men vi har sendt en bekræftelse til din mail som du skal
+              godkende, så vi er sikre på det er dig. Tjek din indbakke og klik på linket for at gennemføre
+              opsigelsen. Indtil da er intet ændret. Og husk — reden står altid åben, hvis du får lyst til at
+              vende tilbage. 🪺
             </div>
             <div className="opsig-actions">
               <button type="button" className="opsig-keep" onClick={onClose}>Luk</button>
