@@ -39,7 +39,7 @@ export default function Footer() {
           </div>
 
           <div className="fcompany">
-            Birdly.dk · Fjordvej 4, 4300 Holbæk{/* CVR sættes tilbage når Virk har godkendt: " · CVR 35764283" efter "Birdly.dk" */}<br />
+            Birdly.dk · CVR 35764283 · Fjordvej 4, 4300 Holbæk<br />
             <a href="mailto:hello@birdly.dk">hello@birdly.dk</a>
           </div>
 
