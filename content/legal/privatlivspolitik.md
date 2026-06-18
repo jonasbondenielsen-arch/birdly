@@ -5,7 +5,7 @@
 Denne privatlivspolitik beskriver, hvordan Birdly.dk behandler personoplysninger i forbindelse med tjenesten Birdly og hjemmesiden birdly.dk.
 
 ## Dataansvarlig
-Birdly.dk, Fjordvej 4, 4300 Holbæk, er dataansvarlig for behandlingen af personoplysninger. Henvendelser om persondata sendes til support@birdly.dk. <!-- CVR sættes tilbage når Virk har godkendt: "CVR-nr. 35764283, " efter "Birdly.dk," -->
+Birdly.dk, CVR-nr. 35764283, Fjordvej 4, 4300 Holbæk, er dataansvarlig for behandlingen af personoplysninger. Henvendelser om persondata sendes til support@birdly.dk.
 
 ## Hvilke oplysninger vi behandler
 Vi behandler de oplysninger, du selv giver os ved tilmelding og brug af Tjenesten:
