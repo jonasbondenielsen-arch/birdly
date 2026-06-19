@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Logo } from "./Logo";
 import { uploadTenderFile, deleteTenderFile } from "../lib/share";
 
@@ -119,7 +119,10 @@ function fmtPhoneDisplay(raw) {
 }
 
 // Fil-upload pr. sektion. Privat bucket via Edge Function; server-side type+10MB-check.
-function FileUpload({ token, section, initial }) {
+// local=true (offentlig forsmag): viser KUN filnavnet i browseren — uploader ALDRIG til
+// server (ingen anonym fil-hosting). Navnene følger med i "Gem som PDF" som i det rigtige
+// værktøj; selve filerne afleveres i ordregiverens udbudssystem.
+function FileUpload({ token, section, initial, local }) {
   const [files, setFiles] = useState(initial || []);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
@@ -127,6 +130,11 @@ function FileUpload({ token, section, initial }) {
     const f = e.target.files && e.target.files[0];
     e.target.value = "";
     if (!f) return;
+    if (local) { // offentlig: kun lokalt filnavn, ingen server-upload
+      setErr("");
+      setFiles((x) => [...x, { id: `local-${x.length}-${f.name}`, file_name: f.name, size_bytes: f.size, local: true }]);
+      return;
+    }
     setBusy(true); setErr("");
     try { const row = await uploadTenderFile(token, section, f); setFiles((x) => [...x, row]); }
     catch (ex) { setErr(ex.message || "Upload fejlede."); }
@@ -134,6 +142,7 @@ function FileUpload({ token, section, initial }) {
   }
   async function remove(id) {
     setErr("");
+    if (local) { setFiles((x) => x.filter((f) => f.id !== id)); return; }
     try { await deleteTenderFile(token, id); setFiles((x) => x.filter((f) => f.id !== id)); }
     catch (ex) { setErr(ex.message || "Kunne ikke slette."); }
   }
@@ -143,7 +152,7 @@ function FileUpload({ token, section, initial }) {
         {busy ? "Uploader …" : "📎 Vedhæft fil"}
         <input type="file" accept=".pdf,.docx,.xlsx,.doc,.xls,.jpg,.jpeg,.png" onChange={onPick} disabled={busy} style={{ display: "none" }} />
       </label>
-      <span className="no-print" style={{ color: MUTED, fontSize: 12, marginLeft: 10 }}>pdf, docx, xlsx, jpg, png · maks 10 MB</span>
+      <span className="no-print" style={{ color: MUTED, fontSize: 12, marginLeft: 10 }}>{local ? "vises kun som navn — filen uploades ikke" : "pdf, docx, xlsx, jpg, png · maks 10 MB"}</span>
       {err && <div style={{ color: "#B3261E", fontSize: 13, marginTop: 6 }}>{err}</div>}
       {files.length > 0 && (
         <ul style={{ listStyle: "none", padding: 0, margin: "10px 0 0" }}>
@@ -217,7 +226,7 @@ const EXCLUSION_GROUNDS = [
   "Russisk ejerskab/tilknytning (sanktion art. 5k, forordning 833/2014)",
 ];
 
-export default function Skabelon({ token, data }) {
+export default function Skabelon({ token, data, publicMode = false }) {
   const CONTENT = ["resume", "formalia", "espd", "pris", "kvalitet", "erklaeringer", "kontrakt"];
   const [done, setDone] = useState({});
   const doneCount = CONTENT.filter((k) => done[k]).length;
@@ -228,6 +237,49 @@ export default function Skabelon({ token, data }) {
   const [bidMode, setBidMode] = useState("alene"); // alene | konsortium
   const [relyCapacity, setRelyCapacity] = useState(false); // baserer sig på andres kapacitet
   const [consent, setConsent] = useState(false);
+  const [selectedLots, setSelectedLots] = useState({}); // { "LOT-0001": true } — kun ved multi-lot
+
+  // OFFENTLIG forsmag (publicMode): gem brugerens indtastninger LOKALT i browseren —
+  // intet login, ingen server. En utilsigtet genindlæsning rydder ikke arbejdet. Hooks
+  // ligger FØR early-return (stabil hook-rækkefølge) og no-op'er når publicMode er false,
+  // så det private værktøj er fuldstændig uberørt. Nøgle pr. udbud (publication_number).
+  const mainRef = useRef(null);
+  const storageKey = publicMode ? `birdly_forsmag_${(data && data.notice && data.notice.publication_number) || "udbud"}` : null;
+  useEffect(() => { // gendan ved mount
+    if (!storageKey) return;
+    try {
+      const saved = JSON.parse(window.localStorage.getItem(storageKey) || "null");
+      if (saved && saved.state) {
+        const st = saved.state;
+        if (st.done) setDone(st.done);
+        if (st.contact) setContact(st.contact);
+        if (st.bidMode) setBidMode(st.bidMode);
+        if (typeof st.relyCapacity === "boolean") setRelyCapacity(st.relyCapacity);
+        if (st.selectedLots) setSelectedLots(st.selectedLots);
+        // consent gendannes bevidst IKKE — skal bekræftes på ny hver gang (juridisk).
+      }
+      if (saved && saved.fields && mainRef.current) {
+        const root = mainRef.current;
+        requestAnimationFrame(() => {
+          for (const k in saved.fields) { const el = root.querySelector(`[name="${k}"]`); if (el) el.value = saved.fields[k]; }
+        });
+      }
+    } catch (_) { /* korrupt/utilgængelig storage → ignorér */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [storageKey]);
+  useEffect(() => { // gem kontrolleret state (tjekliste, kontakt, bud-valg)
+    if (!storageKey) return;
+    try { const cur = JSON.parse(window.localStorage.getItem(storageKey) || "{}"); cur.state = { done, contact, bidMode, relyCapacity, selectedLots }; window.localStorage.setItem(storageKey, JSON.stringify(cur)); }
+    catch (_) { /* ignorér */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [storageKey, done, contact, bidMode, relyCapacity, selectedLots]);
+  function onPublicInput(e) { // gem fritekst-felter (referencer/beskrivelse/pris) løbende
+    if (!storageKey) return;
+    const t = e.target;
+    if (!t || !t.name) return;
+    try { const cur = JSON.parse(window.localStorage.getItem(storageKey) || "{}"); cur.fields = cur.fields || {}; cur.fields[t.name] = t.value; window.localStorage.setItem(storageKey, JSON.stringify(cur)); }
+    catch (_) { /* ignorér */ }
+  }
 
   if (!data || !data.found) {
     return (
@@ -249,6 +301,11 @@ export default function Skabelon({ token, data }) {
   const onlyPrice = award.length > 0 && qualCrits.length === 0; // laveste pris → nedton kvalitet
   const selection = Array.isArray(n.selection_criteria) ? n.selection_criteria : [];
   const lots = Array.isArray(n.lots) ? n.lots : [];
+  const lotSel = lots.length > 1; // multi-lot → vis "vælg delaftaler"
+  const selectedLotObjs = lots.filter((l) => selectedLots[l.id]);
+  const allLotsSelected = lots.length > 0 && lots.every((l) => selectedLots[l.id]);
+  const toggleLot = (id) => setSelectedLots((s) => ({ ...s, [id]: !s[id] }));
+  const toggleAllLots = () => { const next = !allLotsSelected; const m = {}; for (const l of lots) m[l.id] = next; setSelectedLots(m); };
   const mailto = n.contact_email ? `mailto:${n.contact_email}?subject=${encodeURIComponent("Spørgsmål: " + (n.title || "udbud"))}` : null;
 
   function Section({ k, label, title, note, children }) {
@@ -267,9 +324,26 @@ export default function Skabelon({ token, data }) {
   }
 
   return (
-    <main style={WRAP}>
+    <main ref={mainRef} onInput={publicMode ? onPublicInput : undefined} style={WRAP}>
       <style dangerouslySetInnerHTML={{ __html: PRINT_CSS }} />
       <div style={{ display: "flex", justifyContent: "center", margin: "12px 0 18px" }}><Logo /></div>
+
+      {/* OFFENTLIG forsmag: banner der gør det tydeligt at skabelonen er fri at prøve, og
+          at medlemmer får den forhåndsudfyldt + automatisk pr. match. Skjult i PDF. */}
+      {publicMode && (
+        <div className="no-print" style={{ background: NAVY, color: "#fff", borderRadius: 14, padding: "16px 20px", display: "flex", gap: 13, alignItems: "flex-start", marginBottom: 4 }}>
+          <span aria-hidden style={{ fontSize: 20, lineHeight: 1.2 }}>✍️</span>
+          <div style={{ flex: 1 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 3 }}>
+              <span style={{ fontWeight: 800, fontSize: 15 }}>Sådan ser Birdly-skabelonen ud — prøv den frit</span>
+              <span style={{ background: "#FFF6E9", color: "#92670A", borderRadius: 999, padding: "2px 10px", fontSize: 11, fontWeight: 800, letterSpacing: ".05em" }}>FRI AFBENYTTELSE</span>
+            </div>
+            <div style={{ fontSize: 13.5, lineHeight: 1.55, color: "#C9D6E5" }}>
+              Skriv i felterne og gem som PDF. <b style={{ color: "#fff", fontWeight: 700 }}>Som medlem</b> udfyldes den automatisk med din virksomheds oplysninger og tilpasset hvert udbud, der matcher dit fag.
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Print-header (kun i PDF) */}
       <div className="print-only" style={{ marginBottom: 14 }}>
@@ -341,6 +415,34 @@ export default function Skabelon({ token, data }) {
         )}
       </Section>
 
+      {/* 1b. Vælg delaftaler — KUN ved multi-lot. Styrer pris-sektionen + tjeklisten.
+          Generel skabelon-feature (både privat værktøj og offentlig forsmag). */}
+      {lotSel && (
+        <section style={CARD}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, flexWrap: "wrap" }}>
+            <div><div style={SECTION_LABEL}>Delaftaler</div><h2 style={H2}>Vælg de delaftaler, du byder på</h2></div>
+            <button type="button" className="no-print" onClick={toggleAllLots} style={{ ...BTN_OUTLINE, padding: "8px 14px" }}>{allLotsSelected ? "Fravælg alle" : "Vælg alle"}</button>
+          </div>
+          <Note>Dette udbud er delt i {lots.length} delaftaler. Du kan byde på én, flere eller alle — sæt kryds ved dem, du vil byde på. Pris-sektionen tilpasser sig dit valg.</Note>
+          <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+            {lots.map((l, i) => (
+              <li key={l.id} style={{ padding: "10px 0", borderBottom: "1px solid #F0F2F5" }}>
+                <label style={{ display: "flex", gap: 11, alignItems: "flex-start", cursor: "pointer" }}>
+                  <input type="checkbox" checked={!!selectedLots[l.id]} onChange={() => toggleLot(l.id)} style={{ marginTop: 3, width: 18, height: 18, flex: "0 0 auto" }} />
+                  <span>
+                    <span style={{ fontWeight: 700, color: NAVY }}>{l.title || `Delaftale ${i + 1}`}</span>
+                    <span style={{ color: MUTED, fontSize: 13 }}> · {l.id}{l.amount != null ? ` · anslået ${fmtKr(l.amount, l.currency)}` : ""}</span>
+                  </span>
+                </label>
+              </li>
+            ))}
+          </ul>
+          <div style={{ marginTop: 12, fontWeight: 700, color: selectedLotObjs.length ? "#197A66" : MUTED }}>
+            {selectedLotObjs.length ? `Du byder på ${selectedLotObjs.length} af ${lots.length} delaftaler` : "Ingen delaftaler valgt endnu"}
+          </div>
+        </section>
+      )}
+
       {/* 2. Formalia & tjekliste */}
       <Section k="formalia" label="Sektion 1" title="Formalia & tjekliste" note="Det praktiske, så dit tilbud bliver gyldigt. De grønne er sikre; de gule skal du bekræfte i materialet.">
         <Row label="Frist"><span>{fmtDate(n.deadline)}</span> <span style={{ marginLeft: 8 }}><Chip state="green" /></span></Row>
@@ -361,6 +463,7 @@ export default function Skabelon({ token, data }) {
 
         <div style={{ fontWeight: 700, color: NAVY, margin: "16px 0 4px" }}>Påkrævet <span style={{ fontWeight: 400, color: MUTED, fontSize: 13 }}>— uden disse afvises tilbuddet</span></div>
         <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+          {lotSel && <Check>{selectedLotObjs.length ? `Delaftaler valgt: ${selectedLotObjs.length} af ${lots.length} (se Delaftaler ovenfor)` : "Vælg hvilke delaftaler du byder på (se Delaftaler ovenfor)"}</Check>}
           <Check>Tilbud afgivet inden fristen: <b>{fmtDate(n.deadline)}</b></Check>
           <Check>Tilbud afleveret elektronisk i ordregiverens udbudssystem</Check>
           <Check>Korrekt sprog (se udbudsbetingelser)</Check>
@@ -426,10 +529,10 @@ export default function Skabelon({ token, data }) {
         {[1, 2, 3].map((i) => (
           <div key={i} style={{ marginBottom: 10 }}>
             <label style={LBL}>Reference {i}</label>
-            <textarea style={{ ...INPUT, minHeight: 60, resize: "vertical" }} placeholder="Kunde · opgave · værdi · årstal · kort beskrivelse" />
+            <textarea name={`ref_${i}`} style={{ ...INPUT, minHeight: 60, resize: "vertical" }} placeholder="Kunde · opgave · værdi · årstal · kort beskrivelse" />
           </div>
         ))}
-        <FileUpload token={token} section="referencer" initial={filesFor("referencer")} />
+        <FileUpload token={token} section="referencer" initial={filesFor("referencer")} local={publicMode} />
       </Section>
 
       {/* 4. Tilbudsliste / Pris */}
@@ -439,10 +542,26 @@ export default function Skabelon({ token, data }) {
 
         <div style={{ fontWeight: 700, color: NAVY, marginTop: 16 }}>1 · Upload udfyldt prisbilag <span style={{ marginLeft: 6 }}><Chip state="blue" reason="Ordregiverens egen tilbudsliste — det vigtigste" /></span></div>
         <p style={{ color: MUTED, fontSize: 13, margin: "4px 0 0" }}>Hent ordregiverens tilbudsliste (Excel/PDF) i materialet, udfyld den, og læg den her. Den skal afleveres i ordregiverens eget format.</p>
-        <FileUpload token={token} section="pris" initial={filesFor("pris")} />
+        <FileUpload token={token} section="pris" initial={filesFor("pris")} local={publicMode} />
 
-        <div style={{ fontWeight: 700, color: NAVY, marginTop: 18 }}>2 · Samlet tilbudspris <span style={{ marginLeft: 6 }}><Chip state="blue" reason="Kun du kender din pris" /></span></div>
-        <input style={{ ...INPUT, marginTop: 8 }} inputMode="numeric" placeholder="fx 1.250.000 DKK" />
+        {lotSel && selectedLotObjs.length > 0 ? (
+          <>
+            <div style={{ fontWeight: 700, color: NAVY, marginTop: 18 }}>2 · Din pris pr. valgt delaftale <span style={{ marginLeft: 6 }}><Chip state="blue" reason="Kun du kender din pris" /></span></div>
+            <p style={{ color: MUTED, fontSize: 13, margin: "4px 0 0" }}>Du byder på {selectedLotObjs.length} delaftale{selectedLotObjs.length > 1 ? "r" : ""} — angiv din pris for hver.</p>
+            {selectedLotObjs.map((l, i) => (
+              <div key={l.id} style={{ marginTop: 10 }}>
+                <label style={LBL}>{l.title || `Delaftale ${i + 1}`} <span style={{ color: MUTED }}>({l.id})</span></label>
+                <input name={`pris_lot_${l.id}`} style={INPUT} inputMode="numeric" placeholder="fx 1.250.000 DKK" />
+              </div>
+            ))}
+          </>
+        ) : (
+          <>
+            <div style={{ fontWeight: 700, color: NAVY, marginTop: 18 }}>2 · Samlet tilbudspris <span style={{ marginLeft: 6 }}><Chip state="blue" reason="Kun du kender din pris" /></span></div>
+            <input name="pris_total" style={{ ...INPUT, marginTop: 8 }} inputMode="numeric" placeholder="fx 1.250.000 DKK" />
+            {lotSel && <p style={{ color: MUTED, fontSize: 13, marginTop: 6, fontStyle: "italic" }}>Vælg delaftaler ovenfor for at angive pris pr. delaftale.</p>}
+          </>
+        )}
 
         <div style={{ fontWeight: 700, color: NAVY, marginTop: 18 }}>3 · Valgfri pris-tabel <span style={{ marginLeft: 6 }}><Chip state="blue" reason="Til dine egne beregninger" /></span></div>
         <div style={{ background: "#FFF6E9", border: "1px solid #F3D9A8", borderRadius: 10, padding: "9px 12px", marginTop: 8, color: "#92670A", fontSize: 13 }}>Kun et hjælperedskab til dine egne beregninger — den <b>erstatter ikke</b> ordregiverens tilbudsliste, som stadig skal udfyldes og uploades ovenfor.</div>
@@ -462,9 +581,9 @@ export default function Skabelon({ token, data }) {
           <CheckInMaterial>Selve evalueringsmetoden og hvad der præcist skal beskrives under hvert kriterium står i udbudsbetingelserne.</CheckInMaterial>
           <div style={{ marginTop: 12 }}>
             <label style={LBL}>Jeres beskrivelse <span style={{ marginLeft: 6 }}><Chip state="blue" reason="Jeres substans og erfaring" /></span></label>
-            <textarea style={{ ...INPUT, minHeight: 110, resize: "vertical" }} placeholder="Beskriv jeres faglige kvalifikationer, erfaring og tilgang …" />
+            <textarea name="kvalitet_beskrivelse" style={{ ...INPUT, minHeight: 110, resize: "vertical" }} placeholder="Beskriv jeres faglige kvalifikationer, erfaring og tilgang …" />
           </div>
-          <FileUpload token={token} section="kvalitet" initial={filesFor("kvalitet")} />
+          <FileUpload token={token} section="kvalitet" initial={filesFor("kvalitet")} local={publicMode} />
         </Section>
       )}
       {onlyPrice && (
@@ -498,7 +617,7 @@ export default function Skabelon({ token, data }) {
           <p style={{ color: MUTED, fontSize: 13, fontStyle: "italic", marginTop: 10 }}>Du byder alene og baserer dig ikke på andre — så konsortie- og støtteerklæring er ikke relevant for dig.</p>
         )}
         <CheckInMaterial>Den præcise ordlyd og evt. ordregiver-skabeloner for erklæringerne ligger i udbudsmaterialet. Hent dem, udfyld, underskriv — og vedhæft dem her.</CheckInMaterial>
-        <FileUpload token={token} section="erklaeringer" initial={filesFor("erklaeringer")} />
+        <FileUpload token={token} section="erklaeringer" initial={filesFor("erklaeringer")} local={publicMode} />
       </Section>
 
       {/* 7. Kontraktvilkår */}
@@ -563,6 +682,31 @@ export default function Skabelon({ token, data }) {
         tilbudsgivers ansvar at sikre, at tilbuddet er korrekt, fuldstændigt og opfylder samtlige krav i udbuddet. Birdly
         fraskriver sig ethvert ansvar for oplysningernes rigtighed og for tilbuddets gyldighed eller udfald.
       </div>
+
+      {/* OFFENTLIG forsmag: smagsprøve-CTA + "Vigtigt"-disclaimer nederst. Skjult i PDF. */}
+      {publicMode && (
+        <>
+          <div className="no-print" style={{ ...CARD, background: "#F2FBF9", borderColor: "#BFE9E0" }}>
+            <h2 style={{ ...H2, fontSize: 19 }}>Det her er kun en smagsprøve</h2>
+            <p style={{ color: INK, lineHeight: 1.6, margin: "4px 0 14px" }}>
+              Dagens udbud er ægte — og det er sådan vores tilbudsskabelon ser ud. Som medlem får du den ikke bare
+              vist, men forberedt til dig: udfyldt med din virksomheds oplysninger og tilpasset hvert enkelt udbud,
+              der matcher dit fag. Vi gør det meste af arbejdet, så du kun udfylder det, vi ikke kan vide.
+            </p>
+            <a href="/tilmeld" style={{ ...BTN_PRIMARY, fontSize: 16, padding: "14px 24px" }}>👉 Sådan får du dem alle — prøv Birdly gratis →</a>
+          </div>
+          <div className="no-print" style={{ marginTop: 16, padding: "16px 18px", background: "#FBFCFD", border: "1px solid " + LINE, borderRadius: 12, color: MUTED, fontSize: 13, lineHeight: 1.6 }}>
+            <b style={{ color: INK }}>Vigtigt</b>
+            <p style={{ margin: "6px 0 0" }}>
+              Birdly hjælper dig i gang med dit tilbud ved at forudfylde de oplysninger, vi kan udlede fra udbuddet og
+              fra offentligt tilgængelige data. Skabelonen er et hjælpeværktøj og et udkast — ikke en færdig eller
+              fyldestgørende tilbudsløsning. Du er selv ansvarlig for at læse hele det officielle udbudsmateriale og
+              sikre, at dit tilbud opfylder samtlige krav, frister og betingelser. Birdly er ikke ansvarlig for
+              tilbuddets fuldstændighed eller for udfaldet af din deltagelse.
+            </p>
+          </div>
+        </>
+      )}
 
       <p className="no-print" style={{ textAlign: "center", color: MUTED, fontSize: 12.5, marginTop: 20 }}>Skabelonen er et hjælpeværktøj — det bindende materiale ligger hos ordregiveren.</p>
     </main>
