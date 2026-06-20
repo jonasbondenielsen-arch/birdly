@@ -1,8 +1,14 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, createContext, useContext } from "react";
 import { Logo } from "./Logo";
 import { uploadTenderFile, deleteTenderFile } from "../lib/share";
+
+// State-context, så Section/Check kan ligge på MODUL-niveau (stabil identitet) og dermed
+// IKKE remountes ved hver render. Tidligere lå de inde i komponenten → ny funktion pr.
+// render → React rev hele sektions-træet ned + byggede det op igen → scroll hoppede til
+// toppen ved hvert flueben/valg. Provider'en giver dem done/toggle + checks/toggleCheck.
+const SkabCtx = createContext({ done: {}, toggle: () => {}, checks: {}, toggleCheck: () => {} });
 
 // Bud-skabelon (Fase D / stop-point #2: tre-tilstands-markering + sektionsstruktur).
 // ALT forudfyldt læses dynamisk per udbud fra get-shared-notice — intet hardkodes,
@@ -28,15 +34,23 @@ const LBL = { display: "block", fontSize: 13, color: MUTED, marginBottom: 5 };
 // Print-stylesheet: skjul UI-chrome (knapper, upload-felter, "gennemgået", progress,
 // samtykke-boksen selv) og rens felterne, så "Gem som PDF" giver et pænt dokument.
 const PRINT_CSS = `
-@media screen { .print-only { display: none !important; } }
+@media screen { .print-only, .final-only { display: none !important; } }
 @media print {
   .no-print { display: none !important; }
   .print-only { display: block !important; }
+  .final-only { display: none !important; }
   body { background: #fff !important; }
   input, textarea, select { border: 1px solid #D7DCE2 !important; box-shadow: none !important; color: #1B2733 !important; }
   textarea { height: auto !important; min-height: 0 !important; overflow: visible !important; }
   section, .skab-card { box-shadow: none !important; break-inside: avoid; }
   @page { margin: 15mm; }
+  /* ENDELIG version til ordregiver: fjern KUN Birdlys hjælp (chips/noter/intro/logo/
+     disclaimer), behold kundens indtastninger + udbuds-grunddata. Resumé = forside,
+     indholdsfortegnelsen vises, og bilagsliste står til sidst. */
+  .skab-final .birdly-help { display: none !important; }
+  .skab-final .final-only { display: block !important; }
+  .skab-final .skab-resume { page-break-after: always; }
+  .skab-final .skab-toc { page-break-after: always; }
 }`;
 
 function fmtDate(iso) {
@@ -64,7 +78,7 @@ const STATES = {
 function Chip({ state, reason }) {
   const s = STATES[state] || STATES.blue;
   return (
-    <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 700, padding: "3px 9px", borderRadius: 999, whiteSpace: "nowrap", background: s.bg, color: s.fg }}>
+    <span className="birdly-help" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 700, padding: "3px 9px", borderRadius: 999, whiteSpace: "nowrap", background: s.bg, color: s.fg }}>
       <span aria-hidden>{s.icon}</span>{s.text}{reason ? <span style={{ fontWeight: 400 }}>· {reason}</span> : null}
     </span>
   );
@@ -73,12 +87,12 @@ function Chip({ state, reason }) {
 // profil, blå hvis kunden selv skal udfylde.
 function MiniChip({ on }) {
   return on
-    ? <span style={{ fontSize: 11, fontWeight: 700, color: "#197A66", marginLeft: 6 }}>🟢 fra din profil</span>
-    : <span style={{ fontSize: 11, fontWeight: 700, color: "#1366A6", marginLeft: 6 }}>🔵 udfyld selv</span>;
+    ? <span className="birdly-help" style={{ fontSize: 11, fontWeight: 700, color: "#197A66", marginLeft: 6 }}>🟢 fra din profil</span>
+    : <span className="birdly-help" style={{ fontSize: 11, fontWeight: 700, color: "#1366A6", marginLeft: 6 }}>🔵 udfyld selv</span>;
 }
 function Note({ children }) {
   return (
-    <div style={{ display: "flex", gap: 9, alignItems: "flex-start", background: "#F6F8FA", border: "1px solid " + LINE, borderRadius: 10, padding: "10px 12px", margin: "10px 0 14px", color: MUTED, fontSize: 13.5, lineHeight: 1.5 }}>
+    <div className="birdly-help" style={{ display: "flex", gap: 9, alignItems: "flex-start", background: "#F6F8FA", border: "1px solid " + LINE, borderRadius: 10, padding: "10px 12px", margin: "10px 0 14px", color: MUTED, fontSize: 13.5, lineHeight: 1.5 }}>
       <span aria-hidden style={{ flex: "0 0 auto", marginTop: 1 }}>💡</span><em style={{ fontStyle: "italic" }}>{children}</em>
     </div>
   );
@@ -94,7 +108,7 @@ function Row({ label, children }) {
 // Lille gul boks der fortæller hvad kunden skal finde i materialet (amber-tilstand).
 function CheckInMaterial({ children }) {
   return (
-    <div style={{ background: "#FFF6E9", border: "1px solid #F3D9A8", borderRadius: 10, padding: "10px 12px", color: "#92670A", fontSize: 13.5, lineHeight: 1.5, marginTop: 8 }}>{children}</div>
+    <div className="birdly-help" style={{ background: "#FFF6E9", border: "1px solid #F3D9A8", borderRadius: 10, padding: "10px 12px", color: "#92670A", fontSize: 13.5, lineHeight: 1.5, marginTop: 8 }}>{children}</div>
   );
 }
 function fmtBytes(b) {
@@ -122,7 +136,7 @@ function fmtPhoneDisplay(raw) {
 // local=true (offentlig forsmag): viser KUN filnavnet i browseren — uploader ALDRIG til
 // server (ingen anonym fil-hosting). Navnene følger med i "Gem som PDF" som i det rigtige
 // værktøj; selve filerne afleveres i ordregiverens udbudssystem.
-function FileUpload({ token, section, initial, local }) {
+function FileUpload({ token, section, initial, local, attached, onToggleAttached, letter, bilagName, onBilagName, defaultName }) {
   const [files, setFiles] = useState(initial || []);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
@@ -148,6 +162,23 @@ function FileUpload({ token, section, initial, local }) {
   }
   return (
     <div style={{ marginTop: 10 }}>
+      {/* Bilag-toggle (punkt 1) — additivt ved siden af upload. Ja → automatisk bogstav
+          (Bilag A/B/C…, udledt af rækkefølgen) + redigerbart navn. UI er no-print;
+          selve bilaget vises i den auto-genererede bilagsliste til sidst. */}
+      <div className="no-print" style={{ marginBottom: 10 }}>
+        <div style={{ display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" }}>
+          <span style={{ fontSize: 13.5, color: INK, fontWeight: 600 }}>Vedlægger du et bilag her?</span>
+          <label style={{ display: "inline-flex", gap: 6, alignItems: "center", cursor: "pointer", color: INK, fontSize: 13.5 }}><input type="radio" checked={!!attached} onChange={() => onToggleAttached(true)} /> Ja</label>
+          <label style={{ display: "inline-flex", gap: 6, alignItems: "center", cursor: "pointer", color: INK, fontSize: 13.5 }}><input type="radio" checked={!attached} onChange={() => onToggleAttached(false)} /> Nej</label>
+          {attached && letter && <span style={{ background: "#E7F1FE", color: "#1366A6", fontWeight: 800, fontSize: 12, borderRadius: 999, padding: "3px 10px" }}>Bilag {letter}</span>}
+        </div>
+        {attached && (
+          <div style={{ marginTop: 8 }}>
+            <label style={LBL}>Bilagets navn</label>
+            <input value={bilagName || ""} onChange={(e) => onBilagName(e.target.value)} placeholder={defaultName} style={INPUT} />
+          </div>
+        )}
+      </div>
       <label className="no-print" style={{ ...BTN_OUTLINE, display: "inline-block", cursor: "pointer" }}>
         {busy ? "Uploader …" : "📎 Vedhæft fil"}
         <input type="file" accept=".pdf,.docx,.xlsx,.doc,.xls,.jpg,.jpeg,.png" onChange={onPick} disabled={busy} style={{ display: "none" }} />
@@ -238,6 +269,15 @@ export default function Skabelon({ token, data, publicMode = false }) {
   const [relyCapacity, setRelyCapacity] = useState(false); // baserer sig på andres kapacitet
   const [consent, setConsent] = useState(false);
   const [selectedLots, setSelectedLots] = useState({}); // { "LOT-0001": true } — kun ved multi-lot
+  const [sprog, setSprog] = useState("");        // dropdown (da/en/de/fr/es)
+  const [vedstaaelse, setVedstaaelse] = useState(""); // dropdown (vedståelsesperiode)
+  const [forbehold, setForbehold] = useState("nej"); // "nej" | "ja" — forbehold over for materialet
+  const [attach, setAttach] = useState({});      // { referencer:true,… } — hvilke vedhæft-felter er "Ja"
+  const [attachNames, setAttachNames] = useState({}); // { referencer:"Referenceliste",… }
+  const [finalMode, setFinalMode] = useState(false); // true under print af "endelig version" (ikke gemt)
+  const [exclusions, setExclusions] = useState({}); // ESPD: { [index]: "nej"|"ja" } — du bekræfter selv
+  const [forbeholdList, setForbeholdList] = useState([""]); // forbehold-beskrivelser (vises når "Ja")
+  const [checks, setChecks] = useState({}); // tjekliste-afkrydsninger { [key]: true }
 
   // OFFENTLIG forsmag (publicMode): gem brugerens indtastninger LOKALT i browseren —
   // intet login, ingen server. En utilsigtet genindlæsning rydder ikke arbejdet. Hooks
@@ -256,6 +296,14 @@ export default function Skabelon({ token, data, publicMode = false }) {
         if (st.bidMode) setBidMode(st.bidMode);
         if (typeof st.relyCapacity === "boolean") setRelyCapacity(st.relyCapacity);
         if (st.selectedLots) setSelectedLots(st.selectedLots);
+        if (st.sprog) setSprog(st.sprog);
+        if (st.vedstaaelse) setVedstaaelse(st.vedstaaelse);
+        if (st.forbehold) setForbehold(st.forbehold);
+        if (st.attach) setAttach(st.attach);
+        if (st.attachNames) setAttachNames(st.attachNames);
+        if (st.exclusions) setExclusions(st.exclusions);
+        if (Array.isArray(st.forbeholdList) && st.forbeholdList.length) setForbeholdList(st.forbeholdList);
+        if (st.checks) setChecks(st.checks);
         // consent gendannes bevidst IKKE — skal bekræftes på ny hver gang (juridisk).
       }
       if (saved && saved.fields && mainRef.current) {
@@ -269,10 +317,10 @@ export default function Skabelon({ token, data, publicMode = false }) {
   }, [storageKey]);
   useEffect(() => { // gem kontrolleret state (tjekliste, kontakt, bud-valg)
     if (!storageKey) return;
-    try { const cur = JSON.parse(window.localStorage.getItem(storageKey) || "{}"); cur.state = { done, contact, bidMode, relyCapacity, selectedLots }; window.localStorage.setItem(storageKey, JSON.stringify(cur)); }
+    try { const cur = JSON.parse(window.localStorage.getItem(storageKey) || "{}"); cur.state = { done, contact, bidMode, relyCapacity, selectedLots, sprog, vedstaaelse, forbehold, attach, attachNames, exclusions, forbeholdList, checks }; window.localStorage.setItem(storageKey, JSON.stringify(cur)); }
     catch (_) { /* ignorér */ }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [storageKey, done, contact, bidMode, relyCapacity, selectedLots]);
+  }, [storageKey, done, contact, bidMode, relyCapacity, selectedLots, sprog, vedstaaelse, forbehold, attach, attachNames, exclusions, forbeholdList, checks]);
   function onPublicInput(e) { // gem fritekst-felter (referencer/beskrivelse/pris) løbende
     if (!storageKey) return;
     const t = e.target;
@@ -280,6 +328,15 @@ export default function Skabelon({ token, data, publicMode = false }) {
     try { const cur = JSON.parse(window.localStorage.getItem(storageKey) || "{}"); cur.fields = cur.fields || {}; cur.fields[t.name] = t.value; window.localStorage.setItem(storageKey, JSON.stringify(cur)); }
     catch (_) { /* ignorér */ }
   }
+  // "Endelig version"-print: finalMode sætter CSS-klassen skab-final (skjuler Birdlys
+  // hjælp + Resumé-forside + indholdsfortegnelse), printer, og nulstiller bagefter.
+  useEffect(() => {
+    if (!finalMode) return;
+    const reset = () => setFinalMode(false);
+    window.addEventListener("afterprint", reset, { once: true });
+    window.print();
+    return () => window.removeEventListener("afterprint", reset);
+  }, [finalMode]);
 
   if (!data || !data.found) {
     return (
@@ -306,27 +363,45 @@ export default function Skabelon({ token, data, publicMode = false }) {
   const allLotsSelected = lots.length > 0 && lots.every((l) => selectedLots[l.id]);
   const toggleLot = (id) => setSelectedLots((s) => ({ ...s, [id]: !s[id] }));
   const toggleAllLots = () => { const next = !allLotsSelected; const m = {}; for (const l of lots) m[l.id] = next; setSelectedLots(m); };
+  // Bilag (punkt 1+6): fast dokument-rækkefølge; bogstaverne GEMMES ikke — de UDLEDES ved
+  // at gennemløbe felterne og give A,B,C… kun til dem på "Ja". Derfor altid sammenhængende
+  // (ingen huller), og Ja→Nej rykker automatisk de efterfølgende bogstaver op.
+  const ATTACH_ORDER = [
+    { key: "referencer", label: "Referenceliste" },
+    { key: "pris", label: "Udfyldt tilbudsliste" },
+    { key: "kvalitet", label: "Tilbudsbeskrivelse" },
+    { key: "erklaeringer", label: "Underskrevne erklæringer" },
+  ];
+  const bilag = ATTACH_ORDER.filter((f) => attach[f.key]).map((f, i) => ({
+    key: f.key, letter: String.fromCharCode(65 + i), name: (attachNames[f.key] || "").trim() || f.label,
+  }));
+  const letterFor = (key) => (bilag.find((b) => b.key === key) || {}).letter || null;
+  const toggleAttach = (key) => setAttach((s) => ({ ...s, [key]: !s[key] }));
+  const setAttachName = (key, v) => setAttachNames((s) => ({ ...s, [key]: v }));
+  // Indholdsfortegnelse (punkt 5): kun de sektioner der faktisk vises (no sidetal — ren
+  // browser-print). Genereres automatisk; følger samme betingelser som sektionerne.
+  const tocSections = [
+    "Resumé",
+    ...(lotSel ? ["Delaftaler"] : []),
+    "Formalia & tjekliste", "ESPD — standarderklæring", "Tilbudsliste / Pris",
+    "Tilbudsbeskrivelse (kvalitet)", "Erklæringer", "Kontraktvilkår",
+    ...(bilag.length ? ["Bilagsliste"] : []),
+  ];
+  // ESPD-udelukkelsesgrunde: "Nej" er et forudfyldt FORSLAG, men du bekræfter/ændrer selv
+  // (bindende erklæring). Default = "nej"; et "ja" udløser advarsel.
+  const exclVal = (i) => exclusions[i] || "nej";
+  const setExclusion = (i, v) => setExclusions((s) => ({ ...s, [i]: v }));
+  const anyExclusionJa = EXCLUSION_GROUNDS.some((_, i) => exclVal(i) === "ja");
+  const setForbeholdItem = (i, v) => setForbeholdList((l) => l.map((x, j) => (j === i ? v : x)));
+  const addForbehold = () => setForbeholdList((l) => [...l, ""]);
+  const toggleCheck = (k) => setChecks((s) => ({ ...s, [k]: !s[k] }));
   const mailto = n.contact_email ? `mailto:${n.contact_email}?subject=${encodeURIComponent("Spørgsmål: " + (n.title || "udbud"))}` : null;
 
-  function Section({ k, label, title, note, children }) {
-    return (
-      <section style={CARD}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, flexWrap: "wrap" }}>
-          <div><div style={SECTION_LABEL}>{label}</div><h2 style={H2}>{title}</h2></div>
-          <label className="no-print" style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 13.5, color: done[k] ? "#197A66" : MUTED, cursor: "pointer", whiteSpace: "nowrap" }}>
-            <input type="checkbox" checked={!!done[k]} onChange={() => toggle(k)} style={{ width: 17, height: 17 }} /> Gennemgået
-          </label>
-        </div>
-        {note && <Note>{note}</Note>}
-        {children}
-      </section>
-    );
-  }
-
   return (
-    <main ref={mainRef} onInput={publicMode ? onPublicInput : undefined} style={WRAP}>
+    <SkabCtx.Provider value={{ done, toggle, checks, toggleCheck }}>
+    <main ref={mainRef} onInput={publicMode ? onPublicInput : undefined} className={finalMode ? "skab-final" : undefined} style={WRAP}>
       <style dangerouslySetInnerHTML={{ __html: PRINT_CSS }} />
-      <div style={{ display: "flex", justifyContent: "center", margin: "12px 0 18px" }}><Logo /></div>
+      <div className="birdly-help" style={{ display: "flex", justifyContent: "center", margin: "12px 0 18px" }}><Logo /></div>
 
       {/* OFFENTLIG forsmag: banner der gør det tydeligt at skabelonen er fri at prøve, og
           at medlemmer får den forhåndsudfyldt + automatisk pr. match. Skjult i PDF. */}
@@ -345,14 +420,14 @@ export default function Skabelon({ token, data, publicMode = false }) {
         </div>
       )}
 
-      {/* Print-header (kun i PDF) */}
+      {/* Print-header (kun i PDF) — inkl. udbudsnummer (TED) */}
       <div className="print-only" style={{ marginBottom: 14 }}>
         <div style={{ fontSize: 18, fontWeight: 700, color: NAVY }}>Tilbudsudkast — {n.title || "udbud"}</div>
-        <div style={{ color: MUTED, fontSize: 13 }}>{c.company_name || ""}{c.cvr ? ` · CVR ${c.cvr}` : ""} · Ordregiver: {n.buyer_name || "—"} · Frist: {fmtDate(n.deadline)}</div>
+        <div style={{ color: MUTED, fontSize: 13 }}>{c.company_name || ""}{c.cvr ? ` · CVR ${c.cvr}` : ""} · Ordregiver: {n.buyer_name || "—"} · Frist: {fmtDate(n.deadline)}{n.publication_number ? ` · Udbudsnummer (TED): ${n.publication_number}` : ""}</div>
       </div>
 
       {/* Disclaimer B */}
-      <div style={{ background: "#FBFCFD", border: "1px solid " + LINE, borderRadius: 12, padding: "13px 16px", color: MUTED, fontSize: 13, lineHeight: 1.55 }}>
+      <div className="birdly-help" style={{ background: "#FBFCFD", border: "1px solid " + LINE, borderRadius: 12, padding: "13px 16px", color: MUTED, fontSize: 13, lineHeight: 1.55 }}>
         <b style={{ color: INK }}>Vigtigt:</b> Dette er et udkast, Birdly har lavet for at hjælpe dig i gang. Alt forudfyldt —
         også data fra offentlige registre — skal du tjekke, før du sender. Birdly giver ikke juridisk rådgivning,
         garanterer ikke at skabelonen dækker alle krav i netop dette udbud, og har intet ansvar for fejl, mangler eller
@@ -360,7 +435,7 @@ export default function Skabelon({ token, data, publicMode = false }) {
       </div>
 
       {/* Lag 1 — intro m. tre tilstande + fremskridt */}
-      <div style={{ ...CARD, background: "#F2FBF9", borderColor: "#BFE9E0" }}>
+      <div className="birdly-help" style={{ ...CARD, background: "#F2FBF9", borderColor: "#BFE9E0" }}>
         <h1 style={{ ...H2, fontSize: 22 }}>Sådan bruger du skabelonen</h1>
         <p style={{ color: INK, lineHeight: 1.6, margin: "4px 0 10px" }}>Vi har gjort det meste klar for dig ud fra udbuddet og det, vi ved om din virksomhed. Hvert felt er mærket:</p>
         <ul style={{ margin: 0, paddingLeft: 0, listStyle: "none", lineHeight: 1.8, color: INK }}>
@@ -377,27 +452,28 @@ export default function Skabelon({ token, data, publicMode = false }) {
       <div className="no-print" style={CARD}>
         <div style={SECTION_LABEL}>Start her</div>
         <h2 style={H2}>Sådan kommer du i gang</h2>
-        <ol style={{ paddingLeft: 20, lineHeight: 1.65, color: INK, margin: "8px 0 0" }}>
-          <li style={{ marginBottom: 14 }}>
-            <b>Hent udbudsdokumenterne</b> — det fulde materiale (kravspecifikation, bilag, kontrakt, tilbudsliste) ligger hos ordregiveren.
-            {n.submission_url && <div style={{ marginTop: 8 }}><a href={n.submission_url} target="_blank" rel="noopener noreferrer" style={BTN_PRIMARY}>Hent udbudsdokumenter →</a></div>}
-            <div style={{ color: MUTED, fontSize: 12.5, marginTop: 6, fontStyle: "italic" }}>Tryk "Offentligt udbudsmateriale" / "Hent dokumenter" på siden. Du skal måske oprette en gratis konto — det bestemmer ordregiveren. Du skal alligevel bruge kontoen for at aflevere dit tilbud.</div>
-          </li>
-          <li style={{ marginBottom: 14 }}><b>Læs udbuddet</b> på TED.{n.source_url && <div style={{ marginTop: 8 }}><a href={n.source_url} target="_blank" rel="noopener noreferrer" style={BTN_OUTLINE}>Se hele udbuddet ↗</a></div>}</li>
-          <li><b>Gennemgå skabelonen</b> nedenfor — ret de grønne, find de gule i materialet, udfyld de blå.</li>
-        </ol>
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 16, borderTop: "1px solid #F0F2F5", paddingTop: 16 }}>
-          {n.submission_url && <a href={n.submission_url} target="_blank" rel="noopener noreferrer" style={BTN_OUTLINE}>Hent udbudsdokumenter</a>}
-          {n.source_url && <a href={n.source_url} target="_blank" rel="noopener noreferrer" style={BTN_OUTLINE}>Se hele udbuddet</a>}
-          {cvrLookup && <a href={cvrLookup} target="_blank" rel="noopener noreferrer" style={BTN_OUTLINE}>Slå dit firma op</a>}
-          {mailto && <a href={mailto} style={BTN_OUTLINE}>Kontakt ordregiver</a>}
+        <p style={{ color: INK, lineHeight: 1.65, margin: "8px 0 0" }}>
+          Hent det fulde udbudsmateriale hos ordregiveren (kravspecifikation, bilag, kontrakt, tilbudsliste), læs udbuddet på TED,
+          og gennemgå så skabelonen nedenfor — ret de grønne, find de gule i materialet, udfyld de blå.
+        </p>
+        <div style={{ color: MUTED, fontSize: 12.5, marginTop: 8, fontStyle: "italic" }}>
+          Du skal måske oprette en gratis konto hos ordregiveren for at hente materialet — den bruger du alligevel til at aflevere dit tilbud. Det bestemmer ordregiveren.
         </div>
+        {n.submission_url && <div style={{ marginTop: 14 }}><a href={n.submission_url} target="_blank" rel="noopener noreferrer" style={BTN_PRIMARY}>Hent udbudsdokumenter →</a></div>}
+        {(n.source_url || cvrLookup || mailto) && (
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 12 }}>
+            {n.source_url && <a href={n.source_url} target="_blank" rel="noopener noreferrer" style={BTN_OUTLINE}>Se hele udbuddet ↗</a>}
+            {cvrLookup && <a href={cvrLookup} target="_blank" rel="noopener noreferrer" style={BTN_OUTLINE}>Slå dit firma op</a>}
+            {mailto && <a href={mailto} style={BTN_OUTLINE}>Kontakt ordregiver</a>}
+          </div>
+        )}
       </div>
 
       {/* 0. Resumé */}
-      <Section k="resume" label="Sektion 0" title="Resumé" note="Et hurtigt overblik — trukket direkte fra bekendtgørelsen.">
+      <Section k="resume" label="Sektion 0" title="Resumé" note="Et hurtigt overblik — trukket direkte fra bekendtgørelsen." className="skab-resume">
         <div style={{ marginBottom: 8 }}><Chip state="green" /></div>
         <Row label="Udbud">{n.title || "—"}</Row>
+        {n.publication_number && <Row label="Udbudsnummer">{n.publication_number} <span style={{ fontWeight: 400, color: MUTED, fontSize: 13 }}>(TED)</span></Row>}
         <Row label="Ordregiver">{n.buyer_name || "—"}{n.contact_person ? <span style={{ fontWeight: 400, color: MUTED }}> · {n.contact_person}{n.contact_email ? ` (${n.contact_email})` : ""}</span> : null}</Row>
         <Row label="Frist">{fmtDate(n.deadline)}</Row>
         <Row label="Anslået værdi">{fmtKr(n.amount, n.currency)}</Row>
@@ -414,6 +490,15 @@ export default function Skabelon({ token, data, publicMode = false }) {
           </div>
         )}
       </Section>
+
+      {/* Indholdsfortegnelse (punkt 5) — auto-genereret, KUN i endelig PDF (lige efter
+          Resumé-forsiden). Ren sektionsliste uden sidetal (browser-print-begrænsning). */}
+      <div className="final-only skab-toc" style={{ ...CARD }}>
+        <h2 style={H2}>Indholdsfortegnelse</h2>
+        <ol style={{ margin: "8px 0 0", paddingLeft: 22, lineHeight: 1.9, color: INK }}>
+          {tocSections.map((t, i) => <li key={i}>{t}</li>)}
+        </ol>
+      </div>
 
       {/* 1b. Vælg delaftaler — KUN ved multi-lot. Styrer pris-sektionen + tjeklisten.
           Generel skabelon-feature (både privat værktøj og offentlig forsmag). */}
@@ -447,9 +532,28 @@ export default function Skabelon({ token, data, publicMode = false }) {
       <Section k="formalia" label="Sektion 1" title="Formalia & tjekliste" note="Det praktiske, så dit tilbud bliver gyldigt. De grønne er sikre; de gule skal du bekræfte i materialet.">
         <Row label="Frist"><span>{fmtDate(n.deadline)}</span> <span style={{ marginLeft: 8 }}><Chip state="green" /></span></Row>
         <Row label="Afleveres via">{n.submission_url ? "Ordregiverens udbudssystem (elektronisk)" : "Se udbudsmaterialet"} <span style={{ marginLeft: 8 }}><Chip state={n.submission_url ? "green" : "amber"} /></span></Row>
-        <Row label="Sprog"><Chip state="amber" /></Row>
-        <Row label="Format & vedståelse"><Chip state="amber" /></Row>
-        <CheckInMaterial>Sprog, afleveringsformat og vedståelsesperiode står i udbudsbetingelserne — tjek dem, før du sender.</CheckInMaterial>
+        <Row label="Sprog">
+          <select value={sprog} onChange={(e) => setSprog(e.target.value)} style={{ ...INPUT, maxWidth: 280 }}>
+            <option value="">Vælg sprog …</option>
+            <option value="dansk">Dansk</option>
+            <option value="engelsk">Engelsk</option>
+            <option value="tysk">Tysk</option>
+            <option value="fransk">Fransk</option>
+            <option value="spansk">Spansk</option>
+          </select>
+        </Row>
+        <Row label="Vedståelsesperiode">
+          <select value={vedstaaelse} onChange={(e) => setVedstaaelse(e.target.value)} style={{ ...INPUT, maxWidth: 280 }}>
+            <option value="">Vælg …</option>
+            <option value="30 dage">30 dage</option>
+            <option value="60 dage">60 dage</option>
+            <option value="90 dage">90 dage</option>
+            <option value="3 måneder">3 måneder</option>
+            <option value="6 måneder">6 måneder</option>
+            <option value="Se udbudsbetingelser">Se udbudsbetingelser</option>
+          </select>
+        </Row>
+        <CheckInMaterial>Bekræft sprog og vedståelsesperiode i udbudsbetingelserne, før du sender — de afgør om tilbuddet er gyldigt.</CheckInMaterial>
 
         {/* Betingelser der styrer tjeklisten + erklæringer */}
         <div style={{ background: "#F6F8FA", border: "1px solid " + LINE, borderRadius: 10, padding: "12px 14px", marginTop: 14 }}>
@@ -461,31 +565,55 @@ export default function Skabelon({ token, data, publicMode = false }) {
           <label style={{ display: "inline-flex", gap: 7, alignItems: "flex-start", cursor: "pointer", color: INK, marginTop: 10 }}><input type="checkbox" checked={relyCapacity} onChange={(e) => setRelyCapacity(e.target.checked)} style={{ marginTop: 3 }} /> Jeg baserer mig på andres økonomiske eller tekniske kapacitet (fx en underleverandør)</label>
         </div>
 
+        {/* Forbehold (punkt 3) — fast Ja/Nej i stedet for fri tekst. Ja udløser advarsel. */}
+        <div style={{ background: "#F6F8FA", border: "1px solid " + LINE, borderRadius: 10, padding: "12px 14px", marginTop: 12 }}>
+          <div style={{ fontWeight: 700, color: NAVY, marginBottom: 8 }}>Tager du forbehold over for udbudsmaterialet?</div>
+          <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+            <label style={{ display: "inline-flex", gap: 7, alignItems: "center", cursor: "pointer", color: INK }}><input type="radio" name="forbehold" checked={forbehold === "nej"} onChange={() => setForbehold("nej")} /> Nej <span style={{ color: MUTED, fontSize: 13 }}>(anbefalet)</span></label>
+            <label style={{ display: "inline-flex", gap: 7, alignItems: "center", cursor: "pointer", color: INK }}><input type="radio" name="forbehold" checked={forbehold === "ja"} onChange={() => setForbehold("ja")} /> Ja</label>
+          </div>
+          {forbehold === "ja" && (
+            <>
+              <div style={{ background: "#FDECEC", border: "1px solid #F3C0C0", borderRadius: 10, padding: "10px 12px", color: "#9B2C2C", fontSize: 13.5, lineHeight: 1.5, marginTop: 10 }}>
+                ⚠️ Forbehold over for grundlæggende elementer kan føre til, at dit tilbud afvises som ukonditionsmæssigt. Overvej nøje, og beskriv ethvert forbehold præcist.
+              </div>
+              <div style={{ marginTop: 12 }}>
+                {forbeholdList.map((t, i) => (
+                  <div key={i} style={{ marginBottom: 10 }}>
+                    <label style={LBL}>{i + 1}. Forbehold</label>
+                    <textarea value={t} onChange={(e) => setForbeholdItem(i, e.target.value)} style={{ ...INPUT, minHeight: 56, resize: "vertical" }} placeholder="Beskriv forbeholdet præcist — hvad tager du forbehold for, og hvorfor" />
+                  </div>
+                ))}
+                <button type="button" className="no-print" onClick={addForbehold} style={{ ...BTN_OUTLINE, padding: "8px 14px" }}>+ Tilføj et forbehold til</button>
+              </div>
+            </>
+          )}
+        </div>
+
         <div style={{ fontWeight: 700, color: NAVY, margin: "16px 0 4px" }}>Påkrævet <span style={{ fontWeight: 400, color: MUTED, fontSize: 13 }}>— uden disse afvises tilbuddet</span></div>
         <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-          {lotSel && <Check>{selectedLotObjs.length ? `Delaftaler valgt: ${selectedLotObjs.length} af ${lots.length} (se Delaftaler ovenfor)` : "Vælg hvilke delaftaler du byder på (se Delaftaler ovenfor)"}</Check>}
-          <Check>Tilbud afgivet inden fristen: <b>{fmtDate(n.deadline)}</b></Check>
-          <Check>Tilbud afleveret elektronisk i ordregiverens udbudssystem</Check>
-          <Check>Korrekt sprog (se udbudsbetingelser)</Check>
-          <Check>ESPD udfyldt og vedlagt</Check>
-          <Check>Komplet, udfyldt tilbudsliste vedlagt (ordregiverens format)</Check>
-          {selection.length > 0 && <Check>Referencer iht. udbuddets mindstekrav</Check>}
+          {lotSel && <Check k="delaftaler">{selectedLotObjs.length ? `Delaftaler valgt: ${selectedLotObjs.length} af ${lots.length} (se Delaftaler ovenfor)` : "Vælg hvilke delaftaler du byder på (se Delaftaler ovenfor)"}</Check>}
+          <Check k="frist">Tilbud afgivet inden fristen: <b>{fmtDate(n.deadline)}</b></Check>
+          <Check k="elektronisk">Tilbud afleveret elektronisk i ordregiverens udbudssystem</Check>
+          <Check k="sprog_ok">Korrekt sprog (se udbudsbetingelser)</Check>
+          <Check k="espd_vedlagt">ESPD udfyldt og vedlagt</Check>
+          <Check k="tilbudsliste">Komplet, udfyldt tilbudsliste vedlagt (ordregiverens format)</Check>
+          {selection.length > 0 && <Check k="referencer_krav">Referencer iht. udbuddets mindstekrav</Check>}
         </ul>
 
         {(bidMode === "konsortium" || relyCapacity) && (
           <>
             <div style={{ fontWeight: 700, color: NAVY, margin: "14px 0 4px" }}>Påkrævet for dig <span style={{ fontWeight: 400, color: MUTED, fontSize: 13 }}>— ud fra dine valg ovenfor</span></div>
             <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-              {bidMode === "konsortium" && <Check>Konsortieerklæring (alle deltagere hæfter solidarisk)</Check>}
-              {relyCapacity && <Check>Støtteerklæring fra den/de virksomhed(er), du baserer dig på</Check>}
+              {bidMode === "konsortium" && <Check k="konsortie">Konsortieerklæring (alle deltagere hæfter solidarisk)</Check>}
+              {relyCapacity && <Check k="stoette">Støtteerklæring fra den/de virksomhed(er), du baserer dig på</Check>}
             </ul>
           </>
         )}
 
         <div style={{ fontWeight: 700, color: NAVY, margin: "14px 0 4px" }}>Anbefalet <span style={{ fontWeight: 400, color: MUTED, fontSize: 13 }}>— styrker tilbuddet</span></div>
         <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-          <Check>Kort følgebrev</Check>
-          <Check>Ingen forbehold over for udbudsmaterialet</Check>
+          <Check k="foelgebrev">Kort følgebrev</Check>
         </ul>
       </Section>
 
@@ -506,15 +634,35 @@ export default function Skabelon({ token, data, publicMode = false }) {
           </div>
         </div>
 
-        <div style={{ fontWeight: 700, color: NAVY, margin: "16px 0 6px" }}>Udelukkelsesgrunde <span style={{ marginLeft: 8 }}><Chip state="green" /></span></div>
-        <p style={{ color: INK, lineHeight: 1.6, margin: "0 0 10px" }}>Bekræft, at ingen af disse gælder din virksomhed (standard: <b>Nej</b> til alle):</p>
+        <div style={{ fontWeight: 700, color: NAVY, margin: "16px 0 6px" }}>
+          Udelukkelsesgrunde
+          <span className="birdly-help" style={{ marginLeft: 8, display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 700, padding: "3px 9px", borderRadius: 999, whiteSpace: "nowrap", background: "#FDF3DC", color: "#92670A" }}>📝 Forudfyldt forslag — du skal selv bekræfte</span>
+        </div>
+        <p className="birdly-help" style={{ color: INK, lineHeight: 1.6, margin: "0 0 10px" }}>
+          ESPD er en <b>bindende erklæring på tro og love</b>, som du selv afgiver til ordregiveren. Du er juridisk ansvarlig for, at
+          hvert svar er korrekt — urigtige oplysninger kan føre til udelukkelse og i alvorlige tilfælde strafansvar. Birdly har sat et
+          <b> forslag</b> (Nej), men <b>du skal gennemgå og bekræfte hvert punkt selv</b> og rette til Ja, hvor det gælder din virksomhed.
+        </p>
         <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-          {EXCLUSION_GROUNDS.map((g, i) => (
-            <li key={i} style={{ display: "flex", justifyContent: "space-between", gap: 12, padding: "9px 0", borderBottom: "1px solid #F0F2F5", alignItems: "center" }}>
-              <span style={{ color: INK, fontSize: 14.5 }}>{g}</span><span style={{ flex: "0 0 auto", fontWeight: 700, color: "#197A66" }}>Nej</span>
-            </li>
-          ))}
+          {EXCLUSION_GROUNDS.map((g, i) => {
+            const v = exclVal(i);
+            return (
+              <li key={i} style={{ display: "flex", justifyContent: "space-between", gap: 12, padding: "10px 0", borderBottom: "1px solid #F0F2F5", alignItems: "center", flexWrap: "wrap" }}>
+                <span style={{ color: INK, fontSize: 14.5, flex: "1 1 auto", minWidth: 180 }}>{g}</span>
+                <div className="no-print" style={{ flex: "0 0 auto", display: "inline-flex", border: "1px solid " + LINE, borderRadius: 999, overflow: "hidden" }}>
+                  <button type="button" onClick={() => setExclusion(i, "nej")} style={{ border: 0, cursor: "pointer", fontSize: 13, fontWeight: 700, padding: "6px 16px", background: v === "nej" ? "#E5F7EF" : "#fff", color: v === "nej" ? "#197A66" : MUTED }}>Nej</button>
+                  <button type="button" onClick={() => setExclusion(i, "ja")} style={{ border: 0, cursor: "pointer", fontSize: 13, fontWeight: 700, padding: "6px 16px", background: v === "ja" ? "#FDECEC" : "#fff", color: v === "ja" ? "#9B2C2C" : MUTED }}>Ja</button>
+                </div>
+                <span className="print-only" style={{ flex: "0 0 auto", fontWeight: 700, color: v === "ja" ? "#9B2C2C" : "#197A66" }}>{v === "ja" ? "Ja" : "Nej"}</span>
+              </li>
+            );
+          })}
         </ul>
+        {anyExclusionJa && (
+          <div className="birdly-help" style={{ background: "#FDECEC", border: "1px solid #F3C0C0", borderRadius: 10, padding: "10px 12px", color: "#9B2C2C", fontSize: 13.5, lineHeight: 1.5, marginTop: 10 }}>
+            ⚠️ Du har svaret <b>Ja</b> til en eller flere udelukkelsesgrunde. Det kan betyde, at du ikke kan deltage i udbuddet — eller at du skal dokumentere "self-cleaning" (udbedrende foranstaltninger). Læs udbudsbetingelserne og søg om nødvendigt juridisk rådgivning, før du afgiver tilbud.
+          </div>
+        )}
         <div style={{ fontWeight: 700, color: NAVY, margin: "16px 0 6px" }}>Mindstekrav til egnethed <span style={{ marginLeft: 8 }}><Chip state={selection.length ? "green" : "amber"} reason={selection.length ? "fra bekendtgørelsen" : null} /></span></div>
         {selection.length > 0 ? (
           <>
@@ -532,7 +680,9 @@ export default function Skabelon({ token, data, publicMode = false }) {
             <textarea name={`ref_${i}`} style={{ ...INPUT, minHeight: 60, resize: "vertical" }} placeholder="Kunde · opgave · værdi · årstal · kort beskrivelse" />
           </div>
         ))}
-        <FileUpload token={token} section="referencer" initial={filesFor("referencer")} local={publicMode} />
+        <FileUpload token={token} section="referencer" initial={filesFor("referencer")} local={publicMode}
+          attached={!!attach.referencer} onToggleAttached={() => toggleAttach("referencer")} letter={letterFor("referencer")}
+          bilagName={attachNames.referencer} onBilagName={(v) => setAttachName("referencer", v)} defaultName="Referenceliste" />
       </Section>
 
       {/* 4. Tilbudsliste / Pris */}
@@ -542,7 +692,9 @@ export default function Skabelon({ token, data, publicMode = false }) {
 
         <div style={{ fontWeight: 700, color: NAVY, marginTop: 16 }}>1 · Upload udfyldt prisbilag <span style={{ marginLeft: 6 }}><Chip state="blue" reason="Ordregiverens egen tilbudsliste — det vigtigste" /></span></div>
         <p style={{ color: MUTED, fontSize: 13, margin: "4px 0 0" }}>Hent ordregiverens tilbudsliste (Excel/PDF) i materialet, udfyld den, og læg den her. Den skal afleveres i ordregiverens eget format.</p>
-        <FileUpload token={token} section="pris" initial={filesFor("pris")} local={publicMode} />
+        <FileUpload token={token} section="pris" initial={filesFor("pris")} local={publicMode}
+          attached={!!attach.pris} onToggleAttached={() => toggleAttach("pris")} letter={letterFor("pris")}
+          bilagName={attachNames.pris} onBilagName={(v) => setAttachName("pris", v)} defaultName="Udfyldt tilbudsliste" />
 
         {lotSel && selectedLotObjs.length > 0 ? (
           <>
@@ -583,12 +735,21 @@ export default function Skabelon({ token, data, publicMode = false }) {
             <label style={LBL}>Jeres beskrivelse <span style={{ marginLeft: 6 }}><Chip state="blue" reason="Jeres substans og erfaring" /></span></label>
             <textarea name="kvalitet_beskrivelse" style={{ ...INPUT, minHeight: 110, resize: "vertical" }} placeholder="Beskriv jeres faglige kvalifikationer, erfaring og tilgang …" />
           </div>
-          <FileUpload token={token} section="kvalitet" initial={filesFor("kvalitet")} local={publicMode} />
+          <FileUpload token={token} section="kvalitet" initial={filesFor("kvalitet")} local={publicMode}
+            attached={!!attach.kvalitet} onToggleAttached={() => toggleAttach("kvalitet")} letter={letterFor("kvalitet")}
+            bilagName={attachNames.kvalitet} onBilagName={(v) => setAttachName("kvalitet", v)} defaultName="Tilbudsbeskrivelse" />
         </Section>
       )}
       {onlyPrice && (
-        <Section k="kvalitet" label="Sektion 4" title="Tilbudsbeskrivelse (kvalitet)" note="Dette udbud tildeles på laveste pris — kvalitet vægter ikke. Sørg blot for at opfylde mindstekravene.">
-          <div><Chip state="amber" /></div>
+        <Section k="kvalitet" label="Sektion 4" title="Tilbudsbeskrivelse (kvalitet)" note="Dette udbud tildeles på laveste pris — kvalitet vægter ikke. Sørg blot for at opfylde mindstekravene. Du kan stadig vælge at skrive en kort beskrivelse eller vedlægge den som bilag, hvis du vil.">
+          <div style={{ marginBottom: 4 }}><Chip state="amber" /></div>
+          <div style={{ marginTop: 12 }}>
+            <label style={LBL}>Beskrivelse (valgfri) <span style={{ marginLeft: 6 }}><Chip state="blue" reason="Valgfrit ved laveste-pris-udbud" /></span></label>
+            <textarea name="kvalitet_beskrivelse" style={{ ...INPUT, minHeight: 80, resize: "vertical" }} placeholder="Valgfri kort beskrivelse af jeres løsning …" />
+          </div>
+          <FileUpload token={token} section="kvalitet" initial={filesFor("kvalitet")} local={publicMode}
+            attached={!!attach.kvalitet} onToggleAttached={() => toggleAttach("kvalitet")} letter={letterFor("kvalitet")}
+            bilagName={attachNames.kvalitet} onBilagName={(v) => setAttachName("kvalitet", v)} defaultName="Tilbudsbeskrivelse" />
         </Section>
       )}
 
@@ -617,14 +778,40 @@ export default function Skabelon({ token, data, publicMode = false }) {
           <p style={{ color: MUTED, fontSize: 13, fontStyle: "italic", marginTop: 10 }}>Du byder alene og baserer dig ikke på andre — så konsortie- og støtteerklæring er ikke relevant for dig.</p>
         )}
         <CheckInMaterial>Den præcise ordlyd og evt. ordregiver-skabeloner for erklæringerne ligger i udbudsmaterialet. Hent dem, udfyld, underskriv — og vedhæft dem her.</CheckInMaterial>
-        <FileUpload token={token} section="erklaeringer" initial={filesFor("erklaeringer")} local={publicMode} />
+        <FileUpload token={token} section="erklaeringer" initial={filesFor("erklaeringer")} local={publicMode}
+          attached={!!attach.erklaeringer} onToggleAttached={() => toggleAttach("erklaeringer")} letter={letterFor("erklaeringer")}
+          bilagName={attachNames.erklaeringer} onBilagName={(v) => setAttachName("erklaeringer", v)} defaultName="Underskrevne erklæringer" />
       </Section>
 
-      {/* 7. Kontraktvilkår */}
-      <Section k="kontrakt" label="Sektion 6" title="Kontraktvilkår (orientering)" note="Et overblik — de bindende vilkår står i kontraktudkastet.">
+      {/* 7. Kontraktvilkår — ORDREGIVERENS vilkår, til orientering. Byderen udfylder INTET. */}
+      <Section k="kontrakt" label="Sektion 6" title="Kontraktvilkår (ordregiverens — til orientering)" note="Dette er ordregiverens vilkår. Du udfylder og vedhæfter intet her — du accepterer dem ved at afgive tilbud.">
         <div style={{ marginBottom: 8 }}><Chip state="amber" /></div>
-        <CheckInMaterial>Standardkontrakt, betalingsvilkår, bod, ansvar og øvrige væsentlige vilkår står i kontraktudkastet i materialet. Ved at afgive tilbud accepterer du vilkårene.</CheckInMaterial>
+        <div style={{ background: "#F6F8FA", border: "1px solid " + LINE, borderRadius: 10, padding: "12px 14px", color: INK, fontSize: 14, lineHeight: 1.6 }}>
+          Standardkontrakt, betalingsvilkår, bod, ansvar og øvrige væsentlige vilkår fastsættes af <b>ordregiveren</b> i kontraktudkastet
+          i udbudsmaterialet — ikke af dig. De vises her <b>til orientering</b>, så du kender dem, før du byder. <b>Ved at afgive tilbud
+          accepterer du vilkårene</b> (forbehold over for grundlæggende vilkår kan føre til, at tilbuddet afvises). Der er derfor intet at
+          udfylde eller vedhæfte i denne sektion — læs vilkårene i kontraktudkastet hos ordregiveren.
+        </div>
       </Section>
+
+      {/* Bilagsliste (punkt 6) — auto-genereret fra "Ja"-bilagene. Opdateres live, og står
+          til sidst i den endelige PDF. Tom → skjult i print (kun skærm-vejledning). */}
+      <section className={bilag.length ? undefined : "no-print"} style={{ ...CARD }}>
+        <div style={SECTION_LABEL}>Bilag</div>
+        <h2 style={H2}>Bilagsliste</h2>
+        {bilag.length === 0 ? (
+          <p style={{ color: MUTED, fontSize: 14, margin: "4px 0 0" }}>Ingen bilag markeret endnu. Sæt "Vedlægger du et bilag her?" til <b>Ja</b> i en sektion ovenfor, så føjes bilaget automatisk til listen.</p>
+        ) : (
+          <ul style={{ listStyle: "none", padding: 0, margin: "6px 0 0" }}>
+            {bilag.map((b) => (
+              <li key={b.key} style={{ display: "flex", gap: 12, padding: "9px 0", borderBottom: "1px solid #F0F2F5", color: INK, fontSize: 15 }}>
+                <span style={{ fontWeight: 800, color: "#1366A6", flex: "0 0 auto", minWidth: 64 }}>Bilag {b.letter}</span>
+                <span>{b.name}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
 
       {/* Blød påmindelse om uafkrydsede sektioner (blokerer IKKE — kun samtykke spærrer) */}
       {(() => {
@@ -663,20 +850,34 @@ export default function Skabelon({ token, data, publicMode = false }) {
           </span>
         </label>
         <div style={{ marginTop: 16 }}>
-          <button
-            onClick={() => { if (consent) window.print(); }}
-            disabled={!consent}
-            style={{ ...(consent ? BTN_PRIMARY : { ...BTN_PRIMARY, background: "#C7D0D8", cursor: "not-allowed" }), border: 0, fontSize: 16, padding: "14px 24px" }}
-          >
-            Gem som PDF
-          </button>
-          {!consent && <span style={{ color: MUTED, fontSize: 13, marginLeft: 12 }}>Sæt kryds ovenfor for at låse op.</span>}
-          <p style={{ color: MUTED, fontSize: 12.5, marginTop: 10, fontStyle: "italic" }}>Vælg "Gem som PDF" i print-dialogen. Vedhæftede dokumentfiler følger med som navne — selve filerne uploader du i udbudssystemet.</p>
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+            <button
+              onClick={() => { if (consent) window.print(); }}
+              disabled={!consent}
+              style={{ ...(consent ? BTN_OUTLINE : { ...BTN_OUTLINE, color: "#9AA5B1", cursor: "not-allowed" }), fontSize: 15, padding: "13px 20px" }}
+            >
+              Gem intern kladde (PDF)
+            </button>
+            <button
+              onClick={() => { if (consent) setFinalMode(true); }}
+              disabled={!consent}
+              style={{ ...(consent ? BTN_PRIMARY : { ...BTN_PRIMARY, background: "#C7D0D8", cursor: "not-allowed" }), border: 0, fontSize: 15, padding: "13px 20px" }}
+            >
+              Eksportér endelig version til ordregiver (PDF)
+            </button>
+          </div>
+          {!consent && <div style={{ color: MUTED, fontSize: 13, marginTop: 8 }}>Sæt kryds ovenfor for at låse op.</div>}
+          <p style={{ color: MUTED, fontSize: 12.5, marginTop: 10, fontStyle: "italic" }}>
+            <b>Intern kladde</b> = hele skabelonen med Birdlys vejledning, til dig selv. <b>Endelig version</b> = ren udgave til ordregiver
+            (Resumé som forside → indholdsfortegnelse → resten → bilagsliste), hvor kun Birdlys hjælp er fjernet — dine indtastninger og
+            udbuds-grunddata bevares. Vælg "Gem som PDF" i print-dialogen.
+          </p>
         </div>
       </div>
 
-      {/* Samtykke-linje der følger med i PDF'en */}
-      <div className="print-only" style={{ marginTop: 18, paddingTop: 12, borderTop: "1px solid " + LINE, color: MUTED, fontSize: 11.5, lineHeight: 1.5 }}>
+      {/* Samtykke-linje i PDF'en — KUN i intern kladde (Birdly-disclaimer = hjælp, fjernes
+          i den endelige version til ordregiver via birdly-help). */}
+      <div className="print-only birdly-help" style={{ marginTop: 18, paddingTop: 12, borderTop: "1px solid " + LINE, color: MUTED, fontSize: 11.5, lineHeight: 1.5 }}>
         Dette udkast er et vejledende hjælpeværktøj fra Birdly, udarbejdet på grundlag af de offentligt tilgængelige oplysninger
         i udbudsbekendtgørelsen. Det erstatter ikke det fulde, bindende udbudsmateriale fra ordregiveren. Det er alene
         tilbudsgivers ansvar at sikre, at tilbuddet er korrekt, fuldstændigt og opfylder samtlige krav i udbuddet. Birdly
@@ -710,13 +911,37 @@ export default function Skabelon({ token, data, publicMode = false }) {
 
       <p className="no-print" style={{ textAlign: "center", color: MUTED, fontSize: 12.5, marginTop: 20 }}>Skabelonen er et hjælpeværktøj — det bindende materiale ligger hos ordregiveren.</p>
     </main>
+    </SkabCtx.Provider>
   );
 }
 
-function Check({ children }) {
+// MODUL-niveau (stabil identitet → ingen remount → scroll bevares). State via SkabCtx.
+function Section({ k, label, title, note, children, className }) {
+  const { done, toggle } = useContext(SkabCtx);
   return (
-    <li style={{ display: "flex", gap: 10, padding: "9px 0", borderBottom: "1px solid #F0F2F5", alignItems: "flex-start", color: "#41505E", fontSize: 14.5, lineHeight: 1.5 }}>
-      <span aria-hidden style={{ flex: "0 0 auto", color: "#1E9E8A", fontWeight: 700 }}>☐</span><span>{children}</span>
+    <section className={className} style={CARD}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, flexWrap: "wrap" }}>
+        <div><div style={SECTION_LABEL}>{label}</div><h2 style={H2}>{title}</h2></div>
+        <label className="no-print" style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 13.5, color: done[k] ? "#197A66" : MUTED, cursor: "pointer", whiteSpace: "nowrap" }}>
+          <input type="checkbox" checked={!!done[k]} onChange={() => toggle(k)} style={{ width: 17, height: 17 }} /> Gennemgået
+        </label>
+      </div>
+      {note && <Note>{note}</Note>}
+      {children}
+    </section>
+  );
+}
+// Klikbar tjekliste-linje (punkt 5): rigtig checkbox på skærm, ☑/☐ i PDF. Gemt i checks.
+function Check({ k, children }) {
+  const { checks, toggleCheck } = useContext(SkabCtx);
+  return (
+    <li style={{ padding: "9px 0", borderBottom: "1px solid #F0F2F5" }}>
+      <label style={{ display: "flex", gap: 10, alignItems: "flex-start", cursor: "pointer", color: "#41505E", fontSize: 14.5, lineHeight: 1.5 }}>
+        <input type="checkbox" className="no-print" checked={!!checks[k]} onChange={() => toggleCheck(k)} style={{ marginTop: 2, width: 17, height: 17, flex: "0 0 auto" }} />
+        <span className="print-only" aria-hidden style={{ flex: "0 0 auto", color: "#1E9E8A", fontWeight: 700 }}>{checks[k] ? "☑" : "☐"}</span>
+        <span>{children}</span>
+      </label>
     </li>
   );
 }
+
