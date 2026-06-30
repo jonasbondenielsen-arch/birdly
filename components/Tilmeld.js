@@ -3,16 +3,43 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Logo } from "./Logo";
-import { fetchCatalog, submitSignup } from "../lib/catalog";
-import { PLAN, YEARLY_SAVING, priceText, planForInterval } from "../lib/pakke";
-import { useLaunch } from "./useLaunch";
+import { fetchCatalog, submitSignup, createSubscriptionSession } from "../lib/catalog";
+import { PLAN, TRIAL_DAYS, YEARLY_SAVING, priceText, planForInterval } from "../lib/pakke";
 import "../app/tilmeld.css";
 
-// 4-trins tilmeldingsflow. Katalog (fag + CPV + branchekode-map + regioner)
-// hentes fra get-catalog. CVR-opslag via /api/cvr. Tilmelding gemmes atomisk
-// via signup-Edge Function. Pakken UDLEDES af geografivalget (lib/pakke.js).
+// Pris inkl. moms (25 %) i da-DK, fx 299 → "373,75". Kun til visning på plan-kortene.
+const inclMoms = (n) => (n * 1.25).toLocaleString("da-DK", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-const STEPS = ["Virksomhed", "Arbejdsområder", "Geografi", "Bekræft & betaling"];
+// 4-trins tilmeldingsflow (én funnel — altid kort + 14 dages trial, test-mode indtil
+// go-live). Katalog (fag + CPV + branchekode-map + regioner) hentes fra get-catalog.
+// CVR-opslag via /api/cvr. Tilmelding gemmes atomisk via signup-Edge Function.
+//
+//   1 Virksomhed · 2 Arbejdsområder · 3 Geografi (+ kriterier + betingelses-accept)
+//   · 4 Vælg plan + betaling (Frisbii embedded subscription).
+//
+// Frisbii ejer al betalingslogik. Trin 4 opretter en subscription-session og monterer
+// Reepay.EmbeddedSubscription; kortet gemmes i trial, første træk efter 14 dage.
+
+// Indlæs Frisbii/Reepay checkout-SDK'et én gang. Resolver med window.Reepay.
+function loadReepay() {
+  return new Promise((resolve, reject) => {
+    if (typeof window === "undefined") return reject(new Error("no window"));
+    if (window.Reepay) return resolve(window.Reepay);
+    const existing = document.getElementById("reepay-checkout-js");
+    if (existing) {
+      existing.addEventListener("load", () => resolve(window.Reepay));
+      existing.addEventListener("error", () => reject(new Error("Betalingsvinduet kunne ikke indlæses.")));
+      return;
+    }
+    const s = document.createElement("script");
+    s.id = "reepay-checkout-js";
+    s.src = "https://checkout.reepay.com/checkout.js";
+    s.async = true;
+    s.onload = () => resolve(window.Reepay);
+    s.onerror = () => reject(new Error("Betalingsvinduet kunne ikke indlæses."));
+    document.head.appendChild(s);
+  });
+}
 
 // Valgfrit beløbsinterval (kan springes over). null = ingen grænse.
 const MIN_BANDS = [
@@ -96,7 +123,6 @@ const phoneErrMsg = (dialCode) =>
   dialCode === "+45" ? "Skriv et gyldigt mobilnummer (8 cifre)." : "Skriv et gyldigt mobilnummer med landekode.";
 
 export default function Tilmeld({ initialFag = null }) {
-  const { active: launchActive } = useLaunch(); // 30-dages launch-fase (gratis, uden kort)
   const [step, setStep] = useState(1);
   const [catalog, setCatalog] = useState(null);
   const [catErr, setCatErr] = useState("");
@@ -136,22 +162,30 @@ export default function Tilmeld({ initialFag = null }) {
   const [areaSel, setAreaSel] = useState({}); // "fag::cpv" -> bool
   const [bredde, setBredde] = useState("alle");
 
-  // Trin 3 — geografi
+  // Trin 3 — geografi + kriterier + samtykke (alle kundeoplysninger samles her)
   const [regionSel, setRegionSel] = useState({}); // region_key -> bool
   const [heleDk, setHeleDk] = useState(false);
-
-  // Trin 4 — bekræft
   const [minIdx, setMinIdx] = useState(0);
   const [maxIdx, setMaxIdx] = useState(0);
-  const [billing, setBilling] = useState("monthly"); // "monthly" | "yearly" — kun frekvens, samme pakke
   const [notifyEmail, setNotifyEmail] = useState(true);
   const [notifySms, setNotifySms] = useState(true);
   const [marketing, setMarketing] = useState(false);
   const [terms, setTerms] = useState(false);
 
+  // Trin 4 — vælg plan + betaling. Default = årlig (anbefalet).
+  const [billing, setBilling] = useState("yearly"); // "monthly" | "yearly" — vælger plan-handle
+
   const [saving, setSaving] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [err, setErr] = useState("");
+
+  // Betaling: createdId = subscriber-uuid fra signup (undgår dubletter ved frem/tilbage).
+  // sessionId = Frisbii-session til SDK'et. sessionLoading = mens en (gen)session hentes.
+  const [createdId, setCreatedId] = useState(null);
+  const [sessionId, setSessionId] = useState(null);
+  const [sessionLoading, setSessionLoading] = useState(false);
+
+  const steps = ["Virksomhed", "Arbejdsområder", "Geografi", "Vælg plan + betaling"];
 
   useEffect(() => {
     fetchCatalog().then(setCatalog).catch((e) => setCatErr(e.message));
@@ -185,6 +219,13 @@ export default function Tilmeld({ initialFag = null }) {
   const omraadeText = heleDk
     ? "Hele Danmark"
     : selectedRegionKeys.map((k) => regionLabels[k]).join(", ");
+
+  // Kompakt recap til trin 4 (fag · område · kanaler) — read-only.
+  const recapText = [
+    selectedFagKeys.map((k) => (k === "andet" ? "Andet" : (fagByKey[k]?.label_da || k))).join(", "),
+    omraadeText,
+    [notifySms && "SMS", notifyEmail && "e-mail"].filter(Boolean).join(" + "),
+  ].filter(Boolean).join(" · ");
 
   // ---- CVR-opslag ----
   async function lookupCvr(raw) {
@@ -248,7 +289,7 @@ export default function Tilmeld({ initialFag = null }) {
     setRegionSel({});
   }
 
-  // ---- navigation ----
+  // ---- navigation (trin 1-2; trin 3 bruger startPayment) ----
   function next() {
     setErr("");
     if (step === 1) {
@@ -260,10 +301,7 @@ export default function Tilmeld({ initialFag = null }) {
     if (step === 2) {
       if (selectedFagKeys.length === 0) return setErr("Vælg mindst ét fag.");
     }
-    if (step === 3) {
-      if (!heleDk && selectedRegionKeys.length === 0) return setErr("Vælg mindst én region — eller hele Danmark.");
-    }
-    setStep((s) => Math.min(4, s + 1));
+    setStep((s) => Math.min(3, s + 1));
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
   function back() {
@@ -272,14 +310,10 @@ export default function Tilmeld({ initialFag = null }) {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  async function onSubmit() {
-    setErr("");
-    if (!terms) return setErr("Sæt venligst flueben i samtykke for at fortsætte.");
-    if (saving) return;
-    // Launch-fase: ingen kort, ingen pakke/betalings-samtykke — kun en gratis 30-dages
-    // adgang. Ellers: én pakke med kundens valgte betalingsinterval.
-    const pkg = launchActive ? null : planForInterval(billing);
-    const payload = {
+  // Byg signup-payload fra al state (trin 1-3). package er informativ — den
+  // autoritative plan kommer fra Frisbii via webhook (Fase C).
+  function buildSignupPayload() {
+    return {
       company_name: company.trim() || null,
       cvr: digits(cvr),
       contact_name: contact.trim() || null,
@@ -296,19 +330,92 @@ export default function Tilmeld({ initialFag = null }) {
       marketing_consent: marketing,
       terms_accepted: terms,
       cvr_branchekode: cvrState.branchekode,
-      package: pkg,
-      launch_free: launchActive,
+      package: planForInterval(billing),
     };
+  }
+
+  // Opret/hent en Frisbii subscription-session for det valgte interval. Returnerer
+  // session-id (eller kaster). reuseCustomer=true ved plan-skift (kunden findes
+  // allerede hos Frisbii → referér i stedet for at oprette igen).
+  async function makeSession(id, billingChoice, reuseCustomer = false) {
+    const { session_id } = await createSubscriptionSession({
+      subscriber_id: id,
+      email: email.trim(),
+      contact_name: contact.trim(),
+      phone: toE164(dial, phone),
+      billing: billingChoice,
+      reuse_customer: reuseCustomer,
+    });
+    return session_id;
+  }
+
+  // Trin 3 CTA → opret subscriber (én gang) + session, og gå til betalings-trinnet.
+  async function startPayment() {
+    setErr("");
+    if (!heleDk && selectedRegionKeys.length === 0) return setErr("Vælg mindst én region — eller hele Danmark.");
+    if (!terms) return setErr("Sæt flueben i betingelserne for at fortsætte.");
+    if (saving) return;
     setSaving(true);
     try {
-      await submitSignup(payload);
-      setSubmitted(true);
+      let id = createdId;
+      if (!id) {
+        const r = await submitSignup(buildSignupPayload());
+        id = r.id;
+        setCreatedId(id);
+      }
+      const session_id = await makeSession(id, billing);
+      setSessionId(session_id);
+      setStep(4);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (e) {
       setErr(e.message || "Noget gik galt. Prøv igen, eller skriv til support@birdly.dk.");
     } finally {
       setSaving(false);
     }
+  }
+
+  // Plan-skift på trin 4: gen-opret sessionen for det nye handle (ellers betaler
+  // kunden for forkert plan). Embedded remountes når sessionId skifter.
+  async function changeBilling(nextBilling) {
+    if (nextBilling === billing) return;
+    setBilling(nextBilling);
+    if (step !== 4 || !createdId) return;
+    setErr("");
+    setSessionLoading(true);
+    setSessionId(null); // afmontér nuværende embedded mens vi henter ny session
+    try {
+      const session_id = await makeSession(createdId, nextBilling, true);
+      setSessionId(session_id);
+    } catch (e) {
+      setErr("Kunne ikke skifte plan. Prøv igen, eller skriv til support@birdly.dk.");
+    } finally {
+      setSessionLoading(false);
+    }
+  }
+
+  // Åbn Frisbii-betalingen som MODAL (overlay) for den valgte plans session. Modal
+  // viser alle kortfelter udfoldet uden indre scroll. Frisbii styrer kort + trial; vi
+  // reagerer kun på events. Accept → "Velkommen" (autoritativ aktivering = webhook,
+  // Fase C). Cancel/Close → kunden lukkede uden at gennemføre → bliv på trin 4.
+  function openPaymentModal() {
+    if (!sessionId || sessionLoading || saving) return;
+    setErr("");
+    loadReepay()
+      .then((Reepay) => {
+        const rp = new Reepay.ModalSubscription(sessionId);
+        rp.addEventHandler(Reepay.Event.Accept, () => {
+          setSubmitted(true);
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        });
+        rp.addEventHandler(Reepay.Event.Error, () => {
+          setErr("Der opstod en fejl i betalingen. Prøv igen, eller skriv til support@birdly.dk.");
+        });
+        // Cancel (kunden trykker annullér) + Close (modal lukket) → intet oprettet,
+        // bliv på trin 4. Sessionen kan genåbnes med samme CTA.
+        rp.addEventHandler(Reepay.Event.Cancel, () => {});
+        rp.addEventHandler(Reepay.Event.Close, () => {});
+      })
+      .catch((e) => setErr(e.message || "Betalingsvinduet kunne ikke indlæses."));
   }
 
   return (
@@ -321,7 +428,7 @@ export default function Tilmeld({ initialFag = null }) {
       </header>
 
       <div className="top">
-        <span className="ey">{launchActive ? "🐦 30 dage gratis — helt uden kort" : "🐦 Gratis i 14 dage — ingen binding"}</span>
+        <span className="ey">🐦 Gratis i {TRIAL_DAYS} dage — ingen binding</span>
         <h1>Opret din profil</h1>
         <p>Jo mere præcist du udfylder, jo bedre match. Vi sender dig kun udbud, der rent faktisk passer til din virksomhed.</p>
       </div>
@@ -331,7 +438,7 @@ export default function Tilmeld({ initialFag = null }) {
           <>
             {/* Trinindikator */}
             <ol className="stepper" aria-label="Trin">
-              {STEPS.map((label, i) => {
+              {steps.map((label, i) => {
                 const n = i + 1;
                 const state = n === step ? "on" : n < step ? "done" : "";
                 return (
@@ -504,7 +611,7 @@ export default function Tilmeld({ initialFag = null }) {
                 </div>
               )}
 
-              {/* ---------------- TRIN 3 ---------------- */}
+              {/* ---------------- TRIN 3 — geografi + kriterier + samtykke ---------------- */}
               {step === 3 && (
                 <div className="sec">
                   <div className="h"><span className="n">3</span><h3>Hvor vil du have udbud fra?</h3></div>
@@ -523,40 +630,7 @@ export default function Tilmeld({ initialFag = null }) {
                     <span><b>Hele Danmark</b> — alle fem regioner.</span>
                   </label>
 
-                  {(heleDk || selectedRegionKeys.length > 0) && (
-                    <div className="pkg-reveal">
-                      <div className="pkg-name">Alt inkluderet</div>
-                      <div className="pkg-price">{PLAN.monthly.toLocaleString("da-DK")}<span> kr./md</span></div>
-                      <div className="pkg-text">
-                        {omraadeText} — samme pris som alle andre. {priceText.perMonthBoth} (ex. moms). <b>{priceText.saveLong}</b> Gratis de første 14 dage.
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* ---------------- TRIN 4 ---------------- */}
-              {step === 4 && (
-                <div className="sec">
-                  <div className="h"><span className="n">4</span><h3>Bekræft din tilmelding</h3></div>
-                  <p className="sub">{launchActive ? "Tjek dine valg. Ingen kort, ingen betaling — de første 30 dage er helt gratis." : "Tjek dine valg. Du betaler intet i dag — de første 14 dage er gratis."}</p>
-
-                  <div className="summary">
-                    <div className="srow"><span className="sk">Virksomhed</span><span className="sv">{company || "—"}{cvr ? " · CVR " + digits(cvr) : ""}</span></div>
-                    <div className="srow"><span className="sk">Kontakt</span><span className="sv">{[contact, email, phone ? toE164(dial, phone) : ""].filter(Boolean).join(" · ") || "—"}</span></div>
-                    <div className="srow"><span className="sk">Fag & områder</span><span className="sv">
-                      {selectedFagKeys.map((k) => {
-                        if (k === "andet") return <div key={k}><b>Andet</b> — bredt udvalg af bygge- og anlægsopgaver (vi bygger dit fag ind snart)</div>;
-                        const f = fagByKey[k];
-                        const chosen = (f?.smal || []).filter((a) => areaSel[k + "::" + a.cpv]).map((a) => a.kunde_titel);
-                        return <div key={k}><b>{f?.label_da || k}</b>{chosen.length ? ": " + chosen.join(", ") : " (alle relevante udbud)"}</div>;
-                      })}
-                    </span></div>
-                    <div className="srow"><span className="sk">Bredde</span><span className="sv">{bredde === "alle" ? "Alle bygge-udbud" : "Kun fagentrepriser"}</span></div>
-                    <div className="srow"><span className="sk">Område</span><span className="sv">{heleDk ? "Hele Danmark" : selectedRegionKeys.map((k) => regionLabels[k]).join(", ") || "—"}</span></div>
-                    <div className="srow hl"><span className="sk">Abonnement</span><span className="sv">{launchActive ? "Birdly — 30 dage gratis, helt uden kort" : "Birdly — alt inkluderet · " + (billing === "yearly" ? priceText.yearly : priceText.monthly) + " (ex. moms)"}</span></div>
-                  </div>
-
+                  {/* Beløbsgrænse (valgfri) — hører til matching-kriterierne */}
                   <details className="amount-box">
                     <summary>Sæt en beløbsgrænse på udbuddene (valgfrit)</summary>
                     <div className="grid2" style={{ marginTop: 12 }}>
@@ -570,57 +644,108 @@ export default function Tilmeld({ initialFag = null }) {
                     <div className="note">Udbud uden oplyst beløb sendes altid — vi sorterer dem ikke fra.</div>
                   </details>
 
-                  {!launchActive && (
-                    <div className="bredde">
-                      <div className="bredde-q">Betaling — samme pakke, du vælger bare frekvens</div>
-                      <label className={"bredde-opt" + (billing === "monthly" ? " on" : "")}>
-                        <input type="radio" name="billing" checked={billing === "monthly"} onChange={() => setBilling("monthly")} />
-                        <span><b>Månedligt — {priceText.monthly}</b> (ex. moms). Fuldt fleksibelt.</span>
-                      </label>
-                      <label className={"bredde-opt" + (billing === "yearly" ? " on" : "")}>
-                        <input type="radio" name="billing" checked={billing === "yearly"} onChange={() => setBilling("yearly")} />
-                        <span><b>Årligt — {priceText.yearly}</b> (ex. moms). <i>{priceText.saveLong}</i></span>
-                      </label>
-                    </div>
-                  )}
-
+                  {/* Notifikationskanaler */}
                   <div className="notify-row">
                     <span className="notify-q">Sådan vil jeg have besked:</span>
                     <label className="chk-inline"><input type="checkbox" checked={notifySms} onChange={(e) => setNotifySms(e.target.checked)} /> SMS</label>
                     <label className="chk-inline"><input type="checkbox" checked={notifyEmail} onChange={(e) => setNotifyEmail(e.target.checked)} /> E-mail</label>
                   </div>
 
-                  {launchActive ? (
-                    <div className="welcome-box">
-                      <h4>Velkommen til Birdly 🐦</h4>
-                      <p>Du er <b>blandt de allerførste virksomheder</b> på Birdly — og det er vi glade for.</p>
-                      <p>De næste <b>30 dage er gratis, helt uden kort</b>. Du får adgang til det hele med det samme: vi holder øje med alle offentlige udbud og sender dig besked, så snart der er en opgave, der passer til dit fag.</p>
-                      <p>Som en af de første betyder din mening ekstra meget. Et par dage før din gratis periode slutter, sender vi dig en kort mail — du fortæller os, hvad der virker, og hvad vi kan gøre bedre. Vil du fortsætte, er der et link, så du nemt kan komme videre.</p>
-                      <p className="wb-foot">Ingen binding. Ingen overraskelser. Bare Birdly.</p>
+                  {/* Samtykke — påkrævet betingelses-flueben gater CTA'en. Kort label;
+                      de juridiske links står stablet under boksen, ikke i én flydende linje. */}
+                  <div className="consent-block">
+                    <label className="consent">
+                      <input type="checkbox" checked={terms} onChange={(e) => setTerms(e.target.checked)} />
+                      <span>Jeg accepterer Birdlys betingelser, og at SMS og mail er en del af tjenesten.</span>
+                    </label>
+                    <div className="consent-links">
+                      <Link href="/handelsbetingelser">Handels- og leveringsbetingelser</Link>
+                      <Link href="/privatlivspolitik">Privatlivspolitik</Link>
                     </div>
-                  ) : (
-                    <div className="billing">
-                      <svg viewBox="0 0 24 24" width="20" fill="none"><circle cx="12" cy="12" r="9" stroke="#B58A2E" strokeWidth="1.8" /><path d="M12 8v5M12 16h.01" stroke="#B58A2E" strokeWidth="1.8" strokeLinecap="round" /></svg>
-                      <div>Du betaler <b>intet i dag</b>. De første <b>14 dage er gratis</b> — opsiger du inden, trækkes du aldrig. Herefter fortsætter dit abonnement til <b>{billing === "yearly" ? priceText.yearly : priceText.monthly} (ex. moms)</b>, første betaling efter prøveperioden. Du kan opsige når som helst. Betaling tilkobles senere.</div>
-                    </div>
-                  )}
+                    <label className="consent consent-opt">
+                      <input type="checkbox" checked={marketing} onChange={(e) => setMarketing(e.target.checked)} />
+                      <span>Ja tak — send mig gode råd og nyheder på mail (kan altid frameldes). Valgfrit.</span>
+                    </label>
+                  </div>
+                </div>
+              )}
 
-                  <label className="consent"><input type="checkbox" checked={marketing} onChange={(e) => setMarketing(e.target.checked)} /> Ja tak — Birdly må sende mig gode råd og nyheder på mail (kan altid frameldes). Valgfrit.</label>
-                  <label className="consent"><input type="checkbox" checked={terms} onChange={(e) => setTerms(e.target.checked)} /> Jeg accepterer <Link href="/handelsbetingelser" style={{ color: "var(--sky)", fontWeight: 600 }}>handelsbetingelser</Link> og <Link href="/privatlivspolitik" style={{ color: "var(--sky)", fontWeight: 600 }}>privatlivspolitik</Link>, og at SMS og mail er en del af tjenesten.</label>
+              {/* ---------------- TRIN 4 — vælg plan + betaling ---------------- */}
+              {step === 4 && (
+                <div className="sec">
+                  <div className="h"><span className="n">4</span><h3>Vælg din plan</h3></div>
+                  <p className="sub">Gratis prøveperiode · du betaler intet i dag · opsig når som helst inden.</p>
+
+                  {/* Kompakt recap (read-only) */}
+                  {recapText && <div className="recap">{recapText}</div>}
+
+                  {/* Plan-toggle — to kort i den eksisterende .plan-stil (samme som ville
+                      blive brugt til pakkevalg). Skift gen-opretter sessionen. */}
+                  <div className="plans plans-2" role="radiogroup" aria-label="Vælg betalingsinterval">
+                    <label className={"plan" + (billing === "monthly" ? " on" : "")}>
+                      <input type="radio" name="billing" checked={billing === "monthly"} disabled={sessionLoading} onChange={() => changeBilling("monthly")} />
+                      <div className="nm">Månedlig</div>
+                      <div className="pr">{PLAN.monthly.toLocaleString("da-DK")}<span> kr./md</span></div>
+                      <div className="ds">ex. moms · {inclMoms(PLAN.monthly)} inkl.</div>
+                    </label>
+                    <label className={"plan" + (billing === "yearly" ? " on" : "")}>
+                      <span className="feat">Spar {YEARLY_SAVING.pct}%</span>
+                      <input type="radio" name="billing" checked={billing === "yearly"} disabled={sessionLoading} onChange={() => changeBilling("yearly")} />
+                      <div className="nm">Årlig</div>
+                      <div className="pr">{PLAN.yearly.toLocaleString("da-DK")}<span> kr./år</span></div>
+                      <div className="ds">ex. moms · forudbetalt · {inclMoms(PLAN.yearly)} inkl.</div>
+                    </label>
+                  </div>
+
+                  {/* Betaling — accepterede metoder (valg sker i selve betalingsvinduet) */}
+                  <div className="bredde-q" style={{ marginTop: 4 }}>Betaling</div>
+                  <div className="pay-methods" aria-hidden="true">
+                    <span className="pm-tab">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 20.94c1.5 0 2.75-1.06 4-1.06 1.25 0 2.5 1.06 4 1.06" /><path d="M16 6c-1.5 0-3 1-4 3-1-2-2.5-3-4-3-2 0-3.5 2-3.5 5 0 4 3.5 8 5.5 8" /></svg>
+                      Apple Pay
+                    </span>
+                    <span className="pm-tab">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="5" width="18" height="14" rx="2" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
+                      Kort
+                    </span>
+                    <span className="pm-tab">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="7" y="3" width="10" height="18" rx="2" /><line x1="11" y1="18" x2="13" y2="18" /></svg>
+                      MobilePay
+                    </span>
+                  </div>
+                  <p className="sub" style={{ margin: "0 0 16px 36px" }}>Du vælger metode og indtaster kort i betalingsvinduet.</p>
+
+                  {/* Primær CTA — åbner Frisbii-betalingen som modal (overlay) for den
+                      valgte plans session. Deaktiveret indtil sessionen er klar. */}
+                  <button type="button" className="submit" onClick={openPaymentModal} disabled={!sessionId || sessionLoading}>
+                    {sessionLoading ? "Forbereder betaling …" : "Start gratis prøveperiode →"}
+                  </button>
+
+                  <div className="pay-secure" style={{ justifyContent: "center", marginTop: 14 }}>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="4" y="11" width="16" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg>
+                    Sikker betaling via Frisbii · Ingen binding · Opsig når som helst
+                  </div>
+                  <div className="note" style={{ marginTop: 10 }}>
+                    Kortoplysninger indtastes direkte hos vores PCI-sikre betalingspartner (Frisbii). Birdly ser eller gemmer aldrig dit kortnummer.
+                  </div>
                 </div>
               )}
 
               {/* ---------------- NAV ---------------- */}
               <div className="stepnav">
                 {step > 1 ? <button type="button" className="btn-back" onClick={back}>← Tilbage</button> : <span />}
-                {step < 4
-                  ? <button type="button" className="btn-next" onClick={next}>Videre →</button>
-                  : <button type="button" className="btn-next" onClick={onSubmit} disabled={saving}>{saving ? "Opretter …" : launchActive ? "Kom i gang — 30 dage gratis →" : "Opret Birdly — gratis i 14 dage →"}</button>}
+                {step < 3 && <button type="button" className="btn-next" onClick={next}>Videre →</button>}
+                {step === 3 && (
+                  <button type="button" className="btn-next" onClick={startPayment} disabled={saving || !terms}>
+                    {saving ? "Forbereder betaling …" : "Prøv gratis i 14 dage →"}
+                  </button>
+                )}
+                {step === 4 && <span />}
               </div>
             </div>
 
             <div className="trust">
-              <span>{launchActive ? "✓ 30 dage gratis, uden kort" : "✓ Gratis de første 14 dage"}</span><span>✓ Ingen binding</span><span>✓ Opsig når som helst</span>
+              <span>✓ Gratis i {TRIAL_DAYS} dage</span><span>✓ Ingen binding</span><span>✓ Opsig når som helst</span>
             </div>
           </>
         )}
@@ -628,12 +753,8 @@ export default function Tilmeld({ initialFag = null }) {
         {submitted && (
           <div className="card ok show">
             <div className="ck"><svg viewBox="0 0 24 24" width="30"><path d="M5 13l4 4 10-11" fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" /></svg></div>
-            <h2>{launchActive ? "Tak — du er med! 🎉" : "Velkommen til Birdly!"}</h2>
-            {launchActive ? (
-              <p>Velkommen ombord. Vi er allerede begyndt at holde øje med udbud for dig. Så snart der dukker en relevant opgave op i dit fag og område, får du besked. Hold øje med din indbakke — og din mening undervejs hjælper os med at gøre Birdly bedre.</p>
-            ) : (
-              <p>Vi er i gang med at holde øje for dig. Du hører fra os på SMS og mail, så snart der er et udbud, der passer. De første 14 dage er gratis.</p>
-            )}
+            <h2>Velkommen til Birdly!</h2>
+            <p>Vi er i gang med at holde øje for dig. Du hører fra os på SMS og mail, så snart der er et udbud, der passer.</p>
           </div>
         )}
       </div>
