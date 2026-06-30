@@ -15,10 +15,11 @@ const inclMoms = (n) => (n * 1.25).toLocaleString("da-DK", { minimumFractionDigi
 // CVR-opslag via /api/cvr. Tilmelding gemmes atomisk via signup-Edge Function.
 //
 //   1 Virksomhed · 2 Arbejdsområder · 3 Geografi (+ kriterier + betingelses-accept)
-//   · 4 Vælg plan + betaling (Frisbii embedded subscription).
+//   · 4 Vælg plan + betaling (Frisbii modal subscription).
 //
-// Frisbii ejer al betalingslogik. Trin 4 opretter en subscription-session og monterer
-// Reepay.EmbeddedSubscription; kortet gemmes i trial, første træk efter 14 dage.
+// Frisbii ejer al betalingslogik. Trin 4 opretter en subscription-session og åbner
+// den i Reepay.ModalSubscription (overlay) ved klik; kortet gemmes i trial, første
+// træk efter 14 dage.
 
 // Indlæs Frisbii/Reepay checkout-SDK'et én gang. Resolver med window.Reepay.
 function loadReepay() {
