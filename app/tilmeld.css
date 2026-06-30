@@ -79,6 +79,13 @@
 
   .consent{display:flex;gap:9px;font-size:13px;color:var(--navy-soft);margin:18px 0 16px;align-items:flex-start}
   .consent input{margin-top:3px;accent-color:var(--teal)}
+  /* Samtykke-blok: kort label + links stablet under boksen */
+  .consent-block{margin:18px 0 2px;border-top:1px solid var(--line);padding-top:16px}
+  .consent-block .consent{margin:0 0 8px}
+  .consent-links{display:flex;flex-wrap:wrap;gap:6px 18px;margin:0 0 16px 27px}
+  .consent-links a{font-size:13px;font-weight:600;color:var(--sky);text-decoration:none}
+  .consent-links a:hover{text-decoration:underline}
+  .consent-opt{margin:0;color:var(--navy-soft)}
   .submit{width:100%;background:var(--teal);color:#fff;border:0;padding:17px;border-radius:13px;font-family:'Plus Jakarta Sans';font-size:17px;font-weight:700;cursor:pointer;box-shadow:0 10px 24px rgba(0,179,166,.28);transition:transform .15s}
   .submit:hover{transform:translateY(-2px)}
   .trust{display:flex;flex-wrap:wrap;gap:8px 18px;justify-content:center;margin-top:14px;font-size:13px;color:var(--navy-soft)}
@@ -92,7 +99,7 @@
   .ok p{color:var(--navy-soft);margin-top:8px}
 
   @media(max-width:640px){
-    .grid2,.plans{grid-template-columns:1fr}
+    .grid2,.plans,.plans.plans-2{grid-template-columns:1fr}
     .chk-grid{grid-template-columns:1fr 1fr}
   }
   .pay-methods{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
@@ -100,6 +107,13 @@
   .pm-tab.on{border-color:var(--teal);color:var(--teal-dk);background:#F1FFFD}
   .pay-element{border:1.5px dashed var(--sky-200);border-radius:12px;background:var(--sky-soft);padding:24px 18px;text-align:center;color:var(--navy-soft);font-size:14px;display:flex;align-items:center;justify-content:center;gap:10px;min-height:96px}
   .pay-secure{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--navy-soft);margin-top:12px}
+  .pay-secure svg{flex:0 0 15px;color:var(--teal-dk)}
+
+  /* Trin 4 — kompakt recap + 2-kolonne plan-toggle + embedded-ramme */
+  .recap{font-size:12.5px;color:var(--navy-soft);background:var(--sky-soft);border:1px solid var(--line);border-radius:10px;padding:9px 13px;margin:0 0 18px}
+  .plans.plans-2{grid-template-columns:1fr 1fr}
+  .pay-methods .pm-tab{cursor:default}
+  .pay-methods .pm-tab svg{flex:0 0 18px}
 }
 
 /* ============================================================
