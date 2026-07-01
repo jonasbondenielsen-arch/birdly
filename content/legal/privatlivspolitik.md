@@ -35,8 +35,14 @@ Vi sælger ikke dine oplysninger. Vi deler oplysninger med betroede databehandle
 
 Hvor en databehandler behandler oplysninger uden for EU/EØS, sker det på et gyldigt overførselsgrundlag, fx EU-Kommissionens standardkontraktbestemmelser.
 
-## Opbevaring
-Vi opbevarer dine oplysninger, så længe du er kunde, og derefter så længe det er nødvendigt for at opfylde retlige forpligtelser. Regnskabsmateriale opbevares i 5 år, jf. bogføringsloven. Herefter slettes eller anonymiseres oplysningerne.
+## Opbevaring og sletning
+Vi opbevarer dine personoplysninger, så længe dit kundeforhold består. Når dit abonnement er ophørt, sletter eller anonymiserer vi dine personoplysninger — herunder navn, e-mail, telefonnummer og dine matchkriterier — efter en karensperiode på 90 dage.
+
+Karensperioden giver dig mulighed for at genoptage dit abonnement med dine indstillinger bevaret, sikrer at eventuelle betalingstvister kan afklares, og at kundeforholdet afsluttes korrekt, inden oplysningerne fjernes.
+
+Bogføringspligtige oplysninger — herunder fakturaer, betalingsoplysninger og CVR-nummer — opbevares i 5 år efter udløbet af det regnskabsår, de vedrører, jf. bogføringsloven. Denne opbevaring er adskilt fra sletningen af dine øvrige personoplysninger og følger sit eget forløb. Vi opbevarer ikke selv dine kortoplysninger; de håndteres af vores betalingsudbyder.
+
+Du kan til enhver tid bede om indsigt, berigtigelse eller sletning af dine oplysninger, jf. afsnittet "Dine rettigheder".
 
 ## Dine rettigheder
 Du har efter databeskyttelsesreglerne ret til indsigt, berigtigelse, sletning, begrænsning og indsigelse samt i visse tilfælde dataportabilitet. Har du givet samtykke, kan du til enhver tid trække det tilbage med virkning fremadrettet. Henvendelse: support@birdly.dk.
