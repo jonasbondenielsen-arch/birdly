@@ -44,7 +44,7 @@
 3.4 Automatiseret udtræk, scraping eller videresalg af Tjenestens beskeder/data til tredjemand er ikke tilladt.
 
 ## 4. Gratis prøveperiode
-4.1 Nye kunder får en gratis prøveperiode på 14 dage regnet fra tilmelding. I prøveperioden opkræves der ingen betaling. Opsiger du inden for prøveperioden, opkræves du ikke, og Abonnementet ophører ved prøveperiodens udløb.
+4.1 Nye kunder får en gratis prøveperiode på 14 dage regnet fra tilmelding. I prøveperioden opkræves der ingen betaling. Opsiger du inden for prøveperioden, opkræves du ikke, og Abonnementet ophører ved prøveperiodens udløb. Opsigelse i prøveperioden udløser ikke opsigelsesvarslet for månedsabonnement, jf. pkt. 6.
 
 4.2 Medmindre du opsiger inden prøveperiodens udløb, overgår Abonnementet automatisk til et betalt Abonnement. Den første opkrævning sker umiddelbart efter prøveperiodens udløb, dvs. dagen efter de 14 gratis dage, jf. pkt. 5.2.
 
@@ -53,18 +53,26 @@
 
 5.2 Abonnementsbeløbet opkræves forud for hver abonnementsperiode via Frisbii (med MobilePay og betalingskort som betalingsmetoder). Ved tilmelding giver du Birdly tilladelse til løbende at trække abonnementsbeløbet. Den første betaling sker efter prøveperiodens udløb, jf. pkt. 4.2, og herefter fornyes Abonnementet automatisk og opkræves for den valgte periode (månedligt eller årligt) på den tilbagevendende betalingsdato, der følger af din tilmeldingsdato. Der fremsendes faktura til den oplyste e-mailadresse.
 
-5.3 Vi forbeholder os retten til at ændre sammensætning, indhold og priser med varsel pr. e-mail eller ved opslag på birdly.dk. Væsentlige ændringer, herunder prisændringer, varsles 30 dage før ikrafttræden, og du kan opsige inden ændringen træder i kraft.
+5.3 Vi kan ændre Tjenestens sammensætning og indhold. Væsentlige ændringer varsles pr. e-mail til din registrerede e-mailadresse eller ved opslag på birdly.dk med rimeligt varsel.
 
-5.4 Ved manglende betaling, fx ved manglende dækning, forbeholder vi os retten til at suspendere adgangen til Tjenesten, indtil betaling er modtaget.
+5.4 **Prisændringer.** Vi kan ændre abonnementspriserne. En prisstigning på dit Abonnement varsles med mindst 30 dages varsel, før den træder i kraft. Varsel gives pr. e-mail til din registrerede e-mailadresse. Ønsker du ikke at fortsætte til den nye pris, kan du opsige, inden prisstigningen træder i kraft, i overensstemmelse med opsigelsesvilkårene i pkt. 6. Opsiger du ikke inden ikrafttræden, fortsætter Abonnementet til den nye pris.
+
+5.5 Ved manglende betaling, fx ved manglende dækning, forbeholder vi os retten til at suspendere adgangen til Tjenesten, indtil betaling er modtaget.
 
 ## 6. Bindingsperiode og opsigelse
-6.1 Der er ingen bindingsperiode. Du kan til enhver tid opsige dit Abonnement med 30 dages varsel.
+6.1 Der er ingen minimumsbinding ud over den abonnementsperiode, du har valgt og betalt for. Du kan til enhver tid opsige dit Abonnement og dermed dets fremtidige fornyelse. Opsigelsens virkning afhænger af, om du betaler månedligt eller årligt, jf. pkt. 6.3 og 6.4.
 
 6.2 Opsigelse sker via opsigelsesfunktionen på birdly.dk, hvor du bekræfter opsigelsen via et link sendt til din e-mail. Opsigelsen er først gennemført, når du har klikket bekræftelseslinket.
 
-6.3 Da Abonnementet betales forud, er den indeværende periode allerede dækket. Ved opsigelse beholder du adgangen perioden ud i overensstemmelse med opsigelsesvarslet, der foretages ikke yderligere træk, og der refunderes ikke for en allerede påbegyndt og betalt abonnementsperiode.
+6.3 **Månedsabonnement.** For et månedsabonnement gælder et opsigelsesvarsel på 30 dage. Når du har bekræftet opsigelsen, gennemføres én yderligere månedlig opkrævning, du beholder adgangen til Tjenesten i den betalte periode, og Abonnementet ophører derefter.
 
-6.4 Birdly kan opsige et Abonnement med 3 måneders varsel, og uden varsel ved Kundens konkurs, insolvens eller væsentlig misligholdelse af disse betingelser.
+6.4 **Årsabonnement.** Et årsabonnement er forudbetalt for 12 måneder og fornyes automatisk ved periodens udløb. Opsiger du inden fornyelsen, gennemføres der ingen ny opkrævning, og du beholder adgangen den resterende, allerede betalte periode ud. Der er ingen yderligere binding og ingen ekstra opkrævning, uanset hvornår i den betalte periode du opsiger. Vi sender dig en påmindelse ca. 30 dage før den årlige fornyelse.
+
+6.5 Da Abonnementet betales forud, refunderes der ikke for en allerede påbegyndt og betalt abonnementsperiode.
+
+6.6 Opsiger du i prøveperioden, gælder pkt. 4 — der opkræves intet, og opsigelsesvarslet i pkt. 6.3 finder ikke anvendelse.
+
+6.7 Birdly kan opsige et Abonnement med 3 måneders varsel, og uden varsel ved Kundens konkurs, insolvens eller væsentlig misligholdelse af disse betingelser.
 
 ## 7. Kundens ansvar
 7.1 Du er ansvarlig for, at de oplysninger og kriterier, du opgiver (kontaktoplysninger, fag, geografi, beløb), er korrekte og opdaterede. Birdly er ikke ansvarlig for matches, der udebliver eller er upræcise som følge af forkerte eller mangelfulde kriterier.
