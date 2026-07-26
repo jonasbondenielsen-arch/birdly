@@ -92,11 +92,11 @@ export default function MineOpgaver({ token, data }) {
   // kun datoen. Tonen er en oplysning, ikke en straf: kunden har betalt for den
   // periode hun fik, og døren står åben.
   if (data && data.found && data.has_access === false) {
+    // Kun to årsager kan lukke en liste (migration 0040): abonnementet er ophørt, eller
+    // den forudbetalte periode efter en opsigelse er løbet ud.
     const tekst = {
       opsagt: "Dit abonnement er ophørt, så din opgaveliste er lukket.",
-      udloebet_betalt_periode: "Din betalte periode er udløbet, så din opgaveliste er lukket.",
-      udloebet_trial: "Din prøveperiode er udløbet, så din opgaveliste er lukket.",
-      link_udloebet: "Dette link er udløbet.",
+      adgang_udloebet: "Din opsigelse er trådt i kraft, og den betalte periode er udløbet.",
     }[data.reason] || "Din adgang til opgavelisten er udløbet.";
 
     return (
