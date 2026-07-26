@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Logo } from "./Logo";
-import { fetchMyTasks, previewCriteria, saveMyCriteria, undoMyCriteria, dismissTask } from "../lib/share";
+import { fetchMyTasks, previewCriteria, saveMyCriteria, undoMyCriteria, dismissTask, sendDismissReason } from "../lib/share";
 
 // Samlesiden "Mine opgaver" (Spor 3b) — den side samle-SMS'en og -mailen peger på.
 // Ingen login: kundens eget list_token er nøglen, og siden er LEVENDE (viser altid
@@ -73,6 +73,8 @@ export default function MineOpgaver({ token, data }) {
   const [sortering, setSortering] = useState("relevans");
   const [panelAaben, setPanelAaben] = useState(false);
   const [besked, setBesked] = useState(null);
+  // Senest fjernede opgave → grundlaget for den VALGFRIE grund-række. Null = skjult.
+  const [senestFjernet, setSenestFjernet] = useState(null);
 
   const visteOpgaver = useMemo(() => {
     const kopi = [...opgaver];
@@ -83,6 +85,44 @@ export default function MineOpgaver({ token, data }) {
   }, [opgaver, sortering]);
 
   const antalNye = opgaver.filter((o) => o.er_ny).length;
+
+  // ---------- Adgang udløbet ----------
+  // Serveren har allerede afgjort dette og sender INGEN opgavedata med (se
+  // birdly_list_access). Siden kan derfor ikke vise noget den ikke må — den kender
+  // kun datoen. Tonen er en oplysning, ikke en straf: kunden har betalt for den
+  // periode hun fik, og døren står åben.
+  if (data && data.found && data.has_access === false) {
+    const tekst = {
+      opsagt: "Dit abonnement er ophørt, så din opgaveliste er lukket.",
+      udloebet_betalt_periode: "Din betalte periode er udløbet, så din opgaveliste er lukket.",
+      udloebet_trial: "Din prøveperiode er udløbet, så din opgaveliste er lukket.",
+      link_udloebet: "Dette link er udløbet.",
+    }[data.reason] || "Din adgang til opgavelisten er udløbet.";
+
+    return (
+      <main style={{ ...WRAP, textAlign: "center" }}>
+        <div style={{ display: "flex", justifyContent: "center", margin: "12px 0 28px" }}><Logo /></div>
+        <div style={CARD}>
+          <h1 style={{ fontSize: 22, margin: "4px 0 12px", color: NAVY }}>Din adgang er udløbet</h1>
+          <p style={{ color: MUTED, lineHeight: 1.6, margin: "0 0 10px" }}>{tekst}</p>
+          {data.access_until && (
+            <p style={{ color: MUTED, lineHeight: 1.6, margin: "0 0 18px" }}>
+              Adgangen gjaldt til og med <b style={{ color: NAVY }}>{fmtDato(data.access_until)}</b>.
+            </p>
+          )}
+          <p style={{ margin: "0 0 20px", color: NAVY, lineHeight: 1.6 }}>
+            Forny dit abonnement, så åbner listen igen — med de udbud der passer til jer lige nu.
+          </p>
+          <Link href="https://birdly.dk" style={{ ...KNAP_PRIMARY, textDecoration: "none", display: "inline-block" }}>
+            Forny abonnement
+          </Link>
+          <p style={{ marginTop: 20, color: MUTED, fontSize: 13, lineHeight: 1.6 }}>
+            Spørgsmål? Skriv til <a href="mailto:support@birdly.dk" style={{ color: TEAL, fontWeight: 600 }}>support@birdly.dk</a>.
+          </p>
+        </div>
+      </main>
+    );
+  }
 
   // Ugyldigt/udløbet link — pæn tilstand, ingen detaljer lækket.
   if (!data || !data.found) {
@@ -128,9 +168,21 @@ export default function MineOpgaver({ token, data }) {
     setBesked({ type: "ok", tekst: "Dine tidligere kriterier er gendannet." });
   }
 
-  async function haandterFjern(matchId) {
+  // Fjernelsen sker STRAKS og betingelsesløst — nul friktion, ingen pop-up der spærrer.
+  // Først BAGEFTER tilbyder vi en valgfri grund. Kunden skal kunne rydde sin liste uden
+  // at blive afhørt; grunden er noget hun kan give os, ikke noget vi opkræver.
+  async function haandterFjern(matchId, title) {
     const res = await dismissTask(token, matchId, true);
-    if (res?.ok) setOpgaver((prev) => prev.filter((o) => o.match_id !== matchId));
+    if (res?.ok) {
+      setOpgaver((prev) => prev.filter((o) => o.match_id !== matchId));
+      setSenestFjernet({ id: matchId, title });
+    }
+  }
+
+  async function haandterGrund(grund) {
+    if (!senestFjernet) return;
+    await sendDismissReason(token, senestFjernet.id, grund); // fejler den, taber vi kun en datapunkt
+    setSenestFjernet(null);
   }
 
   return (
@@ -154,6 +206,37 @@ export default function MineOpgaver({ token, data }) {
       {besked && (
         <div style={{ ...CARD, marginTop: 14, borderColor: besked.type === "fejl" ? "#F3C9C9" : "#BFE7DF", background: besked.type === "fejl" ? "#FDF4F4" : "#F1FAF8" }}>
           <p style={{ margin: 0, color: NAVY }}>{besked.tekst}</p>
+        </div>
+      )}
+
+      {senestFjernet && (
+        <div style={{ ...CARD, marginTop: 14, padding: "14px 18px", background: "#F7FAFC", borderColor: "#E6EAEF" }}>
+          <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+            <span style={{ color: NAVY, fontSize: 14, fontWeight: 600 }}>Fjernet.</span>
+            <span style={{ color: MUTED, fontSize: 14 }}>Må vi spørge hvorfor? (helt frivilligt)</span>
+            {[
+              ["for_langt_vaek", "For langt væk"],
+              ["forkert_fag", "Forkert fag"],
+              ["for_stor", "For stor"],
+              ["for_lille", "For lille"],
+            ].map(([key, label]) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => haandterGrund(key)}
+                style={{ ...KNAP, padding: "6px 12px", fontSize: 13, background: "#fff", color: NAVY, border: "1px solid #D7DDE5" }}
+              >
+                {label}
+              </button>
+            ))}
+            <button
+              type="button"
+              onClick={() => setSenestFjernet(null)}
+              style={{ background: "none", border: "none", color: MUTED, cursor: "pointer", fontSize: 13, textDecoration: "underline", padding: 0 }}
+            >
+              Nej tak
+            </button>
+          </div>
         </div>
       )}
 
@@ -202,7 +285,7 @@ export default function MineOpgaver({ token, data }) {
       ) : (
         <div style={{ display: "grid", gap: 12 }}>
           {visteOpgaver.map((o) => (
-            <OpgaveKort key={o.match_id} o={o} onFjern={() => haandterFjern(o.match_id)} />
+            <OpgaveKort key={o.match_id} o={o} onFjern={() => haandterFjern(o.match_id, o.title)} />
           ))}
         </div>
       )}
@@ -257,7 +340,8 @@ function Badge({ children, bg, farve, kant }) {
 
 function SorterPanel({ token, kriterier, fag, regioner, kanFortryde, onFortryd, onGemt }) {
   const [beloebTrin, setBeloebTrin] = useState(trinFraKriterier(kriterier || {}));
-  const [bredde, setBredde] = useState(kriterier?.bredde === "alle" ? "alle" : "valgte");
+  // 'fag' | 'alle' — de eneste to værdier subscribers_bredde_chk tillader.
+  const [bredde, setBredde] = useState(kriterier?.bredde === "alle" ? "alle" : "fag");
   const [nuts, setNuts] = useState(kriterier?.nuts_codes || []);
   const [preview, setPreview] = useState(null);
   const [henter, setHenter] = useState(false);
@@ -337,8 +421,8 @@ function SorterPanel({ token, kriterier, fag, regioner, kanFortryde, onFortryd, 
       <Sporgsmaal nr={2} titel="Hvor bredt vil du se inden for dit fag?">
         <div style={{ display: "grid", gap: 8 }}>
           <Valg
-            type="radio" valgt={bredde === "valgte"}
-            onClick={() => { setBredde("valgte"); setPreview(null); }}
+            type="radio" valgt={bredde === "fag"}
+            onClick={() => { setBredde("fag"); setPreview(null); }}
             titel="Kun mit kerneområde"
             hjaelp="Præcis de arbejdsområder du valgte ved tilmelding — færre, men mere præcise opgaver"
           />
