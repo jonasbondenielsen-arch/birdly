@@ -269,7 +269,13 @@
   @media(max-width:920px){
     nav.menu{display:none}
     .hero-grid,.ex-grid,.about-grid,.su-grid{grid-template-columns:1fr;gap:40px}
-    .stage{order:-1}
+    /* BUDSKABET FØRST PÅ MOBIL. Her stod .stage{order:-1}, som trak telefon-mockup'en
+       op FØR h1'en. Et billede af en telefon med en SMS som det allerførste kan forvirre
+       en besøgende om hvad Birdly overhovedet er — overskrift, undertekst og CTA skal
+       bære det første indtryk. Uden order-reglen gælder DOM-rækkefølgen: tekst, så
+       telefon. Sæt den ALDRIG tilbage.
+       Desktop er urørt: reglen lå kun i dette breakpoint, og side-om-side-heroen
+       styres af grid-kolonnerne, ikke af order. */
     .pain-grid,.steps,.vals,.tiers{grid-template-columns:1fr}
     .price-duo,.price-incl ul{grid-template-columns:1fr}
     .vals{grid-template-columns:1fr 1fr}
