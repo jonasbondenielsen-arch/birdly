@@ -83,6 +83,27 @@ kundens samleside, deleside pr. udbud og bud-skabelonen. Deploy: Vercel-projekt 
   nøjagtig som før. Husk at føre den med når du tilføjer nye kald til `fetchMyTasks` /
   `fetchSharedNotice`, ellers spores et supportbesøg alligevel.
 
+## Fase 2 — "lagt til side"-bunken: REGLERNE for dette repo
+
+Samlesiden viser to bunker: `opgaver` (hovedliste) og `lagt_til_side`. **Serveren afgør
+ALT** — hvad der ligger hvor, og hvorfor.
+
+- **Klassificér ALDRIG i dette repo.** Reglen bor i SQL (`birdly_skjul_kandidater`, 0047) og
+  kaldes af `get-my-tasks`. En kopi her ville drive fra serverens og vise kunden noget andet
+  end det notify regner med. Repoet har kun anon-nøglen og kan alligevel ikke slå
+  learned_filters, regioner eller CPV-navne op.
+- **Skriv aldrig "hvorfor"-teksten her.** Den kommer færdig som `hvorfor_tekst[]` og beskriver
+  det træk der **faktisk** skjulte opgaven. Bygger du den selv af `hvorfor[]`, risikerer du at
+  nævne et træk som guldklump-værnet netop reddede opgaven fra — og så lyver forklaringen.
+- **Knappen skal altid vise tallet** når bunken ikke er tom. Intet må være skjult uden at
+  kunden kan se at det findes og hvor meget.
+- **Tom `lagt_til_side` ⇒ hele afsnittet renderes ikke.** Sådan er leveret-tilstanden i dag
+  (`SKJUL_AKTIVT = false` i admin), og siden er da identisk med før fase 2. Hvis du ser
+  bunken dukke op uden at gaten er passeret, er noget galt.
+- **"Dette er relevant"** flytter opgaven op i hovedlisten med det samme og kalder
+  `action:"relevant"`. Kaldet må fejle uden at rulle flytningen tilbage — kunden skal se at
+  vi lyttede, ikke vente på serveren.
+
 ### Næste i dette repo
 - **Mobilvisning af de nye forside-sektioner er IKKE verificeret visuelt.**
 - **Widget'ens to trin er ikke set på mobil** — knapperne wrapper i en flexbox-række.
