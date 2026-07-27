@@ -91,7 +91,7 @@ function fmtBeloeb(amount, currency) {
 
 // ---------------------------------------------------------------------------
 
-export default function MineOpgaver({ token, data }) {
+export default function MineOpgaver({ token, data, intern = null }) {
   const [opgaver, setOpgaver] = useState(data?.opgaver || []);
   const [kriterier, setKriterier] = useState(data?.kriterier || null);
   const [kanFortryde, setKanFortryde] = useState(!!data?.kan_fortryde);
@@ -174,7 +174,7 @@ export default function MineOpgaver({ token, data }) {
   // så en rå refetch ville nulstille badget midt i kundens session — hun ville se sine
   // nye opgaver holde op med at være markeret som nye, bare fordi hun sorterede.
   async function genindlaes() {
-    const friske = await fetchMyTasks(token);
+    const friske = await fetchMyTasks(token, intern);
     if (!friske?.found) return;
     const varNy = new Set(opgaver.filter((o) => o.er_ny).map((o) => o.match_id));
     setOpgaver((friske.opgaver || []).map((o) => ({ ...o, er_ny: o.er_ny || varNy.has(o.match_id) })));
@@ -338,7 +338,7 @@ export default function MineOpgaver({ token, data }) {
       ) : (
         <div style={{ display: "grid", gap: 12 }}>
           {visteOpgaver.map((o) => (
-            <OpgaveKort key={o.match_id} o={o} onFjern={() => haandterFjern(o.match_id, o.title)} />
+            <OpgaveKort key={o.match_id} o={o} intern={intern} onFjern={() => haandterFjern(o.match_id, o.title)} />
           ))}
         </div>
       )}
@@ -353,7 +353,7 @@ export default function MineOpgaver({ token, data }) {
 
 // ---------------------------------------------------------------------------
 
-function OpgaveKort({ o, onFjern }) {
+function OpgaveKort({ o, onFjern, intern = null }) {
   const dage = dageTil(o.deadline);
   const haster = dage != null && dage <= 14;
   return (
@@ -371,7 +371,9 @@ function OpgaveKort({ o, onFjern }) {
       </p>
 
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-        <Link href={`/udbud/${o.share_token}`} style={{ ...KNAP_PRIMARY, textDecoration: "none", display: "inline-block" }}>
+        {/* Markøren følger med ind på opgaven, så et internt klik heller ikke tæller
+            en åbning. Uden markør er linket NØJAGTIG som før. */}
+        <Link href={`/udbud/${o.share_token}${intern ? `?intern=${encodeURIComponent(intern)}` : ""}`} style={{ ...KNAP_PRIMARY, textDecoration: "none", display: "inline-block" }}>
           Se opgaven
         </Link>
         <button type="button" style={KNAP_SEKUNDAER} onClick={onFjern}>Ikke relevant</button>

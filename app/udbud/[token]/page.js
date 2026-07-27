@@ -8,8 +8,11 @@ export const metadata = {
   robots: { index: false, follow: false }, // privat token-side — aldrig i søgeresultater
 };
 
-export default async function Page({ params }) {
+// ?intern=<signatur>: support klikkede hertil fra kundens samleside. Åbningen tælles
+// da ikke — se get-shared-notice + record_notice_open(p_intern) i migration 0045.
+export default async function Page({ params, searchParams }) {
   const { token } = await params;
-  const data = await fetchSharedNotice(token);
+  const { intern = null } = (await searchParams) || {};
+  const data = await fetchSharedNotice(token, intern);
   return <Deleside token={token} data={data} />;
 }

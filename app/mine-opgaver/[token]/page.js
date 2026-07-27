@@ -10,8 +10,12 @@ export const metadata = {
   robots: { index: false, follow: false }, // privat token-side — aldrig i søgeresultater
 };
 
-export default async function Page({ params }) {
+// ?intern=<signatur> er admins support-visning (birdly-admin/lib/internMarkoer.js).
+// Den videresendes ordret; Edge Function'en afgør om den er ægte og springer i så fald
+// AL sporing over. En kunde kan ikke gætte den, og uden den er alt som før.
+export default async function Page({ params, searchParams }) {
   const { token } = await params;
-  const data = await fetchMyTasks(token);
-  return <MineOpgaver token={token} data={data} />;
+  const { intern = null } = (await searchParams) || {};
+  const data = await fetchMyTasks(token, intern);
+  return <MineOpgaver token={token} data={data} intern={intern} />;
 }
