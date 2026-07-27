@@ -44,6 +44,31 @@ const BELOEB_TRIN = [
   { key: "over_10m", label: "Over 10 mio. kr.", hjaelp: "Store opgaver", min: 10000000, max: null },
 ];
 
+// De fire strukturerede fravalgsgrunde (migration 0042). Værdierne mapper 1:1 til
+// kundens egne kriterie-dimensioner og til fase 2's træk-filtre — forkert_fag→CPV,
+// forkert_omraade→NUTS, forkert_stoerrelse→beløb, ikke_nu→intet træk. Rør ikke
+// nøglerne uden at rette taksonomien begge steder; dashboardet tæller på dem.
+//
+// "For stor" og "For lille" er bevidst ÉN knap her: retningen udleder vi af det beløb
+// serveren snapshotter ved fravalget (0044), så kunden ikke skal gætte hvilken kasse
+// hendes indvending hører til.
+const GRUNDE = [
+  ["forkert_fag", "Forkert fag"],
+  ["forkert_omraade", "Forkert område"],
+  ["forkert_stoerrelse", "Forkert størrelse"],
+  ["ikke_nu", "Ikke lige nu"],
+];
+
+// Valgfri 1-5. Vurderer DEN FJERNEDE OPGAVE, ikke Birdly som helhed — derfor er den
+// pr. match og lander i samme række som grunden.
+const SMILEYS = [
+  [1, "😠", "Ramte slet ikke"],
+  [2, "🙁", "Ramte dårligt"],
+  [3, "😐", "Sådan da"],
+  [4, "🙂", "Ramte meget godt"],
+  [5, "😀", "Ramte perfekt"],
+];
+
 function trinFraKriterier(k) {
   const match = BELOEB_TRIN.find((t) => t.min === (k.min_amount ?? null) && t.max === (k.max_amount ?? null));
   return match ? match.key : "alle";
@@ -175,13 +200,25 @@ export default function MineOpgaver({ token, data }) {
     const res = await dismissTask(token, matchId, true);
     if (res?.ok) {
       setOpgaver((prev) => prev.filter((o) => o.match_id !== matchId));
-      setSenestFjernet({ id: matchId, title });
+      setSenestFjernet({ id: matchId, title, trin: "grund" });
     }
   }
 
+  // Trin 1 → trin 2. Grunden gemmes med det samme og rækken bliver STÅENDE, nu med
+  // smiley-spørgsmålet: den der lige har svaret på ét spørgsmål svarer også gerne på
+  // det næste. Fejler kaldet, taber vi ét datapunkt — kunden mærker intet, og rækken
+  // går videre alligevel.
   async function haandterGrund(grund) {
     if (!senestFjernet) return;
-    await sendDismissReason(token, senestFjernet.id, grund); // fejler den, taber vi kun en datapunkt
+    sendDismissReason(token, senestFjernet.id, { grund });
+    setSenestFjernet((s) => (s ? { ...s, trin: "smiley" } : null));
+  }
+
+  // Trin 2. Sidste led — rækken lukker uanset udfald, så kunden aldrig hænger fast i
+  // et spørgeskema hun ikke bad om.
+  async function haandterSmiley(rating) {
+    if (!senestFjernet) return;
+    sendDismissReason(token, senestFjernet.id, { rating });
     setSenestFjernet(null);
   }
 
@@ -212,23 +249,39 @@ export default function MineOpgaver({ token, data }) {
       {senestFjernet && (
         <div style={{ ...CARD, marginTop: 14, padding: "14px 18px", background: "#F7FAFC", borderColor: "#E6EAEF" }}>
           <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
-            <span style={{ color: NAVY, fontSize: 14, fontWeight: 600 }}>Fjernet.</span>
-            <span style={{ color: MUTED, fontSize: 14 }}>Må vi spørge hvorfor? (helt frivilligt)</span>
-            {[
-              ["for_langt_vaek", "For langt væk"],
-              ["forkert_fag", "Forkert fag"],
-              ["for_stor", "For stor"],
-              ["for_lille", "For lille"],
-            ].map(([key, label]) => (
-              <button
-                key={key}
-                type="button"
-                onClick={() => haandterGrund(key)}
-                style={{ ...KNAP, padding: "6px 12px", fontSize: 13, background: "#fff", color: NAVY, border: "1px solid #D7DDE5" }}
-              >
-                {label}
-              </button>
-            ))}
+            {senestFjernet.trin === "grund" ? (
+              <>
+                <span style={{ color: NAVY, fontSize: 14, fontWeight: 600 }}>Fjernet.</span>
+                <span style={{ color: MUTED, fontSize: 14 }}>Må vi spørge hvorfor? (helt frivilligt)</span>
+                {GRUNDE.map(([key, label]) => (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => haandterGrund(key)}
+                    style={{ ...KNAP, padding: "6px 12px", fontSize: 13, background: "#fff", color: NAVY, border: "1px solid #D7DDE5" }}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </>
+            ) : (
+              <>
+                <span style={{ color: NAVY, fontSize: 14, fontWeight: 600 }}>Tak.</span>
+                <span style={{ color: MUTED, fontSize: 14 }}>Hvor godt ramte den her opgave?</span>
+                {SMILEYS.map(([vaerdi, tegn, titel]) => (
+                  <button
+                    key={vaerdi}
+                    type="button"
+                    onClick={() => haandterSmiley(vaerdi)}
+                    title={titel}
+                    aria-label={titel}
+                    style={{ ...KNAP, padding: "4px 10px", fontSize: 20, lineHeight: 1.2, background: "#fff", color: NAVY, border: "1px solid #D7DDE5" }}
+                  >
+                    {tegn}
+                  </button>
+                ))}
+              </>
+            )}
             <button
               type="button"
               onClick={() => setSenestFjernet(null)}
