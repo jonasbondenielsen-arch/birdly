@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Logo } from "./Logo";
-import { fetchMyTasks, previewCriteria, saveMyCriteria, undoMyCriteria, dismissTask, sendDismissReason } from "../lib/share";
+import { fetchMyTasks, previewCriteria, saveMyCriteria, undoMyCriteria, dismissTask, sendDismissReason, markerSomRelevant } from "../lib/share";
 
 // Samlesiden "Mine opgaver" (Spor 3b) — den side samle-SMS'en og -mailen peger på.
 // Ingen login: kundens eget list_token er nøglen, og siden er LEVENDE (viser altid
@@ -100,6 +100,10 @@ export default function MineOpgaver({ token, data, intern = null }) {
   const [besked, setBesked] = useState(null);
   // Senest fjernede opgave → grundlaget for den VALGFRIE grund-række. Null = skjult.
   const [senestFjernet, setSenestFjernet] = useState(null);
+  // FASE 2: "lagt til side"-bunken. Tom når serveren ikke skjuler noget (leveret-tilstand),
+  // og så renderes hele afsnittet slet ikke — siden er da identisk med før fase 2.
+  const [lagtTilSide, setLagtTilSide] = useState(data?.lagt_til_side || []);
+  const [bunkeAaben, setBunkeAaben] = useState(false);
 
   const visteOpgaver = useMemo(() => {
     const kopi = [...opgaver];
@@ -180,6 +184,7 @@ export default function MineOpgaver({ token, data, intern = null }) {
     setOpgaver((friske.opgaver || []).map((o) => ({ ...o, er_ny: o.er_ny || varNy.has(o.match_id) })));
     setKriterier(friske.kriterier || null);
     setKanFortryde(!!friske.kan_fortryde);
+    setLagtTilSide(friske.lagt_til_side || []);
   }
 
   async function haandterFortryd() {
@@ -200,6 +205,7 @@ export default function MineOpgaver({ token, data, intern = null }) {
     const res = await dismissTask(token, matchId, true);
     if (res?.ok) {
       setOpgaver((prev) => prev.filter((o) => o.match_id !== matchId));
+      setLagtTilSide((prev) => prev.filter((o) => o.match_id !== matchId));
       setSenestFjernet({ id: matchId, title, trin: "grund" });
     }
   }
@@ -220,6 +226,20 @@ export default function MineOpgaver({ token, data, intern = null }) {
     if (!senestFjernet) return;
     sendDismissReason(token, senestFjernet.id, { rating });
     setSenestFjernet(null);
+  }
+
+  // KORREKTIONS-LOOPET. Kunden har fundet en opgave i bunken som vi ikke skulle have
+  // lagt væk. Den flyttes straks op i hovedlisten — hun skal se at vi lyttede med det
+  // samme, ikke først ved næste indlæsning. Serveren relakserer de træk der skjulte
+  // den, så samme slags opgave ikke bliver lagt væk igen.
+  async function haandterRelevant(matchId) {
+    const o = lagtTilSide.find((x) => x.match_id === matchId);
+    if (!o) return;
+    setLagtTilSide((prev) => prev.filter((x) => x.match_id !== matchId));
+    const { hvorfor, hvorfor_tekst, ...ren } = o;
+    setOpgaver((prev) => [ren, ...prev]);
+    setBesked({ type: "ok", tekst: "Tak — vi holder op med at sortere den slags fra." });
+    markerSomRelevant(token, matchId); // fejler den, står opgaven stadig i hovedlisten
   }
 
   return (
@@ -343,6 +363,48 @@ export default function MineOpgaver({ token, data, intern = null }) {
         </div>
       )}
 
+      {/* LAGT TIL SIDE (fase 2). Knappen er ALTID synlig når bunken ikke er tom — intet
+          er skjult uden at kunden kan se at det findes, og hvor mange der er. */}
+      {lagtTilSide.length > 0 && (
+        <div style={{ marginTop: 22 }}>
+          <button
+            type="button"
+            onClick={() => setBunkeAaben((v) => !v)}
+            style={{ ...KNAP_SEKUNDAER, width: "100%", textAlign: "left", padding: "13px 16px", fontWeight: 600 }}
+          >
+            {bunkeAaben ? "Skjul" : "Se"} opgaver vi har lagt til side ({lagtTilSide.length})
+            <span style={{ display: "block", color: MUTED, fontWeight: 400, fontSize: 13, marginTop: 3 }}>
+              Frasorteret ud fra din tidligere adfærd — ingenting er slettet.
+            </span>
+          </button>
+
+          {bunkeAaben && (
+            <div style={{ display: "grid", gap: 12, marginTop: 12 }}>
+              {/* Engangs-forklaring. Kunden skal forstå mekanikken FØRSTE gang hun møder
+                  den, ikke gætte sig til hvorfor noget ligger i en anden bunke. */}
+              <div style={{ ...CARD, background: "#F7FAFC", borderColor: "#E6EAEF" }}>
+                <p style={{ margin: 0, color: NAVY, lineHeight: 1.6, fontSize: 14 }}>
+                  Når du gentagne gange fravælger den samme slags opgave, lægger vi lignende
+                  opgaver herned i stedet for at fylde din hovedliste med dem. De bliver
+                  aldrig slettet, og du kan altid åbne dem her. Passer en alligevel, så tryk
+                  <b> Dette er relevant</b> — så holder vi op med at sortere den slags fra.
+                </p>
+              </div>
+              {lagtTilSide.map((o) => (
+                <OpgaveKort
+                  key={o.match_id}
+                  o={o}
+                  intern={intern}
+                  tilSide
+                  onRelevant={() => haandterRelevant(o.match_id)}
+                  onFjern={() => haandterFjern(o.match_id, o.title)}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       <p style={{ marginTop: 26, color: MUTED, fontSize: 13, lineHeight: 1.6 }}>
         Listen opdateres automatisk. Opgaver forsvinder herfra når fristen er overskredet.
         Kilde: TED (EU's udbudsdatabase). Birdly er ikke ordregiver — tjek altid det officielle udbudsmateriale.
@@ -353,7 +415,7 @@ export default function MineOpgaver({ token, data, intern = null }) {
 
 // ---------------------------------------------------------------------------
 
-function OpgaveKort({ o, onFjern, intern = null }) {
+function OpgaveKort({ o, onFjern, intern = null, tilSide = false, onRelevant = null }) {
   const dage = dageTil(o.deadline);
   const haster = dage != null && dage <= 14;
   return (
@@ -370,13 +432,28 @@ function OpgaveKort({ o, onFjern, intern = null }) {
         {o.nationwide ? " · Hele landet" : (o.nuts_codes?.length ? ` · ${o.nuts_codes.join(", ")}` : "")}
       </p>
 
+      {/* HVORFOR den ligger til side. Teksten kommer FÆRDIG fra serveren og beskriver
+          det træk der FAKTISK skjulte opgaven — ikke et træk som guldklump-værnet lige
+          har reddet den fra. Kunden skal kunne stole på begrundelsen. */}
+      {tilSide && (o.hvorfor_tekst || []).length > 0 && (
+        <div style={{ background: "#F7FAFC", border: "1px solid #E6EAEF", borderRadius: 10, padding: "10px 12px", margin: "0 0 12px" }}>
+          {o.hvorfor_tekst.map((t, i) => (
+            <p key={i} style={{ margin: i ? "4px 0 0" : 0, color: MUTED, fontSize: 13, lineHeight: 1.5 }}>{t}</p>
+          ))}
+        </div>
+      )}
+
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
         {/* Markøren følger med ind på opgaven, så et internt klik heller ikke tæller
             en åbning. Uden markør er linket NØJAGTIG som før. */}
         <Link href={`/udbud/${o.share_token}${intern ? `?intern=${encodeURIComponent(intern)}` : ""}`} style={{ ...KNAP_PRIMARY, textDecoration: "none", display: "inline-block" }}>
           Se opgaven
         </Link>
-        <button type="button" style={KNAP_SEKUNDAER} onClick={onFjern}>Ikke relevant</button>
+        {tilSide ? (
+          <button type="button" style={KNAP_SEKUNDAER} onClick={onRelevant}>Dette er relevant</button>
+        ) : (
+          <button type="button" style={KNAP_SEKUNDAER} onClick={onFjern}>Ikke relevant</button>
+        )}
       </div>
     </div>
   );
