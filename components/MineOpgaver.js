@@ -111,7 +111,7 @@ export default function MineOpgaver({ token, data }) {
             </p>
           )}
           <p style={{ margin: "0 0 20px", color: NAVY, lineHeight: 1.6 }}>
-            Forny dit abonnement, så åbner listen igen — med de udbud der passer til jer lige nu.
+            Forny dit abonnement, så åbner listen igen — med de opgaver der passer til jer lige nu.
           </p>
           <Link href="https://birdly.dk" style={{ ...KNAP_PRIMARY, textDecoration: "none", display: "inline-block" }}>
             Forny abonnement
@@ -279,7 +279,7 @@ export default function MineOpgaver({ token, data }) {
         <div style={{ ...CARD, textAlign: "center" }}>
           <p style={{ margin: "6px 0", color: NAVY, fontWeight: 600 }}>Der er ingen aktive opgaver til dig lige nu.</p>
           <p style={{ margin: 0, color: MUTED, lineHeight: 1.6 }}>
-            Vi kigger videre hver dag og sender dig besked, så snart der kommer et udbud der passer.
+            Vi kigger videre hver dag og sender dig besked, så snart der kommer en opgave der passer.
           </p>
         </div>
       ) : (
@@ -311,7 +311,7 @@ function OpgaveKort({ o, onFjern }) {
         {o.beholdt_som_sendt && <Badge bg="#F5F6F8" farve={MUTED} kant="#E6EAEF">Du har fået besked om denne</Badge>}
       </div>
 
-      <h2 style={{ fontSize: 18, lineHeight: 1.35, margin: "0 0 6px", color: NAVY }}>{o.title || "Udbud"}</h2>
+      <h2 style={{ fontSize: 18, lineHeight: 1.35, margin: "0 0 6px", color: NAVY }}>{o.title || "Opgave"}</h2>
       <p style={{ margin: "0 0 10px", color: MUTED, fontSize: 14 }}>
         {o.buyer_name || "Ordregiver ikke oplyst"} · Frist {fmtDato(o.deadline)} · {fmtBeloeb(o.amount, o.currency)}
         {o.nationwide ? " · Hele landet" : (o.nuts_codes?.length ? ` · ${o.nuts_codes.join(", ")}` : "")}
@@ -319,7 +319,7 @@ function OpgaveKort({ o, onFjern }) {
 
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
         <Link href={`/udbud/${o.share_token}`} style={{ ...KNAP_PRIMARY, textDecoration: "none", display: "inline-block" }}>
-          Se udbuddet
+          Se opgaven
         </Link>
         <button type="button" style={KNAP_SEKUNDAER} onClick={onFjern}>Ikke relevant</button>
       </div>

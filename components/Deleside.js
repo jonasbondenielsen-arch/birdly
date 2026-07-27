@@ -45,8 +45,8 @@ export default function Deleside({ token, data }) {
           <h1 style={{ fontSize: 22, margin: "4px 0 10px" }}>Linket er ugyldigt eller udløbet</h1>
           <p style={{ color: "#6B7785", lineHeight: 1.6 }}>
             {data?.expired
-              ? "Dette link er udløbet. Kontakt os, hvis du stadig vil byde på udbuddet."
-              : "Vi kunne ikke finde udbuddet bag dette link. Tjek at du har kopieret hele linket."}
+              ? "Dette link er udløbet. Kontakt os, hvis du stadig vil byde på opgaven."
+              : "Vi kunne ikke finde opgaven bag dette link. Tjek at du har kopieret hele linket."}
           </p>
           <p style={{ marginTop: 18 }}><Link href="https://birdly.dk" style={{ color: "#1E9E8A", fontWeight: 600 }}>Til birdly.dk</Link></p>
         </div>
@@ -66,8 +66,8 @@ export default function Deleside({ token, data }) {
       )}
 
       <div style={CARD}>
-        <div style={{ fontSize: 13, color: "#1E9E8A", fontWeight: 700, letterSpacing: ".04em", textTransform: "uppercase" }}>Relevant udbud</div>
-        <h1 style={{ fontSize: 24, lineHeight: 1.3, margin: "8px 0 6px" }}>{notice.title || "Udbud"}</h1>
+        <div style={{ fontSize: 13, color: "#1E9E8A", fontWeight: 700, letterSpacing: ".04em", textTransform: "uppercase" }}>Relevant opgave</div>
+        <h1 style={{ fontSize: 24, lineHeight: 1.3, margin: "8px 0 6px" }}>{notice.title || "Opgave"}</h1>
         {notice.publication_number && <div style={{ color: "#9AA5B1", fontSize: 13, marginBottom: 8 }}>TED {notice.publication_number}</div>}
 
         <Field label="Ordregiver">{notice.buyer_name || "—"}{notice.contact_person ? <span style={{ fontWeight: 400, color: "#6B7785" }}> · Kontakt: {notice.contact_person}</span> : null}</Field>
@@ -87,7 +87,7 @@ export default function Deleside({ token, data }) {
 
       {/* Fremhævet CTA */}
       <div style={{ ...CARD, marginTop: 18, background: "#F2FBF9", borderColor: "#BfE9E0" }}>
-        <h2 style={{ fontSize: 19, margin: "0 0 8px" }}>Vil du byde på dette udbud?</h2>
+        <h2 style={{ fontSize: 19, margin: "0 0 8px" }}>Vil du byde på denne opgave?</h2>
         <p style={{ color: "#41505E", lineHeight: 1.6, margin: "0 0 16px" }}>
           Birdly har allerede forberedt det meste af tilbuddet for dig — du udfylder kun det, vi ikke kan vide.
         </p>

@@ -14,16 +14,16 @@ export default function DagensUdbudUdloebet() {
     <main style={{ ...WRAP, textAlign: "center" }}>
       <div style={{ display: "flex", justifyContent: "center", margin: "12px 0 28px" }}><Logo /></div>
       <div style={CARD}>
-        <h1 style={{ fontSize: 24, lineHeight: 1.3, margin: "4px 0 14px" }}>Dette udbud er ikke længere aktivt 🕊️</h1>
+        <h1 style={{ fontSize: 24, lineHeight: 1.3, margin: "4px 0 14px" }}>Denne opgave er ikke længere aktiv 🕊️</h1>
         <p style={{ color: "#41505E", lineHeight: 1.7, fontSize: 16, margin: "0 0 14px" }}>
-          Fristen for at byde på dette udbud er overskredet, så vi kan ikke længere vise det her.
+          Fristen for at byde på denne opgave er overskredet, så vi kan ikke længere vise det her.
         </p>
         <p style={{ color: "#41505E", lineHeight: 1.7, fontSize: 16, margin: "0 0 24px" }}>
-          Men sådan går det ikke næste gang: med Birdly får du besked om nye udbud i dit fag, så snart de
+          Men sådan går det ikke næste gang: med Birdly får du besked om nye opgaver i dit fag, så snart de
           offentliggøres — direkte på SMS og mail, mens der stadig er god tid til at byde.
         </p>
         <Link href="/tilmeld" style={{ display: "inline-block", background: "#1E9E8A", color: "#fff", fontWeight: 700, borderRadius: 12, padding: "14px 24px", textDecoration: "none", fontSize: 16 }}>
-          👉 Prøv Birdly gratis — så misser du aldrig et udbud igen →
+          👉 Prøv Birdly gratis — så misser du aldrig en opgave igen →
         </Link>
         <p style={{ marginTop: 16 }}>
           <Link href="https://birdly.dk/tilmeld" style={{ color: "#1E9E8A", fontWeight: 600 }}>birdly.dk/tilmeld</Link>

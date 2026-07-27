@@ -15,20 +15,20 @@ export default function UdbudForAlle() {
             <a href="/#priser">Priser</a>
             <a href="/#faq">FAQ</a>
             <a href="/#om">Om os</a>
-            <Link href="/udbud-for-alle" className="on">Udbud er for alle</Link>
+            <Link href="/udbud-for-alle" className="on">Opgaver er for alle</Link>
           </nav>
-          <Link href="/tilmeld" className="nav-cta">Kom i gang</Link>
+          <Link href="/tilmeld" className="nav-cta">Kom i gang nu</Link>
         </div>
       </header>
 
       <div className="hero">
         <div className="wrap">
           <span className="ey">🐦 Vores holdning</span>
-          <h1>Udbud er for alle</h1>
+          <h1>Opgaver er for alle</h1>
           <div className="psst">— ikke kun for de store</div>
           <p>Offentlige opgaver burde ikke kun være for dem med en hel udbudsafdeling. Hos Birdly gør vi dem tilgængelige for de små og mellemstore — helt automatisk.</p>
           <div className="btns">
-            <Link href="/tilmeld" className="btn btn-teal">Kom i gang — gratis i 14 dage</Link>
+            <Link href="/tilmeld" className="btn btn-teal">Kom i gang nu</Link>
             <a href="/#hvordan" className="btn btn-ghost">Se hvordan det virker</a>
           </div>
         </div>
@@ -37,7 +37,7 @@ export default function UdbudForAlle() {
       <section>
         <div className="wrap">
           <div className="lead">Hvorfor går så mange glip af det?</div>
-          <p className="body">Sandheden er enkel. Der er masser af offentlige og statslige udbud — men de er spredt ud, tunge at læse og tidskrævende at holde øje med. For en lille eller mellemstor virksomhed med en presset hverdag er der sjældent timer tilovers til at grave sig gennem portaler dag efter dag.</p>
+          <p className="body">Sandheden er enkel. Der er masser af offentlige og statslige opgaver — men de er spredt ud, tunge at læse og tidskrævende at holde øje med. For en lille eller mellemstor virksomhed med en presset hverdag er der sjældent timer tilovers til at grave sig gennem portaler dag efter dag.</p>
           <p className="body">Og når man endelig opdager den rigtige opgave, er fristen ofte løbet fra én. Så lader man være. <b>Ikke fordi man ikke kunne vinde — men fordi man aldrig nåede at byde.</b></p>
         </div>
       </section>
@@ -45,7 +45,7 @@ export default function UdbudForAlle() {
       <section style={{ background: "var(--grey)" }}>
         <div className="wrap">
           <div className="lead">Det har vi gjort fuldstændig automatisk</div>
-          <p className="body">Du tilmelder dig én gang med dine firmaoplysninger og præferencer. Så holder vi øje — hver dag, hele tiden. Hver gang der dukker et udbud op, der passer til jer, hører du fra os:</p>
+          <p className="body">Du tilmelder dig én gang med dine firmaoplysninger og præferencer. Så holder vi øje — hver dag, hele tiden. Hver gang der dukker en opgave op, der passer til jer, hører du fra os:</p>
           <ul className="list">
             <li><svg viewBox="0 0 24 24" width="24"><circle cx="12" cy="12" r="11" fill="#00B3A6" /><path d="M7 12.5l3 3 7-7.5" stroke="#fff" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg> En <b>SMS</b> med det samme, hvis du ønsker det — så du er blandt de første, der ved det.</li>
             <li><svg viewBox="0 0 24 24" width="24"><circle cx="12" cy="12" r="11" fill="#00B3A6" /><path d="M7 12.5l3 3 7-7.5" stroke="#fff" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg> En <b>mail</b> med et kort resumé af opgaven, fristen og et direkte link til udbuddet.</li>
@@ -153,7 +153,7 @@ export default function UdbudForAlle() {
         <div className="wrap">
           <h2>Giv din virksomhed en fair chance</h2>
           <p>Tilmeld dig på to minutter, og lad os holde øje med udbuddene — så du kan bruge tiden på at vinde dem.</p>
-          <Link href="/tilmeld" className="btn btn-teal">Kom i gang — gratis i 14 dage</Link>
+          <Link href="/tilmeld" className="btn btn-teal">Kom i gang nu</Link>
         </div>
       </section>
 

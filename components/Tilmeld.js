@@ -431,7 +431,7 @@ export default function Tilmeld({ initialFag = null }) {
       <div className="top">
         <span className="ey">🐦 Gratis i {TRIAL_DAYS} dage — ingen binding</span>
         <h1>Opret din profil</h1>
-        <p>Jo mere præcist du udfylder, jo bedre match. Vi sender dig kun udbud, der rent faktisk passer til din virksomhed.</p>
+        <p>Jo mere præcist du udfylder, jo bedre match. Vi sender dig kun opgaver, der rent faktisk passer til din virksomhed.</p>
       </div>
 
       <div className="wrap">
@@ -582,7 +582,7 @@ export default function Tilmeld({ initialFag = null }) {
                               const cnt = f.smal.filter((a) => areaSel[key + "::" + a.cpv]).length;
                               return f.smal.length > 3 && cnt >= 1 && cnt <= 3 ? (
                                 <div className="note" style={{ marginTop: 10 }}>
-                                  Du har valgt få områder her. Det giver færre, men meget præcise udbud. Vil du have flere, kan du vælge flere til — eller justere det senere.
+                                  Du har valgt få områder her. Det giver færre, men meget præcise opgaver. Vil du have flere, kan du vælge flere til — eller justere det senere.
                                 </div>
                               ) : null;
                             })()}
@@ -597,14 +597,14 @@ export default function Tilmeld({ initialFag = null }) {
                       )}
 
                       <div className="bredde">
-                        <div className="bredde-q">Hvor bredt vil du fange byggeudbud?</div>
+                        <div className="bredde-q">Hvor bredt vil du fange byggeopgaver?</div>
                         <label className={"bredde-opt" + (bredde === "fag" ? " on" : "")}>
                           <input type="radio" name="bredde" checked={bredde === "fag"} onChange={() => setBredde("fag")} />
                           <span><b>Kun fagentrepriser</b> — færre, men kun de præcise koder du valgte ovenfor.</span>
                         </label>
                         <label className={"bredde-opt" + (bredde === "alle" ? " on" : "")}>
                           <input type="radio" name="bredde" checked={bredde === "alle"} onChange={() => setBredde("alle")} />
-                          <span><b>Alle bygge-udbud</b> — også de brede entrepriseudbud i dit fag. Flere match, lidt mere bredt. <i>(anbefalet)</i></span>
+                          <span><b>Alle bygge-opgaver</b> — også de brede entrepriseudbud i dit fag. Flere match, lidt mere bredt. <i>(anbefalet)</i></span>
                         </label>
                       </div>
                     </>
@@ -615,8 +615,8 @@ export default function Tilmeld({ initialFag = null }) {
               {/* ---------------- TRIN 3 — geografi + kriterier + samtykke ---------------- */}
               {step === 3 && (
                 <div className="sec">
-                  <div className="h"><span className="n">3</span><h3>Hvor vil du have udbud fra?</h3></div>
-                  <p className="sub">Vælg din region — eller flere, eller hele Danmark. Området bestemmer hvilke udbud du får; <b>prisen er den samme uanset dækning</b>.</p>
+                  <div className="h"><span className="n">3</span><h3>Hvor vil du have opgaver fra?</h3></div>
+                  <p className="sub">Vælg din region — eller flere, eller hele Danmark. Området bestemmer hvilke opgaver du får; <b>prisen er den samme uanset dækning</b>.</p>
 
                   <div className="region-grid">
                     {(catalog?.regions || []).map((r) => (
@@ -633,7 +633,7 @@ export default function Tilmeld({ initialFag = null }) {
 
                   {/* Beløbsgrænse (valgfri) — hører til matching-kriterierne */}
                   <details className="amount-box">
-                    <summary>Sæt en beløbsgrænse på udbuddene (valgfrit)</summary>
+                    <summary>Sæt en beløbsgrænse på opgaverne (valgfrit)</summary>
                     <div className="grid2" style={{ marginTop: 12 }}>
                       <div className="fg"><label>Mindste opgave</label>
                         <select value={minIdx} onChange={(e) => setMinIdx(+e.target.value)}>{MIN_BANDS.map((b, i) => <option key={i} value={i}>{b.label}</option>)}</select>
@@ -642,7 +642,7 @@ export default function Tilmeld({ initialFag = null }) {
                         <select value={maxIdx} onChange={(e) => setMaxIdx(+e.target.value)}>{MAX_BANDS.map((b, i) => <option key={i} value={i}>{b.label}</option>)}</select>
                       </div>
                     </div>
-                    <div className="note">Udbud uden oplyst beløb sendes altid — vi sorterer dem ikke fra.</div>
+                    <div className="note">Opgaver uden oplyst beløb sendes altid — vi sorterer dem ikke fra.</div>
                   </details>
 
                   {/* Notifikationskanaler */}

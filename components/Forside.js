@@ -174,10 +174,10 @@ export default function Forside() {
               <a href="#priser">Priser</a>
               <a href="#faq">FAQ</a>
               <a href="#om">Om os</a>
-              <Link href="/udbud-for-alle">Udbud er for alle</Link>
+              <Link href="/udbud-for-alle">Opgaver er for alle</Link>
             </nav>
             <div className="right">
-              <Link href="/tilmeld" className="nav-cta">Kom i gang</Link>
+              <Link href="/tilmeld" className="nav-cta">Kom i gang nu</Link>
             </div>
           </div>
         </header>
@@ -191,10 +191,10 @@ export default function Forside() {
               <svg className="ic" viewBox="0 0 24 24" fill="none">
                 <path d="M5 7h14M5 12h14M5 17h9" stroke="#2EB7FF" strokeWidth="2.2" strokeLinecap="round" />
               </svg>{" "}
-              Brevduen for offentlige udbud
+              Brevduen for offentlige opgaver
             </span>
             <h1>Offentlige opgaver.<br />Direkte på <span className="sky-em">SMS.</span></h1>
-            <p className="sub">Kommuner, regioner og staten køber hver dag ind hos private firmaer. Birdly finder de opgaver, der passer til dit fag og dit område — og sender dig en SMS, når der er et match. Ingen portal. Ingen søgning. Ingen sælgere.</p>
+            <p className="sub">Birdly holder automatisk øje med offentlige opgaver, der matcher din virksomhed, og sender kun de relevante direkte til dig. Ingen portal. Ingen søgning. Ingen støj.</p>
             <div className="checks">
               <span>
                 <svg width="20" viewBox="0 0 20 20"><circle cx="10" cy="10" r="10" fill="#00B3A6" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#fff" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg>{" "}
@@ -206,7 +206,10 @@ export default function Forside() {
               </span>
             </div>
             <div className="cta">
-              <Link href="/tilmeld" className="btn btn-teal">Kom i gang — gratis i 14 dage</Link>
+              <div className="cta-primary">
+                <Link href="/tilmeld" className="btn btn-teal">Kom i gang nu</Link>
+                <span className="cta-note">Gratis de første 14 dage · ingen binding</span>
+              </div>
               <a href="#hvordan" className="btn btn-ghost">Se hvordan det virker</a>
             </div>
           </div>
@@ -220,7 +223,7 @@ export default function Forside() {
                     <span className="ic"><svg width="15" viewBox="0 0 28 28" fill="none"><path d="M4 17C8 11 11 11 14 15" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" /><path d="M14 15C17 11 20 11 24 17" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" /></svg></span>
                     <span className="nm">BIRDLY</span><span className="tm">nu</span>
                   </div>
-                  <div className="t">Nyt udbudsmatch</div>
+                  <div className="t">Nyt opgavematch</div>
                   <div className="row">Aarhus Kommune<br />Renovering af skoler<br />Frist: 14.08.2026<br /><span className="lnk">birdly.dk/m/abc123</span></div>
                   <div className="stop">Svar STOP for at afmelde</div>
                 </div>
@@ -230,10 +233,21 @@ export default function Forside() {
                   <div className="muni">Aarhus Kommune</div>
                   <div className="li"><svg viewBox="0 0 16 16"><rect x="2" y="3" width="12" height="11" rx="2" fill="none" stroke="#FF6B6B" strokeWidth="1.6" /><path d="M2 6h12M6 1.5v3M10 1.5v3" stroke="#FF6B6B" strokeWidth="1.6" strokeLinecap="round" /></svg> Frist: 14.08.2026</div>
                   <div className="li"><svg viewBox="0 0 16 16"><path d="M8 1v14M4 5l4-4 4 4" stroke="#00B3A6" strokeWidth="1.6" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg> Budget: 25–40 mio. kr.</div>
-                  <Link className="see" href="/tilmeld">Se udbuddet →</Link>
+                  <Link className="see" href="/tilmeld">Se opgaven →</Link>
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* SLIP FOR AT HOLDE ØJE — ny sektion, samme sektions- og tekst-stil som naboerne */}
+      <section>
+        <div className="wrap">
+          <div className="center reveal">
+            <h2 className="big">Slip for selv at holde øje med offentlige opgaver.</h2>
+            <p className="lead">Hver dag offentliggøres nye opgaver. Birdly holder automatisk øje med dem for dig og sender kun dem, der matcher din virksomhed. Du bruger tiden på kunder og projekter — ikke på søgninger.</p>
+            <p className="owner-line reveal">Du fortæller os, hvilke opgaver du leder efter. Vi holder øje. Du får besked.</p>
           </div>
         </div>
       </section>
@@ -255,7 +269,7 @@ export default function Forside() {
             <div className="pcard reveal">
               <div className="ic"><svg width="22" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h10" stroke="#FF6B6B" strokeWidth="2" strokeLinecap="round" /></svg></div>
               <h3>De ligger spredt</h3>
-              <p>Udbuddene er fordelt på tunge portaler med login. At holde øje koster timer hver uge.</p>
+              <p>Opgaverne er fordelt på tunge portaler med login. At holde øje koster timer hver uge.</p>
             </div>
             <div className="pcard reveal">
               <div className="ic"><svg width="22" viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="#FF6B6B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /><path d="M14 2v6h6" stroke="#FF6B6B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /><path d="M16 13H8M16 17H8M10 9H8" stroke="#FF6B6B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg></div>
@@ -276,9 +290,9 @@ export default function Forside() {
             <p className="lead">Du gør det nemme. Vi gør resten. Du hører kun fra os, når der er et match.</p>
           </div>
           <div className="steps">
-            <div className="stp reveal"><div className="num">1</div><h3>Udfyld få oplysninger</h3><p>Fag, område og størrelse. Det tager to minutter — og du skal ikke logge ind.</p></div>
-            <div className="stp reveal"><div className="num">2</div><h3>Vi holder øje for dig</h3><p>Birdly følger alle nye offentlige udbud hver dag — også dem, der er på vej.</p></div>
-            <div className="stp reveal"><div className="num">3</div><h3>Du får en SMS</h3><p>Er der et match, får du en SMS og en kort mail med resumé, frist og link.</p></div>
+            <div className="stp reveal"><div className="num">1</div><h3>Fortæl os hvad du laver</h3><p>Vælg branche, område og ønsket opgavestørrelse. Det tager få minutter.</p></div>
+            <div className="stp reveal"><div className="num">2</div><h3>Birdly holder øje</h3><p>Vi holder øje med relevante offentlige opgaver. Du behøver ikke logge ind eller søge hver dag.</p></div>
+            <div className="stp reveal"><div className="num">3</div><h3>Få besked</h3><p>Når vi finder relevante opgaver, får du én samlet besked med dagens matches.</p></div>
             <div className="stp reveal"><div className="num">4</div><h3>Vi hjælper dig i mål</h3><p>Skabelonen følger med i linket. Brug den eller lad være — men den sparer mange for timers arbejde.</p></div>
           </div>
         </div>
@@ -288,7 +302,7 @@ export default function Forside() {
       <section className="marq-sec">
         <div className="wrap">
           <div className="lbl reveal">Birdly er for SMV-virksomheder i hele Danmark</div>
-          <p className="sml reveal">Stort set alle brancher. Du skal bare gøre det, du er god til — dit håndværk og din service. Vi sender en SMS i det øjeblik, et udbud passer til dig, så du bruger mindre tid på at lede.</p>
+          <p className="sml reveal">Stort set alle brancher. Du skal bare gøre det, du er god til — dit håndværk og din service. Vi sender en SMS i det øjeblik, en opgave passer til dig, så du bruger mindre tid på at lede.</p>
         </div>
         <div className="track" id="t1">
           {brands.concat(brands).map((b, i) => (
@@ -308,7 +322,7 @@ export default function Forside() {
               <ul>
                 <li><span className="t"><svg width="15" viewBox="0 0 20 20"><path d="M5 10.5l3 3 7-8" stroke="#00B3A6" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg></span> Resumé på 3 linjer</li>
                 <li><span className="t"><svg width="15" viewBox="0 0 20 20"><path d="M5 10.5l3 3 7-8" stroke="#00B3A6" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg></span> Frist og dato</li>
-                <li><span className="t"><svg width="15" viewBox="0 0 20 20"><path d="M5 10.5l3 3 7-8" stroke="#00B3A6" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg></span> Direkte link til udbuddet</li>
+                <li><span className="t"><svg width="15" viewBox="0 0 20 20"><path d="M5 10.5l3 3 7-8" stroke="#00B3A6" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg></span> Direkte link til opgaven</li>
                 <li><span className="t"><svg width="15" viewBox="0 0 20 20"><path d="M5 10.5l3 3 7-8" stroke="#00B3A6" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg></span> Bud-skabelon, klar til at udfylde</li>
               </ul>
             </div>
@@ -318,13 +332,13 @@ export default function Forside() {
                 <b>Birdly<span style={{ color: "var(--sky)" }}>.dk</span></b><span className="on">Se online</span>
               </div>
               <h4>Hej Mads</h4>
-              <p className="pre">Her er dit nyeste udbudsmatch. Kort, relevant og klar til handling.</p>
+              <p className="pre">Her er dit nyeste opgavematch. Kort, relevant og klar til handling.</p>
               <div className="inner">
                 <span className="ico"><svg width="18" viewBox="0 0 24 24" fill="none"><path d="M4 20V8l8-5 8 5v12" stroke="#0D1B2A" strokeWidth="1.7" strokeLinejoin="round" /><path d="M9 20v-6h6v6" stroke="#0D1B2A" strokeWidth="1.7" /></svg></span>
                 <div>
                   <div className="ttl">Renovering af skoler</div>
                   <div className="meta">Aarhus Kommune · Frist: 14.08.2026 kl. 12.00</div>
-                  <Link className="seebtn" href="/tilmeld">Se udbuddet</Link>
+                  <Link className="seebtn" href="/tilmeld">Se opgaven</Link>
                 </div>
               </div>
               <div className="sign">Vi finder — du vælger.<br />Venlig hilsen<br /><b>Birdly Teamet</b></div>
@@ -339,9 +353,9 @@ export default function Forside() {
           <div className="skab-grid">
             <div className="skab-copy reveal">
               <span className="kick">Din bud-skabelon</span>
-              <h2>Vi finder ikke bare udbuddet — vi hjælper dig i gang</h2>
-              <p>Når vi sender dig et relevant udbud, har vi allerede gjort cirka 70 % af tilbuddet klar — krav, frister og det formelle. De sidste 30 % er det, kun du kender: din pris, dine referencer og din beskrivelse af opgaven.</p>
-              <p className="skab-honest">Vi laver ikke dit udbud for dig — men vi gør det meste af benarbejdet, så du hurtigt kan komme i gang.</p>
+              <h2>Vi finder ikke bare opgaven — vi hjælper dig i gang</h2>
+              <p>Når vi sender dig en relevant opgave, har vi allerede gjort cirka 70 % af tilbuddet klar — krav, frister og det formelle. De sidste 30 % er det, kun du kender: din pris, dine referencer og din beskrivelse af opgaven.</p>
+              <p className="skab-honest">Vi laver ikke tilbuddet for dig — men vi gør det meste af benarbejdet, så du hurtigt kan komme i gang.</p>
             </div>
             <div className="skab-card reveal">
               <div className="skab-cardh">
@@ -363,14 +377,27 @@ export default function Forside() {
         <div className="wrap">
           <div className="center reveal">
             <span className="kick">Sådan er vi</span>
-            <h2 className="big">Vi er ikke som de store.</h2>
-            <p className="lead">Vi gør én ting — og gør den enkelt. Det er hele idéen bag Birdly.</p>
+            <h2 className="big">Derfor er Birdly anderledes.</h2>
+            <p className="lead">Andre løsninger giver dig adgang til store udbudsportaler, hvor du selv skal søge og holde øje. Birdly gør det omvendte:</p>
+            <p className="owner-line reveal">Du fortæller os, hvilke opgaver du leder efter. Vi holder øje. Du får besked.</p>
+            <p className="lead">Så enkelt er det.</p>
           </div>
           <div className="vals">
-            <div className="vcard reveal"><div className="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M3 12h10" stroke="#2EB7FF" strokeWidth="2.2" strokeLinecap="round" /><path d="M11 7.5l4.5 4.5L11 16.5" stroke="#2EB7FF" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /><circle cx="20" cy="12" r="1.9" fill="#00B3A6" /></svg></div><h4>Ingen login</h4><p>Ingen portal at logge ind på. Du får alt i en SMS og en mail.</p></div>
-            <div className="vcard reveal"><div className="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M19 4C11 4 5 10 5 18c8 0 14-6 14-14z" stroke="#2EB7FF" strokeWidth="2" strokeLinejoin="round" /><path d="M17.5 5.5L7 16" stroke="#00B3A6" strokeWidth="1.8" strokeLinecap="round" /><path d="M13.6 6.3h-2.3M11 9H8.7M8.7 11.6H6.4" stroke="#00B3A6" strokeWidth="1.5" strokeLinecap="round" /></svg></div><h4>Frie fugle</h4><p>Ingen binding. Opsig når du vil — vi holder på dig med produktet, ikke en kontrakt.</p></div>
-            <div className="vcard reveal"><div className="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><rect x="3" y="8" width="18" height="9" rx="4.5" stroke="#2EB7FF" strokeWidth="2" /><circle cx="16.5" cy="12.5" r="2.7" fill="#00B3A6" /></svg></div><h4>Åben og ærlig</h4><p>Ingen sælgere, ingen dyre konsulenter. Du ser præcis, hvad du får.</p></div>
-            <div className="vcard reveal"><div className="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M12 3l7 2.6v5.4c0 4.3-3 7.4-7 9-4-1.6-7-4.7-7-9V5.6L12 3z" stroke="#2EB7FF" strokeWidth="2" strokeLinejoin="round" /><path d="M9 12l2.2 2.2L15 9.8" stroke="#00B3A6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg></div><h4>Skarp pris</h4><p>Ingen tung organisation eller fancy hovedkontor — derfor nok de billigste på det, vi gør.</p></div>
+            <div className="vcard reveal"><div className="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M3 12h10" stroke="#2EB7FF" strokeWidth="2.2" strokeLinecap="round" /><path d="M11 7.5l4.5 4.5L11 16.5" stroke="#2EB7FF" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /><circle cx="20" cy="12" r="1.9" fill="#00B3A6" /></svg></div><h4>Ingen portal</h4><p>Du logger ikke ind nogen steder. Alt kommer i én SMS og mail.</p></div>
+            <div className="vcard reveal"><div className="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M19 4C11 4 5 10 5 18c8 0 14-6 14-14z" stroke="#2EB7FF" strokeWidth="2" strokeLinejoin="round" /><path d="M17.5 5.5L7 16" stroke="#00B3A6" strokeWidth="1.8" strokeLinecap="round" /><path d="M13.6 6.3h-2.3M11 9H8.7M8.7 11.6H6.4" stroke="#00B3A6" strokeWidth="1.5" strokeLinecap="round" /></svg></div><h4>Én samlet besked</h4><p>Dagens relevante opgaver samlet i én besked. Ingen spam.</p></div>
+            <div className="vcard reveal"><div className="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><rect x="3" y="8" width="18" height="9" rx="4.5" stroke="#2EB7FF" strokeWidth="2" /><circle cx="16.5" cy="12.5" r="2.7" fill="#00B3A6" /></svg></div><h4>Ingen binding, ingen sælgere</h4><p>Opsig når du vil. Vi holder på dig med produktet, ikke en kontrakt.</p></div>
+            <div className="vcard reveal"><div className="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M12 3l7 2.6v5.4c0 4.3-3 7.4-7 9-4-1.6-7-4.7-7-9V5.6L12 3z" stroke="#2EB7FF" strokeWidth="2" strokeLinejoin="round" /><path d="M9 12l2.2 2.2L15 9.8" stroke="#00B3A6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg></div><h4>Bud-skabelon med i linket</h4><p>Ca. 70 % af tilbuddet er gjort klar, så du hurtigt kan byde.</p></div>
+          </div>
+        </div>
+      </section>
+
+      {/* DE RIGTIGE OPGAVER — ny sektion før priserne, samme sektions-stil som naboerne */}
+      <section>
+        <div className="wrap">
+          <div className="center reveal">
+            <h2 className="big">Du skal ikke finde flere opgaver.<br />Du skal finde de rigtige.</h2>
+            <p className="lead">Der offentliggøres tusindvis af udbud. De færreste er relevante for netop din virksomhed. Birdly sorterer dem fra på forhånd, så du kun ser de opgaver, der passer til dine valg.</p>
+            <p className="owner-line reveal">Du bestemmer selv fag, område, opgavetype og kontraktværdi. Birdly sender kun opgaver, der matcher dine valg.</p>
           </div>
         </div>
       </section>
@@ -393,7 +420,8 @@ export default function Forside() {
               <div className="pamt">{PLAN.monthly}<span>kr/md</span></div>
               <div className="pnote">Ekskl. moms · ingen binding</div>
               <div className="pfoot">
-                <Link href="/tilmeld" className="btn btn-teal pbtn">Start gratis i 14 dage</Link>
+                <Link href="/tilmeld" className="btn btn-teal pbtn">Kom i gang nu</Link>
+                <div className="cta-note">Gratis de første 14 dage · ingen binding</div>
                 <div className="psub">Opsig når som helst med 30 dages varsel.</div>
               </div>
             </div>
@@ -405,7 +433,8 @@ export default function Forside() {
               <div className="pamt">{PLAN.yearly.toLocaleString("da-DK")}<span>kr/år</span></div>
               <div className="pnote">Betal for 10 måneder, få 12 · spar {YEARLY_SAVING.amount} kr · ekskl. moms</div>
               <div className="pfoot">
-                <Link href="/tilmeld" className="btn btn-teal pbtn">Start gratis i 14 dage</Link>
+                <Link href="/tilmeld" className="btn btn-teal pbtn">Kom i gang nu</Link>
+                <div className="cta-note">Gratis de første 14 dage · ingen binding</div>
                 {/* TODO jura: "betales forud" er en blød, MIDLERTIDIG formulering. Den præcise
                     ordlyd om 12-måneders binding på årsabonnement skal bekræftes af advokat før launch. */}
                 <div className="psub">Årsabonnement — betales forud.</div>
@@ -416,7 +445,7 @@ export default function Forside() {
           <div className="price-incl reveal">
             <h3>Det får du — uanset hvad du vælger</h3>
             <ul>
-              <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>Alle kommunale &amp; statslige udbud — i <b>din region eller hele Danmark</b>, samme pris</span></li>
+              <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>Alle kommunale &amp; statslige opgaver — i <b>din region eller hele Danmark</b>, samme pris</span></li>
               <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>SMS + mail ved match — resumé, dato og link</span></li>
               <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>Bud-skabelon inkluderet</span></li>
               <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>Betal månedligt — eller spar ~{YEARLY_SAVING.pct} % på årsbetaling</span></li>
@@ -424,7 +453,7 @@ export default function Forside() {
             </ul>
           </div>
 
-          <p className="price-note">De første 14 dage er gratis — opsiger du inden da, trækkes der intet. Alle priser er ekskl. moms.</p>
+          <p className="price-note">En enkelt offentlig opgave kan betale abonnementet mange gange hjem. De første 14 dage er gratis — opsiger du inden da, trækkes der intet. Alle priser er ekskl. moms.</p>
         </div>
       </section>
 
@@ -435,8 +464,8 @@ export default function Forside() {
             <div className="reveal">
               <span className="kick" style={{ color: "var(--sky)" }}>Om os</span>
               <h2>Bygget af folk, der selv har siddet i den anden ende.</h2>
-              <p>Gennem mange år i grossist- og produktionsleddet har vi selv mærket, hvor besværligt og tidskrævende det er at finde de udbud, der rent faktisk passer. Derfor lavede vi Birdly — det stik modsatte af en stor, støvet udbudsportal.</p>
-              <p>Vi gør én ting: matcher konkrete udbud med din virksomhed og sender dig en simpel besked. Resten kan du selv.</p>
+              <p>Gennem mange år i grossist- og produktionsleddet har vi selv mærket, hvor besværligt og tidskrævende det er at finde de opgaver, der rent faktisk passer. Derfor lavede vi Birdly — det stik modsatte af en stor, støvet udbudsportal.</p>
+              <p>Vi gør én ting: matcher konkrete opgaver med din virksomhed og sender dig en simpel besked. Resten kan du selv.</p>
               <div className="sign">Folkene bag Birdly</div>
             </div>
             <div className="promise reveal">
@@ -456,16 +485,16 @@ export default function Forside() {
             <h2 className="big">Det, du tænker lige nu.</h2>
           </div>
           <div className="faq-list">
-            <details className="reveal"><summary>Skal jeg logge ind på en platform? <span className="pm">+</span></summary><p>Nej — og det er helt bevidst. Der er rigeligt med platforme i forvejen, og vi tror ikke, verden bliver hverken nemmere eller bedre af endnu én. Birdly er det stik modsatte: vi har pakket alt det tekniske væk, så du kun får én konkret besked på sms og mail, når et udbud matcher dig. Hverken mere eller mindre — ingen login, ingen dashboards, intet bøvl.</p></details>
-            <details className="reveal"><summary>Får jeg kun relevante udbud? <span className="pm">+</span></summary><p>Vi sender kun besked, når en opgave matcher det, du har valgt. Vil du have flere eller færre beskeder, kan du altid ændre dine valg.</p></details>
-            <details className="reveal"><summary>Hvor mange sms'er får jeg? <span className="pm">+</span></summary><p>Du får kun besked, når et helt konkret udbud matcher de kriterier, du selv har sat — fag, område og beløb. Hvor mange det bliver, afhænger derfor af, hvor mange relevante udbud der dukker op i din valgte region. Er det for meget eller for lidt, kan du altid justere dine kriterier, så de bliver bredere eller mere snævre. Og skulle du få nok, stopper du beskederne med det samme ved at svare STOP på en sms.</p></details>
+            <details className="reveal"><summary>Skal jeg logge ind på en platform? <span className="pm">+</span></summary><p>Nej — og det er helt bevidst. Der er rigeligt med platforme i forvejen, og vi tror ikke, verden bliver hverken nemmere eller bedre af endnu én. Birdly er det stik modsatte: vi har pakket alt det tekniske væk, så du kun får én konkret besked på sms og mail, når en opgave matcher dig. Hverken mere eller mindre — ingen login, ingen dashboards, intet bøvl.</p></details>
+            <details className="reveal"><summary>Får jeg kun relevante opgaver? <span className="pm">+</span></summary><p>Ja. Du vælger selv branche, område og opgavestørrelse. Birdly sender kun opgaver, der matcher dine kriterier.</p></details>
+            <details className="reveal"><summary>Hvor mange sms'er får jeg? <span className="pm">+</span></summary><p>Vi samler dagens relevante opgaver i én besked, så du får overblik uden unødige notifikationer. Hvor ofte du hører fra os afhænger af, hvor mange relevante opgaver der dukker op i dit område. Er det for meget eller for lidt, kan du altid justere dine kriterier. Og skulle du få nok, stopper du beskederne med det samme ved at svare STOP på en sms.</p></details>
             <details className="reveal"><summary>Hvor hurtigt får jeg besked? <span className="pm">+</span></summary><p>Som regel samme dag, opgaven bliver lagt op. Nogle gange fanger vi også opgaver, der er på vej.</p></details>
             <details className="reveal"><summary>Hvad koster det? <span className="pm">+</span></summary><p>De første 14 dage er gratis. Derefter koster Birdly <b>299 kr./md.</b> eller <b>2.990 kr./år</b> (ekskl. moms) — alt inkluderet. Vælger du årligt, sparer du ~17 % (svarer til 2 måneder gratis). Ingen binding.</p></details>
             <details className="reveal"><summary>Er der flere pakker at vælge mellem? <span className="pm">+</span></summary><p>Nej — der er kun én pakke med alt inkluderet. Du vælger selv, om du vil dække én region eller hele Danmark, og det koster det samme uanset. Ingen tiers, intet tilvalg — bare én simpel pris.</p></details>
-            <details className="reveal"><summary>Hvor kommer udbuddene fra? <span className="pm">+</span></summary><p>Et udbud er bare en opgave fra en kommune, region eller staten, som private firmaer kan byde på — fra et nyt tag på en skole til rengøring af et rådhus. Vi henter dem fra de officielle kilder: udbud.dk og EU's database TED. Offentlige udbud skal være åbne for alle — så det er helt lovligt. Vi holder også øje med de indkøb, der varsles som forhåndsmeddelelser, før de bliver til et egentligt udbud — så du kan være på forkant, allerede inden opgaven officielt er sendt i udbud.</p></details>
+            <details className="reveal"><summary>Hvor kommer opgaverne fra? <span className="pm">+</span></summary><p>Et udbud er bare en opgave fra en kommune, region eller staten, som private firmaer kan byde på — fra et nyt tag på en skole til rengøring af et rådhus. Vi henter dem fra de officielle kilder: udbud.dk og EU's database TED. Offentlige udbud skal være åbne for alle — så det er helt lovligt. Vi holder også øje med de indkøb, der varsles som forhåndsmeddelelser, før de bliver til et egentligt udbud — så du kan være på forkant, allerede inden opgaven officielt er sendt i udbud.</p></details>
             <details className="reveal"><summary>Hvordan opsiger jeg? <span className="pm">+</span></summary><p>Opsigelse hos Birdly er lige så simpelt, som da du meldte dig til. Du finder opsigelsesrubrikken nederst her på siden, og i bunden af alle vores mails er der et direkte link til opsigelse. Og det bedste? Hos os er du en fri fugl — ingen binding, kun 30 dages opsigelse.</p></details>
-            <details className="reveal"><summary>Kan I også hjælpe os med at byde på opgaver? <span className="pm">+</span></summary><p>Ikke endnu — men det er på radaren. Birdly er et nyt produkt på det danske marked, og vores første prioritet har været at gøre det enkelt for danske SMV'er overhovedet at finde de rigtige udbud. På sigt kigger vi ind i selve det at byde, for vi synes, hele verdenen omkring kommunale og statslige udbud er for bøvlet og kompleks. Vi tror på, at alle virksomheder skal have lige adgang til at byde på offentlige opgaver — ikke kun dem med en stor tilbudsafdeling.</p></details>
-            <details className="reveal"><summary>Hvordan virker bud-skabelonen? <span className="pm">+</span></summary><p>Når vi sender dig et udbud, følger der en skabelon med, hvor vi allerede har samlet og forberedt det meste — krav, frister og de formelle ting. Med farver kan du se, hvad vi har udfyldt, og hvad der er dit. Du udfylder din pris og dine referencer og gemmer det hele som pdf.</p></details>
+            <details className="reveal"><summary>Kan I også hjælpe os med at byde på opgaver? <span className="pm">+</span></summary><p>Ikke endnu — men det er på radaren. Birdly er et nyt produkt på det danske marked, og vores første prioritet har været at gøre det enkelt for danske SMV'er overhovedet at finde de rigtige opgaver. På sigt kigger vi ind i selve det at byde, for vi synes, hele verdenen omkring kommunale og statslige opgaver er for bøvlet og kompleks. Vi tror på, at alle virksomheder skal have lige adgang til at byde på offentlige opgaver — ikke kun dem med en stor tilbudsafdeling.</p></details>
+            <details className="reveal"><summary>Hvordan virker bud-skabelonen? <span className="pm">+</span></summary><p>Når vi sender dig en opgave, følger der en skabelon med, hvor vi allerede har samlet og forberedt det meste — krav, frister og de formelle ting. Med farver kan du se, hvad vi har udfyldt, og hvad der er dit. Du udfylder din pris og dine referencer og gemmer det hele som pdf.</p></details>
             <details className="reveal"><summary>Laver I tilbuddet for mig? <span className="pm">+</span></summary><p>Nej. Skabelonen er en guide og tjekliste, der gør det meste af benarbejdet klar — cirka 70 %. Din pris, dine referencer og din faglige beskrivelse er det, kun du kan udfylde. Vi giver ikke juridisk rådgivning og lover ikke, at du vinder — men vi giver dig et forspring.</p></details>
             <details className="reveal"><summary>Skal jeg selv hente udbudsmaterialet? <span className="pm">+</span></summary><p>Ja. Det fulde materiale ligger hos ordregiveren, og vi linker dig direkte derhen, så du slipper for at lede. Hos nogle ordregivere skal du oprette en gratis konto for at hente det — den skal du alligevel bruge for at aflevere dit tilbud.</p></details>
           </div>
@@ -479,7 +508,7 @@ export default function Forside() {
             <div className="reveal">
               <span className="kick">Kom i gang</span>
               <h2>Få dit første match — gratis i 14 dage.</h2>
-              <p className="lead">Udfyld få oplysninger, så holder Birdly øje for dig. Du hører fra os, så snart der er et udbud, der passer.</p>
+              <p className="lead">Udfyld få oplysninger, så holder Birdly øje for dig. Du hører fra os, så snart der er en opgave, der passer.</p>
               <ul>
                 <li><svg width="22" viewBox="0 0 20 20"><circle cx="10" cy="10" r="10" fill="#00B3A6" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#fff" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg> 14 dage gratis — ingen binding</li>
                 <li><svg width="22" viewBox="0 0 20 20"><circle cx="10" cy="10" r="10" fill="#00B3A6" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#fff" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg> Intet login, ingen opsætning</li>
@@ -491,9 +520,9 @@ export default function Forside() {
                 <svg width="30" viewBox="0 0 28 28" fill="none"><path d="M4 17C8 11 11 11 14 15" stroke="#2EB7FF" strokeWidth="2.6" strokeLinecap="round" /><path d="M14 15C17 11 20 11 24 17" stroke="#00B3A6" strokeWidth="2.6" strokeLinecap="round" /></svg>
               </div>
               <h3>Opret din profil på to minutter</h3>
-              <p className="ft" style={{ marginBottom: 20 }}>Du udfylder dit fag, område og opgavestørrelse — så finder vi de mest relevante udbud til dig. Gratis i 14 dage. Ingen binding — opsig når du vil.</p>
-              <Link href="/tilmeld" className="submit" style={{ display: "block", textDecoration: "none", textAlign: "center" }}>Kom i gang →</Link>
-              <p className="fnote">Ingen binding. Stop når du vil.</p>
+              <p className="ft" style={{ marginBottom: 20 }}>Du udfylder dit fag, område og opgavestørrelse — så finder vi de mest relevante opgaver til dig. Gratis i 14 dage. Ingen binding — opsig når du vil.</p>
+              <Link href="/tilmeld" className="submit" style={{ display: "block", textDecoration: "none", textAlign: "center" }}>Kom i gang nu</Link>
+              <p className="fnote">Gratis de første 14 dage · ingen binding</p>
             </div>
           </div>
         </div>
@@ -502,9 +531,10 @@ export default function Forside() {
       {/* CTA BAND */}
       <section className="ctaband">
         <div className="wrap">
-          <h2 className="reveal">Klar til at få udbud direkte på SMS?</h2>
+          <h2 className="reveal">Klar til at få opgaver direkte på SMS?</h2>
           <p className="reveal">Lad Birdly holde øje, så du kan bruge tiden på det, du er god til.</p>
-          <Link href="/tilmeld" className="btn btn-teal reveal">Kom i gang — gratis i 14 dage</Link>
+          <Link href="/tilmeld" className="btn btn-teal reveal">Kom i gang nu</Link>
+          <p className="cta-note reveal">Gratis de første 14 dage · ingen binding</p>
         </div>
       </section>
 

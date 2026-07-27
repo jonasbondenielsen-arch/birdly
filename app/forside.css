@@ -344,3 +344,14 @@ body.chat-open .chat-panel{opacity:1;transform:none;pointer-events:auto}
   .steps{grid-template-columns:repeat(4,1fr)}
   @media(max-width:920px){.steps{grid-template-columns:1fr}}
 }
+
+  /* Ejer-sætningen + CTA-note. Genbruger eksisterende tokens og typografi —
+     ingen nye farver, fonte eller layout-paradigmer. */
+  .owner-line{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:clamp(18px,2.1vw,24px);line-height:1.45;letter-spacing:-.01em;color:var(--navy);max-width:44ch;margin:20px auto 0}
+  .cta-primary{display:flex;flex-direction:column;align-items:flex-start;gap:9px}
+  .cta-note{font-size:13px;color:var(--navy-soft);font-weight:600;line-height:1.4}
+  .pbox .cta-note{margin-top:10px}
+  .ctaband .cta-note{color:#EAF6FF;margin-top:14px}
+  /* CTA-noten gør den primære knap-kolonne højere end sekundær-knappen.
+     flex-start holder dem justeret i toppen, så layoutet er som før. */
+  .hero .cta{align-items:flex-start}

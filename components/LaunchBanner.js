@@ -12,7 +12,7 @@ export default function LaunchBanner() {
     <div className="launch-bar" role="region" aria-label="Tidlig adgang">
       <span className="lb-msg">🐦 <b>Birdly.dk har Danmarkspremiere</b> — gratis så længe nedtællingen kører. Skynd dig at prøve!</span>
       <Countdown deadline={deadline} />
-      <Link href="/tilmeld" className="lb-cta">Kom i gang</Link>
+      <Link href="/tilmeld" className="lb-cta">Kom i gang nu</Link>
     </div>
   );
 }

@@ -112,7 +112,7 @@ export default function VaelgKoder({ token }) {
                     </div>
                     {f.smal.length > 3 && cnt >= 1 && cnt <= 3 && (
                       <div className="note" style={{ marginTop: 10 }}>
-                        Du har valgt få områder her. Det giver færre, men meget præcise udbud. Vil du have flere, kan du vælge flere til — eller justere det senere.
+                        Du har valgt få områder her. Det giver færre, men meget præcise opgaver. Vil du have flere, kan du vælge flere til — eller justere det senere.
                       </div>
                     )}
                   </div>

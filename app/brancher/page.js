@@ -37,7 +37,7 @@ export default function BrancherPage() {
             <Link href="/brancher">Brancher</Link>
           </nav>
           <div className="right">
-            <Link href="/tilmeld" className="nav-cta">Kom i gang</Link>
+            <Link href="/tilmeld" className="nav-cta">Kom i gang nu</Link>
           </div>
         </div>
       </header>

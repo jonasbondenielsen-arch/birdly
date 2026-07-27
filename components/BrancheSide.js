@@ -46,7 +46,7 @@ export default function BrancheSide({ data }) {
             <Link href="/brancher">Brancher</Link>
           </nav>
           <div className="right">
-            <Link href={tilmeld} className="nav-cta">Kom i gang</Link>
+            <Link href={tilmeld} className="nav-cta">Kom i gang nu</Link>
           </div>
         </div>
       </header>
@@ -67,7 +67,7 @@ export default function BrancheSide({ data }) {
             <span><Check /> Direkte på SMS og mail</span>
           </div>
           <div className="cta" style={{ justifyContent: "center" }}>
-            <Link href={tilmeld} className="btn btn-teal">Start gratis som {nounSingular}</Link>
+            <Link href={tilmeld} className="btn btn-teal">Kom i gang nu</Link>
           </div>
         </div>
       </section>
@@ -133,7 +133,7 @@ export default function BrancheSide({ data }) {
         <div className="wrap">
           <h2>Klar til at fange din næste opgave?</h2>
           <p>Gratis i 14 dage, ingen binding. Du kan altid ændre dine valg eller stoppe igen.</p>
-          <Link href={tilmeld} className="btn btn-teal">Start gratis som {nounSingular}</Link>
+          <Link href={tilmeld} className="btn btn-teal">Kom i gang nu</Link>
         </div>
       </section>
 

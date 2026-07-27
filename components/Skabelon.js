@@ -342,7 +342,7 @@ export default function Skabelon({ token, data, publicMode = false }) {
     return (
       <main style={{ ...WRAP, textAlign: "center" }}>
         <div style={{ display: "flex", justifyContent: "center", margin: "12px 0 28px" }}><Logo /></div>
-        <div style={CARD}><h1 style={H2}>Linket er ugyldigt eller udløbet</h1><p style={{ color: MUTED }}>Vi kunne ikke finde udbuddet bag dette link.</p></div>
+        <div style={CARD}><h1 style={H2}>Linket er ugyldigt eller udløbet</h1><p style={{ color: MUTED }}>Vi kunne ikke finde opgaven bag dette link.</p></div>
       </main>
     );
   }
