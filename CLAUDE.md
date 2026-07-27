@@ -71,9 +71,18 @@ kundens samleside, deleside pr. udbud og bud-skabelonen. Deploy: Vercel-projekt 
   "Derfor er Birdly anderledes" i det eksisterende 4-korts-grid.
 - **Launch-mode** styres af `NEXT_PUBLIC_LAUNCH_DEADLINE`.
 
-### Næste i dette repo
-- **Samleside-widget (fase 1, Byg 1):** fire grund-knapper
+- **Samleside-widget er LIVE** (fase 1, Byg 1): fire strukturerede grunde
   (`forkert_fag` · `forkert_omraade` · `forkert_stoerrelse` · `ikke_nu`) + valgfri 1-5
-  smiley ved lav vurdering. Skemaet ligger klar i `birdly-admin` (migration 0042);
-  Edge Function-handlingen hedder `action:"grund"` i `save-my-criteria`.
+  smiley, i to trin i samme række. Grunden gemmes straks; smileyen er frivillig og
+  rækken lukker uanset. Begge kald må fejle uden at røre listen — fjernelsen sker FØR.
+  "For stor"/"For lille" er bevidst ÉN knap: retningen udleder serveren af det beløb den
+  snapshotter (`birdly-admin` migration 0044).
+- **Intern-markør:** `?intern=<signatur>` på `/mine-opgaver/[token]` og `/udbud/[token]`
+  er admins supportvisning. Dette repo hverken laver eller forstår markøren — den
+  **videresendes ordret**, og Edge Function'en afgør om den er ægte. Uden markør er alt
+  nøjagtig som før. Husk at føre den med når du tilføjer nye kald til `fetchMyTasks` /
+  `fetchSharedNotice`, ellers spores et supportbesøg alligevel.
+
+### Næste i dette repo
 - **Mobilvisning af de nye forside-sektioner er IKKE verificeret visuelt.**
+- **Widget'ens to trin er ikke set på mobil** — knapperne wrapper i en flexbox-række.
