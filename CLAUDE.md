@@ -50,6 +50,28 @@ kundens samleside, deleside pr. udbud og bud-skabelonen. Deploy: Vercel-projekt 
 - **Tone:** rolig, ærlig, dansk, du-form. Ingen hype, ingen AI-/algoritme-jargon —
   skriv "vi holder øje".
 
+## Pris — REGLERNE
+
+- **`lib/pakke.js` er enekilden i dette repo.** `PLAN.monthly` / `PLAN.yearly` fodrer
+  `priceText`, `YEARLY_SAVING` og `planForInterval`. **Hardkod ALDRIG et beløb i en
+  komponent** — netop det var grunden til at tre steder (chatbot ×2 + FAQ) stod med den
+  gamle pris efter en ændring. De er nu bundet til `priceText`; hold dem der.
+- **Frisbii er den AUTORITATIVE priskilde, ikke koden.** Rækkefølgen er ufravigelig: ret i
+  Frisbii FØRST, derefter `lib/pakke.js`, `prices`-tabellen (migration i admin) og
+  handelsbetingelsernes §3.1. Står de forskelligt, viser vi én pris og opkræver en anden —
+  markedsføringslovs- og aftaleretlig fælde.
+- **B2B ⇒ kun EX MOMS kundevendt.** Birdly sælger kun til virksomheder; køber trækker
+  momsen fra, så et inkl.-tal får prisen til at se højere ud end den reelle omkostning.
+  Vis aldrig inkl. moms som den fremhævede pris. Momsen forsvinder ikke juridisk: Frisbii
+  specificerer den på fakturaen, og handelsbetingelsernes §3.2 og §5.1 oplyser allerede at
+  priser er ekskl. moms.
+- **Eksisterende kunder flyttes ikke ved en prisændring** (§5.4, varsel). De bliver på
+  deres gamle Frisbii-planversion. Derfor er den viste pris kun gyldig for NYE
+  tilmeldinger — og derfor regner admin MRR på hvad kunden faktisk betaler, ikke på det
+  tal der står her.
+- Pr. 27-07-2026: **499 kr./md.** / **4.990 kr./år** ex moms. Besparelsen (998 kr, ~17 %,
+  "betal for 10 måneder, få 12") beregnes af `YEARLY_SAVING` — skriv den aldrig som tekst.
+
 ## Design
 
 - **Copy-opgaver må ALDRIG ændre struktur, layout, grafik, farver, typografi eller spacing.**
