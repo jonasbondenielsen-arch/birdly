@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { BirdMark } from "./Logo";
+import SamtykkeLink from "./SamtykkeLink";
 import "../app/footer.css";
 
 /* Delt footer — kompakt og centreret: alle navigations-links i én vandret,
@@ -35,6 +36,7 @@ export default function Footer() {
             <div className="fjur">
               <b>Juridisk</b>
               <Link href="/betingelser">Betingelser &amp; sikkerhed</Link>
+              <SamtykkeLink />
             </div>
           </div>
 

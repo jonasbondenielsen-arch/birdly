@@ -316,6 +316,17 @@ body.chat-open .chat-panel{opacity:1;transform:none;pointer-events:auto}
 .chat-note{font-size:11px;color:var(--navy-soft);text-align:center;padding:8px 0 11px;background:#fff}
 @media(max-width:520px){.chat-panel{right:12px;left:12px;bottom:86px;width:auto;height:72vh}.chat-launcher{right:14px;bottom:14px}}
 
+/* Samtykke-bjælken ligger i bunden med z-index 90 — altså UNDER chat-widgeten (200).
+   Uden dette dækker chat-knappen "Accepter alle" på mobil og mellembredder. Bjælken
+   melder sin målte højde ud som --samtykke-h; fallback'en gælder kun det ene frame før
+   målingen er kørt. Rykkes tilbage af sig selv, når valget er taget. */
+body.samtykke-vises .chat-launcher{bottom:calc(var(--samtykke-h,132px) + 34px);transition:bottom .2s}
+body.samtykke-vises .chat-panel{bottom:calc(var(--samtykke-h,132px) + 108px)}
+@media(max-width:520px){
+  body.samtykke-vises .chat-launcher{bottom:calc(var(--samtykke-h,132px) + 24px)}
+  body.samtykke-vises .chat-panel{bottom:calc(var(--samtykke-h,132px) + 96px);height:60vh}
+}
+
 /* ============================================================
    Skabelon-sektion ("Din bud-skabelon") — additiv, scoped under .birdly-home.
    Genbruger skabelonens grøn/gul-farver (grøn=udfyldt af Birdly, gul=udfyld selv).

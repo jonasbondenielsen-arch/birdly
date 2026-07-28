@@ -24,6 +24,10 @@
 .birdly-footer .fjur b{font-family:'Plus Jakarta Sans';font-weight:700;color:#fff;font-size:13px;letter-spacing:.05em;text-transform:uppercase}
 .birdly-footer .fjur a{color:#9FB2C9;font-size:14px;transition:color .15s}
 .birdly-footer .fjur a:hover{color:#fff}
+/* Tilbagekald-knappen skal se ud som de øvrige juridiske links — den er en <button>
+   fordi den udfører noget (rydder cookies) frem for at navigere. */
+.birdly-footer .fjur .fsamtykke{background:none;border:0;padding:0;text-align:left;font:inherit;font-size:14px;color:#9FB2C9;cursor:pointer;transition:color .15s}
+.birdly-footer .fjur .fsamtykke:hover{color:#fff}
 .birdly-footer .fcompany{flex:1;min-width:240px;text-align:center;font-size:13px;color:#8da0b6;line-height:1.7}
 .birdly-footer .fcompany a{color:#8da0b6;text-decoration:underline}
 .birdly-footer .fcompany a:hover{color:#fff}

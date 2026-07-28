@@ -1,4 +1,5 @@
 import "./globals.css";
+import Samtykke from "../components/Samtykke";
 
 // Standard-metadata for hele sitet (undersider med egen title/description
 // overstyrer disse). metadataBase gør og:image/relative URL'er absolutte.
@@ -36,7 +37,13 @@ export default function RootLayout({ children }) {
           rel="stylesheet"
         />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        {/* Ligger i layoutet, ikke pr. side: samtykket gælder hele domænet, og en
+            besøgende kan lande hvor som helst. Renderer sig selv væk når der er
+            taget stilling. */}
+        <Samtykke />
+      </body>
     </html>
   );
 }
