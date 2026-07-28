@@ -7,8 +7,10 @@ import { fetchCatalog, submitSignup, createSubscriptionSession } from "../lib/ca
 import { PLAN, TRIAL_DAYS, YEARLY_SAVING, priceText, planForInterval } from "../lib/pakke";
 import "../app/tilmeld.css";
 
-// Pris inkl. moms (25 %) i da-DK, fx 299 → "373,75". Kun til visning på plan-kortene.
-const inclMoms = (n) => (n * 1.25).toLocaleString("da-DK", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+// B2B: Birdly sælger kun til virksomheder, og B2B-priser oplyses EX MOMS — køber trækker
+// momsen fra, så et inkl.-tal på plan-kortet får prisen til at se højere ud end den reelle
+// omkostning. Hjælperen inclMoms er derfor fjernet, ikke bare gjort ubrugt. Momsen
+// forsvinder ikke juridisk: Frisbii specificerer den på fakturaen.
 
 // 4-trins tilmeldingsflow (én funnel — altid kort + 14 dages trial, test-mode indtil
 // go-live). Katalog (fag + CPV + branchekode-map + regioner) hentes fra get-catalog.
@@ -687,14 +689,14 @@ export default function Tilmeld({ initialFag = null }) {
                       <input type="radio" name="billing" checked={billing === "monthly"} disabled={sessionLoading} onChange={() => changeBilling("monthly")} />
                       <div className="nm">Månedlig</div>
                       <div className="pr">{PLAN.monthly.toLocaleString("da-DK")}<span> kr./md</span></div>
-                      <div className="ds">ex. moms · {inclMoms(PLAN.monthly)} inkl.</div>
+                      <div className="ds">ex. moms</div>
                     </label>
                     <label className={"plan" + (billing === "yearly" ? " on" : "")}>
                       <span className="feat">Spar {YEARLY_SAVING.pct}%</span>
                       <input type="radio" name="billing" checked={billing === "yearly"} disabled={sessionLoading} onChange={() => changeBilling("yearly")} />
                       <div className="nm">Årlig</div>
                       <div className="pr">{PLAN.yearly.toLocaleString("da-DK")}<span> kr./år</span></div>
-                      <div className="ds">ex. moms · forudbetalt · {inclMoms(PLAN.yearly)} inkl.</div>
+                      <div className="ds">ex. moms · forudbetalt</div>
                     </label>
                   </div>
 

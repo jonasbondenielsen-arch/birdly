@@ -34,8 +34,8 @@
 
 ## 3. Abonnement og pris
 3.1 Birdly tilbydes som ét abonnement med adgang til alle Tjenestens funktioner. Geografisk dækning (én eller flere regioner eller hele Danmark) er inkluderet og påvirker ikke prisen. Abonnementet kan betales:
-- **Månedligt** – 299 kr./md.
-- **Årligt (forudbetalt)** – 2.990 kr./år, svarende til en besparelse på ca. 17 % i forhold til månedlig betaling.
+- **Månedligt** – 499 kr./md.
+- **Årligt (forudbetalt)** – 4.990 kr./år, svarende til en besparelse på ca. 17 % i forhold til månedlig betaling.
 
 3.2 Alle priser er angivet i danske kroner (DKK) og ekskl. moms.
 
