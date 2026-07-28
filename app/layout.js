@@ -1,5 +1,6 @@
 import "./globals.css";
 import Samtykke from "../components/Samtykke";
+import Maaling from "../components/Maaling";
 
 // Standard-metadata for hele sitet (undersider med egen title/description
 // overstyrer disse). metadataBase gør og:image/relative URL'er absolutte.
@@ -43,6 +44,7 @@ export default function RootLayout({ children }) {
             besøgende kan lande hvor som helst. Renderer sig selv væk når der er
             taget stilling. */}
         <Samtykke />
+        <Maaling />
       </body>
     </html>
   );

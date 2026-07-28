@@ -2,7 +2,14 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { KATEGORIER, hentSamtykke, gemSamtykke } from "../lib/samtykke";
+
+// Kundens egne sider holdes fri. Samlesiden er live for betalende kunder, og en bjælke
+// i bunden dér ville være en ændring af noget der virker — uden at vinde noget: vi
+// måler ikke annoncer på en privat opgaveliste, så der er intet samtykke at indhente.
+// Bemærk /udbud/ med skråstreg: /udbud-for-alle er en offentlig side og skal IKKE fanges.
+const KUNDESIDER = ["/mine-opgaver/", "/udbud/", "/u/"];
 
 // ============================================================================
 // SAMTYKKE-BANNER — slank bjælke i bunden, i sidens egne farver.
@@ -21,15 +28,20 @@ export default function Samtykke() {
   const [detaljer, setDetaljer] = useState(false);
   const [valg, setValg] = useState({ statistik: false, marketing: false });
   const boksRef = useRef(null);
+  const sti = usePathname() || "";
+  const paaKundeside = KUNDESIDER.some((p) => sti.startsWith(p));
 
   useEffect(() => {
     // Kun hvis der ikke er taget stilling. Kører efter hydrering, så serveren og
     // klienten ikke renderer forskelligt.
+    // Navigerer man fra en offentlig side ind på sin egen opgaveliste, skal bjælken væk
+    // igen — ellers ville den følge med over, fordi layoutet ikke remounter.
+    if (paaKundeside) { setVis(false); return; }
     if (hentSamtykke() === null) setVis(true);
     const igen = () => setVis(hentSamtykke() === null);
     window.addEventListener("birdly-samtykke", igen);
     return () => window.removeEventListener("birdly-samtykke", igen);
-  }, []);
+  }, [paaKundeside]);
 
   // ⚠️ Forsidens chat-knap er fixed i bunden med z-index 200 — altså OVER bjælken. Uden
   // dette dækker den teal cirkel præcis "Accepter alle" på mobil og mellembredder, og så
@@ -60,7 +72,7 @@ export default function Samtykke() {
     };
   }, [vis]);
 
-  if (!vis) return null;
+  if (paaKundeside || !vis) return null;
 
   const gem = (v) => { gemSamtykke(v); setVis(false); };
 

@@ -5,6 +5,8 @@ import Link from "next/link";
 import { Logo } from "./Logo";
 import { fetchCatalog, submitSignup, createSubscriptionSession } from "../lib/catalog";
 import { PLAN, TRIAL_DAYS, YEARLY_SAVING, priceText, planForInterval } from "../lib/pakke";
+import { hentAttribution } from "../lib/attribution";
+import { spor } from "../lib/pixel";
 import "../app/tilmeld.css";
 
 // B2B: Birdly sælger kun til virksomheder, og B2B-priser oplyses EX MOMS — køber trækker
@@ -334,6 +336,9 @@ export default function Tilmeld({ initialFag = null }) {
       terms_accepted: terms,
       cvr_branchekode: cvrState.branchekode,
       package: planForInterval(billing),
+      // Hvor kunden kom fra. Fanget ved landing — på dette trin er ?utm_campaign for
+      // længst væk fra adresselinjen. Tomt objekt = organisk/direkte trafik.
+      attribution: hentAttribution(),
     };
   }
 
@@ -369,6 +374,10 @@ export default function Tilmeld({ initialFag = null }) {
       const session_id = await makeSession(id, billing);
       setSessionId(session_id);
       setStep(4);
+      // Sekundær hændelse: kunden er nået til betalingsvinduet. Bevidst IKKE Lead —
+      // herfra kan hun stadig lukke modalen og forsvinde, og en konvertering der tælles
+      // for tidligt lærer Meta at finde folk der klikker, men ikke betaler.
+      spor("InitiateCheckout", { content_category: billing });
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (e) {
       setErr(e.message || "Noget gik galt. Prøv igen, eller skriv til support@birdly.dk.");
@@ -408,6 +417,11 @@ export default function Tilmeld({ initialFag = null }) {
         const rp = new Reepay.ModalSubscription(sessionId);
         rp.addEventHandler(Reepay.Event.Accept, () => {
           setSubmitted(true);
+          // ⚠️ DETTE er konverteringen. Accept er det eneste sted vi ved at kortet er
+          // godkendt og prøveperioden reelt er startet — ikke submitSignup, ikke en
+          // sidevisning på kvitteringen. Fyrer før setSubmitted' render, men spor()
+          // kaster aldrig, så betalingsflowet kan ikke rammes.
+          spor("Lead", { content_category: billing });
           window.scrollTo({ top: 0, behavior: "smooth" });
         });
         rp.addEventHandler(Reepay.Event.Error, () => {
