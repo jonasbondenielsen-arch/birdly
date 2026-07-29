@@ -772,6 +772,16 @@ export default function Tilmeld({ initialFag = null }) {
             <div className="ck"><svg viewBox="0 0 24 24" width="30"><path d="M5 13l4 4 10-11" fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" /></svg></div>
             <h2>Velkommen til Birdly!</h2>
             <p>Vi er i gang med at holde øje for dig. Du hører fra os på SMS og mail, så snart der er et udbud, der passer.</p>
+            {/* Tryghedsnote. Kunden har lige afgivet sit kort uden at der blev trukket
+                noget, og det er præcis dér tvivlen opstår: "hvornår sker der noget?"
+                Tre spørgsmål besvares i rækkefølge — hvad koster det nu, hvad sker der
+                bagefter, og kan jeg komme ud. TRIAL_DAYS frem for et hardkodet 14, så
+                teksten ikke kan komme til at stå og lyve om prøveperioden. */}
+            <p className="trygnote">
+              De næste {TRIAL_DAYS} dage er gratis — du får opgaver på SMS og mail uden at
+              betale en krone. Når prøven udløber, fortsætter dit abonnement automatisk, og
+              først dér trækkes betalingen. Du kan opsige når som helst inden da.
+            </p>
           </div>
         )}
       </div>

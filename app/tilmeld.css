@@ -97,6 +97,9 @@
   .ok .ck{width:58px;height:58px;border-radius:50%;background:var(--teal);margin:0 auto 14px;display:flex;align-items:center;justify-content:center}
   .ok h2{font-size:24px}
   .ok p{color:var(--navy-soft);margin-top:8px}
+  /* Tryghedsnoten står afdæmpet under velkomsten — den skal kunne findes af den der
+     er i tvivl om betalingen, uden at tage opmærksomheden fra selve velkomsten. */
+  .ok .trygnote{max-width:520px;margin:16px auto 0;padding-top:14px;border-top:1px solid var(--line);font-size:13.5px;line-height:1.65}
 
   @media(max-width:640px){
     .grid2,.plans,.plans.plans-2{grid-template-columns:1fr}
