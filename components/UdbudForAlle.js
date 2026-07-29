@@ -149,6 +149,23 @@ export default function UdbudForAlle() {
         </div>
       </section>
 
+      {/* FIND DIN BRANCHE. Siden handler om at opgaverne er for alle — det naturlige
+          næste spørgsmål er "hvad så med MIT fag?". Indgangen hører hjemme her, lige
+          før den afsluttende CTA. */}
+      <section>
+        <div className="wrap">
+          <div className="lead">Find din branche</div>
+          <p className="body">
+            Vi holder øje med opgaver til stort set alle fag — fra håndværk og transport til
+            rengøring, it og rådgivning. Se hvordan det ser ud for netop dit fag, og hvilke
+            opgaver der typisk kommer.
+          </p>
+          <p style={{ marginTop: 18 }}>
+            <Link href="/brancher" className="btn btn-ghost">Se alle brancher</Link>
+          </p>
+        </div>
+      </section>
+
       <section className="cta">
         <div className="wrap">
           <h2>Giv din virksomhed en fair chance</h2>

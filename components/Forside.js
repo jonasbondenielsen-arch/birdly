@@ -175,6 +175,10 @@ export default function Forside() {
               <a href="#faq">FAQ</a>
               <a href="#om">Om os</a>
               <Link href="/udbud-for-alle">Opgaver er for alle</Link>
+              {/* Branchesiderne kunne før kun nås fra footeren — en besøgende på forsiden
+                  fandt dem aldrig. "Find dit fag" frem for "Brancher": det er dét den
+                  besøgende vil, ikke hvad siden hedder. */}
+              <Link href="/brancher">Find dit fag</Link>
             </nav>
             <div className="right">
               <Link href="/tilmeld" className="nav-cta">Kom i gang nu</Link>
