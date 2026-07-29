@@ -316,6 +316,25 @@ body.chat-open .chat-panel{opacity:1;transform:none;pointer-events:auto}
 .chat-note{font-size:11px;color:var(--navy-soft);text-align:center;padding:8px 0 11px;background:#fff}
 @media(max-width:520px){.chat-panel{right:12px;left:12px;bottom:86px;width:auto;height:72vh}.chat-launcher{right:14px;bottom:14px}}
 
+/* ============================================================
+   STICKY CTA (branche- og fag×geo-sider). Slank bjælke i bunden, altid synlig.
+   z-index 80: under samtykke-banneret (90) og chat-widgeten (200), så den aldrig
+   dækker et valg kunden SKAL kunne tage. Når banneret vises, løftes bjælken op med
+   den højde banneret selv melder ud — samme mekanik som chat-knappen.
+   Sidens bund får plads under sig, så bjælken ikke dækker footerens sidste linje.
+   ============================================================ */
+.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:80;background:rgba(255,255,255,.94);backdrop-filter:blur(10px);border-top:1px solid var(--line);box-shadow:0 -6px 24px rgba(13,27,42,.07);transition:bottom .2s}
+.sticky-cta-inner{max-width:1080px;margin:0 auto;padding:11px 22px;display:flex;align-items:center;justify-content:center;gap:18px;flex-wrap:wrap}
+.sticky-cta-inner p{margin:0;font-size:14.5px;color:var(--navy);font-weight:600}
+.sticky-cta-inner .btn{padding:10px 20px;font-size:14.5px;white-space:nowrap}
+body.samtykke-vises .sticky-cta{bottom:calc(var(--samtykke-h,132px) + 12px)}
+.birdly-home:has(~ .sticky-cta),.har-sticky-cta .birdly-footer{padding-bottom:78px}
+@media(max-width:560px){
+  .sticky-cta-inner{padding:9px 14px;gap:10px}
+  .sticky-cta-inner p{font-size:13px;flex:1 1 100%;text-align:center}
+  .sticky-cta-inner .btn{flex:1 1 100%;text-align:center}
+}
+
 /* Samtykke-bjælken ligger i bunden med z-index 90 — altså UNDER chat-widgeten (200).
    Uden dette dækker chat-knappen "Accepter alle" på mobil og mellembredder. Bjælken
    melder sin målte højde ud som --samtykke-h; fallback'en gælder kun det ene frame før

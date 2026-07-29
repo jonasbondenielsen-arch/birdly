@@ -1,7 +1,8 @@
 import Link from "next/link";
 import Footer from "../../components/Footer";
 import { Logo } from "../../components/Logo";
-import { BRANCHER } from "../../lib/branche";
+import { BRANCHER, getBranche } from "../../lib/branche";
+import { FAG_GEO, getRegion } from "../../lib/regioner";
 import { abs } from "../../lib/site";
 import "../forside.css";
 
@@ -101,6 +102,43 @@ export default function BrancherPage() {
               </Link>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* OMRÅDER. Kortene ovenfor er <Link> om hele kortet, så region-links kan ikke
+          ligge inde i dem uden at bryde markup. De får deres egen sektion i stedet —
+          samme design-tokens, og fag×geo-siderne bliver dermed nået fra hubben og ikke
+          kun fra sitemap'et. Kun de fag hvor målingen viste varigt indhold har en
+          række her; resten har bevidst ingen regionsvarianter. */}
+      <section>
+        <div className="wrap center" style={{ maxWidth: 900 }}>
+          <span className="kick">Områder</span>
+          <h2 className="big">Opgaver i din del af landet</h2>
+          <p className="lead" style={{ marginBottom: 26 }}>
+            For nogle fag er der så mange opgaver, at det giver mening at kigge område for område.
+            Her er dem, vi følger tættest.
+          </p>
+        </div>
+        <div className="wrap">
+          {FAG_GEO.map((f) => {
+            const b = getBranche(f.fag);
+            if (!b) return null;
+            return (
+              <div key={f.fag} style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap", padding: "11px 0", borderTop: "1px solid var(--line)" }}>
+                <Link href={"/fag/" + b.slug} style={{ fontWeight: 700, color: "var(--navy)", minWidth: 190 }}>{b.label}</Link>
+                <span style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
+                  {f.regioner.map((rs) => {
+                    const r = getRegion(rs);
+                    return r ? (
+                      <Link key={rs} href={`/fag/${b.slug}/${rs}`} style={{ color: "var(--teal)", fontSize: 14.5 }}>
+                        {r.praep} {r.navn}
+                      </Link>
+                    ) : null;
+                  })}
+                </span>
+              </div>
+            );
+          })}
         </div>
       </section>
 

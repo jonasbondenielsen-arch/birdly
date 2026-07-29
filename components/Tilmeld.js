@@ -127,7 +127,7 @@ const toE164 = (dialCode, national) => dialCode + String(national || "").replace
 const phoneErrMsg = (dialCode) =>
   dialCode === "+45" ? "Skriv et gyldigt mobilnummer (8 cifre)." : "Skriv et gyldigt mobilnummer med landekode.";
 
-export default function Tilmeld({ initialFag = null }) {
+export default function Tilmeld({ initialFag = null, initialRegion = null }) {
   const [step, setStep] = useState(1);
   const [catalog, setCatalog] = useState(null);
   const [catErr, setCatErr] = useState("");
@@ -202,6 +202,15 @@ export default function Tilmeld({ initialFag = null }) {
       setFagSel((s) => (s[initialFag] ? s : { ...s, [initialFag]: true }));
     }
   }, [catalog, initialFag]);
+
+  // Forudvælg region fra ?region= (fag×geo-sidernes CTA). Samme mønster som fag: værdien
+  // valideres mod kataloget, så en URL med noget opdigtet ikke kan sætte en region der
+  // ikke findes — den bliver bare ignoreret, og kunden vælger selv som før.
+  useEffect(() => {
+    if (initialRegion && catalog && (catalog.regions || []).some((r) => r.key === initialRegion)) {
+      setRegionSel((s) => (s[initialRegion] ? s : { ...s, [initialRegion]: true }));
+    }
+  }, [catalog, initialRegion]);
 
   const fagByKey = useMemo(() => {
     const m = {};

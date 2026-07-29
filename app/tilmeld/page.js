@@ -7,7 +7,11 @@ export const metadata = {
 };
 
 export default async function Page({ searchParams }) {
-  // Forudvælg fag fra ?fag= (sat af branchesidernes CTA, fx /tilmeld?fag=tomrer).
+  // Forudvælg fag fra ?fag= (sat af branchesidernes CTA, fx /tilmeld?fag=tomrer) og
+  // region fra ?region= (sat af fag×geo-siderne). Kommer kunden fra "Entreprenør­opgaver
+  // i Nordjylland", er begge dele valgt på forhånd — færre klik mellem interesse og
+  // tilmelding. Ugyldige værdier ignoreres i komponenten, så en manipuleret URL ikke
+  // kan sætte noget der ikke findes i kataloget.
   const sp = await searchParams;
-  return <Tilmeld initialFag={sp?.fag || null} />;
+  return <Tilmeld initialFag={sp?.fag || null} initialRegion={sp?.region || null} />;
 }
