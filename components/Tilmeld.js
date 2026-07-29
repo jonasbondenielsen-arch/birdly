@@ -461,6 +461,7 @@ export default function Tilmeld({ initialFag = null, initialRegion = null, opgav
         valgtFag={selectedFagKeys[0] || null}
         valgtLabel={selectedFagKeys[0] ? fagByKey[selectedFagKeys[0]]?.label_da : null}
         key={selectedFagKeys[0] || "alle"}
+        variant="fag"
         kompakt
       />
 

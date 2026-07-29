@@ -10,7 +10,6 @@ import { PLAN, YEARLY_SAVING, priceText } from "../lib/pakke";
 import LaunchBanner from "./LaunchBanner";
 import LaunchStreamer from "./LaunchStreamer";
 import OpgaveTaeller from "./OpgaveTaeller";
-import { BRANCHER } from "../lib/branche";
 import "../app/forside.css";
 
 // Slider-chips → links til hver branchesides (/fag/[slug]). Udseende/animation uændret.
@@ -189,7 +188,7 @@ export default function Forside({ opgaveTal = null }) {
         </header>
         {/* Tælleren ligger INDE i .topstack, så den følger headeren ned ved scroll og
             arver stakkens z-index frem for at få sit eget lag. */}
-        <OpgaveTaeller tal={opgaveTal} brancher={BRANCHER} />
+        <OpgaveTaeller tal={opgaveTal} variant="stort" />
       </div>
 
       {/* HERO */}
