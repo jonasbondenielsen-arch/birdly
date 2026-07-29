@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { BRANCHER, getBranche } from "../../../lib/branche";
 import BrancheSide from "../../../components/BrancheSide";
 import { abs } from "../../../lib/site";
+import { hentOpgaveTal } from "../../../lib/opgaveTal";
 
 // Statiske, server-renderede branchesider (én pr. fag) — indholdet er i HTML ved
 // load, så Google kan crawle det.
@@ -48,7 +49,7 @@ export default async function Page({ params }) {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(brødkrumme) }} />
-      <BrancheSide data={b} />
+      <BrancheSide data={b} opgaveTal={await hentOpgaveTal()} />
     </>
   );
 }

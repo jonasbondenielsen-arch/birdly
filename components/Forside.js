@@ -9,6 +9,8 @@ import { insertRow } from "../lib/supabase";
 import { PLAN, YEARLY_SAVING, priceText } from "../lib/pakke";
 import LaunchBanner from "./LaunchBanner";
 import LaunchStreamer from "./LaunchStreamer";
+import OpgaveTaeller from "./OpgaveTaeller";
+import { BRANCHER } from "../lib/branche";
 import "../app/forside.css";
 
 // Slider-chips → links til hver branchesides (/fag/[slug]). Udseende/animation uændret.
@@ -76,7 +78,7 @@ function botReply(text) {
     : "Lige nu er fuglen fløjet 🕊️ Vi er online alle hverdage kl. 08:00–18:00 og er tilbage på pinden i morgen. Skriv endelig dit spørgsmål eller send en mail til <b>support@birdly.dk</b> — så vender vi tilbage.";
 }
 
-export default function Forside() {
+export default function Forside({ opgaveTal = null }) {
   const [cancelOpen, setCancelOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [chatStarted, setChatStarted] = useState(false);
@@ -185,6 +187,9 @@ export default function Forside() {
             </div>
           </div>
         </header>
+        {/* Tælleren ligger INDE i .topstack, så den følger headeren ned ved scroll og
+            arver stakkens z-index frem for at få sit eget lag. */}
+        <OpgaveTaeller tal={opgaveTal} brancher={BRANCHER} />
       </div>
 
       {/* HERO */}

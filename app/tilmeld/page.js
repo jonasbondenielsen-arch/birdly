@@ -1,4 +1,5 @@
 import Tilmeld from "../../components/Tilmeld";
+import { hentOpgaveTal } from "../../lib/opgaveTal";
 
 export const metadata = {
   title: "Kom i gang med Birdly — opret din profil",
@@ -13,5 +14,5 @@ export default async function Page({ searchParams }) {
   // tilmelding. Ugyldige værdier ignoreres i komponenten, så en manipuleret URL ikke
   // kan sætte noget der ikke findes i kataloget.
   const sp = await searchParams;
-  return <Tilmeld initialFag={sp?.fag || null} initialRegion={sp?.region || null} />;
+  return <Tilmeld initialFag={sp?.fag || null} initialRegion={sp?.region || null} opgaveTal={await hentOpgaveTal()} />;
 }

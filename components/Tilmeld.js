@@ -7,6 +7,7 @@ import { fetchCatalog, submitSignup, createSubscriptionSession } from "../lib/ca
 import { PLAN, TRIAL_DAYS, YEARLY_SAVING, priceText, planForInterval } from "../lib/pakke";
 import { hentAttribution } from "../lib/attribution";
 import { spor } from "../lib/pixel";
+import OpgaveTaeller from "./OpgaveTaeller";
 import "../app/tilmeld.css";
 
 // B2B: Birdly sælger kun til virksomheder, og B2B-priser oplyses EX MOMS — køber trækker
@@ -127,7 +128,7 @@ const toE164 = (dialCode, national) => dialCode + String(national || "").replace
 const phoneErrMsg = (dialCode) =>
   dialCode === "+45" ? "Skriv et gyldigt mobilnummer (8 cifre)." : "Skriv et gyldigt mobilnummer med landekode.";
 
-export default function Tilmeld({ initialFag = null, initialRegion = null }) {
+export default function Tilmeld({ initialFag = null, initialRegion = null, opgaveTal = null }) {
   const [step, setStep] = useState(1);
   const [catalog, setCatalog] = useState(null);
   const [catErr, setCatErr] = useState("");
@@ -452,6 +453,16 @@ export default function Tilmeld({ initialFag = null, initialRegion = null }) {
           <Link href="/" className="back">← Tilbage til forsiden</Link>
         </div>
       </header>
+      {/* Tælleren følger kundens valg: så snart hun har valgt sit første fag (eller det
+          er forvalgt fra en branchesides CTA), skifter tallet til hendes branche. Det er
+          dét tal der betyder noget for hende — ikke landstotalen. */}
+      <OpgaveTaeller
+        tal={opgaveTal}
+        valgtFag={selectedFagKeys[0] || null}
+        valgtLabel={selectedFagKeys[0] ? fagByKey[selectedFagKeys[0]]?.label_da : null}
+        key={selectedFagKeys[0] || "alle"}
+        kompakt
+      />
 
       <div className="top">
         <span className="ey">🐦 Gratis i {TRIAL_DAYS} dage — ingen binding</span>

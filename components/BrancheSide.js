@@ -2,7 +2,9 @@ import Link from "next/link";
 import Footer from "./Footer";
 import { Logo } from "./Logo";
 import StickyCta from "./StickyCta";
+import OpgaveTaeller from "./OpgaveTaeller";
 import { regionerForFag } from "../lib/regioner";
+import { daTal } from "../lib/opgaveTal";
 import "../app/forside.css";
 
 // Branche-landingsside (SEO). Server-renderet — alt indhold er i HTML ved load.
@@ -27,7 +29,7 @@ const HouseIcon = () => (
 // bliver det en fag×geo-side — SAMME komponent, samme klasser, samme design. Det er
 // bevidst ikke en ny sidetype: to skabeloner for det samme ville drive fra hinanden,
 // og så ville halvdelen af siderne stille og roligt holde op med at ligne Birdly.
-export default function BrancheSide({ data, region = null }) {
+export default function BrancheSide({ data, region = null, opgaveTal = null, antal = null }) {
   const { slug, nounPlural, nounSingular, fagKey, arbejde, ex1, ex2, kortSvarExtra, whyHeading, whyText, eksemplerIntro, examples, faq } = data;
   // Funnelen forstår allerede ?fag=; ?region= er tilføjet efter samme mønster, så
   // kunden lander med både fag og område forvalgt og har færre klik tilbage.
@@ -77,6 +79,9 @@ export default function BrancheSide({ data, region = null }) {
             <Link href={tilmeld} className="nav-cta">Kom i gang nu</Link>
           </div>
         </div>
+        {/* Tælleren står allerede på fagets eget tal — derfor ingen branchevælger her;
+            den ville kunne føre den besøgende væk fra den side hun lige er landet på. */}
+        <OpgaveTaeller tal={opgaveTal} valgtFag={fagKey} valgtLabel={data.label} kompakt />
       </header>
 
       {/* HERO */}
@@ -132,6 +137,15 @@ export default function BrancheSide({ data, region = null }) {
           <div className="wrap center" style={{ maxWidth: 820 }}>
             <span className="kick">Sådan gør du</span>
             <h2 className="big">Sådan byder du på {arbejde} {region.praep} {region.navn}</h2>
+            {/* Levende tal. Vises KUN når vi faktisk har et — er tallet ukendt eller nul,
+                står sætningen der slet ikke. "0 opgaver lige nu" på en landingsside får
+                produktet til at se dødt ud, selv om det bare er en stille uge. */}
+            {antal != null && antal > 0 && (
+              <p className="lead" style={{ fontWeight: 600 }}>
+                Lige nu holder vi øje med <b>{daTal(antal)} {antal === 1 ? "opgave" : "opgaver"}</b>{" "}
+                for {nounPlural} {region.praep} {region.navn}.
+              </p>
+            )}
             <p className="lead">
               Opgaverne bliver lagt op af de enkelte kommuner — {region.kommuner}. De ligger spredt på
               forskellige portaler, og de fleste af dem passer ikke til dig. Du fortæller os, hvad du

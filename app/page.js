@@ -1,5 +1,9 @@
 import Forside from "../components/Forside";
 import { SITE_URL, abs } from "../lib/site";
+import { hentOpgaveTal } from "../lib/opgaveTal";
+
+// Tallene hentes server-side, så de står i HTML'en ved load — ingen blinkende tom bar,
+// og Google ser dem. revalidate styres af hentOpgaveTal (10 min).
 
 export const metadata = {
   title: "Offentlige opgaver direkte på SMS | Birdly",
@@ -40,12 +44,13 @@ const WEBSITE = {
   inLanguage: "da-DK",
 };
 
-export default function Page() {
+export default async function Page() {
+  const opgaveTal = await hentOpgaveTal();
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ORGANIZATION) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(WEBSITE) }} />
-      <Forside />
+      <Forside opgaveTal={opgaveTal} />
     </>
   );
 }
