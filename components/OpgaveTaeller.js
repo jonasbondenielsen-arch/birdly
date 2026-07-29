@@ -49,7 +49,10 @@ export default function OpgaveTaeller({
         ) : (
           <span className="opgtal-tekst">
             Vi holder øje med <b>{daTal(raat)} {raat === 1 ? "opgave" : "opgaver"}</b>{" "}
-            {valgt ? <>i {valgt.label.toLowerCase()}</> : "lige nu"}
+            {/* Ingen toLowerCase: den gjorde "VVS & blikkenslager" til "vvs …", og en
+                forkortelse med små bogstaver ser ud som en fejl. Labels er i forvejen
+                skrevet som de skal læses. */}
+            {valgt ? <>i {valgt.label}</> : "lige nu"}
           </span>
         )}
         {brancher.length > 0 && (
