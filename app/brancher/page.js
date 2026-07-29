@@ -2,6 +2,7 @@ import Link from "next/link";
 import Footer from "../../components/Footer";
 import { Logo } from "../../components/Logo";
 import { BRANCHER } from "../../lib/branche";
+import { abs } from "../../lib/site";
 import "../forside.css";
 
 // Samleside over alle brancher (én diskret indgang fra footeren). Server-renderet,
@@ -19,13 +20,43 @@ export const metadata = {
     type: "website",
     locale: "da_DK",
     siteName: "Birdly",
-    url: "https://birdly.dk/brancher",
+    url: abs("/brancher"),
   },
 };
+
+// Brødkrumme + liste. /brancher er knudepunktet mellem forsiden og de 20 fag-sider, og
+// var den eneste side helt uden strukturerede data. ItemList fortæller Google at de 20
+// links hører sammen som ét sæt frem for at være tilfældig navigation — det er dét der
+// får undersiderne til at blive opdaget som en gruppe.
+const BRANCHER_SCHEMA = [
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Forside", item: abs("/") },
+      { "@type": "ListItem", position: 2, name: "Brancher", item: abs("/brancher") },
+    ],
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "Brancher hos Birdly",
+    numberOfItems: BRANCHER.length,
+    itemListElement: BRANCHER.map((b, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: b.label,
+      url: abs("/fag/" + b.slug),
+    })),
+  },
+];
 
 export default function BrancherPage() {
   return (
     <div className="birdly-home">
+      {BRANCHER_SCHEMA.map((s, i) => (
+        <script key={i} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(s) }} />
+      ))}
       <header>
         <div className="wrap bar">
           <Logo height={32} />

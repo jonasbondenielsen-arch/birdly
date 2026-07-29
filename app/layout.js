@@ -1,6 +1,7 @@
 import "./globals.css";
 import Samtykke from "../components/Samtykke";
 import Maaling from "../components/Maaling";
+import { SITE_URL } from "../lib/site";
 
 // Standard-metadata for hele sitet (undersider med egen title/description
 // overstyrer disse). metadataBase gør og:image/relative URL'er absolutte.
@@ -9,7 +10,9 @@ const SITE_DESCRIPTION =
   "Få besked, når kommuner, regioner og staten har en opgave, der passer til dit fag og dit område. Birdly sender dig en SMS — gratis i 14 dage.";
 
 export const metadata = {
-  metadataBase: new URL("https://birdly.dk"),
+  // ⚠️ SKAL være den vært der svarer 200. apex omdirigerer til www, så canonical og
+  // OG-URL'er pegede før på en adresse der sender videre. Kilden er lib/site.js.
+  metadataBase: new URL(SITE_URL),
   title: SITE_TITLE,
   description: SITE_DESCRIPTION,
   openGraph: {
@@ -18,7 +21,7 @@ export const metadata = {
     type: "website",
     locale: "da_DK",
     siteName: "Birdly",
-    url: "https://birdly.dk",
+    url: SITE_URL,
   },
   twitter: {
     card: "summary_large_image",
