@@ -1,9 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Logo } from "./Logo";
-import { fetchMyTasks, previewCriteria, saveMyCriteria, undoMyCriteria, dismissTask, sendDismissReason, markerSomRelevant, afvisNaerMatch } from "../lib/share";
+import { fetchMyTasks, previewCriteria, saveMyCriteria, undoMyCriteria, dismissTask, sendDismissReason, markerSomRelevant, afvisNaerMatch, saetSmsBesked } from "../lib/share";
 
 // Samlesiden "Mine opgaver" (Spor 3b) — den side samle-SMS'en og -mailen peger på.
 // Ingen login: kundens eget list_token er nøglen, og siden er LEVENDE (viser altid
@@ -106,6 +106,15 @@ export default function MineOpgaver({ token, data, intern = null }) {
   const [bunkeAaben, setBunkeAaben] = useState(false);
   // NÆR-MATCH: forslag over kundens beløbsloft. Tom når flaget er slukket.
   const [naerMatch, setNaerMatch] = useState(data?.naer_match || []);
+
+  // Åbn sorterings-panelet direkte når linket bærer #sorter (velkomstmailens knap).
+  // Kører efter hydrering, så serveren og klienten renderer ens.
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.location.hash === "#sorter") {
+      setPanelAaben(true);
+      setTimeout(() => document.getElementById("sorter")?.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
+    }
+  }, []);
 
   // Afvis et forslag. Fjernelsen sker FØRST og lokalt — kunden skal se at vi lyttede
   // med det samme, ikke vente på serveren. Kaldet må fejle uden at rulle det tilbage;
@@ -328,6 +337,10 @@ export default function MineOpgaver({ token, data, intern = null }) {
         </div>
       )}
 
+      {/* Ankeret #sorter: velkomstmailens "Ændre opgavekriterier"-knap peger hertil,
+          og useEffect'en nedenfor åbner panelet når det er i URL'en. Uden det ville
+          linket lande på listen og efterlade kunden med at lede efter knappen. */}
+      <div id="sorter" />
       {panelAaben && (
         <SorterPanel
           token={token}
@@ -451,6 +464,31 @@ export default function MineOpgaver({ token, data, intern = null }) {
         </div>
       )}
 
+      {/* ANDEN INDGANG til selvbetjeningen. Knappen findes allerede øverst, men en
+          kunde der har scrollet gennem 40 opgaver og tænker "det er for meget" er
+          nederst — ikke øverst. Samme panel, ingen ny side. Skjules når panelet er
+          åbent, så der ikke står to knapper der gør det samme. */}
+      {!panelAaben && (
+        <div style={{ marginTop: 26, textAlign: "center" }}>
+          <button
+            type="button"
+            style={{ ...KNAP_PRIMARY, padding: "13px 24px", fontSize: 15.5 }}
+            onClick={() => {
+              setPanelAaben(true);
+              // Rul op til panelet — ellers åbner det uden for skærmen og ser ud som
+              // om knappen ikke virkede.
+              setTimeout(() => document.getElementById("sorter")?.scrollIntoView({ behavior: "smooth", block: "start" }), 60);
+            }}
+          >
+            Ændre mine opgavekriterier
+          </button>
+          <p style={{ margin: "8px 0 0", color: MUTED, fontSize: 13, lineHeight: 1.55 }}>
+            Får du for mange eller for få opgaver? Justér fag-bredde, område og størrelse —
+            eller slå SMS fra.
+          </p>
+        </div>
+      )}
+
       <p style={{ marginTop: 26, color: MUTED, fontSize: 13, lineHeight: 1.6 }}>
         Listen opdateres automatisk. Opgaver forsvinder herfra når fristen er overskredet.
         Kilde: TED (EU's udbudsdatabase). Birdly er ikke ordregiver — tjek altid det officielle udbudsmateriale.
@@ -550,6 +588,9 @@ function SorterPanel({ token, kriterier, fag, regioner, kanFortryde, onFortryd, 
   // 'fag' | 'alle' — de eneste to værdier subscribers_bredde_chk tillader.
   const [bredde, setBredde] = useState(kriterier?.bredde === "alle" ? "alle" : "fag");
   const [nuts, setNuts] = useState(kriterier?.nuts_codes || []);
+  // SMS-kanalen. Gemmes med det samme ved klik — ikke sammen med kriterierne, fordi
+  // den ikke ændrer HVILKE opgaver kunden får, kun hvordan hun høres om dem.
+  const [sms, setSms] = useState(kriterier?.notify_sms !== false);
   const [preview, setPreview] = useState(null);
   const [henter, setHenter] = useState(false);
   const [gemmer, setGemmer] = useState(false);
@@ -661,6 +702,37 @@ function SorterPanel({ token, kriterier, fag, regioner, kanFortryde, onFortryd, 
           Udbud der gælder hele landet får du uanset hvad du vælger her.
         </p>
       </Sporgsmaal>
+
+      {/* --- BESKEDKANAL — adskilt fra kriterierne med vilje ---
+          De tre spørgsmål ovenfor ændrer HVAD kunden får; dette ændrer HVORDAN hun
+          får det. Det hører ikke til i forhåndsvisningen ("du får 18 i stedet for
+          117"), fordi det ikke ændrer antallet — derfor gemmes det med det samme,
+          uden om Se-hvad-det-betyder-knappen. */}
+      <div style={{ borderTop: "1px solid #E6EAEF", marginTop: 18, paddingTop: 16 }}>
+        <p style={{ margin: "0 0 10px", fontWeight: 700, color: NAVY, fontSize: 15.5 }}>Hvordan vil du have besked?</p>
+        <label style={{ display: "flex", gap: 11, alignItems: "flex-start", cursor: "pointer" }}>
+          <input
+            type="checkbox"
+            checked={sms}
+            onChange={async (e) => {
+              const ny = e.target.checked;
+              setSms(ny); // vis valget straks — kunden skal ikke vente på serveren
+              const r = await saetSmsBesked(token, ny);
+              if (!r) setSms(!ny); // kun ved fejl rulles det tilbage
+            }}
+            style={{ marginTop: 3, width: 17, height: 17, accentColor: TEAL, flex: "0 0 17px" }}
+          />
+          <span>
+            <b style={{ color: NAVY, fontSize: 15 }}>Send mig også en SMS</b>
+            <div style={{ color: MUTED, fontSize: 13.5, lineHeight: 1.55, marginTop: 2 }}>
+              {/* Sig hvad der sker når man slår fra — ellers gætter kunden, og nogle
+                  vil tro de slukker for alt og lade være. */}
+              Slår du fra, får du kun besked på mail. Mailen kan ikke slås fra — det er
+              sådan vi holder dig opdateret.
+            </div>
+          </span>
+        </label>
+      </div>
 
       {/* --- Forhåndsvisning: konsekvensen FØR der gemmes --- */}
       <div style={{ borderTop: "1px solid #E6EAEF", marginTop: 18, paddingTop: 16 }}>
