@@ -80,7 +80,10 @@
   .center .lead{margin-left:auto;margin-right:auto}
 
   /* pain */
-  .pain{background:var(--grey)}
+  /* ⚠️ --sky-soft, IKKE --grey. Det grå (#F2F4F7) faldt uden for temaet og gjorde
+     sektionen kold i forhold til nabosektionerne. Samme lyseblå som .examples
+     ("Beskeden du får"), så de to flader er identiske. */
+  .pain{background:var(--sky-soft)}
   .pain-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:46px}
   .pcard{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:28px;box-shadow:var(--shadow)}
   .pcard .ic{width:46px;height:46px;border-radius:13px;background:#FFECEC;display:flex;align-items:center;justify-content:center;margin-bottom:16px}
@@ -133,7 +136,8 @@
   .vcard p{color:var(--navy-soft);font-size:14.5px}
 
   /* pricing */
-  .pricing{background:var(--grey)}
+  /* Samme lyseblå som .pain og .examples — ét tema, ingen grå flader. */
+  .pricing{background:var(--sky-soft)}
   .tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:50px;align-items:stretch}
   .tiers.single{grid-template-columns:minmax(0,460px);justify-content:center}
   .tier{background:#fff;border:1px solid var(--line);border-radius:22px;padding:30px;box-shadow:var(--shadow);display:flex;flex-direction:column}
@@ -162,10 +166,17 @@
   .pbox .pfoot{margin-top:auto;padding-top:22px}
   .pbox .pbtn{width:100%}
   .pbox .psub{font-size:12.5px;color:var(--navy-soft);margin-top:11px}
-  .price-incl{max-width:720px;margin:24px auto 0;background:var(--sky-soft);border:1px solid var(--line);border-radius:18px;padding:24px 28px}
+  /* HVID på den lyseblå sektion. Da .pricing blev sky-soft, forsvandt boksen ind i
+     baggrunden — den var selv sky-soft. Hvid giver det lag cards ellers har på
+     lyseblå flader andre steder på siden. */
+  .price-incl{max-width:720px;margin:24px auto 0;background:var(--white);border:1px solid var(--line);border-radius:18px;padding:24px 28px}
   .price-incl h3{font-size:17px;text-align:center;margin-bottom:16px}
   .price-incl ul{list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:12px 26px}
-  .price-incl li{display:flex;gap:10px;font-size:14.5px;align-items:flex-start;color:var(--navy)}
+  /* font-weight 600 — samme halvfede som .cta-note ("Gratis de første 14 dage").
+     Punkterne stod i arvet 400 og læste som tynde. Farven bliver --navy og skifter
+     BEVIDST ikke til .cta-note's --navy-soft: den er lysere, og teksten skulle netop
+     være tydeligere, ikke mere afdæmpet. */
+  .price-incl li{display:flex;gap:10px;font-size:14.5px;font-weight:600;align-items:flex-start;color:var(--navy)}
   .price-incl li svg{flex:0 0 18px;margin-top:3px}
   /* Launch-fase — sticky stak (banner + header), nedtællings-ur + pris-streamer */
   .topstack{position:sticky;top:0;z-index:90}
@@ -228,7 +239,9 @@
 
   /* cancel */
   .cancel{background:var(--white)}
-  .cbox{max-width:780px;margin:0 auto;background:var(--grey);border:1px solid var(--line);border-radius:24px;padding:40px;text-align:center}
+  /* Opsigelses-boksen: sidste grå flade på forsiden. Sektionen omkring er hvid, så
+     her giver sky-soft laget — modsat .price-incl hvor sektionen blev lyseblå. */
+  .cbox{max-width:780px;margin:0 auto;background:var(--sky-soft);border:1px solid var(--line);border-radius:24px;padding:40px;text-align:center}
   .cancel h2{font-size:clamp(26px,3.2vw,38px)}
   .cancel .lead{margin:14px auto 0}
   .cancel-form{display:flex;gap:10px;max-width:560px;margin:26px auto 0;flex-wrap:wrap}
