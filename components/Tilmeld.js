@@ -188,6 +188,9 @@ export default function Tilmeld({ initialFag = null, initialRegion = null, opgav
   // Betaling: createdId = subscriber-uuid fra signup (undgår dubletter ved frem/tilbage).
   // sessionId = Frisbii-session til SDK'et. sessionLoading = mens en (gen)session hentes.
   const [createdId, setCreatedId] = useState(null);
+  // Kunden har brugt sin gratis prøve før (6 mdr./2-pr-år-reglen). Sættes af signup-
+  // svaret — ALDRIG af klienten selv; serveren verificerer det igen ved sessionen.
+  const [udenProeve, setUdenProeve] = useState(false);
   const [sessionId, setSessionId] = useState(null);
   const [sessionLoading, setSessionLoading] = useState(false);
 
@@ -355,7 +358,7 @@ export default function Tilmeld({ initialFag = null, initialRegion = null, opgav
   // Opret/hent en Frisbii subscription-session for det valgte interval. Returnerer
   // session-id (eller kaster). reuseCustomer=true ved plan-skift (kunden findes
   // allerede hos Frisbii → referér i stedet for at oprette igen).
-  async function makeSession(id, billingChoice, reuseCustomer = false) {
+  async function makeSession(id, billingChoice, reuseCustomer = false, udenProeveNu = udenProeve) {
     const { session_id } = await createSubscriptionSession({
       subscriber_id: id,
       email: email.trim(),
@@ -363,6 +366,9 @@ export default function Tilmeld({ initialFag = null, initialRegion = null, opgav
       phone: toE164(dial, phone),
       billing: billingChoice,
       reuse_customer: reuseCustomer,
+      // Serveren verificerer flaget mod subscriberens egen signup_data — klienten kan
+      // ikke give sig selv en prøveperiode ved at udelade det.
+      uden_proeve: udenProeveNu,
     });
     return session_id;
   }
@@ -376,12 +382,18 @@ export default function Tilmeld({ initialFag = null, initialRegion = null, opgav
     setSaving(true);
     try {
       let id = createdId;
+      // ⚠️ setUdenProeve er asynkron — state er IKKE opdateret når makeSession kaldes
+      // i samme tick. Derfor en lokal variabel: uden den ville den FØRSTE session for
+      // en genkommende kunde blive oprettet MED gratis prøve, altså præcis det misbrug
+      // værnet skal forhindre.
+      let udenProeveNu = udenProeve;
       if (!id) {
         const r = await submitSignup(buildSignupPayload());
         id = r.id;
         setCreatedId(id);
+        if (r.uden_proeve) { udenProeveNu = true; setUdenProeve(true); }
       }
-      const session_id = await makeSession(id, billing);
+      const session_id = await makeSession(id, billing, false, udenProeveNu);
       setSessionId(session_id);
       setStep(4);
       // Sekundær hændelse: kunden er nået til betalingsvinduet. Bevidst IKKE Lead —
@@ -712,7 +724,19 @@ export default function Tilmeld({ initialFag = null, initialRegion = null, opgav
               {step === 4 && (
                 <div className="sec">
                   <div className="h"><span className="n">4</span><h3>Vælg din plan</h3></div>
-                  <p className="sub">Gratis prøveperiode · du betaler intet i dag · opsig når som helst inden.</p>
+                  {/* ⚠️ To tilstande. Har kunden brugt sin gratis prøve, må teksten IKKE
+                      love "du betaler intet i dag" — Frisbii trækker det fulde beløb
+                      med det samme. Beskeden står FØR planvalget, så den er læst inden
+                      kortet tastes ind. */}
+                  {udenProeve ? (
+                    <div className="recap" style={{ borderColor: "#F2D98A", background: "#FFFDF5" }}>
+                      <b>Du har allerede haft en gratis prøveperiode</b>, så den kan vi
+                      desværre ikke tilbyde igen nu. Opretter du dig, bliver du betalende
+                      bruger med det samme — beløbet for den plan du vælger trækkes i dag.
+                    </div>
+                  ) : (
+                    <p className="sub">Gratis prøveperiode · du betaler intet i dag · opsig når som helst inden.</p>
+                  )}
 
                   {/* Kompakt recap (read-only) */}
                   {recapText && <div className="recap">{recapText}</div>}
@@ -756,7 +780,9 @@ export default function Tilmeld({ initialFag = null, initialRegion = null, opgav
                   {/* Primær CTA — åbner Frisbii-betalingen som modal (overlay) for den
                       valgte plans session. Deaktiveret indtil sessionen er klar. */}
                   <button type="button" className="submit" onClick={openPaymentModal} disabled={!sessionId || sessionLoading}>
-                    {sessionLoading ? "Forbereder betaling …" : "Start gratis prøveperiode →"}
+                    {sessionLoading
+                      ? "Forbereder betaling …"
+                      : udenProeve ? "Opret og betal →" : "Start gratis prøveperiode →"}
                   </button>
 
                   <div className="pay-secure" style={{ justifyContent: "center", marginTop: 14 }}>
