@@ -466,7 +466,9 @@ export default function MineOpgaver({ token, data, intern = null }) {
 // forskellige produkter. Forskellen er ét badge, én knap og hvor "Se opgaven" peger.
 function OpgaveKort({ o, onFjern, intern = null, tilSide = false, onRelevant = null, naerMatch = false, onAfvis = null }) {
   const dage = dageTil(o.deadline);
-  const haster = dage != null && dage <= 14;
+  // Ingen "haster"-badge uden en frist — vi kan ikke vide om den haster, og et gæt
+  // ville enten stresse kunden unødigt eller give falsk ro.
+  const haster = !o.frist_ukendt && dage != null && dage <= 14;
   return (
     <div style={CARD}>
       <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginBottom: 6 }}>
@@ -482,7 +484,12 @@ function OpgaveKort({ o, onFjern, intern = null, tilSide = false, onRelevant = n
 
       <h2 style={{ fontSize: 18, lineHeight: 1.35, margin: "0 0 6px", color: NAVY }}>{o.title || "Opgave"}</h2>
       <p style={{ margin: "0 0 10px", color: MUTED, fontSize: 14 }}>
-        {o.buyer_name || "Ordregiver ikke oplyst"} · Frist {fmtDato(o.deadline)} · {fmtBeloeb(o.amount, o.currency)}
+        {o.buyer_name || "Ordregiver ikke oplyst"} ·{" "}
+        {/* Fristløse udbud (0060): sig at datoen skal findes hos udbyder, ikke bare
+            "—". Et tomt felt ser ud som et hul i vores data; dette fortæller hvad
+            kunden skal gøre. */}
+        {o.frist_ukendt ? "Frist ikke oplyst — tjek hos udbyder" : <>Frist {fmtDato(o.deadline)}</>}
+        {" · "}{fmtBeloeb(o.amount, o.currency)}
         {o.nationwide ? " · Hele landet" : (o.nuts_codes?.length ? ` · ${o.nuts_codes.join(", ")}` : "")}
       </p>
 
