@@ -468,14 +468,10 @@ export default function Tilmeld({ initialFag = null, initialRegion = null, opgav
       {/* Tælleren følger kundens valg: så snart hun har valgt sit første fag (eller det
           er forvalgt fra en branchesides CTA), skifter tallet til hendes branche. Det er
           dét tal der betyder noget for hende — ikke landstotalen. */}
-      <OpgaveTaeller
-        tal={opgaveTal}
-        valgtFag={selectedFagKeys[0] || null}
-        valgtLabel={selectedFagKeys[0] ? fagByKey[selectedFagKeys[0]]?.label_da : null}
-        key={selectedFagKeys[0] || "alle"}
-        variant="fag"
-        kompakt
-      />
+      {/* Samme tal som resten af sitet — skifter IKKE med kundens fagvalg. Et
+          branchetal her ville kunne vise "3 opgaver" midt i tilmeldingen og tale
+          kunden fra det, selv om hun får langt flere over tid. */}
+      <OpgaveTaeller tal={opgaveTal} kompakt />
 
       <div className="top">
         <span className="ey">🐦 Gratis i {TRIAL_DAYS} dage — ingen binding</span>

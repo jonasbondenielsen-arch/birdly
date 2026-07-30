@@ -4,7 +4,7 @@ import { Logo } from "./Logo";
 import StickyCta from "./StickyCta";
 import OpgaveTaeller from "./OpgaveTaeller";
 import { regionerForFag } from "../lib/regioner";
-import { daTal } from "../lib/opgaveTal";
+import { daTal, rundNed } from "../lib/opgaveTal";
 import "../app/forside.css";
 
 // Branche-landingsside (SEO). Server-renderet — alt indhold er i HTML ved load.
@@ -29,7 +29,7 @@ const HouseIcon = () => (
 // bliver det en fag×geo-side — SAMME komponent, samme klasser, samme design. Det er
 // bevidst ikke en ny sidetype: to skabeloner for det samme ville drive fra hinanden,
 // og så ville halvdelen af siderne stille og roligt holde op med at ligne Birdly.
-export default function BrancheSide({ data, region = null, opgaveTal = null, antal = null }) {
+export default function BrancheSide({ data, region = null, opgaveTal = null }) {
   const { slug, nounPlural, nounSingular, fagKey, arbejde, ex1, ex2, kortSvarExtra, whyHeading, whyText, eksemplerIntro, examples, faq } = data;
   // Funnelen forstår allerede ?fag=; ?region= er tilføjet efter samme mønster, så
   // kunden lander med både fag og område forvalgt og har færre klik tilbage.
@@ -81,7 +81,7 @@ export default function BrancheSide({ data, region = null, opgaveTal = null, ant
         </div>
         {/* Tælleren står allerede på fagets eget tal — derfor ingen branchevælger her;
             den ville kunne føre den besøgende væk fra den side hun lige er landet på. */}
-        <OpgaveTaeller tal={opgaveTal} valgtFag={fagKey} valgtLabel={data.label} variant="fag" kompakt />
+        <OpgaveTaeller tal={opgaveTal} kompakt />
       </header>
 
       {/* HERO */}
@@ -137,13 +137,15 @@ export default function BrancheSide({ data, region = null, opgaveTal = null, ant
           <div className="wrap center" style={{ maxWidth: 820 }}>
             <span className="kick">Sådan gør du</span>
             <h2 className="big">Sådan byder du på {arbejde} {region.praep} {region.navn}</h2>
-            {/* Levende tal. Vises KUN når vi faktisk har et — er tallet ukendt eller nul,
-                står sætningen der slet ikke. "0 opgaver lige nu" på en landingsside får
-                produktet til at se dødt ud, selv om det bare er en stille uge. */}
-            {antal != null && antal > 0 && (
+            {/* ⚠️ IKKE et branchetal. Sætningen sagde før "X opgaver for tømrere i
+                Nordjylland" — ærligt, men et dårligt salgsargument: i en stille uge
+                står der 1 eller 0, og så ligner produktet dødt. Nu står hele
+                beholdningen, og sætningen lover udtrykkeligt IKKE at de alle passer
+                til netop dette fag og område — det er dét filtreringen er til for. */}
+            {opgaveTal?.bydbare != null && (
               <p className="lead" style={{ fontWeight: 600 }}>
-                Lige nu holder vi øje med <b>{daTal(antal)} {antal === 1 ? "opgave" : "opgaver"}</b>{" "}
-                for {nounPlural} {region.praep} {region.navn}.
+                Lige nu holder vi øje med <b>over {daTal(rundNed(opgaveTal.bydbare))} offentlige opgaver</b> i
+                hele landet. Du får kun besked om dem, der passer til dit fag og dit område.
               </p>
             )}
             <p className="lead">

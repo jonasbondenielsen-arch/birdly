@@ -3,7 +3,7 @@ import { getBranche } from "../../../../lib/branche";
 import { getRegion, alleFagGeo } from "../../../../lib/regioner";
 import BrancheSide from "../../../../components/BrancheSide";
 import { abs } from "../../../../lib/site";
-import { hentOpgaveTal, antalForFagGeo } from "../../../../lib/opgaveTal";
+import { hentOpgaveTal } from "../../../../lib/opgaveTal";
 
 // Fag×geo-sider. SAMME komponent som /fag/[slug] — kun med en region-dimension.
 // Ruterne er begrænset til de 16 kombinationer i lib/regioner.js, hvor målingen viste
@@ -60,7 +60,7 @@ export default async function Page({ params }) {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(brødkrumme) }} />
-      <BrancheSide data={b} region={r} opgaveTal={opgaveTal} antal={antalForFagGeo(opgaveTal, b.fagKey, r.slug)} />
+      <BrancheSide data={b} region={r} opgaveTal={opgaveTal} />
     </>
   );
 }
