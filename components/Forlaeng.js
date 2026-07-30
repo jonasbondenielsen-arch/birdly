@@ -5,7 +5,6 @@ import Link from "next/link";
 import { Logo } from "./Logo";
 import { SPOERGSMAAL, spmTekst } from "../lib/feedbackSpoergsmaal";
 import { gemFeedback } from "../lib/feedback";
-import "../app/forside.css";
 
 // ============================================================================
 // FEEDBACK-SKEMA — 14 ekstra prøvedage mod ærlige svar.
@@ -22,9 +21,18 @@ import "../app/forside.css";
 // spørge de tilfredse) er det også.
 // ============================================================================
 
-const NAVY = "#0D274A";
-const MUTED = "#5A6678";
-const TEAL = "#00B3A6";
+// ⚠️ SAMME TOKENS SOM SAMLESIDEN (components/MineOpgaver.js), ikke forsidens.
+// Feedback-siderne er token-sider som kundens opgaveliste, og de skal føles som
+// SAMME produkt — ikke som en formular der er limet på. Værdierne er kopieret
+// bevidst: ændres samlesidens look, skal disse følge med.
+const WRAP = { maxWidth: 820, margin: "0 auto", padding: "24px 18px 64px" };
+const CARD = { background: "#fff", border: "1px solid #E6EAEF", borderRadius: 16, padding: "18px 20px", boxShadow: "0 1px 3px rgba(0,0,0,.04)" };
+const TEAL = "#1E9E8A";
+const NAVY = "#1B2733";
+const MUTED = "#6B7785";
+const KNAP = { border: "none", borderRadius: 10, padding: "11px 18px", fontSize: 15, fontWeight: 700, cursor: "pointer" };
+const KNAP_PRIMARY = { ...KNAP, background: TEAL, color: "#fff" };
+const KNAP_SEKUNDAER = { ...KNAP, background: "#fff", color: NAVY, border: "1px solid #D7DDE5" };
 
 export default function Forlaeng({ token, start }) {
   const [trin, setTrin] = useState(0);
@@ -86,23 +94,22 @@ export default function Forlaeng({ token, start }) {
   if (resultat) {
     return (
       <Ramme>
-        <h1 style={{ fontSize: 30 }}>Tusind tak for din hjælp</h1>
-        <p className="sub" style={{ marginLeft: "auto", marginRight: "auto" }}>
+        <h1 style={{ fontSize: 26, margin: "0 0 8px", color: NAVY }}>Tusind tak for din hjælp</h1>
+        <p style={{ margin: "0 0 12px", color: MUTED, fontSize: 15.5, lineHeight: 1.6 }}>
           Din feedback er gemt.{" "}
           {resultat.forlaenget_til ? (
-            <>Din gratis prøveperiode er forlænget med 14 dage og løber nu til <b>{fmtDato(resultat.forlaenget_til)}</b>.</>
+            <>Din gratis prøveperiode er forlænget med 14 dage og løber nu til{" "}
+              <b style={{ color: NAVY }}>{fmtDato(resultat.forlaenget_til)}</b>.</>
           ) : (
             // Ærlig tilstand: skemaet er gemt, men datoen kunne ikke flyttes. Vi lover
             // ikke en dato vi ikke kan holde — så ville kunden opdage det ved trækket.
             <>Vi er ved at forlænge din prøveperiode. Får du ikke en bekræftelse inden for et døgn, så skriv til os på hello@birdly.dk.</>
           )}
         </p>
-        <p className="sub" style={{ marginLeft: "auto", marginRight: "auto", fontSize: 15 }}>
+        <p style={{ margin: "0 0 18px", color: MUTED, fontSize: 15, lineHeight: 1.6 }}>
           Vi bruger dine svar til at gøre opgaverne og oplevelsen i Birdly bedre.
         </p>
-        <div className="cta" style={{ justifyContent: "center", marginTop: 8 }}>
-          <Link href="/" className="btn btn-teal">Til birdly.dk</Link>
-        </div>
+        <Link href="/" style={{ ...KNAP_PRIMARY, textDecoration: "none", display: "inline-block" }}>Til birdly.dk</Link>
       </Ramme>
     );
   }
@@ -111,8 +118,8 @@ export default function Forlaeng({ token, start }) {
   if (!start?.ok || !start?.aktiv) {
     return (
       <Ramme>
-        <h1 style={{ fontSize: 28 }}>Tilbuddet er ikke aktivt</h1>
-        <p className="sub" style={{ marginLeft: "auto", marginRight: "auto" }}>
+        <h1 style={{ fontSize: 24, margin: "0 0 8px", color: NAVY }}>Tilbuddet er ikke aktivt</h1>
+        <p style={{ margin: 0, color: MUTED, fontSize: 15.5, lineHeight: 1.6 }}>
           Linket gælder ikke længere. Har du spørgsmål til din prøveperiode, så skriv til
           os på hello@birdly.dk — vi svarer altid.
         </p>
@@ -122,10 +129,10 @@ export default function Forlaeng({ token, start }) {
   if (start.allerede_brugt) {
     return (
       <Ramme>
-        <h1 style={{ fontSize: 28 }}>Du har allerede givet feedback</h1>
-        <p className="sub" style={{ marginLeft: "auto", marginRight: "auto" }}>
+        <h1 style={{ fontSize: 24, margin: "0 0 8px", color: NAVY }}>Du har allerede givet feedback</h1>
+        <p style={{ margin: 0, color: MUTED, fontSize: 15.5, lineHeight: 1.6 }}>
           Tak for det — det hjalp os.{" "}
-          {start.forlaenget_til && <>Din prøveperiode løber til <b>{fmtDato(start.forlaenget_til)}</b>.</>}
+          {start.forlaenget_til && <>Din prøveperiode løber til <b style={{ color: NAVY }}>{fmtDato(start.forlaenget_til)}</b>.</>}
         </p>
       </Ramme>
     );
@@ -133,8 +140,8 @@ export default function Forlaeng({ token, start }) {
   if (!start.i_trial) {
     return (
       <Ramme>
-        <h1 style={{ fontSize: 28 }}>Tilbuddet gælder prøveperioden</h1>
-        <p className="sub" style={{ marginLeft: "auto", marginRight: "auto" }}>
+        <h1 style={{ fontSize: 24, margin: "0 0 8px", color: NAVY }}>Tilbuddet gælder prøveperioden</h1>
+        <p style={{ margin: 0, color: MUTED, fontSize: 15.5, lineHeight: 1.6 }}>
           Din prøveperiode er slut — men vi vil stadig meget gerne høre hvad du synes.
           Skriv til os på hello@birdly.dk.
         </p>
@@ -144,18 +151,18 @@ export default function Forlaeng({ token, start }) {
 
   // ---------- SKEMAET ----------
   return (
-    <Ramme bred>
+    <Ramme>
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
         <span style={{ fontSize: 13.5, color: MUTED, fontWeight: 600, whiteSpace: "nowrap" }}>
-          Spørgsmål {trin + 1} af {SPOERGSMAAL.length}
+          {trin + 1} af {SPOERGSMAAL.length}
         </span>
         <div style={{ flex: 1, height: 6, background: "#E6EAEF", borderRadius: 99, overflow: "hidden" }}>
           <div style={{ width: `${((trin + 1) / SPOERGSMAAL.length) * 100}%`, height: "100%", background: TEAL, transition: "width .25s" }} />
         </div>
       </div>
 
-      <h1 style={{ fontSize: 24, lineHeight: 1.35, margin: "0 0 6px", color: NAVY, textAlign: "left" }}>{tekst}</h1>
-      {q.hjaelp && <p style={{ margin: "0 0 16px", color: MUTED, fontSize: 14.5, textAlign: "left" }}>{q.hjaelp}</p>}
+      <h1 style={{ fontSize: 21, lineHeight: 1.35, margin: "0 0 6px", color: NAVY }}>{tekst}</h1>
+      {q.hjaelp && <p style={{ margin: "0 0 16px", color: MUTED, fontSize: 14.5 }}>{q.hjaelp}</p>}
 
       {q.type === "tekst" ? (
         <>
@@ -166,7 +173,8 @@ export default function Forlaeng({ token, start }) {
             rows={6}
             style={{
               width: "100%", fontFamily: "inherit", fontSize: 15.5, lineHeight: 1.6, color: NAVY,
-              padding: "13px 14px", border: "1.5px solid #D9E2EC", borderRadius: 12, resize: "vertical",
+              padding: "13px 14px", border: "1px solid #D7DDE5", borderRadius: 10, resize: "vertical",
+              boxSizing: "border-box",
             }}
           />
           <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: MUTED, marginTop: 6 }}>
@@ -187,6 +195,17 @@ export default function Forlaeng({ token, start }) {
             <p style={{ margin: "10px 0 0", fontSize: 13, color: MUTED, lineHeight: 1.55 }}>
               Begge er frivillige. Du får dine 14 ekstra dage, uanset om du sætter flueben.
             </p>
+
+            {/* OPLYSNING, ikke samtykke. Fluebenene ovenfor er det aktive samtykke —
+                denne linje sikrer bare at kunden VED det, inden hun skriver. Bevidst
+                afdæmpet og placeret lige over send-knappen, hvor den bliver læst uden
+                at stå i vejen. Rør ikke fluebenenes logik for at "forenkle" til denne
+                linje: en oplysning er ikke et samtykke. */}
+            <p style={{ margin: "14px 0 0", fontSize: 12.5, color: MUTED, lineHeight: 1.55, paddingTop: 12, borderTop: "1px solid #EEF1F5" }}>
+              Birdly må gerne bruge jeres firmanavn og feedback som kundeudtalelse på vores
+              hjemmeside og i markedsføring i fremtiden. Vil du ikke det, så skriv det i din
+              kommentar — så gør vi det ikke.
+            </p>
           </div>
         </>
       ) : (
@@ -202,10 +221,12 @@ export default function Forlaeng({ token, start }) {
                 onClick={() => (q.type === "flere" ? vaelgFlere(key, label) : vaelgEn(key, label))}
                 style={{
                   textAlign: "left", fontFamily: "inherit", fontSize: 15.5, color: NAVY, cursor: "pointer",
-                  padding: "13px 16px", borderRadius: 12,
-                  border: valgt ? `1.5px solid ${TEAL}` : "1.5px solid #D9E2EC",
-                  background: valgt ? "#EFFBF9" : "#fff",
-                  fontWeight: valgt ? 600 : 400,
+                  padding: "13px 16px", borderRadius: 10,
+                  // Valgt: teal kant + svag teal flade, samme sprog som samlesidens
+                  // "ok"-besked (#F1FAF8 / #BFE7DF). Ikke en ny farvefamilie.
+                  border: valgt ? `1.5px solid ${TEAL}` : "1px solid #D7DDE5",
+                  background: valgt ? "#F1FAF8" : "#fff",
+                  fontWeight: valgt ? 700 : 400,
                 }}
               >
                 {label}
@@ -219,14 +240,16 @@ export default function Forlaeng({ token, start }) {
 
       <div style={{ display: "flex", gap: 10, marginTop: 24, flexWrap: "wrap" }}>
         {trin > 0 && (
-          <button type="button" className="btn btn-ghost" onClick={() => setTrin((t) => t - 1)}>Tilbage</button>
+          <button type="button" style={KNAP_SEKUNDAER} onClick={() => setTrin((t) => t - 1)}>Tilbage</button>
         )}
         {sidste ? (
-          <button type="button" className="btn btn-teal" onClick={afslut} disabled={!kanVidere || gemmer}>
+          <button type="button" style={{ ...KNAP_PRIMARY, opacity: !kanVidere || gemmer ? 0.5 : 1 }}
+            onClick={afslut} disabled={!kanVidere || gemmer}>
             {gemmer ? "Sender …" : "Send og få 14 dage mere"}
           </button>
         ) : (
-          <button type="button" className="btn btn-teal" onClick={() => setTrin((t) => t + 1)} disabled={!kanVidere}>
+          <button type="button" style={{ ...KNAP_PRIMARY, opacity: kanVidere ? 1 : 0.5 }}
+            onClick={() => setTrin((t) => t + 1)} disabled={!kanVidere}>
             Næste
           </button>
         )}
@@ -237,23 +260,17 @@ export default function Forlaeng({ token, start }) {
 
 // ---------------------------------------------------------------------------
 
-function Ramme({ children, bred = false }) {
+// Rammen er samlesidens: centreret logo øverst, indhold i et hvidt kort. Præcis samme
+// WRAP og CARD som MineOpgaver, så en kunde der kender sin opgaveliste genkender siden
+// med det samme.
+function Ramme({ children }) {
   return (
-    <div className="birdly-home">
-      <header>
-        <div className="wrap bar">
-          <Logo height={32} />
-          <div className="right">
-            <Link href="/" className="nav-cta">Til birdly.dk</Link>
-          </div>
-        </div>
-      </header>
-      <section className="hero">
-        <div className={"wrap" + (bred ? "" : " center")} style={{ maxWidth: bred ? 640 : 620, position: "relative", zIndex: 2 }}>
-          {children}
-        </div>
-      </section>
-    </div>
+    <main style={WRAP}>
+      <div style={{ display: "flex", justifyContent: "center", margin: "12px 0 22px" }}>
+        <Link href="/" aria-label="Birdly forside"><Logo /></Link>
+      </div>
+      <div style={CARD}>{children}</div>
+    </main>
   );
 }
 
