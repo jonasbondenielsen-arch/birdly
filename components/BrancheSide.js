@@ -81,7 +81,7 @@ export default function BrancheSide({ data, region = null, opgaveTal = null }) {
         </div>
         {/* Tælleren står allerede på fagets eget tal — derfor ingen branchevælger her;
             den ville kunne føre den besøgende væk fra den side hun lige er landet på. */}
-        <OpgaveTaeller tal={opgaveTal} kompakt />
+        <OpgaveTaeller tal={opgaveTal} />
       </header>
 
       {/* HERO */}

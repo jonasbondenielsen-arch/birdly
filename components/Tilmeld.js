@@ -23,7 +23,7 @@ import "../app/tilmeld.css";
 //   · 4 Vælg plan + betaling (Frisbii modal subscription).
 //
 // Frisbii ejer al betalingslogik. Trin 4 opretter en subscription-session og åbner
-// den i Reepay.ModalSubscription (overlay) ved klik; kortet gemmes i trial, første
+// den i Reepay.EmbeddedSubscription (i vores egen container) ved klik; kortet gemmes i trial, første
 // træk efter 14 dage.
 
 // Indlæs Frisbii/Reepay checkout-SDK'et én gang. Resolver med window.Reepay.
@@ -191,6 +191,9 @@ export default function Tilmeld({ initialFag = null, initialRegion = null, opgav
   // Kunden har brugt sin gratis prøve før (6 mdr./2-pr-år-reglen). Sættes af signup-
   // svaret — ALDRIG af klienten selv; serveren verificerer det igen ved sessionen.
   const [udenProeve, setUdenProeve] = useState(false);
+  // Er den indlejrede betalingsboks foldet ud? Styrer både containeren og om CTA'en
+  // vises — de to må ikke stå samtidig.
+  const [betalingAaben, setBetalingAaben] = useState(false);
   const [sessionId, setSessionId] = useState(null);
   const [sessionLoading, setSessionLoading] = useState(false);
 
@@ -427,16 +430,32 @@ export default function Tilmeld({ initialFag = null, initialRegion = null, opgav
     }
   }
 
-  // Åbn Frisbii-betalingen som MODAL (overlay) for den valgte plans session. Modal
-  // viser alle kortfelter udfoldet uden indre scroll. Frisbii styrer kort + trial; vi
-  // reagerer kun på events. Accept → "Velkommen" (autoritativ aktivering = webhook,
-  // Fase C). Cancel/Close → kunden lukkede uden at gennemføre → bliv på trin 4.
+  // Åbn Frisbii-betalingen INDLEJRET i vores egen container (ikke som overlay-modal).
+  //
+  // ⚠️ HVORFOR SKIFTET FRA ModalSubscription: modalen er en iframe Frisbii selv
+  // dimensionerer, og den var så lav at kunden skulle scrolle inde i den. Linjen
+  // "Til betaling i dag 0,00 DKK · 14 dages prøveperiode" står ØVERST i den iframe —
+  // altså usynlig præcis når kunden er nede ved kortfelterne og er mest i tvivl om
+  // hvorvidt der trækkes penge nu. Vi kan ikke styre indholdet i Frisbiis iframe, men
+  // vi kan flytte beskeden ud i VORES eget lag, hvor den kan gøres sticky.
+  //
+  // Frisbii styrer fortsat kort + trial; vi reagerer kun på events. Accept →
+  // "Velkommen" (autoritativ aktivering = webhook, Fase C). Cancel/Close → kunden
+  // lukkede uden at gennemføre → bliv på trin 4.
   function openPaymentModal() {
     if (!sessionId || sessionLoading || saving) return;
     setErr("");
+    // Containeren skal være i DOM'en FØR SDK'et monterer i den.
+    setBetalingAaben(true);
     loadReepay()
       .then((Reepay) => {
-        const rp = new Reepay.ModalSubscription(sessionId);
+        // ⚠️ SDK'et KASTER hvis containeren har børn (verificeret i checkout.js).
+        // Ved plan-skift monteres der igen i samme div, så den ryddes først — ellers
+        // ville anden montering aldrig virke, og kunden ville stå med en tom boks.
+        const vaert = document.getElementById("betalingsboks");
+        if (vaert) vaert.innerHTML = "";
+
+        const rp = new Reepay.EmbeddedSubscription(sessionId, { html_element: "betalingsboks" });
         rp.addEventHandler(Reepay.Event.Accept, () => {
           setSubmitted(true);
           // ⚠️ DETTE er konverteringen. Accept er det eneste sted vi ved at kortet er
@@ -449,12 +468,16 @@ export default function Tilmeld({ initialFag = null, initialRegion = null, opgav
         rp.addEventHandler(Reepay.Event.Error, () => {
           setErr("Der opstod en fejl i betalingen. Prøv igen, eller skriv til support@birdly.dk.");
         });
-        // Cancel (kunden trykker annullér) + Close (modal lukket) → intet oprettet,
-        // bliv på trin 4. Sessionen kan genåbnes med samme CTA.
-        rp.addEventHandler(Reepay.Event.Cancel, () => {});
-        rp.addEventHandler(Reepay.Event.Close, () => {});
+        // Cancel (kunden trykker annullér) + Close → intet oprettet, bliv på trin 4.
+        // Boksen foldes sammen igen, så CTA'en kommer tilbage og sessionen kan
+        // genåbnes med samme knap.
+        rp.addEventHandler(Reepay.Event.Cancel, () => setBetalingAaben(false));
+        rp.addEventHandler(Reepay.Event.Close, () => setBetalingAaben(false));
       })
-      .catch((e) => setErr(e.message || "Betalingsvinduet kunne ikke indlæses."));
+      .catch((e) => {
+        setBetalingAaben(false);
+        setErr(e.message || "Betalingsvinduet kunne ikke indlæses.");
+      });
   }
 
   return (
@@ -468,10 +491,11 @@ export default function Tilmeld({ initialFag = null, initialRegion = null, opgav
       {/* Tælleren følger kundens valg: så snart hun har valgt sit første fag (eller det
           er forvalgt fra en branchesides CTA), skifter tallet til hendes branche. Det er
           dét tal der betyder noget for hende — ikke landstotalen. */}
-      {/* Samme tal som resten af sitet — skifter IKKE med kundens fagvalg. Et
-          branchetal her ville kunne vise "3 opgaver" midt i tilmeldingen og tale
-          kunden fra det, selv om hun får langt flere over tid. */}
-      <OpgaveTaeller tal={opgaveTal} kompakt />
+      {/* Samme komponent OG samme udseende som på forsiden — stilene bor i
+          globals.css, så baren ser ens ud uanset hvilken side den står på.
+          Tallet skifter IKKE med kundens fagvalg: et branchetal her kunne vise
+          "3 opgaver" midt i tilmeldingen og tale kunden fra det. */}
+      <OpgaveTaeller tal={opgaveTal} />
 
       <div className="top">
         <span className="ey">🐦 Gratis i {TRIAL_DAYS} dage — ingen binding</span>
@@ -775,11 +799,44 @@ export default function Tilmeld({ initialFag = null, initialRegion = null, opgav
 
                   {/* Primær CTA — åbner Frisbii-betalingen som modal (overlay) for den
                       valgte plans session. Deaktiveret indtil sessionen er klar. */}
-                  <button type="button" className="submit" onClick={openPaymentModal} disabled={!sessionId || sessionLoading}>
-                    {sessionLoading
-                      ? "Forbereder betaling …"
-                      : udenProeve ? "Opret og betal →" : "Start gratis prøveperiode →"}
-                  </button>
+                  {!betalingAaben && (
+                    <button type="button" className="submit" onClick={openPaymentModal} disabled={!sessionId || sessionLoading}>
+                      {sessionLoading
+                        ? "Forbereder betaling …"
+                        : udenProeve ? "Opret og betal →" : "Start gratis prøveperiode →"}
+                    </button>
+                  )}
+
+                  {/* INDLEJRET BETALING. Boksen ligger i VORES DOM, ikke i en overlay —
+                      derfor kan vi give den plads nok til at kortfelterne står udfoldet,
+                      og derfor kan trygheds-linjen gøres sticky over den. */}
+                  {betalingAaben && (
+                    <div className="betaling-omraade">
+                      {/* ⚠️ DEN VIGTIGE LINJE. position:sticky i vores eget lag, så den
+                          IKKE kan rulle ud af syne når kunden er nede ved kortfelterne.
+                          Det er dér tvivlen om "trækkes der penge nu?" opstår, og dét
+                          er dér svaret skal stå. Prisen kommer fra lib/pakke.js —
+                          aldrig hardkodet. */}
+                      <div className="betaling-note">
+                        {udenProeve ? (
+                          <>
+                            <b>Til betaling i dag: {billing === "yearly" ? priceText.yearly : priceText.monthly}</b>
+                            {" "}· du bliver betalende bruger med det samme
+                          </>
+                        ) : (
+                          <>
+                            <b>Til betaling i dag: 0,00 kr.</b>
+                            {" "}· {TRIAL_DAYS} dages gratis prøveperiode · første træk om {TRIAL_DAYS} dage
+                          </>
+                        )}
+                      </div>
+                      <div id="betalingsboks" />
+                      <button type="button" className="btn-ghost betaling-fortryd"
+                        onClick={() => setBetalingAaben(false)}>
+                        Tilbage
+                      </button>
+                    </div>
+                  )}
 
                   <div className="pay-secure" style={{ justifyContent: "center", marginTop: 14 }}>
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="4" y="11" width="16" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg>

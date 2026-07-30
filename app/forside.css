@@ -1,7 +1,7 @@
-/* ============================================================
-   Forside — ordret CSS fra birdly-v2.html, scoped under .birdly-home.
+﻿/* ============================================================
+   Forside â€” ordret CSS fra birdly-v2.html, scoped under .birdly-home.
    Delt base (reset, :root, body-font, a, img, @keyframes) ligger i globals.css.
-   Chat-widget-CSS står global nederst (unikke klassenavne, ingen kollision).
+   Chat-widget-CSS stÃ¥r global nederst (unikke klassenavne, ingen kollision).
    ============================================================ */
 .birdly-home{ background:var(--white); min-height:100vh; }
 
@@ -60,7 +60,7 @@
   .smscard .row{font-size:12.5px;color:#33414f;line-height:1.5}
   .smscard .lnk{color:var(--sky);font-weight:700}
   .smscard .stop{font-size:10.5px;color:var(--navy-soft);margin-top:8px;border-top:1px solid var(--line);padding-top:7px}
-  /* match-kort flyttet IND i telefon-skærmen (flyder under SMS-kortet) */
+  /* match-kort flyttet IND i telefon-skÃ¦rmen (flyder under SMS-kortet) */
   .matchcard{margin:14px 14px 0;background:#fff;border-radius:16px;padding:15px;box-shadow:0 8px 20px rgba(13,27,42,.1);border:1px solid var(--line)}
   .matchcard .top{display:flex;align-items:center;gap:7px;font-weight:800;font-family:'Plus Jakarta Sans';font-size:14px;margin-bottom:9px}
   .matchcard .top .tick{width:20px;height:20px;border-radius:50%;background:var(--teal);display:flex;align-items:center;justify-content:center}
@@ -80,9 +80,9 @@
   .center .lead{margin-left:auto;margin-right:auto}
 
   /* pain */
-  /* ⚠️ --sky-soft, IKKE --grey. Det grå (#F2F4F7) faldt uden for temaet og gjorde
-     sektionen kold i forhold til nabosektionerne. Samme lyseblå som .examples
-     ("Beskeden du får"), så de to flader er identiske. */
+  /* âš ï¸ --sky-soft, IKKE --grey. Det grÃ¥ (#F2F4F7) faldt uden for temaet og gjorde
+     sektionen kold i forhold til nabosektionerne. Samme lyseblÃ¥ som .examples
+     ("Beskeden du fÃ¥r"), sÃ¥ de to flader er identiske. */
   .pain{background:var(--sky-soft)}
   .pain-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:46px}
   .pcard{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:28px;box-shadow:var(--shadow)}
@@ -136,7 +136,7 @@
   .vcard p{color:var(--navy-soft);font-size:14.5px}
 
   /* pricing */
-  /* Samme lyseblå som .pain og .examples — ét tema, ingen grå flader. */
+  /* Samme lyseblÃ¥ som .pain og .examples â€” Ã©t tema, ingen grÃ¥ flader. */
   .pricing{background:var(--sky-soft)}
   .tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:50px;align-items:stretch}
   .tiers.single{grid-template-columns:minmax(0,460px);justify-content:center}
@@ -153,7 +153,7 @@
   .tier li svg{flex:0 0 18px;margin-top:3px}
   .tier .btn{width:100%}
   .price-note{text-align:center;color:var(--navy-soft);font-size:14px;margin-top:24px}
-  /* Pris — to bokse (md/år) + "det får du"-boks */
+  /* Pris â€” to bokse (md/Ã¥r) + "det fÃ¥r du"-boks */
   .pill-incl{display:inline-block;background:#E6FFFB;color:var(--teal-dk);font-family:'Plus Jakarta Sans';font-weight:700;font-size:12px;letter-spacing:.06em;padding:6px 14px;border-radius:999px;margin-bottom:14px}
   .price-duo{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px;max-width:720px;margin:42px auto 0;align-items:stretch}
   .pbox{position:relative;background:#fff;border:1px solid var(--line);border-radius:22px;padding:32px 28px;box-shadow:var(--shadow);display:flex;flex-direction:column;text-align:center}
@@ -166,22 +166,22 @@
   .pbox .pfoot{margin-top:auto;padding-top:22px}
   .pbox .pbtn{width:100%}
   .pbox .psub{font-size:12.5px;color:var(--navy-soft);margin-top:11px}
-  /* HVID på den lyseblå sektion. Da .pricing blev sky-soft, forsvandt boksen ind i
-     baggrunden — den var selv sky-soft. Hvid giver det lag cards ellers har på
-     lyseblå flader andre steder på siden. */
+  /* HVID pÃ¥ den lyseblÃ¥ sektion. Da .pricing blev sky-soft, forsvandt boksen ind i
+     baggrunden â€” den var selv sky-soft. Hvid giver det lag cards ellers har pÃ¥
+     lyseblÃ¥ flader andre steder pÃ¥ siden. */
   .price-incl{max-width:720px;margin:24px auto 0;background:var(--white);border:1px solid var(--line);border-radius:18px;padding:24px 28px}
   .price-incl h3{font-size:17px;text-align:center;margin-bottom:16px}
   .price-incl ul{list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:12px 26px}
-  /* font-weight 600 — samme halvfede som .cta-note ("Gratis de første 14 dage").
-     Punkterne stod i arvet 400 og læste som tynde. Farven bliver --navy og skifter
+  /* font-weight 600 â€” samme halvfede som .cta-note ("Gratis de fÃ¸rste 14 dage").
+     Punkterne stod i arvet 400 og lÃ¦ste som tynde. Farven bliver --navy og skifter
      BEVIDST ikke til .cta-note's --navy-soft: den er lysere, og teksten skulle netop
-     være tydeligere, ikke mere afdæmpet. */
+     vÃ¦re tydeligere, ikke mere afdÃ¦mpet. */
   .price-incl li{display:flex;gap:10px;font-size:14.5px;font-weight:600;align-items:flex-start;color:var(--navy)}
   .price-incl li svg{flex:0 0 18px;margin-top:3px}
-  /* Launch-fase — sticky stak (banner + header), nedtællings-ur + pris-streamer */
+  /* Launch-fase â€” sticky stak (banner + header), nedtÃ¦llings-ur + pris-streamer */
   .topstack{position:sticky;top:0;z-index:90}
   .topstack > header{position:static;top:auto}
-  /* Premiere-topbanner: stort, navy-gradient, fremhævede sekunder. */
+  /* Premiere-topbanner: stort, navy-gradient, fremhÃ¦vede sekunder. */
   .launch-bar{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:10px 20px;min-height:60px;padding:12px 22px;background:linear-gradient(90deg,var(--navy) 0%,#185FA5 100%);color:#fff;font-family:'Inter',sans-serif;font-size:16px;line-height:1.3;text-align:center}
   .launch-bar .lb-msg{font-weight:600}
   .launch-bar .lb-msg b{color:#fff;font-weight:800}
@@ -190,9 +190,9 @@
   .cd{display:inline-flex;gap:6px;font-variant-numeric:tabular-nums}
   .cd-u{background:rgba(255,255,255,.14);border-radius:8px;padding:5px 9px;font-size:14.5px;font-weight:600;white-space:nowrap}
   .cd-u b{font-family:'Plus Jakarta Sans';font-weight:800;color:var(--sky-200)}
-  .launch-bar .cd-sec{background:rgba(46,183,255,.22)}        /* fremhæv sekund-feltet */
+  .launch-bar .cd-sec{background:rgba(46,183,255,.22)}        /* fremhÃ¦v sekund-feltet */
   .launch-bar .cd-sec b{color:var(--sky)}
-  /* Pris-banner ved pris-sektionen: lys teal-grøn, to linjer. Samme ur-kilde. */
+  /* Pris-banner ved pris-sektionen: lys teal-grÃ¸n, to linjer. Samme ur-kilde. */
   .launch-streamer{max-width:720px;margin:30px auto 0;padding:16px 22px;border-radius:14px;background:#E1F5EE;border:1.5px solid var(--teal);color:var(--navy);text-align:center;box-shadow:0 10px 26px rgba(0,179,166,.14)}
   .launch-streamer .ls-main{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:9px;font-size:16px;font-weight:600}
   .launch-streamer .ls-main b{color:var(--teal-dk);font-weight:800}
@@ -202,7 +202,7 @@
   .launch-streamer .cd-sec b{color:var(--teal-dk)}
   @media(max-width:640px){
     .launch-bar{font-size:14px;gap:6px 10px;padding:11px 12px}
-    .launch-bar .lb-msg{flex:1 1 100%}                        /* tekst over uret på mobil */
+    .launch-bar .lb-msg{flex:1 1 100%}                        /* tekst over uret pÃ¥ mobil */
     .launch-bar .lb-cta{font-size:13px;padding:8px 15px}
     .cd-u{padding:3px 6px;font-size:13px}
     .launch-streamer{margin-top:24px;padding:14px 16px}
@@ -239,8 +239,8 @@
 
   /* cancel */
   .cancel{background:var(--white)}
-  /* Opsigelses-boksen: sidste grå flade på forsiden. Sektionen omkring er hvid, så
-     her giver sky-soft laget — modsat .price-incl hvor sektionen blev lyseblå. */
+  /* Opsigelses-boksen: sidste grÃ¥ flade pÃ¥ forsiden. Sektionen omkring er hvid, sÃ¥
+     her giver sky-soft laget â€” modsat .price-incl hvor sektionen blev lyseblÃ¥. */
   .cbox{max-width:780px;margin:0 auto;background:var(--sky-soft);border:1px solid var(--line);border-radius:24px;padding:40px;text-align:center}
   .cancel h2{font-size:clamp(26px,3.2vw,38px)}
   .cancel .lead{margin:14px auto 0}
@@ -282,12 +282,12 @@
   @media(max-width:920px){
     nav.menu{display:none}
     .hero-grid,.ex-grid,.about-grid,.su-grid{grid-template-columns:1fr;gap:40px}
-    /* BUDSKABET FØRST PÅ MOBIL. Her stod .stage{order:-1}, som trak telefon-mockup'en
-       op FØR h1'en. Et billede af en telefon med en SMS som det allerførste kan forvirre
-       en besøgende om hvad Birdly overhovedet er — overskrift, undertekst og CTA skal
-       bære det første indtryk. Uden order-reglen gælder DOM-rækkefølgen: tekst, så
-       telefon. Sæt den ALDRIG tilbage.
-       Desktop er urørt: reglen lå kun i dette breakpoint, og side-om-side-heroen
+    /* BUDSKABET FÃ˜RST PÃ… MOBIL. Her stod .stage{order:-1}, som trak telefon-mockup'en
+       op FÃ˜R h1'en. Et billede af en telefon med en SMS som det allerfÃ¸rste kan forvirre
+       en besÃ¸gende om hvad Birdly overhovedet er â€” overskrift, undertekst og CTA skal
+       bÃ¦re det fÃ¸rste indtryk. Uden order-reglen gÃ¦lder DOM-rÃ¦kkefÃ¸lgen: tekst, sÃ¥
+       telefon. SÃ¦t den ALDRIG tilbage.
+       Desktop er urÃ¸rt: reglen lÃ¥ kun i dette breakpoint, og side-om-side-heroen
        styres af grid-kolonnerne, ikke af order. */
     .pain-grid,.steps,.vals,.tiers{grid-template-columns:1fr}
     .price-duo,.price-incl ul{grid-template-columns:1fr}
@@ -297,7 +297,7 @@
   @media(max-width:520px){.vals{grid-template-columns:1fr}}
 }
 
-/* chat support widget — globale klassenavne (unikke, ingen kollision med /tilmeld) */
+/* chat support widget â€” globale klassenavne (unikke, ingen kollision med /tilmeld) */
 .chat-launcher{position:fixed;right:22px;bottom:22px;z-index:200;width:62px;height:62px;border-radius:50%;background:var(--teal);border:0;cursor:pointer;box-shadow:0 12px 30px rgba(0,179,166,.42);display:flex;align-items:center;justify-content:center;transition:transform .2s}
 .chat-launcher:hover{transform:scale(1.06)}
 .chat-launcher svg{position:absolute;transition:opacity .2s,transform .2s}
@@ -330,49 +330,23 @@ body.chat-open .chat-panel{opacity:1;transform:none;pointer-events:auto}
 @media(max-width:520px){.chat-panel{right:12px;left:12px;bottom:86px;width:auto;height:72vh}.chat-launcher{right:14px;bottom:14px}}
 
 /* ============================================================
-   OPGAVE-TÆLLER — bar under menuen, følger med i .topstack.
+   OPGAVE-TÃ†LLER â€” bar under menuen, fÃ¸lger med i .topstack.
    Ingen egen z-index: den ARVER stakkens (90), fordi den ligger inde i den. Det er
-   med vilje — et nyt lag her ville være endnu en ting at holde styr på mod
+   med vilje â€” et nyt lag her ville vÃ¦re endnu en ting at holde styr pÃ¥ mod
    samtykke-banner (90, bund) og sticky-CTA (80, bund).
    ============================================================ */
-.opgtal{background:var(--sky-soft);border-bottom:1px solid var(--sky-200)}
-.opgtal-inner{max-width:1080px;margin:0 auto;padding:8px 22px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.opgtal-tekst{font-size:14px;color:var(--navy);line-height:1.4}
-.opgtal-tekst b{font-weight:800}
-/* Dioden pulserer blødt — en "live"-indikator, ikke en alarm. 2,4 s og en meget
-   lille skala-ændring: øjet skal registrere at noget er levende uden at blive
-   trukket væk fra tallet. prefers-reduced-motion respekteres nedenfor. */
-.opgtal-prik{width:9px;height:9px;border-radius:50%;background:var(--teal);flex:0 0 9px;box-shadow:0 0 0 0 rgba(0,179,166,.5);animation:opgpuls 2.4s ease-in-out infinite}
-@keyframes opgpuls{
-  0%,100%{box-shadow:0 0 0 0 rgba(0,179,166,.45);transform:scale(1)}
-  50%{box-shadow:0 0 0 6px rgba(0,179,166,0);transform:scale(1.12)}
-}
-@media(prefers-reduced-motion:reduce){.opgtal-prik{animation:none;box-shadow:0 0 0 3px rgba(0,179,166,.16)}}
-
-/* STORT-varianten (forsiden): tallet er den visuelle helt. */
-.opgtal-stort .opgtal-inner{padding:11px 22px;justify-content:center}
-.opgtal-stort .opgtal-tekst{font-size:15.5px}
-.opgtal-num{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:25px;color:var(--teal);letter-spacing:-.02em;line-height:1;vertical-align:-2px;margin:0 3px}
-@media(max-width:560px){
-  .opgtal-stort .opgtal-inner{padding:9px 14px}
-  .opgtal-stort .opgtal-tekst{font-size:13.5px;text-align:center}
-  .opgtal-num{font-size:21px}
-}
-.opgtal-vaelg select{margin-left:auto;font-family:inherit;font-size:13.5px;color:var(--navy);background:#fff;border:1px solid var(--sky-200);border-radius:9px;padding:5px 9px;cursor:pointer;max-width:min(52vw,230px)}
-.opgtal-kompakt .opgtal-inner{padding:7px 16px}
-.visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
-@media(max-width:560px){
-  .opgtal-inner{padding:7px 14px;gap:8px}
-  .opgtal-tekst{font-size:13px}
-  .opgtal-vaelg select{font-size:12.5px;padding:4px 7px}
-}
+/* âš ï¸ FLYTTET TIL globals.css (31-07-2026). Reglerne lÃ¥ kun her, men forside.css
+   indlÃ¦ses IKKE pÃ¥ /tilmeld â€” sÃ¥ baren stod HELT ustylet i funnelen: en flad,
+   venstrestillet stribe i stedet for forsidens centrerede bar. En komponent der
+   bruges pÃ¥ flere sider skal have sine stile et sted der altid indlÃ¦ses, ellers
+   afhÃ¦nger udseendet af hvilken side den tilfÃ¦ldigvis stÃ¥r pÃ¥. */
 
 /* ============================================================
-   STICKY CTA (branche- og fag×geo-sider). Slank bjælke i bunden, altid synlig.
-   z-index 80: under samtykke-banneret (90) og chat-widgeten (200), så den aldrig
-   dækker et valg kunden SKAL kunne tage. Når banneret vises, løftes bjælken op med
-   den højde banneret selv melder ud — samme mekanik som chat-knappen.
-   Sidens bund får plads under sig, så bjælken ikke dækker footerens sidste linje.
+   STICKY CTA (branche- og fagÃ—geo-sider). Slank bjÃ¦lke i bunden, altid synlig.
+   z-index 80: under samtykke-banneret (90) og chat-widgeten (200), sÃ¥ den aldrig
+   dÃ¦kker et valg kunden SKAL kunne tage. NÃ¥r banneret vises, lÃ¸ftes bjÃ¦lken op med
+   den hÃ¸jde banneret selv melder ud â€” samme mekanik som chat-knappen.
+   Sidens bund fÃ¥r plads under sig, sÃ¥ bjÃ¦lken ikke dÃ¦kker footerens sidste linje.
    ============================================================ */
 .sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:80;background:rgba(255,255,255,.94);backdrop-filter:blur(10px);border-top:1px solid var(--line);box-shadow:0 -6px 24px rgba(13,27,42,.07);transition:bottom .2s}
 .sticky-cta-inner{max-width:1080px;margin:0 auto;padding:11px 22px;display:flex;align-items:center;justify-content:center;gap:18px;flex-wrap:wrap}
@@ -386,10 +360,10 @@ body.samtykke-vises .sticky-cta{bottom:calc(var(--samtykke-h,132px) + 12px)}
   .sticky-cta-inner .btn{flex:1 1 100%;text-align:center}
 }
 
-/* Samtykke-bjælken ligger i bunden med z-index 90 — altså UNDER chat-widgeten (200).
-   Uden dette dækker chat-knappen "Accepter alle" på mobil og mellembredder. Bjælken
-   melder sin målte højde ud som --samtykke-h; fallback'en gælder kun det ene frame før
-   målingen er kørt. Rykkes tilbage af sig selv, når valget er taget. */
+/* Samtykke-bjÃ¦lken ligger i bunden med z-index 90 â€” altsÃ¥ UNDER chat-widgeten (200).
+   Uden dette dÃ¦kker chat-knappen "Accepter alle" pÃ¥ mobil og mellembredder. BjÃ¦lken
+   melder sin mÃ¥lte hÃ¸jde ud som --samtykke-h; fallback'en gÃ¦lder kun det ene frame fÃ¸r
+   mÃ¥lingen er kÃ¸rt. Rykkes tilbage af sig selv, nÃ¥r valget er taget. */
 body.samtykke-vises .chat-launcher{bottom:calc(var(--samtykke-h,132px) + 34px);transition:bottom .2s}
 body.samtykke-vises .chat-panel{bottom:calc(var(--samtykke-h,132px) + 108px)}
 @media(max-width:520px){
@@ -398,8 +372,8 @@ body.samtykke-vises .chat-panel{bottom:calc(var(--samtykke-h,132px) + 108px)}
 }
 
 /* ============================================================
-   Skabelon-sektion ("Din bud-skabelon") — additiv, scoped under .birdly-home.
-   Genbruger skabelonens grøn/gul-farver (grøn=udfyldt af Birdly, gul=udfyld selv).
+   Skabelon-sektion ("Din bud-skabelon") â€” additiv, scoped under .birdly-home.
+   Genbruger skabelonens grÃ¸n/gul-farver (grÃ¸n=udfyldt af Birdly, gul=udfyld selv).
    ============================================================ */
 .birdly-home{
   .skab-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:46px;align-items:center}
@@ -425,20 +399,20 @@ body.samtykke-vises .chat-panel{bottom:calc(var(--samtykke-h,132px) + 108px)}
 }
 
 /* Stop-point 2: bro-linje under "Kender du det?" + 4. trin-boks (4 kort).
-   Additivt — overstyrer kun .steps' kolonneantal; mobil stabler stadig. */
+   Additivt â€” overstyrer kun .steps' kolonneantal; mobil stabler stadig. */
 .birdly-home{
   .pain .pain-bridge{text-align:center;max-width:62ch;margin:34px auto 0;color:var(--navy-soft);font-size:16.5px;font-weight:500}
   .steps{grid-template-columns:repeat(4,1fr)}
   @media(max-width:920px){.steps{grid-template-columns:1fr}}
 }
 
-  /* Ejer-sætningen + CTA-note. Genbruger eksisterende tokens og typografi —
+  /* Ejer-sÃ¦tningen + CTA-note. Genbruger eksisterende tokens og typografi â€”
      ingen nye farver, fonte eller layout-paradigmer. */
   .owner-line{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:clamp(18px,2.1vw,24px);line-height:1.45;letter-spacing:-.01em;color:var(--navy);max-width:44ch;margin:20px auto 0}
   .cta-primary{display:flex;flex-direction:column;align-items:flex-start;gap:9px}
   .cta-note{font-size:13px;color:var(--navy-soft);font-weight:600;line-height:1.4}
   .pbox .cta-note{margin-top:10px}
   .ctaband .cta-note{color:#EAF6FF;margin-top:14px}
-  /* CTA-noten gør den primære knap-kolonne højere end sekundær-knappen.
-     flex-start holder dem justeret i toppen, så layoutet er som før. */
+  /* CTA-noten gÃ¸r den primÃ¦re knap-kolonne hÃ¸jere end sekundÃ¦r-knappen.
+     flex-start holder dem justeret i toppen, sÃ¥ layoutet er som fÃ¸r. */
   .hero .cta{align-items:flex-start}

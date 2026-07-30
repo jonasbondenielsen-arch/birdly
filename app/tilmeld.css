@@ -97,6 +97,27 @@
   .ok .ck{width:58px;height:58px;border-radius:50%;background:var(--teal);margin:0 auto 14px;display:flex;align-items:center;justify-content:center}
   .ok h2{font-size:24px}
   .ok p{color:var(--navy-soft);margin-top:8px}
+
+  /* ============================================================
+     INDLEJRET BETALING (Reepay EmbeddedSubscription).
+     Erstatter overlay-modalen, som Frisbii dimensionerede for lavt: kunden skulle
+     scrolle inde i iframen, og "0,00 DKK i dag" stod øverst — usynligt netop når
+     kortet blev tastet ind. Her styrer VI højden, og noten ligger uden for iframen.
+     ============================================================ */
+  .betaling-omraade{position:relative;margin-top:18px}
+  /* sticky + top:0 er hele pointen: noten følger med ned gennem kortformularen. */
+  .betaling-note{position:sticky;top:0;z-index:2;background:#F1FAF8;border:1px solid #BFE7DF;
+    border-radius:10px;padding:12px 16px;font-size:14.5px;line-height:1.5;color:var(--navy);
+    text-align:center;margin-bottom:12px;box-shadow:0 2px 6px rgba(13,27,42,.05)}
+  /* Højde nok til at HELE kortformularen står udfoldet — det var den manglende plads
+     der tvang den indre scroll i modalen. */
+  #betalingsboks{min-height:620px}
+  #betalingsboks iframe{width:100%;border:0;display:block}
+  .betaling-fortryd{margin-top:12px;width:100%}
+  @media(max-width:640px){
+    .betaling-note{font-size:13.5px;padding:10px 12px}
+    #betalingsboks{min-height:680px}
+  }
   /* Tryghedsnoten står afdæmpet under velkomsten — den skal kunne findes af den der
      er i tvivl om betalingen, uden at tage opmærksomheden fra selve velkomsten. */
   .ok .trygnote{max-width:520px;margin:16px auto 0;padding-top:14px;border-top:1px solid var(--line);font-size:13.5px;line-height:1.65}

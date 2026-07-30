@@ -20,11 +20,14 @@ import { daTal, rundNed } from "../lib/opgaveTal";
 // ⚠️ INTET TAL ⇒ INGEN BAR. Har serveren ikke kunnet hente tal, renderer vi ingenting
 // frem for "0 opgaver". Et dødt tal er værre end ingen tæller.
 // ============================================================================
-export default function OpgaveTaeller({ tal, kompakt = false }) {
+// ⚠️ INGEN VARIANTER. Baren så forskellig ud på forsiden og i funnelen, fordi
+// stilene lå i forside.css som /tilmeld ikke indlæser. Nu er der ét udseende, ét
+// sted (globals.css) — ingen kompakt/stort-varianter der kan drive fra hinanden.
+export default function OpgaveTaeller({ tal }) {
   if (typeof tal?.bydbare !== "number") return null;
 
   return (
-    <div className={"opgtal opgtal-stort" + (kompakt ? " opgtal-kompakt" : "")}>
+    <div className="opgtal">
       <div className="opgtal-inner">
         <span className="opgtal-prik" aria-hidden="true" />
         <span className="opgtal-tekst">
