@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Logo } from "./Logo";
-import { fetchMyTasks, previewCriteria, saveMyCriteria, undoMyCriteria, dismissTask, sendDismissReason, markerSomRelevant } from "../lib/share";
+import { fetchMyTasks, previewCriteria, saveMyCriteria, undoMyCriteria, dismissTask, sendDismissReason, markerSomRelevant, afvisNaerMatch } from "../lib/share";
 
 // Samlesiden "Mine opgaver" (Spor 3b) — den side samle-SMS'en og -mailen peger på.
 // Ingen login: kundens eget list_token er nøglen, og siden er LEVENDE (viser altid
@@ -104,6 +104,21 @@ export default function MineOpgaver({ token, data, intern = null }) {
   // og så renderes hele afsnittet slet ikke — siden er da identisk med før fase 2.
   const [lagtTilSide, setLagtTilSide] = useState(data?.lagt_til_side || []);
   const [bunkeAaben, setBunkeAaben] = useState(false);
+  // NÆR-MATCH: forslag over kundens beløbsloft. Tom når flaget er slukket.
+  const [naerMatch, setNaerMatch] = useState(data?.naer_match || []);
+
+  // Afvis et forslag. Fjernelsen sker FØRST og lokalt — kunden skal se at vi lyttede
+  // med det samme, ikke vente på serveren. Kaldet må fejle uden at rulle det tilbage;
+  // i værste fald dukker forslaget op igen ved næste indlæsning, og det er langt bedre
+  // end en knap der ser ud til ikke at virke.
+  async function haandterAfvisNaerMatch(shareToken) {
+    setNaerMatch((prev) => prev.filter((x) => x.share_token !== shareToken));
+    try {
+      await afvisNaerMatch(token, shareToken);
+    } catch {
+      /* med vilje tavs — se noten ovenfor */
+    }
+  }
 
   const visteOpgaver = useMemo(() => {
     const kopi = [...opgaver];
@@ -405,6 +420,37 @@ export default function MineOpgaver({ token, data, intern = null }) {
         </div>
       )}
 
+      {/* NÆR-MATCH: forslag der matcher alt undtagen beløbet. Tom liste ⇒ hele
+          afsnittet renderes ikke, præcis som "lagt til side" — så siden er identisk
+          med før funktionen fandtes, så længe flaget er slukket.
+          Står NEDERST med vilje: det er et sikkerhedsnet, ikke hovedproduktet, og må
+          aldrig skubbe kundens rigtige opgaver ned. */}
+      {naerMatch.length > 0 && (
+        <div style={{ marginTop: 22 }}>
+          <div style={{ ...CARD, background: "#FFFDF5", borderColor: "#F2D98A" }}>
+            <h2 style={{ fontSize: 17, margin: "0 0 6px", color: NAVY }}>
+              Lidt over dit beløbsloft ({naerMatch.length})
+            </h2>
+            <p style={{ margin: 0, color: MUTED, fontSize: 14, lineHeight: 1.6 }}>
+              Der har ikke været opgaver der passer helt til dine kriterier den seneste uge.
+              Disse passer på dit fag og dit område, men er større end det beløb du har sat.
+              Er de for store, så tryk <b>Ikke interessant</b> — så holder vi op med at foreslå
+              den slags.
+            </p>
+          </div>
+          <div style={{ display: "grid", gap: 12, marginTop: 12 }}>
+            {naerMatch.map((o) => (
+              <OpgaveKort
+                key={o.share_token}
+                o={o}
+                naerMatch
+                onAfvis={() => haandterAfvisNaerMatch(o.share_token)}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
       <p style={{ marginTop: 26, color: MUTED, fontSize: 13, lineHeight: 1.6 }}>
         Listen opdateres automatisk. Opgaver forsvinder herfra når fristen er overskredet.
         Kilde: TED (EU's udbudsdatabase). Birdly er ikke ordregiver — tjek altid det officielle udbudsmateriale.
@@ -415,13 +461,21 @@ export default function MineOpgaver({ token, data, intern = null }) {
 
 // ---------------------------------------------------------------------------
 
-function OpgaveKort({ o, onFjern, intern = null, tilSide = false, onRelevant = null }) {
+// naerMatch: forslag der matcher alt undtagen beløbet. SAMME kort som de rigtige
+// opgaver — ikke en ny komponent — så de aldrig kan komme til at se ud som to
+// forskellige produkter. Forskellen er ét badge, én knap og hvor "Se opgaven" peger.
+function OpgaveKort({ o, onFjern, intern = null, tilSide = false, onRelevant = null, naerMatch = false, onAfvis = null }) {
   const dage = dageTil(o.deadline);
   const haster = dage != null && dage <= 14;
   return (
     <div style={CARD}>
       <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginBottom: 6 }}>
-        {o.er_ny && <Badge bg="#EAF6FF" farve="#0D274A" kant="#B8DFF8">Nyt</Badge>}
+        {/* Forholdet til kundens EGET loft. "1,8× dit loft" kan afvises på et sekund;
+            et beløb alene kræver at hun selv regner. */}
+        {naerMatch && o.gange_over_loft && (
+          <Badge bg="#FFF7E0" farve="#8a6d1f" kant="#F2D98A">{String(o.gange_over_loft).replace(".", ",")}× dit beløbsloft</Badge>
+        )}
+        {!naerMatch && o.er_ny && <Badge bg="#EAF6FF" farve="#0D274A" kant="#B8DFF8">Nyt</Badge>}
         {haster && <Badge bg="#FFF1F1" farve="#B03A3A" kant="#F3C9C9">{dage <= 0 ? "Frist i dag" : `${dage} dage tilbage`}</Badge>}
         {o.beholdt_som_sendt && <Badge bg="#F5F6F8" farve={MUTED} kant="#E6EAEF">Du har fået besked om denne</Badge>}
       </div>
@@ -444,12 +498,26 @@ function OpgaveKort({ o, onFjern, intern = null, tilSide = false, onRelevant = n
       )}
 
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-        {/* Markøren følger med ind på opgaven, så et internt klik heller ikke tæller
-            en åbning. Uden markør er linket NØJAGTIG som før. */}
-        <Link href={`/udbud/${o.share_token}${intern ? `?intern=${encodeURIComponent(intern)}` : ""}`} style={{ ...KNAP_PRIMARY, textDecoration: "none", display: "inline-block" }}>
-          Se opgaven
-        </Link>
-        {tilSide ? (
+        {naerMatch ? (
+          // ⚠️ Til den OFFICIELLE kilde, ikke /udbud/{token}: den rute slår op i
+          // notice_matches.share_token, og et nær-match-token findes ikke dér —
+          // linket ville give 404. Et forslag er heller ikke en leverance, så den
+          // fulde opgaveside med bud-skabelon hører ikke til her.
+          o.source_url ? (
+            <a href={o.source_url} target="_blank" rel="noopener noreferrer" style={{ ...KNAP_PRIMARY, textDecoration: "none", display: "inline-block" }}>
+              Se opgaven hos udbyder
+            </a>
+          ) : null
+        ) : (
+          /* Markøren følger med ind på opgaven, så et internt klik heller ikke tæller
+             en åbning. Uden markør er linket NØJAGTIG som før. */
+          <Link href={`/udbud/${o.share_token}${intern ? `?intern=${encodeURIComponent(intern)}` : ""}`} style={{ ...KNAP_PRIMARY, textDecoration: "none", display: "inline-block" }}>
+            Se opgaven
+          </Link>
+        )}
+        {naerMatch ? (
+          <button type="button" style={KNAP_SEKUNDAER} onClick={onAfvis}>Ikke interessant — for høj værdi</button>
+        ) : tilSide ? (
           <button type="button" style={KNAP_SEKUNDAER} onClick={onRelevant}>Dette er relevant</button>
         ) : (
           <button type="button" style={KNAP_SEKUNDAER} onClick={onFjern}>Ikke relevant</button>
