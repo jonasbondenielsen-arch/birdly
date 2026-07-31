@@ -321,6 +321,20 @@ export default function Tilmeld({ initialFag = null, initialRegion = null, opgav
     }
     if (step === 2) {
       if (selectedFagKeys.length === 0) return setErr("Vælg mindst ét fag.");
+      // ⚠️ NUL-DÆKNING. Uden mindst ét arbejdsområde kan den effektive CPV-liste blive
+      // tom, og så kan matchmotoren aldrig finde noget til kunden — hun ville betale og
+      // modtage intet, permanent og usynligt. Serveren har det autoritative værn
+      // (signup + birdly_effective_cpv_for); dette er den venlige udgave, der fanger
+      // det HER frem for at afvise efter fire trin.
+      //
+      // Fag UDEN underområder undtages: der er ingen felter at krydse af (de matches på
+      // fagets brede koder), så et krav ville gøre dem umulige at tilmelde. Kataloget
+      // eksponerer ikke bred-koderne, så klienten kan ikke afgøre den del — det er
+      // netop derfor serveren har det sidste ord.
+      const fagMedOmraader = selectedFagKeys.filter((k) => (fagByKey[k]?.smal?.length || 0) > 0);
+      if (fagMedOmraader.length > 0 && cpvSelections.length === 0) {
+        return setErr("Vælg mindst ét arbejdsområde — det er dem, vi holder øje med for dig.");
+      }
     }
     setStep((s) => Math.min(3, s + 1));
     window.scrollTo({ top: 0, behavior: "smooth" });
