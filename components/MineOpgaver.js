@@ -79,6 +79,20 @@ function fmtDato(iso) {
   const d = new Date(iso);
   return Number.isNaN(d.getTime()) ? "—" : d.toLocaleDateString("da-DK", { day: "numeric", month: "short", year: "numeric" });
 }
+// "Tilføjet 31. juli" — hvornår VI lagde opgaven på kundens liste. Bevidst uden år
+// i indeværende år (kortere og lettere at læse), men MED år hvis den er ældre —
+// ellers ville en opgave fra i fjor se ud som om den kom i denne uge.
+function fmtTilfoejet(iso) {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  const nu = new Date();
+  return d.toLocaleDateString("da-DK",
+    d.getFullYear() === nu.getFullYear()
+      ? { day: "numeric", month: "long" }
+      : { day: "numeric", month: "long", year: "numeric" });
+}
+
 function dageTil(iso) {
   if (!iso) return null;
   const ms = new Date(iso).getTime() - Date.now();
@@ -507,16 +521,40 @@ function OpgaveKort({ o, onFjern, intern = null, tilSide = false, onRelevant = n
   // Ingen "haster"-badge uden en frist — vi kan ikke vide om den haster, og et gæt
   // ville enten stresse kunden unødigt eller give falsk ro.
   const haster = !o.frist_ukendt && dage != null && dage <= 14;
+  const tilfoejet = naerMatch ? null : fmtTilfoejet(o.created_at);
   return (
-    <div style={CARD}>
-      <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginBottom: 6 }}>
+    // position:relative bærer den gule stjerne, som hænger UDEN FOR kortets hjørne.
+    // CARD spredes frem for at blive muteret — den deles med andre bokse på siden.
+    <div style={{ ...CARD, position: "relative" }}>
+      {/* ⚠️ NY SIDEN SIDST — mærket hænger uden for kortet, de to datobokse står
+          inde i det. Det er med vilje: de tre må ikke kunne forveksles.
+          Gul "Nyt" = "denne er ny for dig" · rød = "fristen haster" · blå = "vi
+          fandt den denne dag". Lå mærket i samme række som de to andre, ville det
+          læse som endnu en oplysning frem for et blikfang.
+          Logikken er UÆNDRET: samme o.er_ny (last_viewed_at) som drev både den
+          gamle blå chip og stjernen — kun den visuelle markør er skiftet. */}
+      {!naerMatch && o.er_ny && <NytMaerke />}
+
+      <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginBottom: 8 }}>
         {/* Forholdet til kundens EGET loft. "1,8× dit loft" kan afvises på et sekund;
             et beløb alene kræver at hun selv regner. */}
         {naerMatch && o.gange_over_loft && (
           <Badge bg="#FFF7E0" farve="#8a6d1f" kant="#F2D98A">{String(o.gange_over_loft).replace(".", ",")}× dit beløbsloft</Badge>
         )}
-        {!naerMatch && o.er_ny && <Badge bg="#EAF6FF" farve="#0D274A" kant="#B8DFF8">Nyt</Badge>}
-        {haster && <Badge bg="#FFF1F1" farve="#B03A3A" kant="#F3C9C9">{dage <= 0 ? "Frist i dag" : `${dage} dage tilbage`}</Badge>}
+        {/* RØD FØRST — venstre hjørne. Kun ved reel hast (≤14 dage); en rød pille på
+            en opgave med to måneders frist ville gøre farven betydningsløs. */}
+        {/* "1 dag", ikke "1 dage" — fejlen har stået siden badget blev lavet og er
+            synlig for kunden netop på den opgave der haster mest. */}
+        {haster && <Badge bg="#FFF1F1" farve="#B03A3A" kant="#F3C9C9">{dage <= 0 ? "Frist i dag" : `${dage} ${dage === 1 ? "dag" : "dage"} tilbage`}</Badge>}
+        {/* BLÅ DEREFTER — hvornår opgaven kom på kundens liste. IKKE udbuddets frist:
+            det er to forskellige datoer, og de står derfor i hver sin farve med
+            ekstra luft imellem, så de ikke kan læses som én oplysning.
+            Kilden er notice_matches.created_at, som API'et allerede sender med. */}
+        {tilfoejet && (
+          <span style={{ marginLeft: haster ? 6 : 0 }}>
+            <Badge bg="#EAF6FF" farve="#0D274A" kant="#B8DFF8">Tilføjet {tilfoejet} af Birdly</Badge>
+          </span>
+        )}
         {o.beholdt_som_sendt && <Badge bg="#F5F6F8" farve={MUTED} kant="#E6EAEF">Du har fået besked om denne</Badge>}
       </div>
 
@@ -569,6 +607,46 @@ function OpgaveKort({ o, onFjern, intern = null, tilSide = false, onRelevant = n
         )}
       </div>
     </div>
+  );
+}
+
+// GULT "NYT"-MÆRKE — afløser den blå "Nyt"-chip.
+//
+// ⚠️ VAR ET STJERNE-IKON, ER NU TEKST (31-07-2026). Stjernen fangede godt nok øjet,
+// men sagde ikke HVAD den betød: et ikon uden tekst kan lige så godt læses som
+// "favorit", "vigtig" eller "markeret". Ordet "Nyt" er utvetydigt i samme øjeblik
+// det ses. Farven bevares — det var blikfanget der virkede, ikke formen.
+//
+// Hænger ud over kortets øverste venstre hjørne, altså UDEN FOR den række hvor rød
+// og blå står. Det er hele pointen: "Nyt" er en tilstand ved opgaven set med
+// kundens øjne, mens de to andre er oplysninger OM opgaven. Lå mærket i samme
+// række, ville det læse som en tredje datooplysning.
+//
+// left:-8px mod WRAP's 18px sidepadding ⇒ 10px inde i viewporten selv på den
+// smalleste mobil: ingen klipning, ingen vandret scroll, samme placering på begge
+// bredder.
+//
+// Den hvide ring (box-shadow) adskiller mærket fra kortets kant. Uden den flyder
+// det sammen med rammen, og på mobil hvor kortene står tæt kunne det læses som
+// hørende til kortet ovenfor.
+//
+// Mørk tekst på gult frem for hvid: hvid på #FFC33D har for lav kontrast til at
+// være læsbar i sollys — og en markør man skal kigge efter er ingen markør.
+function NytMaerke() {
+  return (
+    <span
+      title="Kom til siden dit sidste besøg"
+      aria-label="Ny siden dit sidste besøg"
+      style={{
+        position: "absolute", left: -8, top: -11, zIndex: 2,
+        background: "#FFC33D", color: "#4A3200",
+        border: "1px solid #E09E00", borderRadius: 999,
+        padding: "3px 11px", fontSize: 12, fontWeight: 800, letterSpacing: ".01em",
+        boxShadow: "0 0 0 3px #fff, 0 1px 4px rgba(27,39,51,.18)",
+      }}
+    >
+      Nyt
+    </span>
   );
 }
 
