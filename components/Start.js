@@ -392,9 +392,12 @@ export default function Start({ startFag = null }) {
                       checked={!!omraadeValg[a.cpv]}
                       onChange={() => setOmraadeValg((s) => ({ ...s, [a.cpv]: !s[a.cpv] }))}
                     />
+                    {/* ⚠️ Undertitlen vises KUN når den siger noget nyt. For flere
+                        områder er kunde_titel og name_da identiske ("Byggemodning"),
+                        og så stod ordet to gange under hinanden. */}
                     <span>
                       <b>{a.kunde_titel || a.name_da}</b>
-                      {a.name_da && a.kunde_titel && <i>{a.name_da}</i>}
+                      {a.name_da && a.kunde_titel && a.name_da !== a.kunde_titel && <i>{a.name_da}</i>}
                     </span>
                   </label>
                 ))}
