@@ -108,6 +108,11 @@ export default function Start({ startFag = null }) {
   const [omraadeValg, setOmraadeValg] = useState({}); // { [cpv]: true }
   // "Alle brede opgaver" er default og anbefalet — samme forvalg som /tilmeld.
   const [bredde, setBredde] = useState("alle");
+  // ⚠️ KUN SYNLIGHED. Listen er foldet som standard, fordi den hyppigste handling
+  // er "bare fortsæt" og trin 3 ellers blev 2,1 skærme høj på mobil med Fortsæt
+  // under folden. Afkrydsningerne bor i omraadeValg og røres IKKE af at folde —
+  // fagKoder regnes af samme state uanset om listen er synlig.
+  const [aabenOmr, setAabenOmr] = useState(false);
 
   // Trin 3
   const [kandidater, setKandidater] = useState(null);
@@ -151,12 +156,25 @@ export default function Start({ startFag = null }) {
     setOmraadeValg(n);
   }, [omraader]);
 
-  const alleValgt = omraader.length > 0 && omraader.every((a) => omraadeValg[a.cpv]);
+  const antalValgt = fagKoder.length;
+  const alleValgt = omraader.length > 0 && antalValgt === omraader.length;
   function saetAlle(paa) {
     const n = {};
     for (const a of omraader) if (a.cpv) n[a.cpv] = paa;
     setOmraadeValg(n);
   }
+
+  // ⚠️ Teksten læses AF state, ikke antaget. Står der "alle valgt" mens kunden har
+  // fjernet tre, lyver resuméet om det hun faktisk har valgt — og hun opdager det
+  // først når beskederne ikke passer.
+  const omrResume =
+    omraader.length === 0
+      ? null
+      : antalValgt === 0
+        ? "Ingen valgt — vælg mindst ét"
+        : alleValgt
+          ? `Alle ${omraader.length} arbejdsområder er valgt`
+          : `${antalValgt} af ${omraader.length} arbejdsområder valgt`;
 
   // ---- Trin 1: CVR-opslag ----
   async function slaaOp(vaerdi) {
@@ -376,52 +394,75 @@ export default function Start({ startFag = null }) {
           <h1>Hvad laver I helt præcis?</h1>
           <p className="st-hj">Kryds det fra I ikke laver. Så slipper I for beskeder om det.</p>
 
-          {omraader.length > 0 ? (
-            <>
-              <div className="st-omrhoved">
-                <span className="st-lab" style={{ margin: 0 }}>Dine arbejdsområder</span>
-                <button type="button" className="st-alle" onClick={() => saetAlle(!alleValgt)}>
-                  {alleValgt ? "Fjern alle" : `Tag alle ${valgtFag?.label_da || "områder"} med`}
-                </button>
-              </div>
-              <div className="st-omr">
-                {omraader.map((a) => (
-                  <label key={a.cpv} className={"st-omrk" + (omraadeValg[a.cpv] ? " on" : "")}>
-                    <input
-                      type="checkbox"
-                      checked={!!omraadeValg[a.cpv]}
-                      onChange={() => setOmraadeValg((s) => ({ ...s, [a.cpv]: !s[a.cpv] }))}
-                    />
-                    {/* ⚠️ Undertitlen vises KUN når den siger noget nyt. For flere
-                        områder er kunde_titel og name_da identiske ("Byggemodning"),
-                        og så stod ordet to gange under hinanden. */}
-                    <span>
-                      <b>{a.kunde_titel || a.name_da}</b>
-                      {a.name_da && a.kunde_titel && a.name_da !== a.kunde_titel && <i>{a.name_da}</i>}
-                    </span>
-                  </label>
-                ))}
-              </div>
-            </>
-          ) : (
-            <p className="st-hj">Dit fag har ingen underområder — I matches på fagets brede koder.</p>
-          )}
-
-          {/* ⚠️ BREDDE ER HELE INDSNÆVRINGEN. Med "alle" lægges fagets brede kode på,
-              og den alene rammer 79 opgaver for entreprenør — uanset hvor få områder
-              der er krydset af. Uden dette valg kan en specialist ikke komme ned. */}
+          {/* ⚠️ BREDDE ØVERST OG ALDRIG FOLDET. Det er den beslutning der flytter
+              mest: med "alle" lægges fagets brede kode på, og den alene rammer 79
+              opgaver for entreprenør — uanset hvor få områder der er krydset af.
+              Målt: kun betonarbejder + "alle" giver 79, + "kun fag" giver 2. */}
           <div className="st-bredde">
             <span className="st-lab" style={{ margin: "0 0 8px" }}>Hvor bredt vil I fange opgaver?</span>
-            <label className={"st-radio" + (bredde === "fag" ? " on" : "")}>
-              <input type="radio" name="bredde" checked={bredde === "fag"} onChange={() => setBredde("fag")} />
-              <span><b>Kun fagentrepriser</b><i>Færre, men kun de præcise områder I har valgt.</i></span>
-            </label>
             <label className={"st-radio" + (bredde === "alle" ? " on" : "")}>
               <input type="radio" name="bredde" checked={bredde === "alle"} onChange={() => setBredde("alle")} />
               <span><b>Alle brede opgaver <em>anbefalet</em></b><i>Også de brede entrepriseudbud i jeres fag. Flere match, lidt mere bredt.</i></span>
             </label>
+            <label className={"st-radio" + (bredde === "fag" ? " on" : "")}>
+              <input type="radio" name="bredde" checked={bredde === "fag"} onChange={() => setBredde("fag")} />
+              <span><b>Kun fagentrepriser</b><i>Færre, men kun de præcise områder I har valgt.</i></span>
+            </label>
           </div>
 
+          {omraader.length > 0 ? (
+            <div className="st-fold">
+              {/* Resumé-linjen. Teksten kommer fra omrResume, som læser den ægte
+                  state — den kan ikke komme til at sige "alle valgt" om noget andet. */}
+              <button
+                type="button"
+                className={"st-foldknap" + (antalValgt === 0 ? " tom" : "")}
+                onClick={() => setAabenOmr((v) => !v)}
+                aria-expanded={aabenOmr}
+              >
+                <span>{omrResume}</span>
+                <i>{aabenOmr ? "skjul" : "ret"}</i>
+              </button>
+
+              {/* ⚠️ FOLDNING ÆNDRER KUN SYNLIGHED. Afkrydsningerne bor i omraadeValg
+                  på komponenten, ikke i disse felter — foldes listen væk, står de
+                  valgte områder uændret, og fagKoder (og dermed den effektive
+                  CPV-liste) er den samme som hvis listen var åben. */}
+              {aabenOmr && (
+                <>
+                  <div className="st-omrhoved">
+                    <span className="st-lab" style={{ margin: 0 }}>Dine arbejdsområder</span>
+                    <button type="button" className="st-alle" onClick={() => saetAlle(!alleValgt)}>
+                      {alleValgt ? "Fjern alle" : `Tag alle ${valgtFag?.label_da || "områder"} med`}
+                    </button>
+                  </div>
+                  <div className="st-omr">
+                    {omraader.map((a) => (
+                      <label key={a.cpv} className={"st-omrk" + (omraadeValg[a.cpv] ? " on" : "")}>
+                        <input
+                          type="checkbox"
+                          checked={!!omraadeValg[a.cpv]}
+                          onChange={() => setOmraadeValg((s) => ({ ...s, [a.cpv]: !s[a.cpv] }))}
+                        />
+                        {/* ⚠️ Undertitlen vises KUN når den siger noget nyt. For flere
+                            områder er kunde_titel og name_da identiske
+                            ("Byggemodning"), og så stod ordet to gange under hinanden. */}
+                        <span>
+                          <b>{a.kunde_titel || a.name_da}</b>
+                          {a.name_da && a.kunde_titel && a.name_da !== a.kunde_titel && <i>{a.name_da}</i>}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          ) : (
+            <p className="st-hj">Dit fag har ingen underområder — I matches på fagets brede koder.</p>
+          )}
+
+          {/* Nul-dæknings-værnet gælder uændret: tilResultat() blokerer på tom liste,
+              også når den er foldet. Foldning kan ikke snige en tom søgning forbi. */}
           <button className="btn btn-teal st-bred" onClick={tilResultat}>Fortsæt →</button>
           <button className="st-tilbage" onClick={() => setTrin(2)}>← Tilbage</button>
         </div>

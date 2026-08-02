@@ -51,7 +51,17 @@ select.st-felt{appearance:none;background-image:url("data:image/svg+xml;utf8,<sv
 .st-res.st-nul span b{display:inline;font-size:17px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:800}
 
 /* ---- arbejdsområder + bredde (trin 3) ---- */
-.st-omrhoved{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:22px 0 10px}
+/* Resumé-linjen der folder listen ud. Ser ud som et felt, ikke som en knap, fordi
+   den beskriver en tilstand ("Alle 10 valgt") frem for at love en handling. */
+.st-fold{margin-top:22px}
+.st-foldknap{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:14px;font-family:'Inter',sans-serif;font-size:15px;color:var(--navy);cursor:pointer;text-align:left}
+.st-foldknap i{font-style:normal;font-size:14px;font-weight:700;color:var(--teal);text-decoration:underline;flex:0 0 auto}
+/* Ingen valgt er ikke en neutral tilstand — den blokerer "Fortsæt", så den skal
+   se anderledes ud end "alt er fint". */
+.st-foldknap.tom{border-color:#F3C9C9;background:#FDF4F4;color:#B03A3A}
+.st-foldknap.tom i{color:#B03A3A}
+
+.st-omrhoved{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:18px 0 10px}
 .st-alle{background:none;border:0;padding:0;font-family:'Inter',sans-serif;font-size:13.5px;font-weight:700;color:var(--teal);cursor:pointer;text-decoration:underline}
 .st-omr{display:flex;flex-direction:column;gap:8px}
 .st-omrk{display:flex;gap:11px;align-items:flex-start;border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;cursor:pointer;background:#fff}
