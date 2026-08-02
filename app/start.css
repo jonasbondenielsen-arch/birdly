@@ -1,0 +1,85 @@
+/* ============================================================
+   /start — den korte onboarding.
+
+   ⚠️ INGEN NYE FARVER. Alt herunder bruger tokens fra globals.css
+   (--navy #0D1B2A, --teal #00B3A6, --sky #2EB7FF, --line, --r).
+
+   ⚠️ KNAPPERNE MÅTTE GENSKABES — og det er ikke et valg. forside.css er skrevet
+   med CSS-nesting inde i `.birdly-home{ … }`, så `.btn` reelt er `.birdly-home .btn`
+   og IKKE kan nås fra en side der ikke er forsiden. Alternativet var at give /start
+   klassen .birdly-home, men den sætter også baggrund, min-height:100vh og egne
+   h1-regler — altså hele forsidens layout ind i en funnel der ikke skal ligne den.
+   Reglerne nedenfor er derfor kopieret ORDRET fra forside.css' .btn/.btn-teal/
+   .btn-ghost og bruger de samme tokens. Ændres knapstilen ét sted, skal den ændres
+   begge steder — noteret som kandidat til at flytte op i globals.css.
+   ============================================================ */
+
+.st-wrap .btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;border:0;border-radius:12px;cursor:pointer;text-decoration:none;font-size:16px}
+.st-wrap .btn-teal{background:var(--teal);color:#fff;padding:15px 26px;box-shadow:0 10px 24px rgba(0,179,166,.28)}
+.st-wrap .btn-ghost{background:#fff;color:var(--navy);padding:15px 24px;border:1.5px solid var(--line)}
+.st-wrap .btn:disabled{opacity:.6;cursor:default;box-shadow:none}
+.st-wrap{max-width:520px;margin:0 auto;padding:22px 18px 72px}
+.st-top{display:flex;justify-content:center;margin-bottom:22px}
+
+/* fremdrift — den er hele grunden til at flowet føles kort */
+.st-bar{height:4px;background:var(--line);border-radius:999px;overflow:hidden}
+.st-bar i{display:block;height:100%;background:var(--teal);transition:width .35s ease}
+.st-trin{margin:9px 0 18px;font-size:13px;font-weight:700;color:var(--navy-soft);letter-spacing:.02em}
+
+.st-kort{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:26px 24px 28px;box-shadow:var(--shadow)}
+.st-kort h1{font-family:'Plus Jakarta Sans',sans-serif;font-size:25px;font-weight:800;line-height:1.22;letter-spacing:-.015em;color:var(--navy)}
+.st-hj{margin-top:8px;font-size:15px;line-height:1.55;color:var(--navy-soft)}
+
+.st-lab{display:block;margin:20px 0 6px;font-size:13px;font-weight:700;color:var(--navy)}
+.st-valgfri{font-weight:400;color:var(--navy-soft)}
+.st-felt{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:13px 14px;font-family:'Inter',sans-serif;font-size:16px;color:var(--navy);background:#fff}
+.st-felt:focus{outline:0;border-color:var(--sky)}
+select.st-felt{appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'><path d='M1 1l6 6 6-6' stroke='%235A6678' stroke-width='2' fill='none' stroke-linecap='round'/></svg>");background-repeat:no-repeat;background-position:right 15px center}
+
+/* CVR-træf */
+.st-hit{margin-top:14px;background:var(--sky-soft);border:1px solid var(--sky-200);border-radius:12px;padding:13px 15px;font-size:15px;line-height:1.5;color:var(--navy)}
+
+/* resultatet i trin 3 */
+.st-res{margin-top:18px;background:var(--navy);color:#fff;border-radius:14px;padding:22px 20px;text-align:center}
+.st-res b{display:block;font-family:'Plus Jakarta Sans',sans-serif;font-size:46px;font-weight:800;color:var(--teal);line-height:1;letter-spacing:-.03em}
+.st-res span{display:block;margin-top:6px;font-size:14.5px;color:#c8d6e4}
+/* 0-tilstanden: gul, ikke mørk — den skal LÆSE anderledes end et resultat, så
+   landstallet ikke kan forveksles med noget der ligger i kundens område. */
+.st-res.st-nul{background:#FFFDF5;border:1px solid #F2D98A;color:#6b5a1f}
+.st-res.st-nul b{font-family:'Inter',sans-serif;font-size:16px;font-weight:700;color:#8a6d1f}
+.st-res.st-nul span{color:#6b5a1f;font-size:15px}
+.st-res.st-nul span b{display:inline;font-size:17px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:800}
+
+.st-tjek{display:flex;gap:10px;align-items:flex-start;margin-top:18px;font-size:14px;line-height:1.5;color:var(--navy-soft)}
+.st-tjek input{margin-top:3px;width:18px;height:18px;flex:0 0 18px;accent-color:var(--teal)}
+.st-tjek a{color:var(--sky);font-weight:700}
+
+.st-bred{width:100%;margin-top:20px}
+.st-tilbage{display:block;width:100%;margin-top:12px;padding:8px;background:none;border:0;font-family:'Inter',sans-serif;font-size:14.5px;color:var(--navy-soft);cursor:pointer}
+
+.st-plan{display:flex;gap:10px;margin-top:16px}
+.st-planknap{flex:1;padding:12px;border:1.5px solid var(--line);background:#fff;border-radius:12px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:15px;color:var(--navy);cursor:pointer}
+.st-planknap.on{border-color:var(--teal);background:#F1FAF8;color:var(--teal-dk)}
+.st-planknap:disabled{opacity:.55;cursor:default}
+
+.st-garanti{margin-top:18px;background:#F1FAF8;border:1px solid #BFE7DF;border-radius:12px;padding:15px 17px}
+.st-garanti b{display:block;font-family:'Plus Jakarta Sans',sans-serif;font-size:15.5px;font-weight:800;color:var(--navy)}
+.st-garanti p{margin-top:3px;font-size:14.5px;line-height:1.5;color:#33414f}
+
+.st-boks{margin-top:18px;min-height:520px}
+.st-skjul{display:none}
+.st-mini{margin-top:14px;text-align:center;font-size:12.5px;color:var(--navy-soft)}
+
+.st-fejl{margin-bottom:16px;background:#FDF4F4;border:1px solid #F3C9C9;color:#B03A3A;border-radius:12px;padding:12px 15px;font-size:14.5px;line-height:1.5}
+
+/* kvittering */
+.st-kvit{text-align:center;padding:38px 24px}
+.st-ic{width:60px;height:60px;border-radius:50%;background:var(--teal);color:#fff;font-size:31px;line-height:60px;margin:0 auto 16px}
+.st-kvit p{margin-top:10px;font-size:15.5px;line-height:1.6;color:var(--navy-soft)}
+
+@media(max-width:560px){
+  .st-wrap{padding:16px 14px 56px}
+  .st-kort{padding:22px 18px 24px;border-radius:16px}
+  .st-kort h1{font-size:23px}
+  .st-res b{font-size:40px}
+}
