@@ -50,6 +50,24 @@ select.st-felt{appearance:none;background-image:url("data:image/svg+xml;utf8,<sv
 .st-res.st-nul span{color:#6b5a1f;font-size:15px}
 .st-res.st-nul span b{display:inline;font-size:17px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:800}
 
+/* ---- arbejdsområder + bredde (trin 3) ---- */
+.st-omrhoved{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:22px 0 10px}
+.st-alle{background:none;border:0;padding:0;font-family:'Inter',sans-serif;font-size:13.5px;font-weight:700;color:var(--teal);cursor:pointer;text-decoration:underline}
+.st-omr{display:flex;flex-direction:column;gap:8px}
+.st-omrk{display:flex;gap:11px;align-items:flex-start;border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;cursor:pointer;background:#fff}
+.st-omrk.on{border-color:var(--teal);background:#F1FAF8}
+.st-omrk input{margin-top:2px;width:18px;height:18px;flex:0 0 18px;accent-color:var(--teal)}
+.st-omrk b{display:block;font-family:'Inter',sans-serif;font-size:15px;font-weight:600;color:var(--navy);line-height:1.35}
+.st-omrk i{display:block;margin-top:2px;font-style:normal;font-size:13px;color:var(--navy-soft);line-height:1.4}
+
+.st-bredde{margin-top:24px;display:flex;flex-direction:column;gap:8px}
+.st-radio{display:flex;gap:11px;align-items:flex-start;border:1.5px solid var(--line);border-radius:12px;padding:13px 14px;cursor:pointer;background:#fff}
+.st-radio.on{border-color:var(--teal);background:#F1FAF8}
+.st-radio input{margin-top:3px;width:18px;height:18px;flex:0 0 18px;accent-color:var(--teal)}
+.st-radio b{display:block;font-family:'Inter',sans-serif;font-size:15px;font-weight:700;color:var(--navy)}
+.st-radio i{display:block;margin-top:3px;font-style:normal;font-size:13.5px;color:var(--navy-soft);line-height:1.45}
+.st-radio em{font-style:normal;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--teal);margin-left:7px}
+
 .st-tjek{display:flex;gap:10px;align-items:flex-start;margin-top:18px;font-size:14px;line-height:1.5;color:var(--navy-soft)}
 .st-tjek input{margin-top:3px;width:18px;height:18px;flex:0 0 18px;accent-color:var(--teal)}
 .st-tjek a{color:var(--sky);font-weight:700}

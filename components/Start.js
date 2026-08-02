@@ -27,7 +27,25 @@ import "../app/start.css";
 // som om det lå i hendes område. Se visResultat() i lib/kandidater.js.
 // ============================================================================
 
-const TRIN = ["CVR", "Fag og område", "Resultat", "Betaling"];
+// ⚠️ FEM TRIN, IKKE FIRE (02-08-2026). Arbejdsområderne og bredde-valget manglede
+// helt: /start sendte fagets fulde kodesæt med `bredde: "alle"` hardkodet. Det gav
+// et gyldigt kriterium — men det BREDEST mulige, uden nogen vej ud.
+//
+// Målt på entreprenør, hele landet:
+//   alle områder + "alle"          11 koder → 79 opgaver
+//   alle områder + "kun fag"       10 koder → 47
+//   kun betonarbejder + "alle"      2 koder → 79   ← samme som at vælge alt
+//   kun betonarbejder + "kun fag"   1 kode  →  2
+//
+// `bredde` er altså hele indsnævringen: med "alle" lægges fagets brede kode på, og
+// den alene rammer 79. En betonspecialist fik præcis samme liste som en der laver
+// alt — og ville systematisk ramme "for mange opgaver" i fravalgs-widgeten.
+//
+// Det er sit eget trin frem for at proppes ind i trin 2: et fag som entreprenør har
+// 10 underområder, og de + fag + område + beløb på én mobilskærm er ikke ét
+// spørgsmål ad gangen længere.
+const TRIN = ["CVR", "Fag og område", "Arbejdsområder", "Resultat", "Betaling"];
+const ANTAL_TRIN = TRIN.length;
 
 // Samme SDK-indlæsning som /tilmeld. ⚠️ Bevidst duplikeret frem for at refaktorere
 // den live betalingssti midt i en ny funnel: Tilmeld.js er den eneste kanal der
@@ -85,6 +103,12 @@ export default function Start({ startFag = null }) {
   const [region, setRegion] = useState("hele_dk");
   const [maks, setMaks] = useState("");
 
+  // Trin 3 — arbejdsområder + bredde. Samme to valg som /tilmeld, samme datakilde
+  // (katalogets fag.smal) og samme mapping til CPV. Ingen opfundne værdier.
+  const [omraadeValg, setOmraadeValg] = useState({}); // { [cpv]: true }
+  // "Alle brede opgaver" er default og anbefalet — samme forvalg som /tilmeld.
+  const [bredde, setBredde] = useState("alle");
+
   // Trin 3
   const [kandidater, setKandidater] = useState(null);
   const [henter, setHenter] = useState(false);
@@ -106,14 +130,33 @@ export default function Start({ startFag = null }) {
   const fagListe = katalog?.fag || [];
   const valgtFag = useMemo(() => fagListe.find((f) => f.key === fag) || null, [fagListe, fag]);
 
+  // Fagets underområder, ordret fra kataloget — samme kilde /tilmeld bruger.
+  const omraader = useMemo(() => valgtFag?.smal || [], [valgtFag]);
+
   // ⚠️ KODERNE SKAL MED. Sender vi kun fag_keys, får de 13 fag uden bred kode
   // effektive_koder=0 og dermed 0 opgaver — ikke fordi der intet er, men fordi
-  // intet var valgt. Vi tager fagets egne områder med, præcis som "tag alle
-  // X-områder med" i den nuværende funnel, så tallet og det gemte er det samme.
+  // intet var valgt. Det er kundens afkrydsninger der bliver til cpv_selections.
   const fagKoder = useMemo(
-    () => (valgtFag?.smal || []).map((a) => a.cpv).filter(Boolean),
-    [valgtFag]
+    () => omraader.map((a) => a.cpv).filter((c) => c && omraadeValg[c]),
+    [omraader, omraadeValg]
   );
+
+  // Når faget skifter, krydses ALLE fagets områder af. Bevidst forvalg: det svarer
+  // til "Tag alle X-områder med" i /tilmeld og gør at en kunde der bare trykker
+  // videre får et gyldigt, bredt kriterium frem for et tomt. Hun kan fravælge —
+  // og det er netop dét valg der manglede.
+  useEffect(() => {
+    const n = {};
+    for (const a of omraader) if (a.cpv) n[a.cpv] = true;
+    setOmraadeValg(n);
+  }, [omraader]);
+
+  const alleValgt = omraader.length > 0 && omraader.every((a) => omraadeValg[a.cpv]);
+  function saetAlle(paa) {
+    const n = {};
+    for (const a of omraader) if (a.cpv) n[a.cpv] = paa;
+    setOmraadeValg(n);
+  }
 
   // ---- Trin 1: CVR-opslag ----
   async function slaaOp(vaerdi) {
@@ -140,15 +183,19 @@ export default function Start({ startFag = null }) {
     } finally { setSlaarOp(false); }
   }
 
-  // ---- Trin 2 → 3: hent det ægte tal ----
+  // ---- Trin 3 → 4: hent det ægte tal ----
+  // ⚠️ Tallet regnes på den FULDE effektive liste — kundens afkrydsede områder OG
+  // hendes bredde-valg. Regnede vi før hun havde valgt, ville trin 4 vise et tal
+  // der ikke svarer til det hun får.
   async function tilResultat() {
     setFejl("");
     if (!fag) return setFejl("Vælg dit fag.");
-    setHenter(true); setTrin(3);
+    if (!fagKoder.length) return setFejl("Vælg mindst ét arbejdsområde — det er dem, vi holder øje med.");
+    setHenter(true); setTrin(4);
     const k = await hentKandidater({
       fag_keys: [fag],
       cpv_selections: fagKoder,
-      bredde: "alle",
+      bredde,
       region_keys: [region],
       min_amount: null,
       max_amount: maks ? Number(maks) : null,
@@ -156,7 +203,7 @@ export default function Start({ startFag = null }) {
     setKandidater(k); setHenter(false);
   }
 
-  // ---- Trin 3 → 4: opret kunden + betalingssession ----
+  // ---- Trin 4 → 5: opret kunden + betalingssession ----
   async function tilBetaling() {
     setFejl("");
     if (!navn.trim()) return setFejl("Skriv dit navn.");
@@ -180,7 +227,7 @@ export default function Start({ startFag = null }) {
           phone: tilE164(tlf),
           fag_keys: [fag],
           cpv_selections: fagKoder,
-          bredde: "alle",
+          bredde,
           region_keys: [region],
           min_amount: null,
           max_amount: maks ? Number(maks) : null,
@@ -205,7 +252,7 @@ export default function Start({ startFag = null }) {
         uden_proeve: udenProeveNu,
       });
       setSessionId(session_id);
-      setTrin(4);
+      setTrin(5);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (e) {
       // Værnene i signup svarer med almindeligt dansk — vis det ordret frem for at
@@ -251,10 +298,10 @@ export default function Start({ startFag = null }) {
     <main className="st-wrap">
       <div className="st-top"><Logo height={30} /></div>
 
-      <div className="st-bar" aria-label={`Trin ${trin} af 4`}>
-        <i style={{ width: `${(trin / 4) * 100}%` }} />
+      <div className="st-bar" aria-label={`Trin ${trin} af ${ANTAL_TRIN}`}>
+        <i style={{ width: `${(trin / ANTAL_TRIN) * 100}%` }} />
       </div>
-      <p className="st-trin">Trin {trin} af 4 · {TRIN[trin - 1]}</p>
+      <p className="st-trin">Trin {trin} af {ANTAL_TRIN} · {TRIN[trin - 1]}</p>
 
       {fejl && <div className="st-fejl">{fejl}</div>}
 
@@ -311,13 +358,74 @@ export default function Start({ startFag = null }) {
             <option value="20000000">Op til 20 mio. kr.</option>
           </select>
 
-          <button className="btn btn-teal st-bred" onClick={tilResultat}>Fortsæt →</button>
+          <button
+            className="btn btn-teal st-bred"
+            onClick={() => { if (!fag) return setFejl("Vælg dit fag."); setFejl(""); setTrin(3); }}
+          >
+            Fortsæt →
+          </button>
           <button className="st-tilbage" onClick={() => setTrin(1)}>← Tilbage</button>
         </div>
       )}
 
-      {/* ---------------- TRIN 3 — ÆGTE TAL + KONTAKT ---------------- */}
+      {/* ---------------- TRIN 3 — ARBEJDSOMRÅDER + BREDDE ---------------- */}
+      {/* Samme to valg som /tilmeld, samme datakilde (katalogets fag.smal) og samme
+          mapping til CPV. Det er dem der bliver til søgekriteriet — ikke pynt. */}
       {trin === 3 && (
+        <div className="st-kort">
+          <h1>Hvad laver I helt præcis?</h1>
+          <p className="st-hj">Kryds det fra I ikke laver. Så slipper I for beskeder om det.</p>
+
+          {omraader.length > 0 ? (
+            <>
+              <div className="st-omrhoved">
+                <span className="st-lab" style={{ margin: 0 }}>Dine arbejdsområder</span>
+                <button type="button" className="st-alle" onClick={() => saetAlle(!alleValgt)}>
+                  {alleValgt ? "Fjern alle" : `Tag alle ${valgtFag?.label_da || "områder"} med`}
+                </button>
+              </div>
+              <div className="st-omr">
+                {omraader.map((a) => (
+                  <label key={a.cpv} className={"st-omrk" + (omraadeValg[a.cpv] ? " on" : "")}>
+                    <input
+                      type="checkbox"
+                      checked={!!omraadeValg[a.cpv]}
+                      onChange={() => setOmraadeValg((s) => ({ ...s, [a.cpv]: !s[a.cpv] }))}
+                    />
+                    <span>
+                      <b>{a.kunde_titel || a.name_da}</b>
+                      {a.name_da && a.kunde_titel && <i>{a.name_da}</i>}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </>
+          ) : (
+            <p className="st-hj">Dit fag har ingen underområder — I matches på fagets brede koder.</p>
+          )}
+
+          {/* ⚠️ BREDDE ER HELE INDSNÆVRINGEN. Med "alle" lægges fagets brede kode på,
+              og den alene rammer 79 opgaver for entreprenør — uanset hvor få områder
+              der er krydset af. Uden dette valg kan en specialist ikke komme ned. */}
+          <div className="st-bredde">
+            <span className="st-lab" style={{ margin: "0 0 8px" }}>Hvor bredt vil I fange opgaver?</span>
+            <label className={"st-radio" + (bredde === "fag" ? " on" : "")}>
+              <input type="radio" name="bredde" checked={bredde === "fag"} onChange={() => setBredde("fag")} />
+              <span><b>Kun fagentrepriser</b><i>Færre, men kun de præcise områder I har valgt.</i></span>
+            </label>
+            <label className={"st-radio" + (bredde === "alle" ? " on" : "")}>
+              <input type="radio" name="bredde" checked={bredde === "alle"} onChange={() => setBredde("alle")} />
+              <span><b>Alle brede opgaver <em>anbefalet</em></b><i>Også de brede entrepriseudbud i jeres fag. Flere match, lidt mere bredt.</i></span>
+            </label>
+          </div>
+
+          <button className="btn btn-teal st-bred" onClick={tilResultat}>Fortsæt →</button>
+          <button className="st-tilbage" onClick={() => setTrin(2)}>← Tilbage</button>
+        </div>
+      )}
+
+      {/* ---------------- TRIN 4 — ÆGTE TAL + KONTAKT ---------------- */}
+      {trin === 4 && (
         <div className="st-kort">
           {henter ? (
             <><h1>Vi kigger efter…</h1><p className="st-hj">Et øjeblik.</p></>
@@ -371,14 +479,14 @@ export default function Start({ startFag = null }) {
               <button className="btn btn-teal st-bred" onClick={tilBetaling} disabled={arbejder}>
                 {arbejder ? "Et øjeblik…" : "Fortsæt →"}
               </button>
-              <button className="st-tilbage" onClick={() => setTrin(2)}>← Tilbage</button>
+              <button className="st-tilbage" onClick={() => setTrin(3)}>← Tilbage</button>
             </>
           )}
         </div>
       )}
 
-      {/* ---------------- TRIN 4 — BETALING ---------------- */}
-      {trin === 4 && (
+      {/* ---------------- TRIN 5 — BETALING ---------------- */}
+      {trin === 5 && (
         <div className="st-kort">
           <h1>0,00 kr. i dag.</h1>
           <p className="st-hj">
