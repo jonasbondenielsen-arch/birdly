@@ -98,8 +98,12 @@ export default function Start({ startFag = null }) {
   const [slaarOp, setSlaarOp] = useState(false);
   const [opslagFejl, setOpslagFejl] = useState("");
 
-  // Trin 2
-  const [fag, setFag] = useState(startFag || "");
+  // Trin 2 — FLERE brancher. Datalaget kunne det hele tiden (signup tager fag_keys
+  // som array), men UI'et viste kun én dropdown, så ingen kunne se at en
+  // entreprenør også kunne tage kloak med. Nu chips + "tilføj branche", som
+  // /tilmeld altid har haft.
+  const [fagValgt, setFagValgt] = useState(startFag ? [startFag] : []);
+  const [gaetFag, setGaetFag] = useState(null); // hvad CVR-opslaget pegede på
   const [region, setRegion] = useState("hele_dk");
   const [maks, setMaks] = useState("");
 
@@ -123,7 +127,8 @@ export default function Start({ startFag = null }) {
 
   // Trin 4
   const [betingelser, setBetingelser] = useState(false);
-  const [interval, setInterval_] = useState("monthly");
+  // År er forvalgt og anbefalet (spar ~17 %) — men BEGGE skal kunne vælges frit.
+  const [interval, setInterval_] = useState("yearly");
   const [sessionId, setSessionId] = useState(null);
   const [oprettetId, setOprettetId] = useState(null);
   const [udenProeve, setUdenProeve] = useState(false);
@@ -133,10 +138,20 @@ export default function Start({ startFag = null }) {
   useEffect(() => { fetchCatalog().then(setKatalog).catch(() => setKatalog({ fag: [], regions: [] })); }, []);
 
   const fagListe = katalog?.fag || [];
-  const valgtFag = useMemo(() => fagListe.find((f) => f.key === fag) || null, [fagListe, fag]);
+  const fagByKey = useMemo(
+    () => Object.fromEntries(fagListe.map((f) => [f.key, f])),
+    [fagListe]
+  );
+  const valgtFag = fagByKey[fagValgt[0]] || null;
 
-  // Fagets underområder, ordret fra kataloget — samme kilde /tilmeld bruger.
-  const omraader = useMemo(() => valgtFag?.smal || [], [valgtFag]);
+  // ⚠️ UNION af ALLE valgte branchers underområder — ikke kun den første. Vælger
+  // kunden entreprenør + kloak, skal begge fags koder med, præcis som /tilmeld gør.
+  // Dedupliceret på cpv, fordi to fag kan dele en kode.
+  const omraader = useMemo(() => {
+    const set = new Map();
+    for (const k of fagValgt) for (const a of fagByKey[k]?.smal || []) if (a.cpv && !set.has(a.cpv)) set.set(a.cpv, a);
+    return [...set.values()];
+  }, [fagValgt, fagByKey]);
 
   // ⚠️ KODERNE SKAL MED. Sender vi kun fag_keys, får de 13 fag uden bred kode
   // effektive_koder=0 og dermed 0 opgaver — ikke fordi der intet er, men fordi
@@ -192,7 +207,15 @@ export default function Start({ startFag = null }) {
         // første som forvalg; resten står i dropdownen.
         const gaet = (katalog?.branchekode_fag || {})[r.branchekode];
         const foerste = Array.isArray(gaet) ? gaet[0] : gaet;
-        if (foerste && !fag) setFag(foerste);
+        // ⚠️ Gættet gemmes særskilt, så UI'et kan skelne "CVR'et pegede på dette fag"
+        // fra "et fag var valgt i forvejen". Uden den skelnen påstod vi at opslaget
+        // havde fundet et fag, som i virkeligheden kom fra ?fag= i adressen.
+        setGaetFag(foerste || null);
+        // Branchekoder uden mapping (fx 582900 "Anden udgivelse af software") giver
+        // INTET forvalg. Vi dækker håndværks- og byggefag; at tvinge et byggefag på
+        // en it-virksomhed ville sende hende videre med et kriterium der aldrig
+        // matcher hendes arbejde.
+        if (foerste && fagValgt.length === 0) setFagValgt([foerste]);
       } else {
         setOpslagFejl("Vi kunne ikke finde firmaet. Du kan fortsætte alligevel.");
       }
@@ -207,11 +230,11 @@ export default function Start({ startFag = null }) {
   // der ikke svarer til det hun får.
   async function tilResultat() {
     setFejl("");
-    if (!fag) return setFejl("Vælg dit fag.");
+    if (!fagValgt.length) return setFejl("Vælg mindst én branche.");
     if (!fagKoder.length) return setFejl("Vælg mindst ét arbejdsområde — det er dem, vi holder øje med.");
     setHenter(true); setTrin(4);
     const k = await hentKandidater({
-      fag_keys: [fag],
+      fag_keys: fagValgt,
       cpv_selections: fagKoder,
       bredde,
       region_keys: [region],
@@ -243,7 +266,7 @@ export default function Start({ startFag = null }) {
           contact_name: navn.trim(),
           email: email.trim(),
           phone: tilE164(tlf),
-          fag_keys: [fag],
+          fag_keys: fagValgt,
           cpv_selections: fagKoder,
           bredde,
           region_keys: [region],
@@ -278,6 +301,39 @@ export default function Start({ startFag = null }) {
       // "dette CVR er allerede oprettet" er begge beskeder kunden kan handle på.
       setFejl(e.message || "Noget gik galt. Prøv igen, eller skriv til support@birdly.dk.");
     } finally { setArbejder(false); }
+  }
+
+  // ⚠️ PLAN-SKIFT PÅ TRIN 5. Knapperne var `disabled={!!sessionId}` — og da
+  // sessionId ALTID er sat når man når trin 5, var begge permanent låst. Kunden
+  // kunne ikke vælge måned.
+  //
+  // Årsagen til låsen var reel nok: sessionen hos Frisbii er bundet til ét
+  // plan-handle, så skifter kunden interval, skal sessionen gen-oprettes — ellers
+  // betaler hun for den forkerte plan. Samme greb som /tilmelds changeBilling:
+  // reuse_customer=true, fordi kunden allerede findes hos Frisbii.
+  async function skiftInterval(nyt) {
+    if (nyt === interval || arbejder || !oprettetId) return;
+    setInterval_(nyt);
+    setFejl("");
+    setArbejder(true);
+    setBetalingAaben(false);
+    setSessionId(null); // afmontér checkout mens ny session hentes
+    try {
+      const { session_id } = await createSubscriptionSession({
+        subscriber_id: oprettetId,
+        email: email.trim(),
+        contact_name: navn.trim(),
+        phone: tilE164(tlf),
+        billing: nyt,
+        reuse_customer: true,
+        uden_proeve: udenProeve,
+      });
+      setSessionId(session_id);
+    } catch {
+      setFejl("Kunne ikke skifte plan. Prøv igen, eller skriv til support@birdly.dk.");
+    } finally {
+      setArbejder(false);
+    }
   }
 
   function aabnBetaling() {
@@ -340,7 +396,18 @@ export default function Start({ startFag = null }) {
           {firma && (
             <div className="st-hit">
               ✓ <b>{firma}</b>
-              {valgtFag && <><br /><span>Ser ud til at være <b>{valgtFag.label_da}</b></span></>}
+              {/* ⚠️ KUN når CVR-opslaget FAKTISK gættede. Linjen hang før på valgtFag,
+                  altså på ethvert valgt fag — også et der kom fra ?fag= i adressen.
+                  Resultatet var at funnelen påstod "ser ud til at være Entreprenør"
+                  om en it-virksomhed, fordi linket havde forvalgt entreprenør.
+                  Et forkert forvalg er værre end intet: kunden tror det passer og
+                  fortsætter med forkert fag. */}
+              {gaetFag && fagByKey[gaetFag] && (
+                <><br /><span>Ser ud til at være <b>{fagByKey[gaetFag].label_da}</b></span></>
+              )}
+              {branchekode && !gaetFag && (
+                <><br /><span className="st-neutral">Vi kunne ikke se hvilket fag I hører til — vælg det selv på næste trin.</span></>
+              )}
             </div>
           )}
           {opslagFejl && <p className="st-hj">{opslagFejl}</p>}
@@ -356,11 +423,43 @@ export default function Start({ startFag = null }) {
           <h1>Hvad laver I, og hvor?</h1>
           <p className="st-hj">Det er det, vi holder øje efter.</p>
 
-          <label className="st-lab" htmlFor="fag">Fag</label>
-          <select id="fag" className="st-felt" value={fag} onChange={(e) => setFag(e.target.value)}>
-            <option value="">Vælg fag…</option>
-            {fagListe.map((f) => <option key={f.key} value={f.key}>{f.label_da}</option>)}
+          {/* ⚠️ FLERE BRANCHER SKAL VÆRE SYNLIGT MULIGT. Dropdownen alene fik det til
+              at ligne et enten-eller; en entreprenør der også laver kloak kunne ikke
+              se at han måtte tage begge. Chips viser hvad der er valgt, og vælgeren
+              hedder "Tilføj" så det er tydeligt at man kan lægge flere til. */}
+          <span className="st-lab">Jeres brancher</span>
+          {fagValgt.length > 0 && (
+            <div className="st-chips">
+              {fagValgt.map((k) => (
+                <span className="st-chip" key={k}>
+                  {fagByKey[k]?.label_da || k}
+                  <button
+                    type="button"
+                    aria-label={`Fjern ${fagByKey[k]?.label_da || k}`}
+                    onClick={() => setFagValgt((s) => s.filter((x) => x !== k))}
+                  >×</button>
+                </span>
+              ))}
+            </div>
+          )}
+          <select
+            className="st-felt"
+            value=""
+            onChange={(e) => {
+              const v = e.target.value;
+              if (v && !fagValgt.includes(v)) setFagValgt((s) => [...s, v]);
+            }}
+          >
+            <option value="">
+              {fagValgt.length ? "+ Tilføj en branche mere…" : "Vælg jeres branche…"}
+            </option>
+            {fagListe.filter((f) => !fagValgt.includes(f.key)).map((f) => (
+              <option key={f.key} value={f.key}>{f.label_da}</option>
+            ))}
           </select>
+          {fagValgt.length > 1 && (
+            <p className="st-hj">Vi holder øje med opgaver i alle {fagValgt.length} brancher.</p>
+          )}
 
           <label className="st-lab" htmlFor="omr">Område</label>
           <select id="omr" className="st-felt" value={region} onChange={(e) => setRegion(e.target.value)}>
@@ -378,7 +477,7 @@ export default function Start({ startFag = null }) {
 
           <button
             className="btn btn-teal st-bred"
-            onClick={() => { if (!fag) return setFejl("Vælg dit fag."); setFejl(""); setTrin(3); }}
+            onClick={() => { if (!fagValgt.length) return setFejl("Vælg mindst én branche."); setFejl(""); setTrin(3); }}
           >
             Fortsæt →
           </button>
@@ -538,9 +637,16 @@ export default function Start({ startFag = null }) {
           </p>
 
           <div className="st-plan">
-            {[["monthly", "Måned"], ["yearly", "År"]].map(([k, l]) => (
-              <button key={k} className={"st-planknap" + (interval === k ? " on" : "")} onClick={() => setInterval_(k)} disabled={!!sessionId}>
-                {l}
+            {[["yearly", "År", priceText.saveShort], ["monthly", "Måned", null]].map(([k, l, note]) => (
+              <button
+                key={k}
+                type="button"
+                className={"st-planknap" + (interval === k ? " on" : "")}
+                onClick={() => skiftInterval(k)}
+                disabled={arbejder}
+                aria-pressed={interval === k}
+              >
+                {l}{note && <i>{note}</i>}
               </button>
             ))}
           </div>
@@ -550,14 +656,33 @@ export default function Start({ startFag = null }) {
             <p>Får du ingen match, betaler du ikke en krone.</p>
           </div>
 
-          {!betalingAaben && (
-            <button className="btn btn-teal st-bred" onClick={aabnBetaling} disabled={!sessionId}>
-              Start min gratis prøve
-            </button>
-          )}
-          {/* Containeren skal være i DOM'en FØR SDK'et monterer i den. */}
-          <div id="start-betalingsboks" className={betalingAaben ? "st-boks" : "st-skjul"} />
+          <button className="btn btn-teal st-bred" onClick={aabnBetaling} disabled={!sessionId || arbejder}>
+            {arbejder ? "Et øjeblik…" : "Start min gratis prøve"}
+          </button>
           <p className="st-mini">0,00 kr. trækkes i dag. Du kan sige op når som helst i prøveperioden.</p>
+        </div>
+      )}
+
+      {/* ---------------- BETALINGS-OVERLAY ----------------
+          ⚠️ FULDSKÆRM, IKKE EN LILLE DIV. Checkouten lå før i en 520px-høj boks
+          inde i kortet, og kunden skulle scrolle inde i iframen for at nå
+          kortfelterne. Reepays EGEN modal var i sin tid endnu værre — den var så
+          lav at man scrollede inde i den, og det var netop derfor /tilmeld gik væk
+          fra ModalSubscription.
+          Løsningen er vores eget overlay: vi ejer højden, iframen fylder alt hvad
+          der er tilbage under headeren, og "0,00 kr. i dag" står FAST øverst i
+          VORES lag — synligt hele vejen ned gennem kortfelterne, hvor tvivlen er.
+          Containeren skal være i DOM'en FØR SDK'et monterer i den. */}
+      {trin === 5 && (
+        <div className={betalingAaben ? "st-overlay" : "st-skjul"} role="dialog" aria-modal="true" aria-label="Betaling">
+          <div className="st-ovtop">
+            <div>
+              <b>0,00 kr. i dag</b>
+              <span>14 dages gratis prøve · derefter {pris} ekskl. moms</span>
+            </div>
+            <button type="button" className="st-luk" onClick={() => setBetalingAaben(false)} aria-label="Luk betaling">×</button>
+          </div>
+          <div id="start-betalingsboks" className="st-ovboks" />
         </div>
       )}
     </main>
