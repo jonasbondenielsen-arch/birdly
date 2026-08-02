@@ -9,22 +9,30 @@ import "../app/ny.css";
 // /ny — resultat-først forside.
 //
 // ⚠️ ERSTATTER IKKE `/`. Forsiden bærer hele SEO-laget og alle indgående links;
-// den her kører ved siden af og er noindex, indtil den har vist sig bedre. Så
-// flyttes den ind. Samme rækkefølge som /start ved siden af /tilmeld.
+// den her kører ved siden af og er noindex, indtil den har vist sig bedre.
 //
 // ⚠️ ALLE TAL ER ÆGTE. De kommer fra get-opgave-tal, som tæller i basen. Er der
 // intet tal, renderer boksen ikke — et gæt eller et nul på forsiden er værre end
-// ingen boks. Se `tal`-checket nedenfor.
+// ingen boks.
 //
-// ⚠️ INGEN TAL PÅ FAG-KORTENE. Besluttet: kortene er indgange, ikke bevis. Et
-// "Catering — 1 opgave" på forsiden sælger værre end ingenting, og tallet svinger
-// med ugen. Tallet hører hjemme i /start's trin 3, hvor det er personligt og hvor
-// 0-tilstanden har en ærlig formulering.
+// ⚠️ INGEN TAL PÅ FAG-KORTENE. Kortene er indgange, ikke bevis. Et
+// "Catering — 1 opgave" sælger værre end ingenting, og tallet svinger med ugen.
+// Tallet hører hjemme i /start's trin 3, hvor det er personligt.
+//
+// RÆKKEFØLGE (02-08-2026): hero → fag-kort → pris+garanti → CTA-bånd.
+// "Uden Birdly / Med Birdly" og "Tre skridt" er FJERNET. Prisen er rykket op, så
+// den mødes med garantien i samme øjekast — 499 kr. og "ingen match, ingen
+// regning" side om side er hele argumentet.
 // ============================================================================
 
-// Fag-kortene. Nøglerne SKAL findes i fag_cpv_map — de sendes videre som
-// ?fag=<key> og forvælger faget i onboardingen. Teksten under er hverdagssprog,
-// ikke CPV-jargon: kunden skal genkende sit eget arbejde på et halvt sekund.
+// ⚠️ ANMELDELSER: SLÅET FRA, OG DET ER IKKE EN FORGLEMMELSE.
+// Strukturen står klar nedenfor, men vi har ingen ægte anmeldelser endnu. Et
+// pladsholder-citat der ser ægte ud på en live side er både løgn over for kunden
+// og i strid med markedsføringsloven. Sæt den til true FØRST når der ligger
+// rigtige udtalelser med navn og firma — og udfyld ANMELDELSER med dem.
+const VIS_ANMELDELSER = false;
+const ANMELDELSER = []; // { citat, navn, firma }
+
 const FAG_KORT = [
   { key: "entreprenor", navn: "Entreprenør", under: "anlæg, jord, beton" },
   { key: "vvs", navn: "VVS", under: "varme, sanitet, ventilation" },
@@ -36,31 +44,34 @@ const FAG_KORT = [
   { key: "rengoring", navn: "Rengøring", under: "fast og periodisk" },
 ];
 
-const TRIN = [
-  { n: 1, t: "Du fortæller hvad I laver", b: "Fag og område. Det tager under et minut." },
-  { n: 2, t: "Vi holder øje — hver dag", b: "Alle offentlige opgaver i Danmark, to gange dagligt." },
-  { n: 3, t: "Du får en besked", b: "SMS og mail, så snart der er en opgave der passer til jer." },
-];
-
-function fmtTid(iso) {
+// "2. aug. kl. 09:01" — dansk, kort, med klokkeslæt så to daglige kørsler kan ses.
+// ⚠️ Kaldes KUN med et tidsstempel fra data. Aldrig new Date(): en klok der viser
+// "nu" beviser ingenting om hvornår vi sidst hentede.
+function fmtOpdateret(iso) {
   if (!iso) return null;
   const d = new Date(iso);
-  return Number.isNaN(d.getTime())
-    ? null
-    : d.toLocaleDateString("da-DK", { day: "numeric", month: "short" });
+  if (Number.isNaN(d.getTime())) return null;
+  const dato = d.toLocaleDateString("da-DK", { day: "numeric", month: "short" });
+  // ⚠️ Kolon, ikke punktum. da-DK's toLocaleTimeString giver "11.01"; det er formelt
+  // korrekt dansk, men punktum midt i et klokkeslæt læses let som en dato. Kolon er
+  // det folk forventer på en skærm.
+  const tid = d
+    .toLocaleTimeString("da-DK", { hour: "2-digit", minute: "2-digit" })
+    .replace(".", ":");
+  return `${dato} kl. ${tid}`;
 }
 
 export default function NyForside({ tal }) {
-  // Har vi ikke tal, vises live-boksen slet ikke. Resten af siden står fint uden.
   const harTal = typeof tal?.bydbare_aabne === "number" && tal.bydbare_aabne > 0;
   const seneste = Array.isArray(tal?.seneste) ? tal.seneste.filter((n) => n?.titel) : [];
+  const opdateret = fmtOpdateret(tal?.sidst_opdateret);
 
   return (
     <div className="ny">
       <header className="ny-top">
         <div className="ny-wrap ny-bar">
           <Logo height={32} />
-          <Link href="/start" className="ny-navcta">Kom i gang nu</Link>
+          <Link href="/start" className="ny-navcta">Find opgaver nu</Link>
         </div>
       </header>
 
@@ -74,22 +85,18 @@ export default function NyForside({ tal }) {
               Vi holder øje med alle offentlige opgaver i Danmark. Passer en til dit fag,
               får du en besked. Du skal ikke lede efter noget.
             </p>
+            {/* ÉN primær CTA. "Se hvordan det virker" er fjernet — to knapper ved
+                siden af hinanden deler opmærksomheden og udskyder handlingen. */}
             <div className="ny-cta">
-              <Link href="/start" className="ny-btn ny-btn-teal">Kom i gang nu</Link>
-              <a href="#saadan" className="ny-btn ny-btn-ghost">Se hvordan det virker</a>
-            </div>
-
-            {/* Matchgarantien står ved CTA'en, hvor tvivlen er. "Birdly virker" først —
-                selvtillid før garanti. */}
-            <div className="ny-garanti">
-              <b>Birdly virker. Derfor giver vi matchgaranti.</b>
-              <p>Finder vi ikke et match til dig, koster det dig ikke en krone. Så enkelt er det.</p>
+              <Link href="/start" className="ny-btn ny-btn-teal">Find opgaver nu</Link>
             </div>
           </div>
 
           {harTal && (
             <aside className="ny-live" aria-label="Live-overblik">
-              <div className="ny-live-h"><span className="ny-prik" aria-hidden="true" /> Live · opdateres 2× dagligt</div>
+              <div className="ny-live-h">
+                <span className="ny-prik" aria-hidden="true" /> Live
+              </div>
               <div className="ny-bigtal">{daTal(tal.bydbare_aabne)}</div>
               <small>opgaver med åben frist lige nu</small>
 
@@ -100,24 +107,22 @@ export default function NyForside({ tal }) {
                 <div className="ny-tile"><b>2×</b><span>opdatering dagligt</span></div>
               </div>
 
-              {/* ⚠️ ÆGTE OFFENTLIGE UDBUD — aldrig opdigtede hændelser. Med tre kunder
-                  ville "Anders fra Aarhus fik et match" desuden være identificerbart. */}
+              {/* ⚠️ ÆGTE OFFENTLIGE UDBUD — aldrig opdigtede hændelser. Hver opgave
+                  i sit eget kort, så feeden kan skimmes. */}
               {seneste.length > 0 && (
-                <>
-                  <ul className="ny-feed">
-                    {seneste.map((n, i) => (
-                      <li key={i}>
-                        <span className="ny-feed-t">{n.titel}</span>
-                        {n.koeber && <em>{n.koeber}</em>}
-                      </li>
-                    ))}
-                  </ul>
-                  <small className="ny-feed-note">
-                    Seneste opgaver hentet fra TED og Udbud.dk
-                    {fmtTid(seneste[0]?.hentet) ? ` · ${fmtTid(seneste[0].hentet)}` : ""}
-                  </small>
-                </>
+                <ul className="ny-feed">
+                  {seneste.map((n, i) => (
+                    <li key={i} className="ny-feedkort">
+                      <span className="ny-feed-t">{n.titel}</span>
+                      {n.koeber && <em>{n.koeber}</em>}
+                    </li>
+                  ))}
+                </ul>
               )}
+
+              {/* Ægte tidspunkt for seneste hentning — ikke svartidspunktet. Mangler
+                  det, står linjen der slet ikke. */}
+              {opdateret && <small className="ny-opdateret">Sidst opdateret {opdateret}</small>}
             </aside>
           )}
         </div>
@@ -140,83 +145,72 @@ export default function NyForside({ tal }) {
         </div>
       </section>
 
-      {/* ---------------- UDEN / MED ---------------- */}
-      <section className="ny-sek ny-graa">
-        <div className="ny-wrap">
-          <span className="ny-kick">Forskellen</span>
-          <h2 className="ny-big">Uden Birdly — og med</h2>
-          <div className="ny-cmp">
-            <div>
-              <h3>Uden Birdly</h3>
-              <ul>
-                <li><span className="ny-x">✕</span> Du leder selv på flere portaler</li>
-                <li><span className="ny-x">✕</span> Du opdager opgaven for sent</li>
-                <li><span className="ny-x">✕</span> Du bruger aftener på at lede</li>
-                <li><span className="ny-x">✕</span> Du ved ikke hvad du gik glip af</li>
-              </ul>
-            </div>
-            <div className="ny-ok">
-              <h3>Med Birdly</h3>
-              <ul>
-                <li><span className="ny-v">✓</span> Vi holder øje — hele tiden</li>
-                <li><span className="ny-v">✓</span> Du får en SMS når noget passer</li>
-                <li><span className="ny-v">✓</span> Alt samlet på din egen side</li>
-                <li><span className="ny-v">✓</span> Du bruger tiden på at byde</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ---------------- SÅDAN VIRKER DET ---------------- */}
-      <section className="ny-sek" id="saadan">
-        <div className="ny-wrap">
-          <span className="ny-kick">Sådan virker det</span>
-          <h2 className="ny-big">Tre skridt. Så kører det.</h2>
-          <div className="ny-trin">
-            {TRIN.map((t) => (
-              <div className="ny-trinkort" key={t.n}>
-                <div className="ny-nr">{t.n}</div>
-                <b>{t.t}</b>
-                <p>{t.b}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ---------------- PRIS ---------------- */}
+      {/* ---------------- PRIS + GARANTI ---------------- */}
       <section className="ny-sek ny-graa">
         <div className="ny-wrap">
           <span className="ny-kick">Pris</span>
           <h2 className="ny-big">Én pris. Ingen binding.</h2>
-          {/* ⚠️ Beløbene kommer fra lib/pakke.js — hardkod dem ALDRIG her. Det var
-              netop tre hardkodede steder der stod med den gamle pris efter en
-              ændring (CLAUDE.md, "Pris — REGLERNE"). */}
-          <div className="ny-pris">
-            <div className="ny-priskort">
-              <span className="ny-prisnavn">Måned</span>
-              <b>{priceText.monthly}</b>
-              <small>ekskl. moms</small>
-              <Link href="/start" className="ny-btn ny-btn-ghost ny-bred">Kom i gang nu</Link>
+
+          {/* Pris til venstre, garanti til højre — set i samme øjekast. */}
+          <div className="ny-prisrow">
+            {/* ⚠️ Beløbene kommer fra lib/pakke.js — hardkod dem ALDRIG her. Det var
+                netop tre hardkodede steder der stod med den gamle pris efter en
+                ændring (CLAUDE.md, "Pris — REGLERNE"). */}
+            <div className="ny-pris">
+              <div className="ny-priskort">
+                <span className="ny-prisnavn">Måned</span>
+                <b>{priceText.monthly}</b>
+                <small>ekskl. moms</small>
+                <Link href="/start" className="ny-btn ny-btn-ghost ny-bred">Find opgaver nu</Link>
+              </div>
+              <div className="ny-priskort ny-fremhaev">
+                <span className="ny-prisnavn">År <i>{priceText.saveShort}</i></span>
+                <b>{priceText.yearly}</b>
+                <small>ekskl. moms · {YEARLY_SAVING.amount.toLocaleString("da-DK")} kr. sparet</small>
+                <Link href="/start" className="ny-btn ny-btn-teal ny-bred">Find opgaver nu</Link>
+              </div>
             </div>
-            <div className="ny-priskort ny-fremhaev">
-              <span className="ny-prisnavn">År <i>{priceText.saveShort}</i></span>
-              <b>{priceText.yearly}</b>
-              <small>ekskl. moms · {YEARLY_SAVING.amount.toLocaleString("da-DK")} kr. sparet</small>
-              <Link href="/start" className="ny-btn ny-btn-teal ny-bred">Kom i gang nu</Link>
-            </div>
+
+            <aside className="ny-garantikort">
+              <b>Birdly virker. Derfor giver vi matchgaranti.</b>
+              <p>Finder vi ikke et match til dig, koster det dig ikke en krone. Så enkelt er det.</p>
+              <ul>
+                <li><span className="ny-v">✓</span> Gratis de første {TRIAL_DAYS} dage</li>
+                <li><span className="ny-v">✓</span> Ingen binding</li>
+                <li><span className="ny-v">✓</span> Sig op når som helst</li>
+              </ul>
+            </aside>
           </div>
-          <p className="ny-note">Gratis de første {TRIAL_DAYS} dage · ingen binding · sig op når som helst</p>
         </div>
       </section>
+
+      {/* ---------------- ANMELDELSER (skjult) ----------------
+          Strukturen står klar, men sektionen renderer IKKE før VIS_ANMELDELSER er
+          true OG der ligger ægte udtalelser i ANMELDELSER. Se noten ved konstanten:
+          et pladsholder-citat på en live side er løgn, ikke et designelement. */}
+      {VIS_ANMELDELSER && ANMELDELSER.length > 0 && (
+        <section className="ny-sek">
+          <div className="ny-wrap">
+            <span className="ny-kick">Kunder</span>
+            <h2 className="ny-big">Hvad siger de der bruger Birdly?</h2>
+            <div className="ny-anm">
+              {ANMELDELSER.map((a, i) => (
+                <figure className="ny-anmkort" key={i}>
+                  <blockquote>{a.citat}</blockquote>
+                  <figcaption><b>{a.navn}</b><span>{a.firma}</span></figcaption>
+                </figure>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ---------------- AFSLUTTENDE CTA ---------------- */}
       <section className="ny-band">
         <div className="ny-wrap">
           <h2>Klar til at fange din næste opgave?</h2>
           <p>Fortæl os hvad I laver. Så holder vi øje for jer.</p>
-          <Link href="/start" className="ny-btn ny-btn-hvid">Kom i gang nu</Link>
+          <Link href="/start" className="ny-btn ny-btn-hvid">Find opgaver nu</Link>
           <p className="ny-band-garanti">Matchgaranti: Får du ingen match, betaler du ikke en krone.</p>
         </div>
       </section>
