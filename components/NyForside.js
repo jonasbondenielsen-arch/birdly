@@ -3,16 +3,16 @@ import { Logo } from "./Logo";
 import Footer from "./Footer";
 import { daTal } from "../lib/opgaveTal";
 import { priceText, YEARLY_SAVING, TRIAL_DAYS } from "../lib/pakke";
-import { FAQ_TOP, FAQ_RESTEN } from "../lib/faq";
+import { FAQ_TOP } from "../lib/faq";
 import "../app/ny.css";
 
 // ============================================================================
-// Salgssiden — resultat-først. BOR PÅ RODEN (`/`) siden 03-08-2026.
+// Salgssiden — resultat-først. Bor på /kom-i-gang (03-08-2026).
 //
-// ⚠️ DEN ER HUSETS INDGANG. Alle husets CTA-knapper, alle 36 /fag/-sider og
-// Meta-annoncerne lander her; /tilmeld og /ny omdirigerer hertil. Herfra fører
-// siden videre til /start (CVR-funnelen) — aldrig omvendt. Kunden skal sælges
-// til, før hun bliver bedt om sit CVR.
+// ⚠️ DEN ER FUNNELENS INDGANG — IKKE HUSETS FORSIDE. Roden (`/`) er den
+// gamle forside og husets SEO-side; den her er landingssiden som annoncer og
+// alle CTA-knapper peger på. Herfra går det videre til /start (CVR-funnelen) —
+// aldrig omvendt. Kunden skal sælges til, før hun bliver bedt om sit CVR.
 //
 // ⚠️ ALLE TAL ER ÆGTE. De kommer fra get-opgave-tal, som tæller i basen. Er der
 // intet tal, renderer boksen ikke — et gæt eller et nul på forsiden er værre end
@@ -225,18 +225,19 @@ export default function NyForside({ tal, fag = null, region = null }) {
         </section>
       )}
 
-      {/* ---------------- FAQ ----------------
-          ⚠️ HELE FAQ'EN STÅR HER, ikke kun de fire. Roden mistede ~2/3 af sit
-          indhold da salgssiden overtog den (613 → 221 linjer), og FAQ'en er de
-          eneste ~1.400 ord ægte, spørgsmålsformet tekst vi har. Lagde vi den på
-          en /faq-side, ville vi flytte indhold VÆK fra netop den URL der lige
-          havde tabt det — og bede en ny, svag side om at optjene autoritet
-          forfra. Den hører hjemme her.
+      {/* ---------------- FAQ — KUN DE FIRE ----------------
+          ⚠️ De fire, ikke alle tolv. Salgssiden har ét job: fjerne den tvivl der
+          står mellem kunden og et klik. De fire er valgt på købstvivl — pris,
+          binding, hvordan man får opgaverne, og om man kun får det man kan bruge.
+          De øvrige otte er nysgerrighed, og de bor på forsiden, hvor de kan
+          rangere; her ville de bare skubbe CTA'en længere ned.
 
-          De fire står udfoldet: en købstvivl der kræver et klik for at blive
-          besvaret, er ikke besvaret. Resten er foldet, så siden ikke ender med
-          en mur af tekst under den afsluttende CTA. Begge dele står i HTML'en
-          og kan læses af Google — <details> skjuler visuelt, ikke for crawleren. */}
+          Alle fire står UDFOLDET. En købstvivl der kræver et klik for at blive
+          besvaret, er ikke besvaret.
+
+          ⚠️ Svarene læses fra lib/faq.js — samme kilde som forsidens tolv. Skrev
+          vi dem af, ville de to sæt langsomt komme til at sige noget forskelligt
+          om pris og opsigelse, og kunden ville opdage det på det værste tidspunkt. */}
       <section className="ny-sek ny-graa" id="faq">
         <div className="ny-wrap">
           <span className="ny-kick">Spørgsmål</span>
@@ -248,15 +249,6 @@ export default function NyForside({ tal, fag = null, region = null }) {
                 <h3>{f.sp}</h3>
                 <p>{f.svar}</p>
               </div>
-            ))}
-          </div>
-
-          <div className="ny-faqmere">
-            {FAQ_RESTEN.map((f) => (
-              <details className="ny-faqd" key={f.sp}>
-                <summary>{f.sp}<span className="ny-pm" aria-hidden="true">+</span></summary>
-                <p>{f.svar}</p>
-              </details>
             ))}
           </div>
         </div>

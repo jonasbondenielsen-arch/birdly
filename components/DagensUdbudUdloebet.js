@@ -22,7 +22,7 @@ export default function DagensUdbudUdloebet() {
           Men sådan går det ikke næste gang: med Birdly får du besked om nye opgaver i dit fag, så snart de
           offentliggøres — direkte på SMS og mail, mens der stadig er god tid til at byde.
         </p>
-        <Link href="/" style={{ display: "inline-block", background: "#1E9E8A", color: "#fff", fontWeight: 700, borderRadius: 12, padding: "14px 24px", textDecoration: "none", fontSize: 16 }}>
+        <Link href="/kom-i-gang" style={{ display: "inline-block", background: "#1E9E8A", color: "#fff", fontWeight: 700, borderRadius: 12, padding: "14px 24px", textDecoration: "none", fontSize: 16 }}>
           👉 Prøv Birdly gratis — så misser du aldrig en opgave igen →
         </Link>
         <p style={{ marginTop: 16 }}>

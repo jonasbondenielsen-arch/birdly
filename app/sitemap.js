@@ -9,14 +9,18 @@ const BASE = SITE_URL;
 
 export default function sitemap() {
   const staticPaths = [
-    // ⚠️ RODEN ER DEN KANONISKE INDGANG (03-08-2026). Salgssiden bor her, og det er
-    // den Google skal vise. Hverken /tilmeld eller /ny står i listen: begge
-    // omdirigerer permanent hertil, og en 301'et URL hører ikke hjemme i et sitemap
-    // — den ville bede Google indeksere noget der svarer "flyt videre".
+    // ⚠️ RODEN ER HUSETS KANONISKE FORSIDE (03-08-2026). Den bærer hele
+    // forklaringslaget og alle tolv FAQ-svar — det er den Google skal vise.
     //
-    // ⚠️ /start STÅR HELLER IKKE HER, og det er ikke en forglemmelse. Den er flowet
-    // BAG CTA'en, ikke en landingsside; den er noindex. Stod den her, ville vi bede
-    // Google indeksere et CVR-felt og sende folk uden om hele salgssiden.
+    // ⚠️ TRE ADRESSER STÅR BEVIDST IKKE HER, og ingen af dem er en forglemmelse:
+    //   /kom-i-gang  salgssiden. Landingsside for betalt trafik og noindex: den
+    //                sælger det samme til den samme søgende som roden, og fire af
+    //                dens FAQ-svar er ordret rodens. Indekseret ville den
+    //                konkurrere med netop den side den skal føde.
+    //   /start       CVR-funnelen. Flowet BAG CTA'en, ikke en landingsside.
+    //                Stod den her, ville vi bede Google indeksere et CVR-felt.
+    //   /tilmeld     omdirigerer permanent til salgssiden. En 301'et URL hører
+    //                ikke hjemme i et sitemap — den svarer "flyt videre".
     "",
     "/brancher",
     "/udbud-for-alle",

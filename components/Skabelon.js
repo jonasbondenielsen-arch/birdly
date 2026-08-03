@@ -894,7 +894,7 @@ export default function Skabelon({ token, data, publicMode = false }) {
               vist, men forberedt til dig: udfyldt med din virksomheds oplysninger og tilpasset hvert enkelt udbud,
               der matcher dit fag. Vi gør det meste af arbejdet, så du kun udfylder det, vi ikke kan vide.
             </p>
-            <a href="/" style={{ ...BTN_PRIMARY, fontSize: 16, padding: "14px 24px" }}>👉 Sådan får du dem alle — prøv Birdly gratis →</a>
+            <a href="/kom-i-gang" style={{ ...BTN_PRIMARY, fontSize: 16, padding: "14px 24px" }}>👉 Sådan får du dem alle — prøv Birdly gratis →</a>
           </div>
           <div className="no-print" style={{ marginTop: 16, padding: "16px 18px", background: "#FBFCFD", border: "1px solid " + LINE, borderRadius: 12, color: MUTED, fontSize: 13, lineHeight: 1.6 }}>
             <b style={{ color: INK }}>Vigtigt</b>

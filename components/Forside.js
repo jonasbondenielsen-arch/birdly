@@ -183,7 +183,7 @@ export default function Forside({ opgaveTal = null }) {
               <Link href="/brancher">Find dit fag</Link>
             </nav>
             <div className="right">
-              <Link href="/start" className="nav-cta">Find opgaver nu</Link>
+              <Link href="/kom-i-gang" className="nav-cta">Find opgaver nu</Link>
             </div>
           </div>
         </header>
@@ -216,7 +216,7 @@ export default function Forside({ opgaveTal = null }) {
             </div>
             <div className="cta">
               <div className="cta-primary">
-                <Link href="/start" className="btn btn-teal">Find opgaver nu</Link>
+                <Link href="/kom-i-gang" className="btn btn-teal">Find opgaver nu</Link>
                 <span className="cta-note">Gratis de første 14 dage · ingen binding</span>
               </div>
               <a href="#hvordan" className="btn btn-ghost">Se hvordan det virker</a>
@@ -242,7 +242,7 @@ export default function Forside({ opgaveTal = null }) {
                   <div className="muni">Aarhus Kommune</div>
                   <div className="li"><svg viewBox="0 0 16 16"><rect x="2" y="3" width="12" height="11" rx="2" fill="none" stroke="#FF6B6B" strokeWidth="1.6" /><path d="M2 6h12M6 1.5v3M10 1.5v3" stroke="#FF6B6B" strokeWidth="1.6" strokeLinecap="round" /></svg> Frist: 14.08.2026</div>
                   <div className="li"><svg viewBox="0 0 16 16"><path d="M8 1v14M4 5l4-4 4 4" stroke="#00B3A6" strokeWidth="1.6" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg> Budget: 25–40 mio. kr.</div>
-                  <Link className="see" href="/start">Se opgaven →</Link>
+                  <Link className="see" href="/kom-i-gang">Se opgaven →</Link>
                 </div>
               </div>
             </div>
@@ -347,7 +347,7 @@ export default function Forside({ opgaveTal = null }) {
                 <div>
                   <div className="ttl">Renovering af skoler</div>
                   <div className="meta">Aarhus Kommune · Frist: 14.08.2026 kl. 12.00</div>
-                  <Link className="seebtn" href="/start">Se opgaven</Link>
+                  <Link className="seebtn" href="/kom-i-gang">Se opgaven</Link>
                 </div>
               </div>
               <div className="sign">Vi finder — du vælger.<br />Venlig hilsen<br /><b>Birdly Teamet</b></div>
@@ -429,7 +429,7 @@ export default function Forside({ opgaveTal = null }) {
               <div className="pamt">{PLAN.monthly}<span>kr/md</span></div>
               <div className="pnote">Ekskl. moms · ingen binding</div>
               <div className="pfoot">
-                <Link href="/start" className="btn btn-teal pbtn">Find opgaver nu</Link>
+                <Link href="/kom-i-gang" className="btn btn-teal pbtn">Find opgaver nu</Link>
                 <div className="cta-note">Gratis de første 14 dage · ingen binding</div>
                 <div className="psub">Opsig når som helst med 30 dages varsel.</div>
               </div>
@@ -442,7 +442,7 @@ export default function Forside({ opgaveTal = null }) {
               <div className="pamt">{PLAN.yearly.toLocaleString("da-DK")}<span>kr/år</span></div>
               <div className="pnote">Betal for 10 måneder, få 12 · spar {YEARLY_SAVING.amount} kr · ekskl. moms</div>
               <div className="pfoot">
-                <Link href="/start" className="btn btn-teal pbtn">Find opgaver nu</Link>
+                <Link href="/kom-i-gang" className="btn btn-teal pbtn">Find opgaver nu</Link>
                 <div className="cta-note">Gratis de første 14 dage · ingen binding</div>
                 {/* TODO jura: "betales forud" er en blød, MIDLERTIDIG formulering. Den præcise
                     ordlyd om 12-måneders binding på årsabonnement skal bekræftes af advokat før launch. */}
@@ -528,7 +528,7 @@ export default function Forside({ opgaveTal = null }) {
               </div>
               <h3>Opret din profil på to minutter</h3>
               <p className="ft" style={{ marginBottom: 20 }}>Du udfylder dit fag, område og opgavestørrelse — så finder vi de mest relevante opgaver til dig. Gratis i 14 dage. Ingen binding — opsig når du vil.</p>
-              <Link href="/start" className="submit" style={{ display: "block", textDecoration: "none", textAlign: "center" }}>Find opgaver nu</Link>
+              <Link href="/kom-i-gang" className="submit" style={{ display: "block", textDecoration: "none", textAlign: "center" }}>Find opgaver nu</Link>
               <p className="fnote">Gratis de første 14 dage · ingen binding</p>
             </div>
           </div>
@@ -540,7 +540,7 @@ export default function Forside({ opgaveTal = null }) {
         <div className="wrap">
           <h2 className="reveal">Klar til at få opgaver direkte på SMS?</h2>
           <p className="reveal">Lad Birdly holde øje, så du kan bruge tiden på det, du er god til.</p>
-          <Link href="/start" className="btn btn-teal reveal">Find opgaver nu</Link>
+          <Link href="/kom-i-gang" className="btn btn-teal reveal">Find opgaver nu</Link>
           <p className="cta-note reveal">Gratis de første 14 dage · ingen binding</p>
         </div>
       </section>

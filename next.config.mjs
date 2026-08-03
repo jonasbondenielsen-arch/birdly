@@ -2,27 +2,28 @@
 const nextConfig = {
   async redirects() {
     return [
-      // ⚠️ ÉN INDGANG: SALGSSIDEN PÅ RODEN (03-08-2026). Kæden er
-      //   annonce / organisk / undersides-CTA → `/` (sælger) → /start (CVR-funnel).
+      // ⚠️ /tilmeld PEGER PÅ SALGSSIDEN, IKKE PÅ RODEN (03-08-2026).
       //
-      // Begge gamle adresser samles derfor på `/`, ikke på /start. Sendte vi dem
-      // direkte ind i funnelen, ville de springe hele salgsarbejdet over og lande
-      // på "indtast CVR" — og et gammelt, delt link ville konvertere dårligere end
-      // en ny besøgende.
+      // Adressen bar én bestemt hensigt: "jeg vil melde mig til". Sendte vi den
+      // hjem til forsiden, ville vi tage en besøgende der allerede havde besluttet
+      // sig og stille hende tilbage i starten af forklaringen. Salgssiden er
+      // funnelens indgang og det korteste ærlige spring til /start.
       //
-      // 301/308 (permanent) frem for midlertidig, fordi placeringerne SKAL flytte
-      // med over på salgssiden. En midlertidig ville lade Google blive ved med at
-      // vise de gamle adresser, og så havde vi tre sider om det samme.
+      // ⚠️ PRISEN, SAGT HØJT: målet er noindex, så de placeringer /tilmeld havde
+      // optjent, flytter ikke med nogen steder. Det er accepteret — /tilmeld var
+      // ÉN side, og dens søgeord overlappede rodens, som nu har hele
+      // forklaringslaget og alle tolv FAQ-svar tilbage. Vægter du placeringerne
+      // højere end hensigten, er `destination: "/"` den ene linje der skal ændres.
       //
-      // Query'en følger med af sig selv i Next: /tilmeld?fag=tomrer&region=nordjylland
-      // lander som /?fag=tomrer&region=nordjylland, hvor salgssiden fører den videre
-      // til /start. Forvalget fra fag×geo-siderne overlever altså hele kæden.
-      { source: "/tilmeld", destination: "/", permanent: true },
+      // Query'en følger med af sig selv i Next:
+      // /tilmeld?fag=tomrer&region=nordjylland → /kom-i-gang?fag=tomrer&region=nordjylland,
+      // hvor salgssiden fører den videre til /start. Forvalget overlever hele kæden.
+      { source: "/tilmeld", destination: "/kom-i-gang", permanent: true },
 
-      // /ny var salgssidens midlertidige adresse mens den kørte ved siden af den
-      // gamle forside. Indholdet bor nu på roden; ruten er fjernet, så den peger
-      // hjem frem for at give 404 til alt der er delt undervejs.
-      { source: "/ny", destination: "/", permanent: true },
+      // /ny var salgssidens arbejdstitel mens den kørte forsøgsvis ved siden af
+      // forsiden. Siden har nu et navn der siger hvad den gør; den gamle adresse
+      // peger derhen frem for at give 404 til alt der er delt undervejs.
+      { source: "/ny", destination: "/kom-i-gang", permanent: true },
     ];
   },
 };
