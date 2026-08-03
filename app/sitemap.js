@@ -10,7 +10,12 @@ const BASE = SITE_URL;
 export default function sitemap() {
   const staticPaths = [
     "",
-    "/tilmeld",
+    // ⚠️ /tilmeld ER FJERNET HERFRA og erstattet af /start (03-08-2026). Den gamle
+    // rute omdirigerer permanent til den nye (next.config.mjs), og en 301'et URL
+    // hører ikke hjemme i et sitemap — den ville bede Google indeksere noget der
+    // svarer "flyt videre". Var begge blevet stående, havde vi selv sat to sider
+    // op mod hinanden på samme søgeord.
+    "/start",
     "/brancher",
     "/udbud-for-alle",
     "/betingelser",
@@ -29,6 +34,6 @@ export default function sitemap() {
   return [...staticPaths, ...fagPaths, ...geoPaths].map((p) => ({
     url: BASE + (p || "/"),
     changeFrequency: p === "" ? "daily" : "weekly",
-    priority: p === "" ? 1 : p.startsWith("/fag/") || p === "/tilmeld" || p === "/brancher" ? 0.8 : 0.5,
+    priority: p === "" ? 1 : p.startsWith("/fag/") || p === "/start" || p === "/brancher" ? 0.8 : 0.5,
   }));
 }

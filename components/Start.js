@@ -85,7 +85,7 @@ function tilE164(raa) {
   return d.length >= 8 ? "+" + d : null;
 }
 
-export default function Start({ startFag = null, betaling = null }) {
+export default function Start({ startFag = null, startRegion = null, betaling = null }) {
   // ⚠️ RETUR FRA REEPAY. Den hostede checkout forlader vores side, så al state er
   // væk når kunden kommer tilbage — derfor afgøres kvitteringen af URL'en, ikke af
   // hukommelsen. `ok` viser kvitteringen; `annulleret` sender hende tilbage i
@@ -111,7 +111,10 @@ export default function Start({ startFag = null, betaling = null }) {
   // som array), men UI'et viste kun én dropdown, så ingen kunne se at en
   // entreprenør også kunne tage kloak med. Nu chips + "tilføj branche", som
   // /tilmeld altid har haft.
-  const [fagValgt, setFagValgt] = useState(startFag ? [startFag] : []);
+  // ⚠️ TOM START, IKKE startFag DIREKTE. Forvalget sættes først når kataloget er
+  // hentet og værdien er valideret — se effekten længere nede. Sattes den her, kunne
+  // en opdigtet ?fag= lande i chippen som rå nøgle og blokere trin 3 uden forklaring.
+  const [fagValgt, setFagValgt] = useState([]);
   const [gaetFag, setGaetFag] = useState(null); // hvad CVR-opslaget pegede på
   // ⚠️ FLERE LANDSDELE (03-08-2026). Området var en <select> og kunne derfor kun bære
   // ét valg — men en håndværker dækker sjældent præcis én region: Sjælland +
@@ -160,6 +163,31 @@ export default function Start({ startFag = null, betaling = null }) {
   const [faerdig, setFaerdig] = useState(betaling === "ok");
 
   useEffect(() => { fetchCatalog().then(setKatalog).catch(() => setKatalog({ fag: [], regions: [] })); }, []);
+
+  // ⚠️ FORVALG FRA fag×geo-SIDERNE (03-08-2026). De 36 /fag/-sider er nu husets
+  // eneste CTA-mål, og de sender BÅDE ?fag= og ?region= — fx
+  // /start?fag=tomrer&region=nordjylland fra "Tømreropgaver i Nordjylland".
+  //
+  // ⚠️ ?region= MANGLEDE. /start læste kun ?fag=, så en kunde fra en fag×geo-side
+  // landede på "Hele Danmark" og fik et bredere kriterium end den side hun kom fra
+  // lovede. /tilmeld har altid forstået begge — havde vi bare flyttet knapperne,
+  // var halvdelen af landingssidernes pointe faldet på gulvet.
+  //
+  // ⚠️ VALIDERET MOD KATALOGET, som i /tilmeld. Værdierne kommer fra en URL og er
+  // derfor kundens input, ikke vores data. Findes de ikke i kataloget, ignoreres de
+  // stille — en manipuleret adresse må ikke kunne sætte et fag eller et område der
+  // ikke eksisterer. Region-slug og region_key er samme streng (lib/regioner.js),
+  // så der er ingen oversættelse der kan drive fra hinanden.
+  useEffect(() => {
+    if (!katalog) return;
+    if (startFag && (katalog.fag || []).some((f) => f.key === startFag)) {
+      setFagValgt((s) => (s.length ? s : [startFag]));
+    }
+    if (startRegion && (katalog.regions || []).some((r) => r.key === startRegion)) {
+      setHeleDk(false);
+      setRegionValg({ [startRegion]: true });
+    }
+  }, [katalog, startFag, startRegion]);
 
   const fagListe = katalog?.fag || [];
   const fagByKey = useMemo(

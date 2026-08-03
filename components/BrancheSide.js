@@ -33,7 +33,7 @@ export default function BrancheSide({ data, region = null, opgaveTal = null }) {
   const { slug, nounPlural, nounSingular, fagKey, arbejde, ex1, ex2, kortSvarExtra, whyHeading, whyText, eksemplerIntro, examples, faq } = data;
   // Funnelen forstår allerede ?fag=; ?region= er tilføjet efter samme mønster, så
   // kunden lander med både fag og område forvalgt og har færre klik tilbage.
-  const tilmeld = "/tilmeld?fag=" + fagKey + (region ? "&region=" + region.slug : "");
+  const funnel = "/start?fag=" + fagKey + (region ? "&region=" + region.slug : "");
   const sted = region ? ` ${region.praep} ${region.navn}` : "";
   // Søskende-regioner: på en fag×geo-side vises de ANDRE regioner, på en ren fag-side
   // vises alle. Det er dét der binder siderne sammen som struktur frem for løse URL'er.
@@ -76,7 +76,7 @@ export default function BrancheSide({ data, region = null, opgaveTal = null }) {
             <Link href="/brancher">Brancher</Link>
           </nav>
           <div className="right">
-            <Link href={tilmeld} className="nav-cta">Kom i gang nu</Link>
+            <Link href={funnel} className="nav-cta">Find opgaver nu</Link>
           </div>
         </div>
         {/* Tælleren står allerede på fagets eget tal — derfor ingen branchevælger her;
@@ -102,7 +102,7 @@ export default function BrancheSide({ data, region = null, opgaveTal = null }) {
             <span><Check /> Direkte på SMS og mail</span>
           </div>
           <div className="cta" style={{ justifyContent: "center" }}>
-            <Link href={tilmeld} className="btn btn-teal">Kom i gang nu</Link>
+            <Link href={funnel} className="btn btn-teal">Find opgaver nu</Link>
           </div>
         </div>
       </section>
@@ -125,7 +125,7 @@ export default function BrancheSide({ data, region = null, opgaveTal = null }) {
           <h2 className="big">{whyHeading}</h2>
           <p className="lead">{whyText}</p>
           <div className="cta" style={{ justifyContent: "center", marginTop: 22 }}>
-            <Link href={tilmeld} className="btn btn-teal">Kom i gang nu</Link>
+            <Link href={funnel} className="btn btn-teal">Find opgaver nu</Link>
           </div>
         </div>
       </section>
@@ -221,7 +221,7 @@ export default function BrancheSide({ data, region = null, opgaveTal = null }) {
         <div className="wrap">
           <h2>Klar til at fange din næste opgave?</h2>
           <p>Gratis i 14 dage, ingen binding. Du kan altid ændre dine valg eller stoppe igen.</p>
-          <Link href={tilmeld} className="btn btn-teal">Kom i gang nu</Link>
+          <Link href={funnel} className="btn btn-teal">Find opgaver nu</Link>
         </div>
       </section>
 
@@ -230,7 +230,7 @@ export default function BrancheSide({ data, region = null, opgaveTal = null }) {
       {/* Sticky CTA sidst i træet, så den ligger over alt uden at kræve z-index-kamp
           med sektionerne. Plads i bunden gives af .har-sticky-cta i forside.css. */}
       <StickyCta
-        href={tilmeld}
+        href={funnel}
         tekst={region ? `Opgaver for ${nounPlural} ${region.praep} ${region.navn}` : `Opgaver for ${nounPlural} — direkte på SMS`}
       />
 

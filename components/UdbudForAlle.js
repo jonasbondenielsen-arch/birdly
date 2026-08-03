@@ -17,7 +17,7 @@ export default function UdbudForAlle() {
             <a href="/#om">Om os</a>
             <Link href="/udbud-for-alle" className="on">Opgaver er for alle</Link>
           </nav>
-          <Link href="/tilmeld" className="nav-cta">Kom i gang nu</Link>
+          <Link href="/start" className="nav-cta">Find opgaver nu</Link>
         </div>
       </header>
 
@@ -28,7 +28,7 @@ export default function UdbudForAlle() {
           <div className="psst">— ikke kun for de store</div>
           <p>Offentlige opgaver burde ikke kun være for dem med en hel udbudsafdeling. Hos Birdly gør vi dem tilgængelige for de små og mellemstore — helt automatisk.</p>
           <div className="btns">
-            <Link href="/tilmeld" className="btn btn-teal">Kom i gang nu</Link>
+            <Link href="/start" className="btn btn-teal">Find opgaver nu</Link>
             <a href="/#hvordan" className="btn btn-ghost">Se hvordan det virker</a>
           </div>
         </div>
@@ -170,7 +170,7 @@ export default function UdbudForAlle() {
         <div className="wrap">
           <h2>Giv din virksomhed en fair chance</h2>
           <p>Tilmeld dig på to minutter, og lad os holde øje med udbuddene — så du kan bruge tiden på at vinde dem.</p>
-          <Link href="/tilmeld" className="btn btn-teal">Kom i gang nu</Link>
+          <Link href="/start" className="btn btn-teal">Find opgaver nu</Link>
         </div>
       </section>
 
