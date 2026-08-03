@@ -142,14 +142,14 @@ export default function BrancheSide({ data, region = null, opgaveTal = null }) {
                 står der 1 eller 0, og så ligner produktet dødt. Nu står hele
                 beholdningen, og sætningen lover udtrykkeligt IKKE at de alle passer
                 til netop dette fag og område — det er dét filtreringen er til for. */}
-            {/* ⚠️ SAMME FELT SOM BAREN OG SALGSSIDEN (03-08-2026): bydbare_aabne.
+            {/* ⚠️ SAMME FELT SOM BAREN OG SALGSSIDEN (03-08-2026): bydbare.
                 Linjen læste `bydbare` rundet ned ("over 400"), mens baren øverst på
                 SAMME side viste 338. To tal på én skærm inviterer spørgsmålet om
                 hvilket der passer — og det ene talte opgaver hvis frist var udløbet.
                 Præcist tal, ingen afrunding: der står ovenfor hvornår det blev hentet. */}
-            {opgaveTal?.bydbare_aabne != null && (
+            {opgaveTal?.bydbare != null && (
               <p className="lead" style={{ fontWeight: 600 }}>
-                Lige nu holder vi øje med <b>{daTal(opgaveTal.bydbare_aabne)} offentlige opgaver</b> i
+                Lige nu holder vi øje med <b>{daTal(opgaveTal.bydbare)} offentlige opgaver</b> i
                 hele landet. Du får kun besked om dem, der passer til dit fag og dit område.
               </p>
             )}

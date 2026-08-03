@@ -28,27 +28,35 @@ import { daTal, fmtOpdateret } from "../lib/opgaveTal";
 // Baren viste `bydbare` rundet ned med "over" foran: "over 400". Salgssidens
 // live-boks viste `bydbare_aabne`: 338. To felter, to tal, samme site — en besøgende
 // der gik fra forsiden til funnelen så beholdningen skrumpe med en fjerdedel uden
-// forklaring. Begge læser nu `bydbare_aabne`: opgaver med ÅBEN FRIST lige nu.
+// forklaring. Baren, salgssiden og fag-siderne læser nu ALLE `bydbare`.
 //
-// Det er også det ærligste af de to. `bydbare` tæller alt af bydbar type, også dem
-// hvis frist er udløbet — dem kan man ikke byde på, og sætningen her lover netop at
-// de er "klar til at blive budt på".
+// `bydbare` = hele den bydbare beholdning, også udbud hvis frist er passeret. Det
+// er derfor sætningen hedder "vi holder øje med" og ikke "klar til at blive budt
+// på" — teksten skal være sand om hvert eneste tal den dækker.
+//
+// ⚠️ Feltet er dansk-filtreret i get-opgave-tal siden 03-08-2026. Uden det stod der
+// 455 i stedet for 446, altså 9 udenlandske udbud ingen dansk kunde kan bruge.
 //
 // ⚠️ INGEN AFRUNDING MERE. `rundNed` fandtes fordi "over X" skulle blive ved med at
 // være sandt mellem to cache-opdateringer. Med et præcist tal OG et synligt
 // opdateringstidspunkt er der intet at dække over: tallet var sandt da vi hentede
 // det, og der står hvornår det var.
 export default function OpgaveTaeller({ tal }) {
-  if (typeof tal?.bydbare_aabne !== "number") return null;
-  const n = tal.bydbare_aabne;
+  if (typeof tal?.bydbare !== "number") return null;
+  const n = tal.bydbare;
   const opdateret = fmtOpdateret(tal.sidst_opdateret);
 
   return (
     <div className="opgtal">
       <div className="opgtal-inner">
         <span className="opgtal-prik" aria-hidden="true" />
+        {/* ⚠️ TEKSTEN FULGTE MED TALLET (03-08-2026). Baren sagde "klar til at blive
+            budt på", hvilket passede til bydbare_aabne (kun åben frist). `bydbare`
+            tæller hele beholdningen — også udbud hvis frist er passeret — og om dem
+            ville "klar til at blive budt på" være usandt. "Vi holder øje med" er
+            sandt om alle, og er den formulering fag-siderne allerede bruger. */}
         <span className="opgtal-tekst">
-          Vi har netop <b className="opgtal-num">{daTal(n)}</b> {n === 1 ? "opgave" : "opgaver"} klar til at blive budt på
+          Vi holder øje med <b className="opgtal-num">{daTal(n)}</b> offentlige {n === 1 ? "opgave" : "opgaver"}
         </span>
         {/* Ægte tidspunkt for seneste hentning — aldrig klientens ur. Mangler det,
             står linjen der slet ikke; et tal uden dato er bedre end en dato vi har

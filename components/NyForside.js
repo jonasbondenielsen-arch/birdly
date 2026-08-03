@@ -66,7 +66,10 @@ export default function NyForside({ tal, fag = null, region = null }) {
   // Fag-kortene sætter deres EGET fag — kunden har lige peget på det, så det slår
   // et forvalg fra adressen. Regionen følger derimod med, hvis hun kom med en.
   const fagLink = (key) => `/start?fag=${key}` + (region ? `&region=${region}` : "");
-  const harTal = typeof tal?.bydbare_aabne === "number" && tal.bydbare_aabne > 0;
+  // ⚠️ `bydbare` (hele den bydbare beholdning), ikke `bydbare_aabne` — samme felt
+  // som barens tal og som fag-siderne, så sitet har ÉT tal. Dansk-filtreret i
+  // get-opgave-tal siden 03-08-2026.
+  const harTal = typeof tal?.bydbare === "number" && tal.bydbare > 0;
   const seneste = Array.isArray(tal?.seneste) ? tal.seneste.filter((n) => n?.titel) : [];
   const opdateret = fmtOpdateret(tal?.sidst_opdateret);
 
@@ -101,8 +104,14 @@ export default function NyForside({ tal, fag = null, region = null }) {
               <div className="ny-live-h">
                 <span className="ny-prik" aria-hidden="true" /> Live
               </div>
-              <div className="ny-bigtal">{daTal(tal.bydbare_aabne)}</div>
-              <small>opgaver med åben frist lige nu</small>
+              <div className="ny-bigtal">{daTal(tal.bydbare)}</div>
+              {/* ⚠️ TEKSTEN MÅTTE FØLGE MED TALLET (03-08-2026). Her stod "opgaver
+                  med åben frist lige nu", og det passede til bydbare_aabne. `bydbare`
+                  tæller HELE den bydbare beholdning — også dem hvis frist er passeret
+                  — så den gamle sætning ville have været direkte usand om ~110 af
+                  dem. "Vi holder øje med" er sandt om alle, og er samme formulering
+                  som fag-siderne allerede bruger om samme tal. */}
+              <small>offentlige opgaver vi holder øje med</small>
 
               <div className="ny-tiles">
                 {typeof tal.nye_7_dage === "number" && (
