@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Logo } from "./Logo";
 import Footer from "./Footer";
-import { daTal } from "../lib/opgaveTal";
+import { daTal, fmtOpdateret } from "../lib/opgaveTal";
 import { priceText, YEARLY_SAVING, TRIAL_DAYS } from "../lib/pakke";
 import { FAQ_TOP } from "../lib/faq";
 import "../app/ny.css";
@@ -47,22 +47,6 @@ const FAG_KORT = [
   { key: "rengoring", navn: "Rengøring", under: "fast og periodisk" },
 ];
 
-// "2. aug. kl. 09:01" — dansk, kort, med klokkeslæt så to daglige kørsler kan ses.
-// ⚠️ Kaldes KUN med et tidsstempel fra data. Aldrig new Date(): en klok der viser
-// "nu" beviser ingenting om hvornår vi sidst hentede.
-function fmtOpdateret(iso) {
-  if (!iso) return null;
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return null;
-  const dato = d.toLocaleDateString("da-DK", { day: "numeric", month: "short" });
-  // ⚠️ Kolon, ikke punktum. da-DK's toLocaleTimeString giver "11.01"; det er formelt
-  // korrekt dansk, men punktum midt i et klokkeslæt læses let som en dato. Kolon er
-  // det folk forventer på en skærm.
-  const tid = d
-    .toLocaleTimeString("da-DK", { hour: "2-digit", minute: "2-digit" })
-    .replace(".", ":");
-  return `${dato} kl. ${tid}`;
-}
 
 // ⚠️ SALGSSIDEN ER FØRSTE LAG, /start ER ANDET (03-08-2026). Kæden er:
 //   hjemmeside-CTA / Meta-annonce → DENNE side → dens CTA → /start (CVR-funnelen)
