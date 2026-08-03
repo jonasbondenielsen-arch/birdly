@@ -586,7 +586,7 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
                 checked={heleDk}
                 onChange={() => { setHeleDk(true); setRegionValg({}); }}
               />
-              <span><b>Hele Danmark</b><i>Alle fem landsdele. Prisen er den samme.</i></span>
+              <span><b>Hele Danmark</b><i>Få opgaver fra hele Danmark. Prisen ændrer sig ikke.</i></span>
             </label>
             {regionListe.map((r) => (
               <label key={r.key} className={"st-omrk" + (!heleDk && regionValg[r.key] ? " on" : "")}>
@@ -643,7 +643,11 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
             <span className="st-lab" style={{ margin: "0 0 8px" }}>Hvor bredt vil I fange opgaver?</span>
             <label className={"st-radio" + (bredde === "alle" ? " on" : "")}>
               <input type="radio" name="bredde" checked={bredde === "alle"} onChange={() => setBredde("alle")} />
-              <span><b>Alle brede opgaver <em>anbefalet</em></b><i>Også de brede entrepriseudbud i jeres fag. Flere match, lidt mere bredt.</i></span>
+              {/* ⚠️ KUN LABELEN ER ÆNDRET (03-08-2026). Værdien er stadig
+                  bredde="alle", forvalget er uændret, og CPV-logikken bag er ikke
+                  rørt — den bor i birdly_effective_cpv_for. Teksten beskriver nu
+                  hvad valget GØR for kunden frem for hvad det hedder teknisk. */}
+              <span><b>Maksimér antallet af opgaver <em>anbefalet</em></b><i>Også de brede entrepriseudbud i jeres fag. Flere match, lidt mere bredt.</i></span>
             </label>
             <label className={"st-radio" + (bredde === "fag" ? " on" : "")}>
               <input type="radio" name="bredde" checked={bredde === "fag"} onChange={() => setBredde("fag")} />
@@ -718,10 +722,17 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
             <>
               {visResultat(kandidater) === "lokalt" && (
                 <>
-                  <h1>Vi fandt noget til jer.</h1>
+                  {/* ⚠️ TALLET I OVERSKRIFTEN ER MATCHMOTORENS EGET (03-08-2026).
+                      kandidater.i_omraade kommer fra preview-kandidater, som kalder
+                      selve match-reglen — det er samme tal som i boksen nedenunder,
+                      ikke et andet. Grenen her renderer KUN når visResultat() siger
+                      "lokalt", altså når tallet er > 0, så overskriften kan ikke
+                      komme til at love noget ved 0. Den ærlige 0-tekst står uændret
+                      i "landsplan"- og "intet"-grenene længere nede. */}
+                  <h1>Vi fandt allerede {kandidater.i_omraade} {kandidater.i_omraade === 1 ? "opgave" : "opgaver"} til jer.</h1>
                   <div className="st-res">
                     <b>{kandidater.i_omraade}</b>
-                    <span>{kandidater.i_omraade === 1 ? "opgave passer" : "opgaver passer"} til jer lige nu</span>
+                    <span>som passer til jeres virksomhed</span>
                   </div>
                 </>
               )}
