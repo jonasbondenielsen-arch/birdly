@@ -3,6 +3,7 @@ import { Logo } from "./Logo";
 import Footer from "./Footer";
 import { daTal } from "../lib/opgaveTal";
 import { priceText, YEARLY_SAVING, TRIAL_DAYS } from "../lib/pakke";
+import { FAQ_TOP, FAQ_RESTEN } from "../lib/faq";
 import "../app/ny.css";
 
 // ============================================================================
@@ -223,6 +224,43 @@ export default function NyForside({ tal, fag = null, region = null }) {
           </div>
         </section>
       )}
+
+      {/* ---------------- FAQ ----------------
+          ⚠️ HELE FAQ'EN STÅR HER, ikke kun de fire. Roden mistede ~2/3 af sit
+          indhold da salgssiden overtog den (613 → 221 linjer), og FAQ'en er de
+          eneste ~1.400 ord ægte, spørgsmålsformet tekst vi har. Lagde vi den på
+          en /faq-side, ville vi flytte indhold VÆK fra netop den URL der lige
+          havde tabt det — og bede en ny, svag side om at optjene autoritet
+          forfra. Den hører hjemme her.
+
+          De fire står udfoldet: en købstvivl der kræver et klik for at blive
+          besvaret, er ikke besvaret. Resten er foldet, så siden ikke ender med
+          en mur af tekst under den afsluttende CTA. Begge dele står i HTML'en
+          og kan læses af Google — <details> skjuler visuelt, ikke for crawleren. */}
+      <section className="ny-sek ny-graa" id="faq">
+        <div className="ny-wrap">
+          <span className="ny-kick">Spørgsmål</span>
+          <h2 className="ny-big">Det, du tænker lige nu.</h2>
+
+          <div className="ny-faqtop">
+            {FAQ_TOP.map((f) => (
+              <div className="ny-faqkort" key={f.sp}>
+                <h3>{f.sp}</h3>
+                <p>{f.svar}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="ny-faqmere">
+            {FAQ_RESTEN.map((f) => (
+              <details className="ny-faqd" key={f.sp}>
+                <summary>{f.sp}<span className="ny-pm" aria-hidden="true">+</span></summary>
+                <p>{f.svar}</p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* ---------------- AFSLUTTENDE CTA ---------------- */}
       <section className="ny-band">

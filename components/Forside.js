@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { FAQ } from "../lib/faq";
 import Link from "next/link";
 import Footer from "./Footer";
 import OpsigPopup from "./OpsigPopup";
@@ -492,19 +493,17 @@ export default function Forside({ opgaveTal = null }) {
             <span className="kick">FAQ</span>
             <h2 className="big">Det, du tænker lige nu.</h2>
           </div>
+          {/* ⚠️ TEKSTEN ER FLYTTET, IKKE SLETTET. Alle 12 spørgsmål bor nu i
+              lib/faq.js, som salgssiden på roden også læser. Stod de to steder,
+              ville svarene langsomt drive fra hinanden — samme fælde som
+              match-reglens to kopier (CLAUDE.md). */}
           <div className="faq-list">
-            <details className="reveal"><summary>Skal jeg logge ind på en platform? <span className="pm">+</span></summary><p>Nej — og det er helt bevidst. Der er rigeligt med platforme i forvejen, og vi tror ikke, verden bliver hverken nemmere eller bedre af endnu én. Birdly er det stik modsatte: vi har pakket alt det tekniske væk, så du kun får én konkret besked på sms og mail, når en opgave matcher dig. Hverken mere eller mindre — ingen login, ingen dashboards, intet bøvl.</p></details>
-            <details className="reveal"><summary>Får jeg kun relevante opgaver? <span className="pm">+</span></summary><p>Ja. Du vælger selv branche, område og opgavestørrelse. Birdly sender kun opgaver, der matcher dine kriterier.</p></details>
-            <details className="reveal"><summary>Hvor mange sms'er får jeg? <span className="pm">+</span></summary><p>Vi samler dagens relevante opgaver i én besked, så du får overblik uden unødige notifikationer. Hvor ofte du hører fra os afhænger af, hvor mange relevante opgaver der dukker op i dit område. Er det for meget eller for lidt, kan du altid justere dine kriterier. Og skulle du få nok, stopper du beskederne med det samme ved at svare STOP på en sms.</p></details>
-            <details className="reveal"><summary>Hvor hurtigt får jeg besked? <span className="pm">+</span></summary><p>Som regel samme dag, opgaven bliver lagt op. Nogle gange fanger vi også opgaver, der er på vej.</p></details>
-            <details className="reveal"><summary>Hvad koster det? <span className="pm">+</span></summary><p>De første 14 dage er gratis. Derefter koster Birdly <b>{priceText.monthly}</b> eller <b>{priceText.yearly}</b> (ekskl. moms) — alt inkluderet. Vælger du årligt, sparer du ~{YEARLY_SAVING.pct} % (svarer til {YEARLY_SAVING.months} måneder gratis). Ingen binding.</p></details>
-            <details className="reveal"><summary>Er der flere pakker at vælge mellem? <span className="pm">+</span></summary><p>Nej — der er kun én pakke med alt inkluderet. Du vælger selv, om du vil dække én region eller hele Danmark, og det koster det samme uanset. Ingen tiers, intet tilvalg — bare én simpel pris.</p></details>
-            <details className="reveal"><summary>Hvor kommer opgaverne fra? <span className="pm">+</span></summary><p>Et udbud er bare en opgave fra en kommune, region eller staten, som private firmaer kan byde på — fra et nyt tag på en skole til rengøring af et rådhus. Vi henter dem fra de officielle kilder: udbud.dk og EU's database TED. Offentlige udbud skal være åbne for alle — så det er helt lovligt. Vi holder også øje med de indkøb, der varsles som forhåndsmeddelelser, før de bliver til et egentligt udbud — så du kan være på forkant, allerede inden opgaven officielt er sendt i udbud.</p></details>
-            <details className="reveal"><summary>Hvordan opsiger jeg? <span className="pm">+</span></summary><p>Opsigelse hos Birdly er lige så simpelt, som da du meldte dig til. Du finder opsigelsesrubrikken nederst her på siden, og i bunden af alle vores mails er der et direkte link til opsigelse. Og det bedste? Hos os er du en fri fugl — ingen binding, kun 30 dages opsigelse.</p></details>
-            <details className="reveal"><summary>Kan I også hjælpe os med at byde på opgaver? <span className="pm">+</span></summary><p>Ikke endnu — men det er på radaren. Birdly er et nyt produkt på det danske marked, og vores første prioritet har været at gøre det enkelt for danske SMV'er overhovedet at finde de rigtige opgaver. På sigt kigger vi ind i selve det at byde, for vi synes, hele verdenen omkring kommunale og statslige opgaver er for bøvlet og kompleks. Vi tror på, at alle virksomheder skal have lige adgang til at byde på offentlige opgaver — ikke kun dem med en stor tilbudsafdeling.</p></details>
-            <details className="reveal"><summary>Hvordan virker bud-skabelonen? <span className="pm">+</span></summary><p>Når vi sender dig en opgave, følger der en skabelon med, hvor vi allerede har samlet og forberedt det meste — krav, frister og de formelle ting. Med farver kan du se, hvad vi har udfyldt, og hvad der er dit. Du udfylder din pris og dine referencer og gemmer det hele som pdf.</p></details>
-            <details className="reveal"><summary>Laver I tilbuddet for mig? <span className="pm">+</span></summary><p>Nej. Skabelonen er en guide og tjekliste, der gør det meste af benarbejdet klar — cirka 70 %. Din pris, dine referencer og din faglige beskrivelse er det, kun du kan udfylde. Vi giver ikke juridisk rådgivning og lover ikke, at du vinder — men vi giver dig et forspring.</p></details>
-            <details className="reveal"><summary>Skal jeg selv hente udbudsmaterialet? <span className="pm">+</span></summary><p>Ja. Det fulde materiale ligger hos ordregiveren, og vi linker dig direkte derhen, så du slipper for at lede. Hos nogle ordregivere skal du oprette en gratis konto for at hente det — den skal du alligevel bruge for at aflevere dit tilbud.</p></details>
+            {FAQ.map((q) => (
+              <details className="reveal" key={q.sp}>
+                <summary>{q.sp} <span className="pm">+</span></summary>
+                <p>{q.svar}</p>
+              </details>
+            ))}
           </div>
         </div>
       </section>
