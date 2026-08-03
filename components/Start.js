@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Logo } from "./Logo";
 import { fetchCatalog, submitSignup, createSubscriptionSession } from "../lib/catalog";
 import { hentKandidater, visResultat } from "../lib/kandidater";
-import { planForInterval, priceText } from "../lib/pakke";
+import { planForInterval, priceText, TRIAL_DAYS } from "../lib/pakke";
 // ⚠️ forside.css importeres IKKE. Den er nested under `.birdly-home`, så dens
 // klasser virker alligevel ikke her — og importen ville kun sende hele forsidens
 // CSS med i bundlen uden at gøre noget. start.css bærer det vi bruger.
@@ -113,7 +113,16 @@ export default function Start({ startFag = null, betaling = null }) {
   // /tilmeld altid har haft.
   const [fagValgt, setFagValgt] = useState(startFag ? [startFag] : []);
   const [gaetFag, setGaetFag] = useState(null); // hvad CVR-opslaget pegede på
-  const [region, setRegion] = useState("hele_dk");
+  // ⚠️ FLERE LANDSDELE (03-08-2026). Området var en <select> og kunne derfor kun bære
+  // ét valg — men en håndværker dækker sjældent præcis én region: Sjælland +
+  // Hovedstaden er den almindelige kombination, ikke undtagelsen. /tilmeld har altid
+  // haft afkrydsning, og HELE serversiden kunne det i forvejen: både signup og
+  // preview-kandidater slår regionerne op med `.in("region_key", region_keys)` og
+  // lægger deres NUTS-koder sammen. Det var kun UI'et der begrænsede kunden.
+  const [regionValg, setRegionValg] = useState({}); // { [region_key]: true }
+  // "hele_dk" er sin EGEN nøgle i region_nuts_map — ikke en optælling af de fem.
+  // Derfor er den et selvstændigt valg der udelukker de andre, præcis som i /tilmeld.
+  const [heleDk, setHeleDk] = useState(true);
   const [maks, setMaks] = useState("");
 
   // Trin 3 — arbejdsområder + bredde. Samme to valg som /tilmeld, samme datakilde
@@ -138,6 +147,13 @@ export default function Start({ startFag = null, betaling = null }) {
   const [betingelser, setBetingelser] = useState(false);
   // År er forvalgt og anbefalet (spar ~17 %) — men BEGGE skal kunne vælges frit.
   const [interval, setInterval_] = useState("yearly");
+  // Hvilket interval der lige nu hentes en ny session til (null = ingen). Bærer
+  // knappens "Skifter…"-tilstand, så et klik der tager tid ser levende ud.
+  const [skifter, setSkifter] = useState(null);
+  // Løbenummer pr. plan-skift. Klikker kunden År→Måned→År hurtigt, kommer svarene
+  // tilbage i vilkårlig rækkefølge; uden det her kunne et LANGSOMT svar fra et
+  // fortrudt valg lande til sidst og binde betalingen til den forkerte plan.
+  const skiftNr = useRef(0);
   const [sessionId, setSessionId] = useState(null);
   const [oprettetId, setOprettetId] = useState(null);
   const [udenProeve, setUdenProeve] = useState(false);
@@ -151,6 +167,27 @@ export default function Start({ startFag = null, betaling = null }) {
     [fagListe]
   );
   const valgtFag = fagByKey[fagValgt[0]] || null;
+
+  // ⚠️ "hele_dk" filtreres FRA listen. Den er sin egen række i region_nuts_map, så
+  // returnerer kataloget den, ville den stå to gange — én som afkrydsning og én som
+  // det brede valg — og de to ville kunne krydses af samtidig.
+  const regionListe = (katalog?.regions || []).filter((r) => r.key !== "hele_dk");
+  const valgteRegioner = Object.keys(regionValg).filter((k) => regionValg[k]);
+  // Det der faktisk sendes til match og signup. Ét sted, så preview og oprettelse
+  // ALDRIG kan komme til at regne på hver sit område.
+  const regionKeys = heleDk ? ["hele_dk"] : valgteRegioner;
+  const regionResume = heleDk
+    ? "Hele Danmark"
+    : valgteRegioner.length === 0
+      ? null
+      : valgteRegioner.map((k) => regionListe.find((r) => r.key === k)?.label_da || k).join(", ");
+
+  // At krydse en landsdel af slår "hele landet" fra — ellers ville kunden tro hun
+  // havde indsnævret, mens kriteriet stadig var hele DK.
+  function toggleRegion(key) {
+    setHeleDk(false);
+    setRegionValg((s) => ({ ...s, [key]: !s[key] }));
+  }
 
   // ⚠️ UNION af ALLE valgte branchers underområder — ikke kun den første. Vælger
   // kunden entreprenør + kloak, skal begge fags koder med, præcis som /tilmeld gør.
@@ -245,7 +282,7 @@ export default function Start({ startFag = null, betaling = null }) {
       fag_keys: fagValgt,
       cpv_selections: fagKoder,
       bredde,
-      region_keys: [region],
+      region_keys: regionKeys,
       min_amount: null,
       max_amount: maks ? Number(maks) : null,
     });
@@ -277,7 +314,7 @@ export default function Start({ startFag = null, betaling = null }) {
           fag_keys: fagValgt,
           cpv_selections: fagKoder,
           bredde,
-          region_keys: [region],
+          region_keys: regionKeys,
           min_amount: null,
           max_amount: maks ? Number(maks) : null,
           notify_email: true,
@@ -320,13 +357,29 @@ export default function Start({ startFag = null, betaling = null }) {
   // plan-handle, så skifter kunden interval, skal sessionen gen-oprettes — ellers
   // betaler hun for den forkerte plan. Samme greb som /tilmelds changeBilling:
   // reuse_customer=true, fordi kunden allerede findes hos Frisbii.
+  // ⚠️ FRYSNINGEN (03-08-2026): `setBetalingAaben(false)` stod stadig her efter at
+  // overlayet blev fjernet — en funktion der ikke længere fandtes. Linjen lå FØR
+  // try-blokken, så ReferenceError'en blev aldrig fanget, og `finally` blev aldrig
+  // nået. `arbejder` var netop sat til true linjen inden og blev der for evigt:
+  // begge plan-knapper og "Start min gratis prøve" var `disabled` resten af besøget.
+  //
+  // Kun Måned ramte det. År er forvalgt, så klikket returnerede på `nyt === interval`
+  // og nåede aldrig linjen — derfor så det ud som en fejl i månedsvejen frem for
+  // en efterladt reference.
+  //
+  // Læringen: en død kald-reference i en event-handler er ikke en synlig fejl, den
+  // er en frossen knap. Ryd altid state-sætterne med, når du fjerner det de styrede.
   async function skiftInterval(nyt) {
-    if (nyt === interval || arbejder || !oprettetId) return;
+    if (nyt === interval || !oprettetId) return;
+    const mit = ++skiftNr.current;
+    // Markering og pris skifter STRAKS — kunden skal se at vi hørte klikket, længe
+    // før Frisbii svarer. Det er sandt: `interval` ER hendes valg nu.
     setInterval_(nyt);
     setFejl("");
-    setArbejder(true);
-    setBetalingAaben(false);
-    setSessionId(null); // afmontér checkout mens ny session hentes
+    setSkifter(nyt);
+    // Sessionen hos Frisbii er bundet til ét plan-handle. Den gamle ryddes derfor
+    // med det samme, så betalingsknappen ikke kan nå at åbne den forkerte plan.
+    setSessionId(null);
     try {
       const { session_id } = await createSubscriptionSession({
         subscriber_id: oprettetId,
@@ -338,11 +391,15 @@ export default function Start({ startFag = null, betaling = null }) {
         retur: "start",
         uden_proeve: udenProeve,
       });
+      if (mit !== skiftNr.current) return; // overhalet af et nyere klik — det vinder
       setSessionId(session_id);
     } catch {
+      if (mit !== skiftNr.current) return;
       setFejl("Kunne ikke skifte plan. Prøv igen, eller skriv til support@birdly.dk.");
     } finally {
-      setArbejder(false);
+      // ⚠️ Kun det NYESTE skift må rydde tilstanden. Ellers slukker et forældet svar
+      // spinneren mens det aktuelle skift stadig kører.
+      if (mit === skiftNr.current) setSkifter(null);
     }
   }
 
@@ -488,11 +545,35 @@ export default function Start({ startFag = null, betaling = null }) {
             <p className="st-hj">Vi holder øje med opgaver i alle {fagValgt.length} brancher.</p>
           )}
 
-          <label className="st-lab" htmlFor="omr">Område</label>
-          <select id="omr" className="st-felt" value={region} onChange={(e) => setRegion(e.target.value)}>
-            <option value="hele_dk">Hele Danmark</option>
-            {(katalog?.regions || []).map((r) => <option key={r.key} value={r.key}>{r.label_da}</option>)}
-          </select>
+          {/* ⚠️ MULTIVALG. En <select> kunne kun bære ét område, men de fleste dækker
+              flere landsdele. Afkrydsning frem for dropdown, samme mønster som
+              /tilmeld — og samme værdier, så de to funneler ikke kan drive fra
+              hinanden. Alle valgte sendes videre; det er regionKeys der går til
+              både preview og signup. */}
+          <span className="st-lab">Hvor vil I have opgaver?</span>
+          <div className="st-omr">
+            <label className={"st-omrk" + (heleDk ? " on" : "")}>
+              <input
+                type="checkbox"
+                checked={heleDk}
+                onChange={() => { setHeleDk(true); setRegionValg({}); }}
+              />
+              <span><b>Hele Danmark</b><i>Alle fem landsdele. Prisen er den samme.</i></span>
+            </label>
+            {regionListe.map((r) => (
+              <label key={r.key} className={"st-omrk" + (!heleDk && regionValg[r.key] ? " on" : "")}>
+                <input
+                  type="checkbox"
+                  checked={!heleDk && !!regionValg[r.key]}
+                  onChange={() => toggleRegion(r.key)}
+                />
+                <span><b>{r.label_da}</b></span>
+              </label>
+            ))}
+          </div>
+          {!heleDk && valgteRegioner.length > 1 && (
+            <p className="st-hj">Vi holder øje i alle {valgteRegioner.length} landsdele: {regionResume}.</p>
+          )}
 
           <label className="st-lab" htmlFor="maks">Største opgave I vil se <span className="st-valgfri">(valgfrit)</span></label>
           <select id="maks" className="st-felt" value={maks} onChange={(e) => setMaks(e.target.value)}>
@@ -504,7 +585,13 @@ export default function Start({ startFag = null, betaling = null }) {
 
           <button
             className="btn btn-teal st-bred"
-            onClick={() => { if (!fagValgt.length) return setFejl("Vælg mindst én branche."); setFejl(""); setTrin(3); }}
+            onClick={() => {
+              if (!fagValgt.length) return setFejl("Vælg mindst én branche.");
+              // Samme værn som signup ("Vælg mindst én region", 400) — men her, hvor
+              // hun kan nå at rette det, frem for som en fejl efter kontaktoplysningerne.
+              if (!regionKeys.length) return setFejl("Vælg mindst én landsdel — eller hele Danmark.");
+              setFejl(""); setTrin(3);
+            }}
           >
             Fortsæt →
           </button>
@@ -659,24 +746,47 @@ export default function Start({ startFag = null, betaling = null }) {
       {trin === 5 && (
         <div className="st-kort">
           <h1>0,00 kr. i dag.</h1>
-          <p className="st-hj">
-            14 dages gratis prøve. Første træk om 14 dage — {pris} ekskl. moms. Ingen binding.
-          </p>
+          <p className="st-hj">14 dages gratis prøve. Ingen binding.</p>
 
+          {/* ⚠️ PRISEN SKAL STÅ PÅ BEGGE KNAPPER. "0,00 kr. i dag" er hovedbudskabet,
+              men det svarer ikke på hvad det koster BAGEFTER — og det er dét man
+              vælger imellem. Stod beløbet kun under den valgte, skulle kunden klikke
+              for at få prisen at vide på den anden.
+
+              ⚠️ Tallene kommer fra priceText, aldrig skrevet i hånden. Præcis den
+              hardkodning var grunden til at tre steder stod med den gamle pris efter
+              en ændring (CLAUDE.md, "Pris — REGLERNE"). */}
           <div className="st-plan">
-            {[["yearly", "År", priceText.saveShort], ["monthly", "Måned", null]].map(([k, l, note]) => (
+            {[
+              ["yearly", "År", priceText.yearly, priceText.saveShort],
+              ["monthly", "Måned", priceText.monthly, "ingen binding"],
+            ].map(([k, l, beloeb, note]) => (
               <button
                 key={k}
                 type="button"
                 className={"st-planknap" + (interval === k ? " on" : "")}
                 onClick={() => skiftInterval(k)}
-                disabled={arbejder}
                 aria-pressed={interval === k}
               >
-                {l}{note && <i>{note}</i>}
+                {/* ⚠️ ALDRIG disabled. Låsen var netop fejlen: knapperne stod
+                    `disabled={arbejder}`, og da `arbejder` hang fast, var planvalget
+                    dødt. Et skift der tager tid får en tekst — ikke en lås. */}
+                <b>{l}</b>
+                <span>{beloeb}</span>
+                <i>{skifter === k ? "skifter…" : note}</i>
               </button>
             ))}
           </div>
+
+          {/* Den løbende pris, bundet til valget. Skifter kunden plan, skifter denne
+              med — så det der står her ALTID er det hun bliver trukket. */}
+          <p className="st-derefter">
+            <b>Derefter {pris}.</b>
+            <span>
+              Første træk om {TRIAL_DAYS} dage · ekskl. moms
+              {interval === "yearly" ? ` · ${priceText.saveShort}` : " · ingen binding"}
+            </span>
+          </p>
 
           <div className="st-garanti">
             <b>Matchgaranti</b>
@@ -684,7 +794,7 @@ export default function Start({ startFag = null, betaling = null }) {
           </div>
 
           <button className="btn btn-teal st-bred" onClick={aabnBetaling} disabled={!sessionId || arbejder}>
-            {arbejder ? "Et øjeblik…" : "Start min gratis prøve"}
+            {skifter ? "Skifter plan…" : arbejder ? "Et øjeblik…" : "Start min gratis prøve"}
           </button>
           <p className="st-mini">0,00 kr. trækkes i dag. Du kan sige op når som helst i prøveperioden.</p>
         </div>

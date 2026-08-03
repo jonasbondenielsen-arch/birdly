@@ -86,15 +86,34 @@ select.st-felt{appearance:none;background-image:url("data:image/svg+xml;utf8,<sv
 .st-tilbage{display:block;width:100%;margin-top:12px;padding:8px;background:none;border:0;font-family:'Inter',sans-serif;font-size:14.5px;color:var(--navy-soft);cursor:pointer}
 
 .st-plan{display:flex;gap:10px;margin-top:16px}
-.st-planknap{flex:1;padding:12px;border:1.5px solid var(--line);background:#fff;border-radius:12px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:15px;color:var(--navy);cursor:pointer}
+.st-planknap{flex:1;padding:13px 10px;border:1.5px solid var(--line);background:#fff;border-radius:12px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:15px;color:var(--navy);cursor:pointer;text-align:center}
 .st-planknap.on{border-color:var(--teal);background:#F1FAF8;color:var(--teal-dk)}
-.st-planknap:disabled{opacity:.55;cursor:default}
+/* Prisen på selve knappen — kunden skal kunne se BEGGE priser uden at klikke. */
+.st-planknap b{display:block;font-size:15px;font-weight:800}
+.st-planknap span{display:block;margin-top:3px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;color:var(--navy)}
+.st-planknap.on span{color:var(--teal-dk)}
+/* Ingen :disabled-regel mere — knapperne låser ikke længere. "skifter…" er en
+   tekst i samme linje som noten, så knappen ikke hopper i højden under skiftet. */
+
+/* Den løbende pris, bundet til det valgte interval. */
+.st-derefter{margin-top:14px;text-align:center}
+.st-derefter b{display:block;font-family:'Plus Jakarta Sans',sans-serif;font-size:17px;font-weight:800;color:var(--navy)}
+.st-derefter span{display:block;margin-top:3px;font-size:13.5px;color:var(--navy-soft)}
 
 .st-garanti{margin-top:18px;background:#F1FAF8;border:1px solid #BFE7DF;border-radius:12px;padding:15px 17px}
 .st-garanti b{display:block;font-family:'Plus Jakarta Sans',sans-serif;font-size:15.5px;font-weight:800;color:var(--navy)}
 .st-garanti p{margin-top:3px;font-size:14.5px;line-height:1.5;color:#33414f}
 
 .st-skjul{display:none}
+
+/* ⚠️ DISSE FIRE VAR ALDRIG DEFINERET. JSX'en brugte .st-fejl, .st-mini, .st-kvit og
+   .st-ic, men ingen af dem stod i CSS'en — så fejlbeskeden stod som løs brødtekst
+   uden ramme, og kvitteringens flueben var et bart "✓" i almindelig tekststørrelse.
+   Netop de to skærme er dem kunden ser når noget går galt, og når alt går godt. */
+.st-fejl{margin-bottom:14px;background:#FDF4F4;border:1px solid #F3C9C9;border-radius:12px;padding:13px 15px;font-size:14.5px;line-height:1.5;color:#B03A3A}
+.st-mini{margin-top:12px;text-align:center;font-size:13px;line-height:1.5;color:var(--navy-soft)}
+.st-kvit{text-align:center}
+.st-ic{width:52px;height:52px;margin:0 auto 14px;border-radius:50%;background:#F1FAF8;border:1.5px solid #BFE7DF;color:var(--teal);font-size:26px;font-weight:700;display:flex;align-items:center;justify-content:center}
 
 /* Betalingsvinduet ejes af Reepay (WindowSubscription = fuld sideskift til
    checkout.reepay.com). Derfor findes der INGEN overlay-, boks- eller iframe-regler
