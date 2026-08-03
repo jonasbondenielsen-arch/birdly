@@ -9,13 +9,15 @@ const BASE = SITE_URL;
 
 export default function sitemap() {
   const staticPaths = [
+    // ⚠️ RODEN ER DEN KANONISKE INDGANG (03-08-2026). Salgssiden bor her, og det er
+    // den Google skal vise. Hverken /tilmeld eller /ny står i listen: begge
+    // omdirigerer permanent hertil, og en 301'et URL hører ikke hjemme i et sitemap
+    // — den ville bede Google indeksere noget der svarer "flyt videre".
+    //
+    // ⚠️ /start STÅR HELLER IKKE HER, og det er ikke en forglemmelse. Den er flowet
+    // BAG CTA'en, ikke en landingsside; den er noindex. Stod den her, ville vi bede
+    // Google indeksere et CVR-felt og sende folk uden om hele salgssiden.
     "",
-    // ⚠️ /tilmeld ER FJERNET HERFRA og erstattet af /start (03-08-2026). Den gamle
-    // rute omdirigerer permanent til den nye (next.config.mjs), og en 301'et URL
-    // hører ikke hjemme i et sitemap — den ville bede Google indeksere noget der
-    // svarer "flyt videre". Var begge blevet stående, havde vi selv sat to sider
-    // op mod hinanden på samme søgeord.
-    "/start",
     "/brancher",
     "/udbud-for-alle",
     "/betingelser",
@@ -34,6 +36,6 @@ export default function sitemap() {
   return [...staticPaths, ...fagPaths, ...geoPaths].map((p) => ({
     url: BASE + (p || "/"),
     changeFrequency: p === "" ? "daily" : "weekly",
-    priority: p === "" ? 1 : p.startsWith("/fag/") || p === "/start" || p === "/brancher" ? 0.8 : 0.5,
+    priority: p === "" ? 1 : p.startsWith("/fag/") || p === "/brancher" ? 0.8 : 0.5,
   }));
 }

@@ -2,25 +2,28 @@ import Start from "../../components/Start";
 
 // /start — husets ENESTE tilmeldings-funnel (03-08-2026).
 //
-// ⚠️ DEN ER NU MÅLET FOR ALLE CTA'er. Jonas' gennemløb 03-08 gik hele vejen til
-// betaling (sub-0067, webhooken ramte rigtigt), så forbeholdet om at /tilmeld var
-// "den eneste beviste vej til betaling" er indfriet. /tilmeld omdirigerer hertil
-// med query'en i behold — se next.config.mjs.
+// ⚠️ ANDET LAG, IKKE INDGANGEN. Kunden kommer hertil fra SALGSSIDEN på roden, som
+// er den eneste side husets knapper og annoncerne peger på. Peg aldrig en
+// hjemmeside-CTA direkte herind: så bliver hun bedt om sit CVR uden at have set
+// hvad hun køber. /tilmeld omdirigerer til roden, ikke hertil — se next.config.mjs.
 //
-// ⚠️ INDEKSERBAR. Den stod `noindex` mens den kørte ved siden af /tilmeld; det var
-// rigtigt dengang (to sider der begge er "tilmeld dig Birdly" ville konkurrere om
-// samme søgeord). Nu hvor /tilmeld omdirigerer hertil, findes konkurrenten ikke
-// længere, og siden SKAL kunne vises — ellers sender vi al trafik til en side
-// Google ikke må vise.
+// Jonas' gennemløb 03-08 gik hele vejen til betaling (sub-0067, webhooken ramte
+// rigtigt), så forbeholdet om at /tilmeld var "den eneste beviste vej til betaling"
+// er indfriet.
 //
-// SEO-laget beholder "udbud" i title og description, jf. CLAUDE.md: vi vil ranke på
-// både "udbud", "offentlige udbud" OG "offentlige opgaver". Den synlige tekst inde
-// på siden siger "opgaver".
+// ⚠️ NOINDEX — OG DET ER MED VILJE. Siden var kortvarigt indekserbar, mens den var
+// tænkt som husets indgang. Den er den ikke: indgangen er SALGSSIDEN på roden, og
+// /start er flowet BAG CTA'en. Et CVR-felt er ikke en landingsside — rankede den,
+// ville Google sende folk direkte ind i trin 1 og forbi hele salgsarbejdet.
+//
+// Der er derfor heller ingen canonical og ingen plads i sitemap: roden er den
+// kanoniske indgang, og to indekserede sider om "tilmeld dig Birdly" ville
+// konkurrere om samme søgeord.
 export const metadata = {
-  title: "Kom i gang med Birdly — find offentlige udbud til dit fag",
+  title: "Kom i gang | Birdly",
   description:
-    "Fortæl os hvad I laver, og hvor. Så holder vi øje med de offentlige udbud og opgaver, der passer til jer, og sender besked på SMS og mail. Gratis de første 14 dage.",
-  alternates: { canonical: "/start" },
+    "Fortæl os hvad I laver, og hvor. Så holder vi øje med de offentlige opgaver, der passer til jer.",
+  robots: { index: false, follow: false },
 };
 
 // ?fag=<key>      forvalgt fag fra en /fag/-side.

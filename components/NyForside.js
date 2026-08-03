@@ -6,10 +6,12 @@ import { priceText, YEARLY_SAVING, TRIAL_DAYS } from "../lib/pakke";
 import "../app/ny.css";
 
 // ============================================================================
-// /ny — resultat-først forside.
+// Salgssiden — resultat-først. BOR PÅ RODEN (`/`) siden 03-08-2026.
 //
-// ⚠️ ERSTATTER IKKE `/`. Forsiden bærer hele SEO-laget og alle indgående links;
-// den her kører ved siden af og er noindex, indtil den har vist sig bedre.
+// ⚠️ DEN ER HUSETS INDGANG. Alle husets CTA-knapper, alle 36 /fag/-sider og
+// Meta-annoncerne lander her; /tilmeld og /ny omdirigerer hertil. Herfra fører
+// siden videre til /start (CVR-funnelen) — aldrig omvendt. Kunden skal sælges
+// til, før hun bliver bedt om sit CVR.
 //
 // ⚠️ ALLE TAL ER ÆGTE. De kommer fra get-opgave-tal, som tæller i basen. Er der
 // intet tal, renderer boksen ikke — et gæt eller et nul på forsiden er værre end
@@ -61,7 +63,24 @@ function fmtOpdateret(iso) {
   return `${dato} kl. ${tid}`;
 }
 
-export default function NyForside({ tal }) {
+// ⚠️ SALGSSIDEN ER FØRSTE LAG, /start ER ANDET (03-08-2026). Kæden er:
+//   hjemmeside-CTA / Meta-annonce → DENNE side → dens CTA → /start (CVR-funnelen)
+// Kunden skal sælges til, før hun bliver bedt om sit CVR. Pegede husets knapper
+// direkte på /start, landede hun i "indtast CVR" uden at have set hvad hun købte.
+//
+// ⚠️ fag/region SKAL FØRES VIDERE. De 36 /fag/-sider sender ?fag= og ?region= hertil,
+// og de skal med ind i funnelen — ellers taber en kunde fra "Entreprenøropgaver i
+// Nordjylland" sit forvalg på salgssiden, og hele pointen med landingssiden falder
+// på gulvet ét skridt før mål. Værdierne sendes ordret videre; det er /start der
+// validerer dem mod kataloget, så der kun findes ÉT sted at stole på dem.
+export default function NyForside({ tal, fag = null, region = null }) {
+  const qs = new URLSearchParams();
+  if (fag) qs.set("fag", fag);
+  if (region) qs.set("region", region);
+  const funnel = "/start" + (qs.toString() ? `?${qs}` : "");
+  // Fag-kortene sætter deres EGET fag — kunden har lige peget på det, så det slår
+  // et forvalg fra adressen. Regionen følger derimod med, hvis hun kom med en.
+  const fagLink = (key) => `/start?fag=${key}` + (region ? `&region=${region}` : "");
   const harTal = typeof tal?.bydbare_aabne === "number" && tal.bydbare_aabne > 0;
   const seneste = Array.isArray(tal?.seneste) ? tal.seneste.filter((n) => n?.titel) : [];
   const opdateret = fmtOpdateret(tal?.sidst_opdateret);
@@ -71,7 +90,7 @@ export default function NyForside({ tal }) {
       <header className="ny-top">
         <div className="ny-wrap ny-bar">
           <Logo height={32} />
-          <Link href="/start" className="ny-navcta">Find opgaver nu</Link>
+          <Link href={funnel} className="ny-navcta">Find opgaver nu</Link>
         </div>
       </header>
 
@@ -88,7 +107,7 @@ export default function NyForside({ tal }) {
             {/* ÉN primær CTA. "Se hvordan det virker" er fjernet — to knapper ved
                 siden af hinanden deler opmærksomheden og udskyder handlingen. */}
             <div className="ny-cta">
-              <Link href="/start" className="ny-btn ny-btn-teal">Find opgaver nu</Link>
+              <Link href={funnel} className="ny-btn ny-btn-teal">Find opgaver nu</Link>
             </div>
           </div>
 
@@ -136,7 +155,7 @@ export default function NyForside({ tal }) {
           <p className="ny-lead">Klik dit fag. Så viser vi hvad vi finder til jer — og du er allerede i gang.</p>
           <div className="ny-fagg">
             {FAG_KORT.map((f) => (
-              <Link key={f.key} href={`/start?fag=${f.key}`} className="ny-fagk">
+              <Link key={f.key} href={fagLink(f.key)} className="ny-fagk">
                 <b>{f.navn}</b>
                 <span>{f.under}</span>
               </Link>
@@ -161,13 +180,13 @@ export default function NyForside({ tal }) {
                 <span className="ny-prisnavn">Måned</span>
                 <b>{priceText.monthly}</b>
                 <small>ekskl. moms</small>
-                <Link href="/start" className="ny-btn ny-btn-ghost ny-bred">Find opgaver nu</Link>
+                <Link href={funnel} className="ny-btn ny-btn-ghost ny-bred">Find opgaver nu</Link>
               </div>
               <div className="ny-priskort ny-fremhaev">
                 <span className="ny-prisnavn">År <i>{priceText.saveShort}</i></span>
                 <b>{priceText.yearly}</b>
                 <small>ekskl. moms · {YEARLY_SAVING.amount.toLocaleString("da-DK")} kr. sparet</small>
-                <Link href="/start" className="ny-btn ny-btn-teal ny-bred">Find opgaver nu</Link>
+                <Link href={funnel} className="ny-btn ny-btn-teal ny-bred">Find opgaver nu</Link>
               </div>
             </div>
 
@@ -210,7 +229,7 @@ export default function NyForside({ tal }) {
         <div className="ny-wrap">
           <h2>Klar til at fange din næste opgave?</h2>
           <p>Fortæl os hvad I laver. Så holder vi øje for jer.</p>
-          <Link href="/start" className="ny-btn ny-btn-hvid">Find opgaver nu</Link>
+          <Link href={funnel} className="ny-btn ny-btn-hvid">Find opgaver nu</Link>
           <p className="ny-band-garanti">Matchgaranti: Får du ingen match, betaler du ikke en krone.</p>
         </div>
       </section>

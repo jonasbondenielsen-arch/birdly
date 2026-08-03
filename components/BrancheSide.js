@@ -33,7 +33,7 @@ export default function BrancheSide({ data, region = null, opgaveTal = null }) {
   const { slug, nounPlural, nounSingular, fagKey, arbejde, ex1, ex2, kortSvarExtra, whyHeading, whyText, eksemplerIntro, examples, faq } = data;
   // Funnelen forstår allerede ?fag=; ?region= er tilføjet efter samme mønster, så
   // kunden lander med både fag og område forvalgt og har færre klik tilbage.
-  const funnel = "/start?fag=" + fagKey + (region ? "&region=" + region.slug : "");
+  const funnel = "/?fag=" + fagKey + (region ? "&region=" + region.slug : "");
   const sted = region ? ` ${region.praep} ${region.navn}` : "";
   // Søskende-regioner: på en fag×geo-side vises de ANDRE regioner, på en ren fag-side
   // vises alle. Det er dét der binder siderne sammen som struktur frem for løse URL'er.
