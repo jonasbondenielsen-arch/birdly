@@ -96,37 +96,9 @@ select.st-felt{appearance:none;background-image:url("data:image/svg+xml;utf8,<sv
 
 .st-skjul{display:none}
 
-/* ---- BETALINGS-OVERLAY ----
-   ⚠️ INGEN FAST HØJDE, INGEN overflow PÅ CONTAINEREN. Den gamle .st-boks havde
-   min-height:520px inde i et kort, og iframen fik derfor sin egen scrollbar —
-   kunden scrollede i en boks i en boks for at nå CVC-feltet. Her fylder overlayet
-   hele skærmen, headeren er det eneste faste, og checkouten får ALT resten. */
-.st-overlay{position:fixed;inset:0;z-index:1000;background:#fff;display:flex;flex-direction:column}
-.st-ovtop{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 18px;background:var(--navy);color:#fff}
-.st-ovtop b{display:block;font-family:'Plus Jakarta Sans',sans-serif;font-size:17px;font-weight:800}
-.st-ovtop span{display:block;font-size:13px;color:#9fb3c8;margin-top:2px}
-.st-luk{flex:0 0 auto;width:38px;height:38px;border-radius:50%;border:1px solid rgba(255,255,255,.25);background:transparent;color:#fff;font-size:22px;line-height:1;cursor:pointer}
-/* Checkouten fylder resten. min-height:0 er nødvendig for at et flex-barn
-   overhovedet må krympe/vokse korrekt i en kolonne. */
-.st-ovboks{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
-/* Iframen skal fylde sin container — uden dette beholder Reepay sin egen lave
-   standardhøjde, og så er vi tilbage til scroll-i-scroll. */
-.st-ovboks iframe{display:block;width:100%!important;height:100%!important;min-height:640px;border:0}
-.st-mini{margin-top:14px;text-align:center;font-size:12.5px;color:var(--navy-soft)}
-
-.st-fejl{margin-bottom:16px;background:#FDF4F4;border:1px solid #F3C9C9;color:#B03A3A;border-radius:12px;padding:12px 15px;font-size:14.5px;line-height:1.5}
-
-/* kvittering */
-.st-kvit{text-align:center;padding:38px 24px}
-.st-ic{width:60px;height:60px;border-radius:50%;background:var(--teal);color:#fff;font-size:31px;line-height:60px;margin:0 auto 16px}
-.st-kvit p{margin-top:10px;font-size:15.5px;line-height:1.6;color:var(--navy-soft)}
-
-@media(max-width:560px){
-  .st-wrap{padding:16px 14px 56px}
-  .st-kort{padding:22px 18px 24px;border-radius:16px}
-  .st-kort h1{font-size:23px}
-  .st-res b{font-size:40px}
-}
+/* Betalingsvinduet ejes af Reepay (WindowSubscription = fuld sideskift til
+   checkout.reepay.com). Derfor findes der INGEN overlay-, boks- eller iframe-regler
+   her mere — vi har ingen container at style, og det er netop pointen. */
 
 /* chips: flere brancher (fejl 2) */
 .st-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}

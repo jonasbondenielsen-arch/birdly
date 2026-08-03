@@ -85,7 +85,16 @@ function tilE164(raa) {
   return d.length >= 8 ? "+" + d : null;
 }
 
-export default function Start({ startFag = null }) {
+export default function Start({ startFag = null, betaling = null }) {
+  // ⚠️ RETUR FRA REEPAY. Den hostede checkout forlader vores side, så al state er
+  // væk når kunden kommer tilbage — derfor afgøres kvitteringen af URL'en, ikke af
+  // hukommelsen. `ok` viser kvitteringen; `annulleret` sender hende tilbage i
+  // flowet uden at påstå at noget lykkedes.
+  //
+  // ⚠️ KVITTERINGEN ER IKKE AKTIVERINGEN. accept_url betyder "Reepay sagde ja til
+  // kortet", ikke "abonnementet kører". Det afgør `subscription_created`-webhooken,
+  // som den altid har gjort. Vi lover derfor kun at vi holder øje — ikke at der er
+  // trukket eller oprettet noget bestemt.
   const [trin, setTrin] = useState(1);
   const [katalog, setKatalog] = useState(null);
   const [fejl, setFejl] = useState("");
@@ -132,8 +141,7 @@ export default function Start({ startFag = null }) {
   const [sessionId, setSessionId] = useState(null);
   const [oprettetId, setOprettetId] = useState(null);
   const [udenProeve, setUdenProeve] = useState(false);
-  const [betalingAaben, setBetalingAaben] = useState(false);
-  const [faerdig, setFaerdig] = useState(false);
+  const [faerdig, setFaerdig] = useState(betaling === "ok");
 
   useEffect(() => { fetchCatalog().then(setKatalog).catch(() => setKatalog({ fag: [], regions: [] })); }, []);
 
@@ -290,6 +298,7 @@ export default function Start({ startFag = null }) {
         phone: tilE164(tlf),
         billing: interval,
         reuse_customer: false,
+        retur: "start",
         uden_proeve: udenProeveNu,
       });
       setSessionId(session_id);
@@ -326,6 +335,7 @@ export default function Start({ startFag = null }) {
         phone: tilE164(tlf),
         billing: nyt,
         reuse_customer: true,
+        retur: "start",
         uden_proeve: udenProeve,
       });
       setSessionId(session_id);
@@ -336,24 +346,38 @@ export default function Start({ startFag = null }) {
     }
   }
 
+  // ⚠️ REEPAYS EGEN HOSTEDE CHECKOUT (03-08-2026). Vi har prøvet to egne
+  // indpakninger: en 520px embedded div (kunden scrollede inde i iframen for at nå
+  // CVC-feltet) og et selvbygget fuldskærms-overlay (vores geometri var korrekt, men
+  // Reepay renderede blankt i den nestede ramme). Begge var forsøg på at eje et
+  // layout vi ikke skal eje.
+  //
+  // WindowSubscription gør præcis ét — bekræftet ved at læse checkout.js:
+  //   window.location.href = "https://checkout.reepay.com#/subscription/" + id
+  // Reepay ejer hele siden: kortfelter, betalingsmetoder, højde, responsivitet. Der
+  // findes ingen container hos os at klemme noget i, så fejlen kan ikke opstå igen.
+  //
+  // Kortdata rører aldrig vores side — det er Reepays PCI-felter på deres domæne.
+  //
+  // Ingen event-handlers her: siden forlades, så Accept/Cancel kommer tilbage som
+  // accept_url/cancel_url (→ /start?betaling=ok|annulleret, hvidlistet server-side).
+  // Aktiveringen er og bliver webhookens ansvar, ikke redirect'ens.
   function aabnBetaling() {
     if (!sessionId || arbejder) return;
-    setFejl(""); setBetalingAaben(true);
+    setFejl("");
     loadReepay()
-      .then((Reepay) => {
-        const rp = new Reepay.EmbeddedSubscription(sessionId, { html_element: "start-betalingsboks" });
-        rp.addEventHandler(Reepay.Event.Accept, () => setFaerdig(true));
-        rp.addEventHandler(Reepay.Event.Error, () => setFejl("Betalingen kunne ikke gennemføres. Prøv igen."));
-        rp.addEventHandler(Reepay.Event.Cancel, () => setBetalingAaben(false));
-        rp.addEventHandler(Reepay.Event.Close, () => setBetalingAaben(false));
-      })
-      .catch((e) => { setBetalingAaben(false); setFejl(e.message); });
+      .then((Reepay) => { new Reepay.WindowSubscription(sessionId); })
+      .catch((e) => setFejl(e.message));
   }
 
   // ⚠️ priceText er et OBJEKT, ikke en funktion — og det er den eneste kilde til
   // beløbet. Hardkod aldrig en pris her; det var netop derfor tre steder stod med
   // den gamle pris efter en ændring (se CLAUDE.md, "Pris — REGLERNE").
   const pris = priceText[interval];
+
+  // Annulleret betaling: kunden er tilbage, men intet er sket. Vi siger det rent ud
+  // frem for at lade hende stå på trin 1 og undre sig.
+  const annulleret = betaling === "annulleret";
 
   if (faerdig) {
     return (
@@ -377,6 +401,9 @@ export default function Start({ startFag = null }) {
       </div>
       <p className="st-trin">Trin {trin} af {ANTAL_TRIN} · {TRIN[trin - 1]}</p>
 
+      {annulleret && !fejl && (
+        <div className="st-fejl">Betalingen blev afbrudt — der er ikke trukket noget. Du kan prøve igen når du vil.</div>
+      )}
       {fejl && <div className="st-fejl">{fejl}</div>}
 
       {/* ---------------- TRIN 1 — CVR ---------------- */}
@@ -663,28 +690,6 @@ export default function Start({ startFag = null }) {
         </div>
       )}
 
-      {/* ---------------- BETALINGS-OVERLAY ----------------
-          ⚠️ FULDSKÆRM, IKKE EN LILLE DIV. Checkouten lå før i en 520px-høj boks
-          inde i kortet, og kunden skulle scrolle inde i iframen for at nå
-          kortfelterne. Reepays EGEN modal var i sin tid endnu værre — den var så
-          lav at man scrollede inde i den, og det var netop derfor /tilmeld gik væk
-          fra ModalSubscription.
-          Løsningen er vores eget overlay: vi ejer højden, iframen fylder alt hvad
-          der er tilbage under headeren, og "0,00 kr. i dag" står FAST øverst i
-          VORES lag — synligt hele vejen ned gennem kortfelterne, hvor tvivlen er.
-          Containeren skal være i DOM'en FØR SDK'et monterer i den. */}
-      {trin === 5 && (
-        <div className={betalingAaben ? "st-overlay" : "st-skjul"} role="dialog" aria-modal="true" aria-label="Betaling">
-          <div className="st-ovtop">
-            <div>
-              <b>0,00 kr. i dag</b>
-              <span>14 dages gratis prøve · derefter {pris} ekskl. moms</span>
-            </div>
-            <button type="button" className="st-luk" onClick={() => setBetalingAaben(false)} aria-label="Luk betaling">×</button>
-          </div>
-          <div id="start-betalingsboks" className="st-ovboks" />
-        </div>
-      )}
     </main>
   );
 }
