@@ -203,7 +203,15 @@ export default function Forside({ opgaveTal = null }) {
               Brevduen for offentlige opgaver
             </span>
             <h1>Offentlige opgaver.<br />Direkte på <span className="sky-em">SMS.</span></h1>
-            <p className="sub">Birdly holder automatisk øje med offentlige opgaver, der matcher din virksomhed, og sender kun de relevante direkte til dig. Ingen portal. Ingen søgning. Ingen støj.</p>
+            {/* ⚠️ KUN TEKSTEN (03-08-2026). Samme <p className="sub"> som før — ingen
+                ny klasse, ingen ny margin. <br /> deler den i to linjer, fordi
+                sætningerne siger to forskellige ting: hvad du får, og hvad du slipper
+                for. "relevante" er bevidst væk; resten af copy'en siger "passer". */}
+            <p className="sub">
+              Du får kun besked, når der er en offentlig opgave, der passer til din virksomhed.
+              <br />
+              Ingen søgning. Ingen portal. Kun de opgaver, der passer til dig — direkte på SMS og mail.
+            </p>
             <div className="checks">
               <span>
                 <svg width="20" viewBox="0 0 20 20"><circle cx="10" cy="10" r="10" fill="#00B3A6" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#fff" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg>{" "}
