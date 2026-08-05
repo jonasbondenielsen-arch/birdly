@@ -391,10 +391,16 @@ export default function MineOpgaver({ token, data, intern = null }) {
       </div>
 
       {visteOpgaver.length === 0 ? (
+        /* ⚠️ TOM LISTE ER FØRSTE INDTRYK FOR EN NY KUNDE (05-08-2026). Velkomst-SMS'ens
+           0-match-variant sender hende hertil, så teksten skal svare på det hun lige har
+           læst: at vi er i gang, hvor ofte vi kigger, og hvordan hun får besked. Den
+           gamle tekst sagde "hver dag"; ingest kører to gange i døgnet, og det er både
+           mere præcist og mere beroligende. Samme kort, samme typografi — kun ordene. */
         <div style={{ ...CARD, textAlign: "center" }}>
-          <p style={{ margin: "6px 0", color: NAVY, fontWeight: 600 }}>Der er ingen aktive opgaver til dig lige nu.</p>
+          <p style={{ margin: "6px 0", color: NAVY, fontWeight: 600 }}>Ingen match endnu — men vi er i gang.</p>
           <p style={{ margin: 0, color: MUTED, lineHeight: 1.6 }}>
-            Vi kigger videre hver dag og sender dig besked, så snart der kommer en opgave der passer.
+            Birdly scanner hele Danmark to gange i døgnet og giver dig besked på SMS og mail,
+            så snart der er en opgave, der passer til jer.
           </p>
         </div>
       ) : (
