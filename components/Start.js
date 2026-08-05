@@ -189,6 +189,16 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
     }
   }, [katalog, startFag, startRegion]);
 
+  // ⚠️ KORTLØS ONBOARDING (05-08-2026, midlertidig). Flaget kommer fra get-catalog,
+  // fordi funnelen kun har anon-nøglen og ikke selv kan læse feature_flags.
+  // Tændt ⇒ trin 5 viser en bekræftelsesside i stedet for kortbetaling; kunden får
+  // fuld prøve og fanges ved udløb af sweepet i birdly-admin.
+  //
+  // ⚠️ Fejler kataloget, er katalog null og kortloes false — altså NORMAL
+  // kortbetaling. Fejler LUKKET, samme retning som erTaendt server-side: en
+  // netværksfejl må aldrig kunne give nogen gratis adgang.
+  const kortloes = katalog?.kortloes_onboarding === true;
+
   const fagListe = katalog?.fag || [];
   const fagByKey = useMemo(
     () => Object.fromEntries(fagListe.map((f) => [f.key, f])),
@@ -351,11 +361,25 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
           terms_accepted: true,
           cvr_branchekode: branchekode,
           package: planForInterval(interval),
+          // Markerer kunden i signup_data. Serveren gemmer den kun når den er sat,
+          // og det eneste den kan udløse er en varslingsmail og en lukning ved
+          // prøveudløb — aldrig adgang, aldrig penge, aldrig en gratis periode.
+          ...(kortloes ? { kortloes: true } : {}),
         });
         id = r.id;
         setOprettetId(id);
         if (r.uden_proeve) { udenProeveNu = true; setUdenProeve(true); }
       }
+      // ⚠️ KORTLØS: INGEN FRISBII-SESSION. Kunden er allerede oprettet med
+      // status='trial' og 14 dage (create_signup, migration 0010) — der mangler
+      // intet for at hun kan bruge produktet. Velkomsten fyres af signup-funktionen,
+      // fordi Frisbii-webhooken aldrig kommer for hende.
+      if (kortloes) {
+        setTrin(5);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+
       const { session_id } = await createSubscriptionSession({
         subscriber_id: id,
         email: email.trim(),
@@ -782,7 +806,30 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
       )}
 
       {/* ---------------- TRIN 5 — BETALING ---------------- */}
-      {trin === 5 && (
+      {/* ⚠️ KORTLØS BEKRÆFTELSE. Erstatter HELE betalingstrinnet — der er ingen
+          plan-vælger, ingen pris og ingen knap til Reepay, fordi der ikke skal
+          betales noget. Notebox'en er den samme besked som velkomstmailens, så
+          kunden får den både på skærmen og på skrift. */}
+      {trin === 5 && kortloes && (
+        <div className="st-kort st-kvit">
+          <div className="st-ic">✓</div>
+          <h1>Velkommen til Birdly!</h1>
+          <p className="st-hj">
+            Du er i gang — helt gratis de næste {TRIAL_DAYS} dage. Vi scanner hele Danmark to gange
+            i døgnet og sender dig besked på SMS og mail, så snart der er en opgave, der passer til jer.
+          </p>
+          <div className="st-note">
+            <b>Sådan fortsætter du efter prøven</b>
+            <p>
+              2 dage før din prøve udløber sender vi dig et betalingslink på SMS og mail. Vil du
+              fortsætte, tilføjer du bare dit kort med ét klik — vil du ikke, sker der ingenting,
+              og du bliver ikke opkrævet.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {trin === 5 && !kortloes && (
         <div className="st-kort">
           <h1>0,00 kr. i dag.</h1>
           <p className="st-hj">14 dages gratis prøve. Ingen binding.</p>

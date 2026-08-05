@@ -126,3 +126,10 @@ select.st-felt{appearance:none;background-image:url("data:image/svg+xml;utf8,<sv
 .st-neutral{color:var(--navy-soft)}
 /* "spar ~17 %" under Ãr-knappen */
 .st-planknap i{display:block;margin-top:3px;font-style:normal;font-size:12px;font-weight:700;color:var(--teal)}
+
+/* Kortløs-notebox på bekræftelsessiden (05-08-2026). Gul som 0-tilstanden i trin 4,
+   fordi den siger "her er noget du skal vide", ikke "her er et resultat". Samme
+   tokens som resten — ingen nye farver. */
+.st-note{margin-top:20px;background:#FFFDF5;border:1px solid #F2D98A;border-radius:12px;padding:16px 18px;text-align:left}
+.st-note b{display:block;font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:800;color:#8a6d1f;margin-bottom:5px}
+.st-note p{margin:0;font-size:14.5px;line-height:1.6;color:#6b5a1f}
