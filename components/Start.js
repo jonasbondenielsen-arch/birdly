@@ -5,6 +5,7 @@ import { Logo } from "./Logo";
 import { fetchCatalog, submitSignup, createSubscriptionSession } from "../lib/catalog";
 import { hentKandidater, visResultat } from "../lib/kandidater";
 import { planForInterval, priceText, TRIAL_DAYS } from "../lib/pakke";
+import { sporEnGang } from "../lib/pixel";
 // ⚠️ forside.css importeres IKKE. Den er nested under `.birdly-home`, så dens
 // klasser virker alligevel ikke her — og importen ville kun sende hele forsidens
 // CSS med i bundlen uden at gøre noget. start.css bærer det vi bruger.
@@ -162,7 +163,60 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
   const [udenProeve, setUdenProeve] = useState(false);
   const [faerdig, setFaerdig] = useState(betaling === "ok");
 
+  // ⚠️ META-HÆNDELSER (06-08-2026). Kun to, og begge kun én gang pr. kunde.
+  //
+  // spor() i lib/pixel.js gater allerede på marketing-samtykket OG på at fbq
+  // faktisk er indlæst — den logik er urørt. sporEnGang() lægger dubletværnet
+  // ovenpå. Der fyres intet før samtykke, fordi pixel'en slet ikke er indlæst før da.
+  //
+  // content_category = kundens valgte branche. Det er dét Meta kan optimere på;
+  // plan-intervallet siger intet om hvem hun er. Uden fag falder vi tilbage til
+  // intervallet frem for at sende en tom streng.
+  const pixelParams = () => ({
+    content_name: "Birdly 14 dages prøve",
+    content_category: fagValgt.length ? fagValgt.join(",") : interval,
+    currency: "DKK",
+    value: 0,
+  });
+
+  // ⚠️ FRISBII-RETUREN HAR INGEN STATE. Kunden forlader siden til
+  // checkout.reepay.com og kommer tilbage på ?betaling=ok med alt nulstillet —
+  // oprettetId er væk. Uden id kan dubletnøglen ikke være pr. kunde, og et reload
+  // på kvitteringen ville sende StartTrial igen. Derfor lægges id'et i
+  // localStorage lige FØR omdirigeringen og læses tilbage ved returen.
+  const STASH = "birdly_px_paavej";
+
   useEffect(() => { fetchCatalog().then(setKatalog).catch(() => setKatalog({ fag: [], regions: [] })); }, []);
+
+  // ⚠️ STARTTRIAL VED RETUR FRA FRISBII. Kører kun når kunden faktisk kommer
+  // tilbage på ?betaling=ok — altså efter en gennemført betaling. Ikke ved
+  // ?betaling=annulleret, og ikke ved en sidevisning uden parameteren.
+  //
+  // ⚠️ ACCEPTERET UNØJAGTIGHED: accept_url betyder "Reepay sagde ja til kortet",
+  // ikke "webhooken har aktiveret abonnementet". Men prøven ER startet — den blev
+  // sat af create_signup ved tilmeldingen — så betingelsen "de 14 dage er reelt
+  // begyndt" er opfyldt. Det er det tætteste klientsiden kan komme; at vente på
+  // webhooken ville kræve en server-side pixel (Conversions API).
+  //
+  // ⚠️ IKKE FOR uden_proeve-KUNDER. En genkommende kunde der har brugt sin gratis
+  // prøve får no_trial hos Frisbii og trækkes med det samme. Hun starter ingen
+  // prøve, og en StartTrial ville lære Meta at lede efter den forkerte hændelse.
+  useEffect(() => {
+    if (betaling !== "ok") return;
+    let stash = null;
+    try {
+      const r = window.localStorage.getItem(STASH);
+      if (r) stash = JSON.parse(r);
+      window.localStorage.removeItem(STASH);
+    } catch { /* ingen stash — så kan én-gang ikke garanteres, og vi springer over */ }
+    if (!stash?.id || stash.udenProeve) return;
+    sporEnGang(`starttrial_${stash.id}`, "StartTrial", {
+      content_name: "Birdly 14 dages prøve",
+      content_category: Array.isArray(stash.fag) && stash.fag.length ? stash.fag.join(",") : stash.interval || "",
+      currency: "DKK",
+      value: 0,
+    });
+  }, [betaling]);
 
   // ⚠️ FORVALG FRA fag×geo-SIDERNE (03-08-2026). De 36 /fag/-sider er nu husets
   // eneste CTA-mål, og de sender BÅDE ?fag= og ?region= — fx
@@ -369,12 +423,30 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
         id = r.id;
         setOprettetId(id);
         if (r.uden_proeve) { udenProeveNu = true; setUdenProeve(true); }
+
+          // ⚠️ LEAD FYRER HER — ikke ved klik og ikke ved klient-validering.
+          // Serveren har netop accepteret kontaktoplysninger OG virksomhedsdata og
+          // givet os et id tilbage. Først dér VED vi at data var gyldige: klientens
+          // validering kan omgås, signup-værnene kan ikke (dublet-CVR/telefon,
+          // nul-dækning, min>max). Et mislykket kald kaster og når aldrig hertil.
+          //
+          // Ligger inde i `if (!id)`, så en kunde der går tilbage til trin 4 og
+          // frem igen ikke fyrer en Lead til.
+          sporEnGang(`lead_${id}`, "Lead", pixelParams());
       }
       // ⚠️ KORTLØS: INGEN FRISBII-SESSION. Kunden er allerede oprettet med
       // status='trial' og 14 dage (create_signup, migration 0010) — der mangler
       // intet for at hun kan bruge produktet. Velkomsten fyres af signup-funktionen,
       // fordi Frisbii-webhooken aldrig kommer for hende.
       if (kortloes) {
+        // ⚠️ STARTTRIAL FOR KORTLØSE FYRER HER. Alle tre betingelser er opfyldt:
+        // onboardingen er gennemført (dette ER sidste trin — der er ingen betaling),
+        // kunden er oprettet (vi har id'et fra signup), og prøven KØRER:
+        // create_signup sætter trial_ends_at = now() + 14 dage i samme transaktion
+        // som rækken (migration 0010). Der er intet at vente på.
+        //
+        // Står efter submitSignup, så et fejlet kald aldrig kan udløse den.
+        if (!udenProeveNu) sporEnGang(`starttrial_${id}`, "StartTrial", pixelParams());
         setTrin(5);
         window.scrollTo({ top: 0, behavior: "smooth" });
         return;
@@ -474,6 +546,11 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
   function aabnBetaling() {
     if (!sessionId || arbejder) return;
     setFejl("");
+    // Se noten ved STASH: siden forlades helt, så id'et skal med over på den anden
+    // side for at dubletnøglen kan være pr. kunde.
+    try {
+      window.localStorage.setItem(STASH, JSON.stringify({ id: oprettetId, udenProeve, fag: fagValgt, interval }));
+    } catch { /* privat browsing — StartTrial springes over, hellere end en dublet */ }
     loadReepay()
       .then((Reepay) => { new Reepay.WindowSubscription(sessionId); })
       .catch((e) => setFejl(e.message));
