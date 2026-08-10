@@ -50,16 +50,46 @@ const quickQs = [
    Fx: fetch('/api/support', {method:'POST', body: JSON.stringify({message:text})})
        → returnér svaret som tekst/HTML. Behold visningen i addMsg(...,'bot').
    ===================================================================== */
-// Åbningstid: man–fre 08–18 (lokal tid). Kun til at vælge fallback-tekst —
-// rører ikke svar-logikken eller at assistenten er AI-drevet.
-function withinOpeningHours() {
-  const now = new Date();
-  const day = now.getDay(); // 0 = søndag, 6 = lørdag
-  const hour = now.getHours();
-  return day >= 1 && day <= 5 && hour >= 8 && hour < 18;
+// Åbningstid: man–fre 08–18 DANSK tid. Beregnes altid i Europe/Copenhagen —
+// aldrig i den besøgendes lokale tid, ellers får en kunde i en anden tidszone
+// (eller med et skævt ur) forkert offline-tilstand. Fail-open: kan tidszonen
+// ikke slås op, regner vi det som åbent — en forkert "vi er offline" midt i
+// arbejdstiden er værre end en manglende note udenfor.
+const OPENING_WEEKDAYS = [1, 2, 3, 4, 5];
+const WEEKDAY_INDEX = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+const OPENING_FMT = new Intl.DateTimeFormat("en-US", {
+  timeZone: "Europe/Copenhagen",
+  weekday: "short",
+  hour: "2-digit",
+  hourCycle: "h23",
+});
+
+function withinOpeningHours(date = new Date()) {
+  let weekday = null;
+  let hour = NaN;
+  try {
+    for (const p of OPENING_FMT.formatToParts(date)) {
+      if (p.type === "weekday") weekday = WEEKDAY_INDEX[p.value];
+      else if (p.type === "hour") hour = Number(p.value);
+    }
+  } catch {
+    return true;
+  }
+  if (weekday === null || Number.isNaN(hour)) return true;
+  return OPENING_WEEKDAYS.includes(weekday) && hour >= 8 && hour < 18;
 }
 
+// Udenfor åbningstid svarer botten stadig — den tilføjer bare denne note, så
+// kunden ved hvornår et menneske kan følge op.
+const OFFLINE_NOTE =
+  "— Lige nu er fuglen fløjet 🕊️ Vi er online alle hverdage kl. 08:00–18:00 og er tilbage på pinden næste hverdag. Skriv endelig dit spørgsmål eller send en mail til <b>support@birdly.dk</b> — så vender vi tilbage.";
+
 function botReply(text) {
+  const answer = answerFor(text);
+  return withinOpeningHours() ? answer : `${answer}<br><br>${OFFLINE_NOTE}`;
+}
+
+function answerFor(text) {
   const t = (text || "").toLowerCase();
   if (/(pris|koste|kr|betal|moms|gratis|prøve)/.test(t))
     return `De første <b>14 dage er gratis</b>. Derefter koster Birdly <b>${priceText.monthly}</b> eller <b>${priceText.yearly}</b> (ekskl. moms) — alt inkluderet. Vælger du årligt, sparer du ~${YEARLY_SAVING.pct} % (svarer til ${YEARLY_SAVING.months} måneder gratis). Ingen binding — opsig med 30 dages varsel.`;
@@ -73,9 +103,9 @@ function botReply(text) {
     return "Vi henter udbud fra de officielle kilder: <b>udbud.dk</b> og EU’s database <b>TED</b>. Offentlige udbud skal være åbne for alle.";
   if (/(virker|hvordan|kom i gang|tilmeld|start|hurtig|hvornår|besked)/.test(t))
     return "Du udfylder få oplysninger (fag, område, størrelse) — det tager 2 min. Så holder vi øje for dig og sender en <b>SMS + kort mail</b> med resumé, frist og link, så snart der er et match.";
-  return withinOpeningHours()
-    ? "Hej! Jeg er Birdlys assistent 🕊️ — spørg løs, eller skriv til <b>support@birdly.dk</b>."
-    : "Lige nu er fuglen fløjet 🕊️ Vi er online alle hverdage kl. 08:00–18:00 og er tilbage på pinden i morgen. Skriv endelig dit spørgsmål eller send en mail til <b>support@birdly.dk</b> — så vender vi tilbage.";
+  // Intet nøgleord ramte. Offline-noten hæftes på af botReply(), så her står kun
+  // selve svaret.
+  return "Hej! Jeg er Birdlys assistent 🕊️ — spørg løs, eller skriv til <b>support@birdly.dk</b>.";
 }
 
 export default function Forside({ opgaveTal = null }) {
