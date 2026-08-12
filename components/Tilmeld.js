@@ -177,6 +177,8 @@ export default function Tilmeld({ initialFag = null, initialRegion = null, opgav
   const [notifySms, setNotifySms] = useState(true);
   const [marketing, setMarketing] = useState(false);
   const [terms, setTerms] = useState(false);
+  // Abonnementsbetingelserne er et SELVSTÆNDIGT samtykke (Clearhaus-krav).
+  const [abonnement, setAbonnement] = useState(false);
 
   // Trin 4 — vælg plan + betaling. Default = årlig (anbefalet).
   const [billing, setBilling] = useState("yearly"); // "monthly" | "yearly" — vælger plan-handle
@@ -394,7 +396,8 @@ export default function Tilmeld({ initialFag = null, initialRegion = null, opgav
   async function startPayment() {
     setErr("");
     if (!heleDk && selectedRegionKeys.length === 0) return setErr("Vælg mindst én region — eller hele Danmark.");
-    if (!terms) return setErr("Sæt flueben i betingelserne for at fortsætte.");
+    if (!terms) return setErr("Sæt flueben i handelsbetingelserne for at fortsætte.");
+    if (!abonnement) return setErr("Sæt flueben i abonnementsbetingelserne for at fortsætte.");
     if (saving) return;
     setSaving(true);
     try {
@@ -746,6 +749,16 @@ export default function Tilmeld({ initialFag = null, initialRegion = null, opgav
                       <Link href="/handelsbetingelser">Handels- og leveringsbetingelser</Link>
                       <Link href="/privatlivspolitik">Privatlivspolitik</Link>
                     </div>
+                    {/* ⚠️ SELVSTÆNDIGT SAMTYKKE (Clearhaus-krav): abonnementsvilkårene
+                        skal accepteres for sig, ikke som en del af handelsbetingelserne.
+                        Samme .consent-klasse som ovenfor — spejling, ikke ny stil. */}
+                    <label className="consent">
+                      <input type="checkbox" checked={abonnement} onChange={(e) => setAbonnement(e.target.checked)} />
+                      <span>Jeg accepterer abonnementsbetingelserne — herunder at abonnementet fornyes automatisk, og at mit betalingskort gemmes hos vores betalingsudbyder, indtil jeg siger op.</span>
+                    </label>
+                    <div className="consent-links">
+                      <Link href="/abonnementsbetingelser">Abonnementsbetingelser</Link>
+                    </div>
                     <label className="consent consent-opt">
                       <input type="checkbox" checked={marketing} onChange={(e) => setMarketing(e.target.checked)} />
                       <span>Ja tak — send mig gode råd og nyheder på mail (kan altid frameldes). Valgfrit.</span>
@@ -867,7 +880,7 @@ export default function Tilmeld({ initialFag = null, initialRegion = null, opgav
                 {step > 1 ? <button type="button" className="btn-back" onClick={back}>← Tilbage</button> : <span />}
                 {step < 3 && <button type="button" className="btn-next" onClick={next}>Videre →</button>}
                 {step === 3 && (
-                  <button type="button" className="btn-next" onClick={startPayment} disabled={saving || !terms}>
+                  <button type="button" className="btn-next" onClick={startPayment} disabled={saving || !terms || !abonnement}>
                     {saving ? "Forbereder betaling …" : "Prøv gratis i 14 dage →"}
                   </button>
                 )}

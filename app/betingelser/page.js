@@ -21,6 +21,15 @@ const ICONS = {
       <path d="M8.5 14l2.2 2.2L15 12" />
     </svg>
   ),
+  // Abonnementsbetingelser → betalingskort m. abonnements-cirkel.
+  // Samme sprog som de øvrige: viewBox 24, stroke-width 2, runde hjørner.
+  kort: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2.5" y="5.5" width="19" height="13" rx="2.5" />
+      <path d="M2.5 10h19" />
+      <path d="M6.5 14.5h3" />
+    </svg>
+  ),
   // Privatlivspolitik → skjold m. flueben
   shieldCheck: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -77,7 +86,16 @@ export default function BetingelserPage() {
           <Link href="/handelsbetingelser" className="card featured">
             <div className="ic">{ICONS.doc}</div>
             <h3>Handelsbetingelser</h3>
-            <p>Vilkår for abonnement, prøveperiode, betaling og opsigelse.</p>
+            <p>Aftalen mellem dig og Birdly: hvad tjenesten er, betalingsmetoder og ansvar.</p>
+            <span className="btn">Klik her</span>
+          </Link>
+
+          {/* Abonnementsvilkårene har sin egen side, adskilt fra handelsbetingelserne,
+              så det er tydeligt hvad der er hvad. Samme kort-stil som de øvrige. */}
+          <Link href="/abonnementsbetingelser" className="card featured">
+            <div className="ic">{ICONS.kort}</div>
+            <h3>Abonnementsbetingelser</h3>
+            <p>Pris, prøveperiode, fornyelse, betalingskort og opsigelse.</p>
             <span className="btn">Klik her</span>
           </Link>
 

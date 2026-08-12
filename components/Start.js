@@ -149,6 +149,9 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
 
   // Trin 4
   const [betingelser, setBetingelser] = useState(false);
+  // Abonnementsbetingelserne er et SELVSTÆNDIGT samtykke (Clearhaus-krav) — ikke
+  // en del af handelsbetingelserne. Begge skal være sat, før man kan fortsætte.
+  const [abonnement, setAbonnement] = useState(false);
   // År er forvalgt og anbefalet (spar ~17 %) — men BEGGE skal kunne vælges frit.
   const [interval, setInterval_] = useState("yearly");
   // Hvilket interval der lige nu hentes en ny session til (null = ingen). Bærer
@@ -387,7 +390,8 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
     if (!navn.trim()) return setFejl("Skriv dit navn.");
     if (!EMAIL_RE.test(email.trim())) return setFejl("Skriv en gyldig e-mail.");
     if (!tilE164(tlf)) return setFejl("Skriv et gyldigt telefonnummer.");
-    if (!betingelser) return setFejl("Sæt flueben i betingelserne for at fortsætte.");
+    if (!betingelser) return setFejl("Sæt flueben i handelsbetingelserne for at fortsætte.");
+    if (!abonnement) return setFejl("Sæt flueben i abonnementsbetingelserne for at fortsætte.");
     if (arbejder) return;
     setArbejder(true);
     try {
@@ -868,9 +872,19 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
               <label className="st-lab" htmlFor="tlf">Mobilnummer <span className="st-valgfri">(det er her beskeden lander)</span></label>
               <input id="tlf" className="st-felt" inputMode="tel" value={tlf} onChange={(e) => setTlf(e.target.value)} autoComplete="tel" placeholder="12 34 56 78" />
 
+              {/* ⚠️ TO SEPARATE SAMTYKKER (Clearhaus-krav). Handelsbetingelser og
+                  abonnementsbetingelser skal accepteres hver for sig, så det er
+                  tydeligt hvad kunden siger ja til. Begge er PÅKRÆVEDE og gater
+                  knappen nedenfor. Samme .st-tjek-klasse som før — den nye er en
+                  spejling af den eksisterende, ikke en ny stil. */}
               <label className="st-tjek">
                 <input type="checkbox" checked={betingelser} onChange={(e) => setBetingelser(e.target.checked)} />
                 <span>Jeg accepterer <a href="/handelsbetingelser" target="_blank" rel="noreferrer">handelsbetingelserne</a> og <a href="/privatlivspolitik" target="_blank" rel="noreferrer">privatlivspolitikken</a>.</span>
+              </label>
+
+              <label className="st-tjek">
+                <input type="checkbox" checked={abonnement} onChange={(e) => setAbonnement(e.target.checked)} />
+                <span>Jeg accepterer <a href="/abonnementsbetingelser" target="_blank" rel="noreferrer">abonnementsbetingelserne</a> — herunder at abonnementet fornyes automatisk, og at mit betalingskort gemmes hos vores betalingsudbyder, indtil jeg siger op.</span>
               </label>
 
               <button className="btn btn-teal st-bred" onClick={tilBetaling} disabled={arbejder}>
