@@ -575,6 +575,40 @@ function OpgaveKort({ o, onFjern, intern = null, tilSide = false, onRelevant = n
         {o.nationwide ? " · Hele landet" : (o.nuts_codes?.length ? ` · ${o.nuts_codes.join(", ")}` : "")}
       </p>
 
+      {/* ⚠️ HVORFOR DEN PASSER — noten. Teksten kommer FÆRDIG fra serveren
+          (get-my-tasks/hvorfor.js); her formateres den kun. Frontend må ikke
+          begynde at udlede sætninger selv: så ville koderne skulle sendes med,
+          og de skal ALDRIG forbi kunden.
+
+          Overskriften bærer løftet og skifter med matchtypen:
+            "Hvorfor det passer til dig"  ægte fagmatch — vi tør love noget
+            "Hvorfor du ser den"          kun brede koder — lover intet
+            "Lidt uden for dit område"    naboregion — geografien skal frem, ikke skjules
+
+          Nabo-noten får den gule tone, de øvrige den neutrale. Det er samme
+          farvesprog som badges'ene: gul betyder "læs lige den her".
+
+          Vises ikke på nær-match-forslag (de er ikke matches) og ikke på
+          til-side-kort (de har allerede deres egen forklaringsboks — to bokse
+          under hinanden ville drukne begge). */}
+      {!naerMatch && !tilSide && o.hvorfor_note?.punkter?.length > 0 && (
+        <div style={{
+          background: o.hvorfor_note.type === "nabo" ? "#FFFBF0" : "#F7FAFC",
+          border: `1px solid ${o.hvorfor_note.type === "nabo" ? "#F2D98A" : "#E6EAEF"}`,
+          borderRadius: 10, padding: "10px 12px", margin: "0 0 12px",
+        }}>
+          <p style={{
+            margin: "0 0 6px", fontSize: 13, fontWeight: 600,
+            color: o.hvorfor_note.type === "nabo" ? "#8a6d1f" : NAVY,
+          }}>
+            {o.hvorfor_note.overskrift}
+          </p>
+          {o.hvorfor_note.punkter.map((t, i) => (
+            <p key={i} style={{ margin: i ? "4px 0 0" : 0, color: MUTED, fontSize: 13, lineHeight: 1.5 }}>{t}</p>
+          ))}
+        </div>
+      )}
+
       {/* HVORFOR den ligger til side. Teksten kommer FÆRDIG fra serveren og beskriver
           det træk der FAKTISK skjulte opgaven — ikke et træk som guldklump-værnet lige
           har reddet den fra. Kunden skal kunne stole på begrundelsen. */}
