@@ -7,7 +7,7 @@ import { SPOERGSMAAL, spmTekst } from "../lib/feedbackSpoergsmaal";
 import { gemFeedback } from "../lib/feedback";
 
 // ============================================================================
-// FEEDBACK-SKEMA — 14 ekstra prøvedage mod ærlige svar.
+// FEEDBACK-SKEMA — 7 ekstra prøvedage mod ærlige svar.
 //
 // ÉT SPØRGSMÅL AD GANGEN. Ni spørgsmål på én side ser ud som et arbejde man ikke har
 // tid til; ét ad gangen med en tæller føles som noget der er ved at være færdigt.
@@ -193,7 +193,7 @@ export default function Forlaeng({ token, start }) {
               Birdly må kontakte mig om en kort samtale på 10-15 minutter.
             </Tilvalg>
             <p style={{ margin: "10px 0 0", fontSize: 13, color: MUTED, lineHeight: 1.55 }}>
-              Begge er frivillige. Du får dine 14 ekstra dage, uanset om du sætter flueben.
+              Begge er frivillige. Du får dine 7 ekstra dage, uanset om du sætter flueben.
             </p>
 
             {/* OPLYSNING, ikke samtykke. Fluebenene ovenfor er det aktive samtykke —
@@ -245,7 +245,7 @@ export default function Forlaeng({ token, start }) {
         {sidste ? (
           <button type="button" style={{ ...KNAP_PRIMARY, opacity: !kanVidere || gemmer ? 0.5 : 1 }}
             onClick={afslut} disabled={!kanVidere || gemmer}>
-            {gemmer ? "Sender …" : "Send og få 14 dage mere"}
+            {gemmer ? "Sender …" : "Send og få 7 dage mere"}
           </button>
         ) : (
           <button type="button" style={{ ...KNAP_PRIMARY, opacity: kanVidere ? 1 : 0.5 }}
