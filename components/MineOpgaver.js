@@ -572,7 +572,11 @@ function OpgaveKort({ o, onFjern, intern = null, tilSide = false, onRelevant = n
             kunden skal gøre. */}
         {o.frist_ukendt ? "Frist ikke oplyst — tjek hos udbyder" : <>Frist {fmtDato(o.deadline)}</>}
         {" · "}{fmtBeloeb(o.amount, o.currency)}
-        {o.nationwide ? " · Hele landet" : (o.nuts_codes?.length ? ` · ${o.nuts_codes.join(", ")}` : "")}
+        {/* ⚠️ REGIONSNAVNE, ALDRIG KODER. Her stod o.nuts_codes.join(", "), så kunden
+            læste "· DK022" på sit eget kort. Serveren sender nu geografien i ord
+            (region_navne, samme oversættelse som noten nedenunder bruger).
+            Mangler navnet, udelades feltet — vi falder ALDRIG tilbage på koden. */}
+        {o.nationwide ? " · Hele landet" : (o.region_navne?.length ? ` · ${o.region_navne.join(", ")}` : "")}
       </p>
 
       {/* ⚠️ HVORFOR DEN PASSER — noten. Teksten kommer FÆRDIG fra serveren
