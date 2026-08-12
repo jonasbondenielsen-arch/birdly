@@ -1,7 +1,7 @@
 import Forlaeng from "../../../components/Forlaeng";
 import { hentForlaengStatus } from "../../../lib/feedback";
 
-// Feedback-skemaet der giver 14 ekstra prøvedage. Nås fra velkomstmailens knap og fra
+// Feedback-skemaet der giver 7 ekstra prøvedage. Nås fra velkomstmailens knap og fra
 // SMS'en efter 5 hverdage. Adgang = kundens eget list_token i URL'en.
 //
 // ⚠️ NOINDEX. Token-side — må ALDRIG i søgeresultater, samme regel som
