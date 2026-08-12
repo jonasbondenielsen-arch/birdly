@@ -1,6 +1,8 @@
 # Handelsbetingelser for Birdly
 
-**Gældende fra 7. juni 2026. Senest opdateret 15. juni 2026. Erstatter alle tidligere versioner.**
+**Gældende fra 7. juni 2026. Senest opdateret 12. august 2026. Erstatter alle tidligere versioner.**
+
+> **Leder du efter pris, fornyelse eller opsigelse?** Alt om selve abonnementet — de 499 kr./md. og 4.990 kr./år, prøveperioden, hvornår du trækkes, og hvordan du siger op — står i vores [abonnementsbetingelser](/abonnementsbetingelser).
 
 ---
 
@@ -32,68 +34,49 @@
 
 2.3 Vi bestræber os på at sende relevante matches, men kan ikke garantere fuldstændighed, korrekthed eller rettidighed, herunder at samtlige relevante udbud fanges. Matches og beskeder skal alene betragtes som vejledende. Du er selv ansvarlig for at verificere oplysninger i det officielle udbudsmateriale og for at overholde frister.
 
-## 3. Abonnement og pris
-3.1 Birdly tilbydes som ét abonnement med adgang til alle Tjenestens funktioner. Geografisk dækning (én eller flere regioner eller hele Danmark) er inkluderet og påvirker ikke prisen. Abonnementet kan betales:
-- **Månedligt** – 499 kr./md.
-- **Årligt (forudbetalt)** – 4.990 kr./år, svarende til en besparelse på ca. 17 % i forhold til månedlig betaling.
+## 3. Abonnement, pris og opsigelse
+3.1 Vilkårene for selve abonnementet — pris, prøveperiode, betalingstidspunkt, automatisk fornyelse og opsigelse — står samlet i vores [abonnementsbetingelser](/abonnementsbetingelser), som du accepterer sammen med disse betingelser ved tilmelding.
 
-3.2 Alle priser er angivet i danske kroner (DKK) og ekskl. moms.
+3.2 Kort fortalt: Birdly koster **499 kr./md.** eller **4.990 kr./år** ekskl. moms, du får 14 dages gratis prøveperiode, og abonnementet fornyes automatisk, indtil du siger op.
 
-3.3 Abonnementet er personligt for Kundens virksomhed og må ikke overdrages eller stilles til rådighed for tredjemand uden forudgående skriftligt samtykke fra Birdly.
+## 4. Betaling og betalingsmetoder
+4.1 **Du kan betale med Visa og Mastercard.** Betalingerne håndteres af vores betalingsudbyder Frisbii med Clearhaus som indløser.
 
-3.4 Automatiseret udtræk, scraping eller videresalg af Tjenestens beskeder/data til tredjemand er ikke tilladt.
+4.2 **Dine kortoplysninger bliver gemt.** Fordi Birdly er et løbende abonnement, gemmes dit betalingskort som et sikkert betalingsmiddel, så de tilbagevendende betalinger kan gennemføres, uden at du skal taste kortet ind hver gang. Kortet opbevares hos Frisbii, der er PCI DSS-certificeret. **Birdly ser eller opbevarer aldrig selv dit fulde kortnummer eller din sikkerhedskode** — vi kan kun se korttype og de sidste fire cifre. Du giver samtykke til, at kortet gemmes, når du tilmelder dig.
 
-## 4. Gratis prøveperiode
-4.1 Nye kunder får en gratis prøveperiode på 14 dage regnet fra tilmelding. I prøveperioden opkræves der ingen betaling. Opsiger du inden for prøveperioden, opkræves du ikke, og Abonnementet ophører ved prøveperiodens udløb. Opsigelse i prøveperioden udløser ikke opsigelsesvarslet for månedsabonnement, jf. pkt. 6.
+4.3 Du kan til enhver tid skifte det gemte kort ud eller få det slettet ved at skrive til support@birdly.dk.
 
-4.2 Medmindre du opsiger inden prøveperiodens udløb, overgår Abonnementet automatisk til et betalt Abonnement. Den første opkrævning sker umiddelbart efter prøveperiodens udløb, dvs. dagen efter de 14 gratis dage, jf. pkt. 5.2.
+4.4 Alle priser er angivet i danske kroner (DKK) og ekskl. moms. Der sendes faktura til den oplyste e-mailadresse.
 
-## 5. Pris og betaling
-5.1 De til enhver tid gældende priser fremgår af birdly.dk, ekskl. moms i DKK.
+4.5 Ved manglende betaling, fx ved manglende dækning eller et udløbet kort, forbeholder vi os retten til at suspendere adgangen til Tjenesten, indtil betaling er modtaget.
 
-5.2 Abonnementsbeløbet opkræves forud for hver abonnementsperiode via Frisbii (med MobilePay og betalingskort som betalingsmetoder). Ved tilmelding giver du Birdly tilladelse til løbende at trække abonnementsbeløbet. Den første betaling sker efter prøveperiodens udløb, jf. pkt. 4.2, og herefter fornyes Abonnementet automatisk og opkræves for den valgte periode (månedligt eller årligt) på den tilbagevendende betalingsdato, der følger af din tilmeldingsdato. Der fremsendes faktura til den oplyste e-mailadresse.
+## 5. Ændringer i Tjenesten
+5.1 Vi kan ændre Tjenestens sammensætning og indhold. Væsentlige ændringer varsles pr. e-mail til din registrerede e-mailadresse eller ved opslag på birdly.dk med rimeligt varsel.
 
-5.3 Vi kan ændre Tjenestens sammensætning og indhold. Væsentlige ændringer varsles pr. e-mail til din registrerede e-mailadresse eller ved opslag på birdly.dk med rimeligt varsel.
+5.2 Abonnementet er personligt for Kundens virksomhed og må ikke overdrages eller stilles til rådighed for tredjemand uden forudgående skriftligt samtykke fra Birdly.
 
-5.4 **Prisændringer.** Vi kan ændre abonnementspriserne. En prisstigning på dit Abonnement varsles med mindst 30 dages varsel, før den træder i kraft. Varsel gives pr. e-mail til din registrerede e-mailadresse. Ønsker du ikke at fortsætte til den nye pris, kan du opsige, inden prisstigningen træder i kraft, i overensstemmelse med opsigelsesvilkårene i pkt. 6. Opsiger du ikke inden ikrafttræden, fortsætter Abonnementet til den nye pris.
+5.3 Automatiseret udtræk, scraping eller videresalg af Tjenestens beskeder/data til tredjemand er ikke tilladt.
 
-5.5 Ved manglende betaling, fx ved manglende dækning, forbeholder vi os retten til at suspendere adgangen til Tjenesten, indtil betaling er modtaget.
+## 6. Kundens ansvar
+6.1 Du er ansvarlig for, at de oplysninger og kriterier, du opgiver (kontaktoplysninger, fag, geografi, beløb), er korrekte og opdaterede. Birdly er ikke ansvarlig for matches, der udebliver eller er upræcise som følge af forkerte eller mangelfulde kriterier.
 
-## 6. Bindingsperiode og opsigelse
-6.1 Der er ingen minimumsbinding ud over den abonnementsperiode, du har valgt og betalt for. Du kan til enhver tid opsige dit Abonnement og dermed dets fremtidige fornyelse. Opsigelsens virkning afhænger af, om du betaler månedligt eller årligt, jf. pkt. 6.3 og 6.4.
+6.2 Du skal holde dine kontaktoplysninger opdateret, så du kan modtage beskeder og nødvendige informationer om ændringer.
 
-6.2 Opsigelse sker via opsigelsesfunktionen på birdly.dk, hvor du bekræfter opsigelsen via et link sendt til din e-mail. Opsigelsen er først gennemført, når du har klikket bekræftelseslinket.
+6.3 Du må ikke anvende Tjenesten på en måde, der kan skade Birdlys navn, omdømme eller drift, eller som er i strid med gældende lovgivning.
 
-6.3 **Månedsabonnement.** For et månedsabonnement gælder et opsigelsesvarsel på 30 dage. Når du har bekræftet opsigelsen, gennemføres én yderligere månedlig opkrævning, du beholder adgangen til Tjenesten i den betalte periode, og Abonnementet ophører derefter.
+## 7. Driftsstabilitet
+7.1 Vi tilstræber højst mulig driftsstabilitet, men Tjenesten leveres "som den er og forefindes". Vi er uden ansvar for nedbrud eller driftsforstyrrelser, herunder forhold uden for vores kontrol som strømsvigt, fejl på internet-/teleforbindelser eller nedbrud hos tredjepartsdatakilder (fx udbud.dk/TED) og underleverandører.
 
-6.4 **Årsabonnement.** Et årsabonnement er forudbetalt for 12 måneder og fornyes automatisk ved periodens udløb. Opsiger du inden fornyelsen, gennemføres der ingen ny opkrævning, og du beholder adgangen den resterende, allerede betalte periode ud. Der er ingen yderligere binding og ingen ekstra opkrævning, uanset hvornår i den betalte periode du opsiger. Vi sender dig en påmindelse ca. 30 dage før den årlige fornyelse.
+7.2 I tilfælde af nedbrud tilstræber vi at genskabe normal drift hurtigst muligt. Planlagt vedligehold placeres så vidt muligt uden for normal arbejdstid.
 
-6.5 Da Abonnementet betales forud, refunderes der ikke for en allerede påbegyndt og betalt abonnementsperiode.
+## 8. Ansvar og ansvarsbegrænsning
+8.1 Birdly er ikke ansvarlig for beslutninger, du træffer på baggrund af de fremsendte beskeder, herunder om du vælger at byde på et udbud, og udfaldet heraf.
 
-6.6 Opsiger du i prøveperioden, gælder pkt. 4 — der opkræves intet, og opsigelsesvarslet i pkt. 6.3 finder ikke anvendelse.
+8.2 Birdly er ikke ansvarlig for indirekte tab eller følgeskader, herunder tabt fortjeneste, mistede kontrakter, mistede udbud eller driftstab.
 
-6.7 Birdly kan opsige et Abonnement med 3 måneders varsel, og uden varsel ved Kundens konkurs, insolvens eller væsentlig misligholdelse af disse betingelser.
+8.3 Birdly er ikke ansvarlig for tredjepartsløsninger (fx datakilder, SMS-gateway, betalingsudbyder), herunder deres tilgængelighed, korrekthed eller funktionalitet.
 
-## 7. Kundens ansvar
-7.1 Du er ansvarlig for, at de oplysninger og kriterier, du opgiver (kontaktoplysninger, fag, geografi, beløb), er korrekte og opdaterede. Birdly er ikke ansvarlig for matches, der udebliver eller er upræcise som følge af forkerte eller mangelfulde kriterier.
-
-7.2 Du skal holde dine kontaktoplysninger opdateret, så du kan modtage beskeder og nødvendige informationer om ændringer.
-
-7.3 Du må ikke anvende Tjenesten på en måde, der kan skade Birdlys navn, omdømme eller drift, eller som er i strid med gældende lovgivning.
-
-## 8. Driftsstabilitet
-8.1 Vi tilstræber højst mulig driftsstabilitet, men Tjenesten leveres "som den er og forefindes". Vi er uden ansvar for nedbrud eller driftsforstyrrelser, herunder forhold uden for vores kontrol som strømsvigt, fejl på internet-/teleforbindelser eller nedbrud hos tredjepartsdatakilder (fx udbud.dk/TED) og underleverandører.
-
-8.2 I tilfælde af nedbrud tilstræber vi at genskabe normal drift hurtigst muligt. Planlagt vedligehold placeres så vidt muligt uden for normal arbejdstid.
-
-## 9. Ansvar og ansvarsbegrænsning
-9.1 Birdly er ikke ansvarlig for beslutninger, du træffer på baggrund af de fremsendte beskeder, herunder om du vælger at byde på et udbud, og udfaldet heraf.
-
-9.2 Birdly er ikke ansvarlig for indirekte tab eller følgeskader, herunder tabt fortjeneste, mistede kontrakter, mistede udbud eller driftstab.
-
-9.3 Birdly er ikke ansvarlig for tredjepartsløsninger (fx datakilder, SMS-gateway, betalingsudbyder), herunder deres tilgængelighed, korrekthed eller funktionalitet.
-
-9.4 Birdlys samlede erstatningsansvar er uanset ansvarsgrundlag beløbsmæssigt begrænset til det beløb, du har betalt for Tjenesten de seneste 12 måneder, dog maksimalt 5.000 DKK. Intet i betingelserne begrænser ansvar, der ikke kan fraskrives efter dansk ret.
+8.4 Birdlys samlede erstatningsansvar er uanset ansvarsgrundlag beløbsmæssigt begrænset til det beløb, du har betalt for Tjenesten de seneste 12 måneder, dog maksimalt 5.000 DKK. Intet i betingelserne begrænser ansvar, der ikke kan fraskrives efter dansk ret.
 
 ## Levering og ansvar for bud-skabelonen
 Bud-skabelonen leveres "som den er og forefindes" (as-is) og uden nogen form for garanti for et bestemt resultat, herunder at brugeren prækvalificeres, afgiver et konditionsmæssigt tilbud eller vinder en kontrakt. Skabelonens indhold genereres på grundlag af offentligt tilgængelige udbudsdata, og Birdly indestår ikke for disse datas rigtighed, fuldstændighed, aktualitet eller tilgængelighed.
@@ -102,14 +85,14 @@ Birdly kan ikke holdes ansvarlig for fejl, mangler eller udfald, der følger af 
 
 Birdly fraskriver sig i videst muligt omfang efter dansk ret ethvert ansvar for direkte og indirekte tab, herunder tabt fortjeneste, mistede kontrakter og følgeskader, der måtte udspringe af brugen af bud-skabelonen. Intet i disse betingelser begrænser et ansvar, der efter ufravigelig lovgivning ikke kan fraskrives.
 
-## 10. Immaterielle rettigheder
-10.1 Tjenesten, herunder software, design og varemærket Birdly, tilhører eller er licenseret til Birdly. Der overdrages ingen immaterielle rettigheder til dig ved brug af Tjenesten.
+## 9. Immaterielle rettigheder
+9.1 Tjenesten, herunder software, design og varemærket Birdly, tilhører eller er licenseret til Birdly. Der overdrages ingen immaterielle rettigheder til dig ved brug af Tjenesten.
 
-## 11. Ændring af betingelserne
-11.1 Vi kan ændre disse betingelser. Væsentlige ændringer varsles på birdly.dk og/eller pr. e-mail med rimeligt varsel. Fortsat brug efter ikrafttræden udgør accept.
+## 10. Ændring af betingelserne
+10.1 Vi kan ændre disse betingelser. Væsentlige ændringer varsles på birdly.dk og/eller pr. e-mail med rimeligt varsel. Fortsat brug efter ikrafttræden udgør accept.
 
-## 12. Lovvalg og tvister
-12.1 Aftalen er underlagt dansk ret. Opstår der uenighed, afgøres den ved Retten i Holbæk som første instans.
+## 11. Lovvalg og tvister
+11.1 Aftalen er underlagt dansk ret. Opstår der uenighed, afgøres den ved Retten i Holbæk som første instans.
 
-## 13. Kontakt
+## 12. Kontakt
 Birdly.dk, CVR 35764283, Fjordvej 4, 4300 Holbæk. Henvendelser: support@birdly.dk.
