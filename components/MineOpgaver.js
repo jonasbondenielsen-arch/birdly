@@ -120,6 +120,21 @@ export default function MineOpgaver({ token, data, intern = null }) {
   const [bunkeAaben, setBunkeAaben] = useState(false);
   // NÆR-MATCH: forslag over kundens beløbsloft. Tom når flaget er slukket.
   const [naerMatch, setNaerMatch] = useState(data?.naer_match || []);
+  // FOKUS-TILBUD: null for alle under tærsklen ⇒ intet renderes.
+  const fokus = data?.fokus || null;
+  // Starter altid synlig og skjules først efter hydrering, hvis kunden har sagt
+  // nej tak. Læste vi localStorage i useState, ville serveren og klienten
+  // renderes forskelligt, og React ville klage over hydrerings-uoverensstemmelse.
+  const [fokusSkjult, setFokusSkjult] = useState(false);
+  useEffect(() => {
+    try {
+      if (window.localStorage.getItem("birdly_fokus_nejtak") === "1") setFokusSkjult(true);
+    } catch { /* privat browsing e.l. — så vises den bare */ }
+  }, []);
+  function skjulFokus() {
+    setFokusSkjult(true);
+    try { window.localStorage.setItem("birdly_fokus_nejtak", "1"); } catch { /* ignoreres */ }
+  }
 
   // Åbn sorterings-panelet direkte når linket bærer #sorter (velkomstmailens knap).
   // Kører efter hydrering, så serveren og klienten renderer ens.
@@ -354,6 +369,38 @@ export default function MineOpgaver({ token, data, intern = null }) {
       {/* Ankeret #sorter: velkomstmailens "Ændre opgavekriterier"-knap peger hertil,
           og useEffect'en nedenfor åbner panelet når det er i URL'en. Uden det ville
           linket lande på listen og efterlade kunden med at lede efter knappen. */}
+      {/* ⚠️ FOKUS-TILBUDDET. Vises kun over tærsklen (fokus.js på serveren) og kun
+          når der er noget KONKRET at pege på. Det er et TILBUD: intet skjules,
+          intet ændres, og "Nej tak" lukker den.
+
+          Tonen er et spørgsmål, ikke en dom — for nogle kunder er mange opgaver
+          præcis det de vil have, og de har ikke gjort noget forkert.
+
+          "Nej tak" huskes i browseren (localStorage), ikke i basen. Det koster
+          ingen migration og ingen skrivning på kundens række; prisen er at valget
+          følger enheden, ikke kunden. Bliver det et problem i drift, er det en
+          kolonne på subscribers — ikke en ny mekanik. */}
+      {fokus && !fokusSkjult && (
+        <div style={{ ...CARD, borderColor: "#F2D98A", background: "#FFFBF0", margin: "0 0 14px" }}>
+          <h2 style={{ fontSize: 17, margin: "0 0 6px", color: NAVY }}>{fokus.overskrift}</h2>
+          <p style={{ margin: "0 0 10px", color: MUTED, fontSize: 14, lineHeight: 1.55 }}>{fokus.indledning}</p>
+          {fokus.punkter.map((t, i) => (
+            <p key={i} style={{ margin: "0 0 6px", color: NAVY, fontSize: 14, lineHeight: 1.5 }}>· {t}</p>
+          ))}
+          <p style={{ margin: "10px 0 12px", color: MUTED, fontSize: 14 }}>{fokus.afslutning}</p>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+            <button
+              type="button"
+              style={KNAP_PRIMARY}
+              onClick={() => { setPanelAaben(true); document.getElementById("sorter")?.scrollIntoView({ behavior: "smooth" }); }}
+            >
+              {fokus.knap}
+            </button>
+            <button type="button" style={KNAP_SEKUNDAER} onClick={skjulFokus}>Nej tak</button>
+          </div>
+        </div>
+      )}
+
       <div id="sorter" />
       {panelAaben && (
         <SorterPanel
