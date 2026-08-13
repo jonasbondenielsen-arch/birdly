@@ -98,7 +98,7 @@ export default function Forlaeng({ token, start }) {
         <p style={{ margin: "0 0 12px", color: MUTED, fontSize: 15.5, lineHeight: 1.6 }}>
           Din feedback er gemt.{" "}
           {resultat.forlaenget_til ? (
-            <>Din gratis prøveperiode er forlænget med 14 dage og løber nu til{" "}
+            <>Din gratis prøveperiode er forlænget med 7 dage og løber nu til{" "}
               <b style={{ color: NAVY }}>{fmtDato(resultat.forlaenget_til)}</b>.</>
           ) : (
             // Ærlig tilstand: skemaet er gemt, men datoen kunne ikke flyttes. Vi lover
@@ -183,7 +183,7 @@ export default function Forlaeng({ token, start }) {
           </div>
 
           {/* SAMTYKKER — frivillige, og IKKE forhåndsafkrydsede. Interview er
-              udtrykkeligt ikke en betingelse for de 14 dage; ellers købte vi et
+              udtrykkeligt ikke en betingelse for de 7 dage; ellers købte vi et
               interview, og så var svarene ikke længere frie. */}
           <div style={{ marginTop: 22, paddingTop: 18, borderTop: "1px solid #E6EAEF" }}>
             <Tilvalg checked={samtykkeUdtalelse} onChange={setSamtykkeUdtalelse}>
