@@ -1,7 +1,7 @@
 import FeedbackKort3 from "../../../components/FeedbackKort3";
 import { hentKort3Status } from "../../../lib/feedback";
 
-// Det korte feedback-skema (3 spørgsmål). Nås via kortlinket /fb/{kode}.
+// Det korte feedback-skema (4 spørgsmål). Nås via kortlinket /fb/{kode}.
 // Adgang = kundens eget list_token i URL'en — ingen ny token-model.
 //
 // ⚠️ NOINDEX. Token-side — må ALDRIG i søgeresultater, samme regel som

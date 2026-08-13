@@ -10,12 +10,12 @@ import {
 import { gemKort3 } from "../lib/feedback";
 
 // ============================================================================
-// DET KORTE FEEDBACK-SKEMA — 3 spørgsmål på ÉN side.
+// DET KORTE FEEDBACK-SKEMA — 4 spørgsmål på ÉN side.
 //
-// ⚠️ ALLE TRE SPØRGSMÅL PÅ ÉN SIDE, i modsætning til det lange skema (Forlaeng.js),
-// som tager ét ad gangen. Ni spørgsmål har brug for en fremdriftsfølelse; tre har det
-// ikke — der ville en tæller og tre klik få en to-minutters opgave til at ligne et
-// forløb. Kunden skal kunne se hele opgaven med det samme og vurdere at den er lille.
+// ⚠️ ALLE SPØRGSMÅL PÅ ÉN SIDE. Det slettede 9-felts-skema tog ét ad gangen, fordi ni
+// spørgsmål har brug for en fremdriftsfølelse. Fire har det ikke — der ville en tæller
+// og fire klik få en to-minutters opgave til at ligne et forløb. Kunden skal kunne se
+// hele opgaven med det samme og vurdere at den er lille.
 //
 // ⚠️ SAMTYKKET ER BETINGELSEN FOR DE 7 DAGE (Jonas' beslutning 13-08-2026). Knappen er
 // dæmpet og deaktiveret indtil fluebenet er sat, og lyser når det er. Serveren
@@ -139,7 +139,7 @@ export default function FeedbackKort3({ token, start }) {
         {fornavn ? `Hej ${fornavn} — hvordan går det med Birdly?` : "Hvordan går det med Birdly?"}
       </h1>
       <p style={{ margin: "0 0 26px", color: MUTED, fontSize: 15, lineHeight: 1.6 }}>
-        Tre spørgsmål. Det tager to minutter, og vi læser hvert eneste svar.
+        Fire spørgsmål. Det tager to minutter, og vi læser hvert eneste svar.
       </p>
 
       {KORT3.map((q) => (
