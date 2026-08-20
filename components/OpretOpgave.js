@@ -5,6 +5,7 @@ import Link from "next/link";
 import { BirdMark } from "./Logo";
 import { fetchCatalog } from "../lib/catalog";
 import { opretOpgave } from "../lib/privatOpgave";
+import { FORMIDLER_TEKST } from "../lib/formidlerTekst";
 import { OPRET_OPGAVE_ANMELDELSER } from "../lib/opretOpgave";
 import "../app/start.css";
 import "../app/opret-opgave.css";
@@ -390,14 +391,31 @@ export default function OpretOpgave() {
                       value={hp} onChange={(e) => setHp(e.target.value)} />
                   </div>
 
-                  {/* Samtykke */}
+                  {/* ⚠️ SAMTYKKET ER PÅKRÆVET og blokerer afsendelsen. Serveren afviser
+                      også en oprettelse uden det (manglende_samtykke), så et manipuleret
+                      klientkald ikke kan springe det over. To lag, fordi samtykket er
+                      hjemlen til overhovedet at dele nummeret videre.
+
+                      ⚠️ ORDLYDEN ER JURIDISK TEKST og afventer Jonas + advokat. Skriv den
+                      ikke om for at gøre den kortere. Den tidligere formulering sagde
+                      "relevante virksomheder" — det ord bruger vi ikke i kundevendt
+                      tekst, og det antyder desuden en udvælgelse vi ikke foretager. */}
                   <label className="st-tjek">
                     <input type="checkbox" checked={samtykke} onChange={(e) => setSamtykke(e.target.checked)} />
                     <span>
-                      Jeg accepterer, at Birdly må dele min opgave med relevante virksomheder,
-                      så de kan kontakte mig. Se vores <Link href="/privatlivspolitik">privatlivspolitik</Link>.
+                      Jeg accepterer{" "}
+                      <Link href="/betingelser-private-opgaver" target="_blank" rel="noopener noreferrer">
+                        Betingelser for oprettelse af private opgaver
+                      </Link>{" "}
+                      og at Birdly deler mine kontaktoplysninger med de virksomheder, der
+                      tager min opgave.
                     </span>
                   </label>
+
+                  {/* Ansvarsfraskrivelsen står BÅDE her og på opretterens opgaveliste,
+                      med samme ordlyd. Ser hun den kun ét sted, kan hun nå at glemme den
+                      inden virksomhederne ringer. */}
+                  <p className="oo-disclaimer">{FORMIDLER_TEKST}</p>
 
                   {fejl && <div className="st-fejl" style={{ marginTop: 16 }}>{fejl}</div>}
 

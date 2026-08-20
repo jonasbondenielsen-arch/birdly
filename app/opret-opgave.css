@@ -129,3 +129,7 @@
   .oo-facil{flex-direction:column;gap:12px;padding:22px}
   .oo-top-inner{height:60px;padding:0 18px}
 }
+
+/* Ansvarsfraskrivelsen under samtykket. Mindre skrift end samtykket selv — den er
+   uddybning, ikke det man krydser af — men ikke så lille at den ligner det med småt. */
+.oo-disclaimer{margin-top:12px;font-size:12.5px;line-height:1.6;color:var(--navy-soft)}

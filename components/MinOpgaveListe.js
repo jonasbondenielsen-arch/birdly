@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { BirdMark } from "./Logo";
 import { hentMinListe, opgaveLoest, opgaveIkkeLoest, genaabnOpgave } from "../lib/privatOpgave";
+import { FORMIDLER_TEKST } from "../lib/formidlerTekst";
 import "../app/start.css";
 import "../app/privat-lead.css";
 
@@ -170,10 +171,8 @@ export default function MinOpgaveListe({ token }) {
 
       {fejl === "fejl" && <div className="st-fejl" style={{ marginTop: 14 }}>Noget gik galt. Prøv igen.</div>}
 
-      <p className="pl-note" style={{ marginTop: 20 }}>
-        Birdly formidler kontakten. Aftale, pris og betaling sker direkte mellem dig og
-        virksomheden.
-      </p>
+      {/* ⚠️ SAMME ORDLYD SOM VED OPRETTELSEN — én kilde, se lib/formidlerTekst.js. */}
+      <p className="pl-note" style={{ marginTop: 20 }}>{FORMIDLER_TEKST}</p>
     </Ramme>
   );
 }
