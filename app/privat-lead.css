@@ -91,3 +91,15 @@
   .pl-wrap { padding:16px 14px 60px }
   .pl-h1 { font-size:21px }
 }
+
+/* ---------- VISITKORT (opretterens liste) ----------
+   Kun de virksomheder der HAR taget opgaven. De ringer til hende, så kortet skal
+   kunne læses mens telefonen ringer: navn stort, nummer klikbart. */
+.pl-visitkort{display:grid;gap:9px;margin-top:12px}
+.pl-vk{background:#F1FAF8;border:1px solid #BFE7DF;border-radius:11px;padding:12px 14px}
+.pl-vk-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.pl-vk-navn{font-family:'Plus Jakarta Sans','Inter',sans-serif;font-weight:700;font-size:15.5px;color:var(--navy)}
+.pl-vk-plads{flex:0 0 auto;font-size:11.5px;font-weight:700;color:var(--teal-dk);background:#fff;border-radius:999px;padding:3px 9px}
+.pl-vk-cvr{font-size:12.5px;color:var(--navy-soft);margin-top:2px}
+.pl-vk-linje{font-size:14.5px;color:var(--navy);margin-top:5px}
+.pl-vk-linje a{color:var(--teal-dk);font-weight:700}

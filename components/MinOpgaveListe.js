@@ -20,9 +20,19 @@ import "../app/privat-lead.css";
 // stående eksponering hvis SMS'en videresendes. Serveren afgør det; denne side viser
 // bare den rigtige besked når det er sket.
 //
-// ⚠️ INGEN AF KNAPPERNE VISER KONTAKTOPLYSNINGER PÅ VIRKSOMHEDERNE. Opretteren ser
-// HVOR MANGE der har taget opgaven, ikke hvem — de ringer selv. Ellers ville hun
-// kunne samle numre uden at nogen havde sagt ja til det.
+// ⚠️ KUN DE ACCEPTERENDE VIRKSOMHEDER VISES (20-08-2026 — ændret fra "aldrig hvem").
+//
+// Her stod tidligere at opretteren kun måtte se ANTALLET. Grænsen går et andet sted,
+// og det er værd at have skrevet ned: en virksomhed der HAR taget opgaven, har aktivt
+// valgt at kontakte hende og har allerede hendes nummer. At hun kan se hvem det er,
+// er en forudsætning for at hun kan tage imod opkaldet og vælge mellem dem.
+//
+// Værnet gælder stadig for alle ANDRE: de matchede virksomheder der ikke har taget
+// opgaven, findes slet ikke i svaret. Hun kan ikke samle numre på nogen der ikke selv
+// har rakt hånden op.
+//
+// Kun forretningsinfo — firmanavn, CVR, telefon, mail, kontaktperson. Aldrig interne
+// felter som status, kriterier eller abonnement.
 // ============================================================================
 
 const GRUNDE = [
@@ -115,14 +125,33 @@ export default function MinOpgaveListe({ token }) {
               {o.pladser.taget === 0
                 ? "virksomheder har taget opgaven endnu"
                 : o.pladser.taget === 1
-                ? "virksomhed har taget opgaven"
-                : "virksomheder har taget opgaven"}
+                ? "virksomhed har taget opgaven og kontakter dig"
+                : "virksomheder har taget opgaven og kontakter dig"}
               {o.status === "aktiv" && o.udloeber_at && (
                 <div className="pl-opg-besk" style={{ marginTop: 4 }}>
                   Aktiv indtil {new Date(o.udloeber_at).toLocaleDateString("da-DK", { day: "numeric", month: "long" })}
                 </div>
               )}
             </div>
+
+            {/* ---------- VISITKORT ---------- */}
+            {(o.virksomheder || []).length > 0 && (
+              <div className="pl-visitkort">
+                {o.virksomheder.map((v) => (
+                  <div className="pl-vk" key={v.plads}>
+                    <div className="pl-vk-top">
+                      <div className="pl-vk-navn">{v.firma || "Virksomhed"}</div>
+                      <span className="pl-vk-plads">{v.plads} af {o.pladser.i_alt}</span>
+                    </div>
+                    {v.cvr && <div className="pl-vk-cvr">CVR {v.cvr}</div>}
+                    {v.kontakt && <div className="pl-vk-linje">{v.kontakt}</div>}
+                    {/* Klikbare, fordi hun sidder med telefonen i hånden. */}
+                    {v.telefon && <div className="pl-vk-linje"><a href={`tel:${v.telefon}`}>{v.telefon}</a></div>}
+                    {v.email && <div className="pl-vk-linje"><a href={`mailto:${v.email}`}>{v.email}</a></div>}
+                  </div>
+                ))}
+              </div>
+            )}
 
             {grundFor === o.id ? (
               <div style={{ marginTop: 12 }}>
