@@ -11,6 +11,8 @@ import { PLAN, YEARLY_SAVING, priceText } from "../lib/pakke";
 import LaunchBanner from "./LaunchBanner";
 import LaunchStreamer from "./LaunchStreamer";
 import OpgaveTaeller from "./OpgaveTaeller";
+import OpretOpgaveCta from "./OpretOpgaveCta";
+import { OPRET_OPGAVE_I_NAV } from "../lib/opretOpgave";
 import "../app/forside.css";
 
 // Slider-chips → links til hver branchesides (/fag/[slug]). Udseende/animation uændret.
@@ -198,7 +200,7 @@ export default function Forside({ opgaveTal = null }) {
         <LaunchBanner />
         {/* HEADER */}
         <header>
-          <div className="wrap bar">
+          <div className={"wrap bar" + (OPRET_OPGAVE_I_NAV ? " bar-2cta" : "")}>
             <Logo height={32} />
             <nav className="menu">
               <a href="#hvorfor">Hvorfor Birdly</a>
@@ -214,6 +216,7 @@ export default function Forside({ opgaveTal = null }) {
             </nav>
             <div className="right">
               <Link href="/kom-i-gang" className="nav-cta">Find opgaver nu</Link>
+              <OpretOpgaveCta />
             </div>
           </div>
         </header>

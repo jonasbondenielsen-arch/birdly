@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Footer from "./Footer";
 import { Logo } from "./Logo";
+import OpretOpgaveCta from "./OpretOpgaveCta";
 import "../app/udbud.css";
 
 export default function UdbudForAlle() {
@@ -17,7 +18,10 @@ export default function UdbudForAlle() {
             <a href="/#om">Om os</a>
             <Link href="/udbud-for-alle" className="on">Opgaver er for alle</Link>
           </nav>
-          <Link href="/kom-i-gang" className="nav-cta">Find opgaver nu</Link>
+          <div className="cta-par">
+            <Link href="/kom-i-gang" className="nav-cta">Find opgaver nu</Link>
+            <OpretOpgaveCta />
+          </div>
         </div>
       </header>
 

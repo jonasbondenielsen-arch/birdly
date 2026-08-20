@@ -1,6 +1,8 @@
 import Link from "next/link";
 import Footer from "../../components/Footer";
 import { Logo } from "../../components/Logo";
+import OpretOpgaveCta from "../../components/OpretOpgaveCta";
+import { OPRET_OPGAVE_I_NAV } from "../../lib/opretOpgave";
 import { BRANCHER, getBranche } from "../../lib/branche";
 import { FAG_GEO, getRegion } from "../../lib/regioner";
 import { abs } from "../../lib/site";
@@ -59,7 +61,7 @@ export default function BrancherPage() {
         <script key={i} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(s) }} />
       ))}
       <header>
-        <div className="wrap bar">
+        <div className={"wrap bar" + (OPRET_OPGAVE_I_NAV ? " bar-2cta" : "")}>
           <Logo height={32} />
           <nav className="menu">
             <a href="/#hvorfor">Hvorfor Birdly</a>
@@ -70,6 +72,7 @@ export default function BrancherPage() {
           </nav>
           <div className="right">
             <Link href="/kom-i-gang" className="nav-cta">Find opgaver nu</Link>
+            <OpretOpgaveCta />
           </div>
         </div>
       </header>

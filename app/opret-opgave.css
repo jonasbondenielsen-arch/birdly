@@ -1,0 +1,131 @@
+/* ============================================================
+   /opret-opgave — den offentlige "opret en opgave"-side.
+
+   ⚠️ INGEN NYE FARVER. Alt herunder bruger tokens fra globals.css
+   (--navy #0D1B2A, --teal #00B3A6, --sky #2EB7FF, --line, --r, --shadow).
+   Mockuppen bar sin egen navy (#0D274A) og sine egne fonte — den er KUN brugt som
+   reference for rækkefølge og tekst. Farverne her er sitets, så siden ser ud som
+   en del af birdly.dk og ikke som en indlejret fremmed side.
+
+   ⚠️ FORMULARFELTERNE KOMMER FRA start.css (.st-lab, .st-felt, .st-kort, .st-tjek,
+   .st-radio, .st-fejl, .st-hj). Den fil er IKKE scoped og har nul bare
+   element-selektorer, så den kan importeres side om side med denne uden kollision.
+   forside.css kan det IKKE: hele filen ligger nested inde i `.birdly-home{ … }`,
+   så `.btn` reelt er `.birdly-home .btn`, og dens bare `header{}`, `section{}` og
+   `details{}` ville ramme alt på siden. Det er præcis den fælde start.css selv
+   dokumenterer i sin egen top — derfor genskabes knappen og FAQ-stilen her frem for
+   at trække forsidens layout med ind.
+   ============================================================ */
+
+.oo{ background:var(--white); min-height:100vh }
+
+/* ---------- MINIMAL TOPBAR ----------
+   Bevidst anderledes end resten af sitet: /opret-opgave er en fokuseret B2C-side på
+   en B2B-tjeneste, og de besøgende kommer fra en annonce, ikke fra forsiden. En fuld
+   menu ville invitere dem væk fra det ene de er kommet for. Kun logo + vejen hjem. */
+.oo-top{background:var(--navy);position:sticky;top:0;z-index:50}
+.oo-top-inner{max-width:1120px;margin:0 auto;padding:0 24px;height:66px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.oo-mark{display:inline-flex;align-items:center;gap:9px;color:#fff;font-family:'Plus Jakarta Sans','Inter',sans-serif;font-weight:800;font-size:21px;letter-spacing:-.03em}
+.oo-dk{color:var(--sky);font-weight:700}
+.oo-tilbage{display:inline-flex;align-items:center;gap:7px;color:rgba(255,255,255,.86);font-size:14.5px;font-weight:600;padding:8px 0;transition:color .15s}
+.oo-tilbage:hover{color:#fff}
+.oo-tilbage span{font-size:16px;line-height:1}
+
+/* ---------- HERO ---------- */
+.oo-hero{background:linear-gradient(180deg,var(--navy) 0%,#16324f 100%);color:#fff;padding:56px 24px 46px;text-align:center}
+.oo-eyebrow{display:inline-block;font-size:12.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--sky);margin-bottom:14px}
+.oo-hero h1{font-family:'Plus Jakarta Sans','Inter',sans-serif;font-weight:800;font-size:40px;line-height:1.1;letter-spacing:-.02em;margin-bottom:14px}
+.oo-hero p{max-width:600px;margin:0 auto;font-size:17px;line-height:1.6;color:rgba(255,255,255,.82)}
+.oo-trust{display:flex;flex-wrap:wrap;justify-content:center;gap:12px 26px;margin-top:26px;font-size:14.5px;font-weight:600;color:rgba(255,255,255,.9)}
+.oo-trust span{display:inline-flex;align-items:center;gap:8px}
+
+/* ---------- LAYOUT ---------- */
+.oo-wrap{max-width:760px;margin:0 auto;padding:0 22px}
+.oo-blok{padding:56px 0}
+.oo-hoved{text-align:center;margin-bottom:32px}
+.oo-hoved .oo-eyebrow{color:var(--teal)}
+.oo-hoved h2{font-family:'Plus Jakarta Sans','Inter',sans-serif;font-weight:800;font-size:29px;line-height:1.18;letter-spacing:-.02em;color:var(--navy)}
+.oo-hoved p{margin-top:10px;font-size:16px;line-height:1.6;color:var(--navy-soft)}
+
+/* Formularkortet løftes op over hero-kanten — det er sidens ærinde, ikke en sektion
+   blandt andre. */
+.oo-form{margin-top:-30px;position:relative;z-index:2}
+
+/* ---------- CHIPS (opgaveart) ----------
+   .st-chip i start.css er en VALGT pille med en fjern-knap — en anden mekanik end
+   den her, hvor alle valgmuligheder ligger fremme og slås til/fra. Derfor egen klasse
+   frem for at genbruge en der betyder noget andet. */
+.oo-chips{display:flex;flex-wrap:wrap;gap:8px}
+.oo-chip{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:9px 15px;font-family:'Inter',sans-serif;font-size:14.5px;font-weight:600;color:var(--navy);cursor:pointer;transition:border-color .15s,background .15s}
+.oo-chip:hover{border-color:var(--sky)}
+.oo-chip.on{border-color:var(--teal);background:#F1FAF8;color:var(--teal-dk)}
+.oo-chip.on:before{content:"✓ ";font-weight:800}
+
+/* ---------- FELTER ---------- */
+.oo-to{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.oo-fil{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;border:1.5px dashed var(--line);border-radius:12px;padding:26px 18px;text-align:center;cursor:pointer;color:var(--navy-soft);font-size:14.5px;background:#FCFDFE;transition:border-color .15s}
+.oo-fil:hover{border-color:var(--sky)}
+.oo-fil b{color:var(--navy)}
+.oo-filnavne{margin-top:10px;font-size:13.5px;color:var(--navy-soft);line-height:1.5}
+
+/* Knappen er genskabt frem for importeret — se noten øverst om forside.css. Målene
+   er taget fra .btn-teal, så den står identisk med sitets øvrige primærknap. */
+.oo-send{width:100%;margin-top:24px;border:0;cursor:pointer;background:var(--teal);color:#fff;padding:16px 26px;border-radius:12px;font-family:'Plus Jakarta Sans','Inter',sans-serif;font-weight:700;font-size:16.5px;box-shadow:0 10px 24px rgba(0,179,166,.28);transition:transform .15s,box-shadow .15s}
+.oo-send:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 16px 32px rgba(0,179,166,.36)}
+.oo-send:disabled{opacity:.6;cursor:default;box-shadow:none;transform:none}
+.oo-efter{margin-top:12px;text-align:center;font-size:13.5px;color:var(--navy-soft)}
+
+/* ---------- KVITTERING ---------- */
+.oo-kvit{text-align:center;padding:14px 4px 6px}
+.oo-kvit .oo-flueben{width:56px;height:56px;margin:0 auto 18px;border-radius:50%;background:#F1FAF8;display:flex;align-items:center;justify-content:center}
+.oo-kvit h2{font-family:'Plus Jakarta Sans','Inter',sans-serif;font-weight:800;font-size:25px;color:var(--navy);letter-spacing:-.015em}
+.oo-kvit p{margin-top:12px;font-size:16px;line-height:1.6;color:var(--navy-soft)}
+
+/* ---------- ANMELDELSER ---------- */
+.oo-anm{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.oo-anm-kort{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px 20px;box-shadow:var(--shadow)}
+.oo-stjerner{color:#F5A623;font-size:15px;letter-spacing:2px;margin-bottom:10px}
+.oo-anm-kort p{font-size:15px;line-height:1.6;color:var(--navy)}
+.oo-hvem{display:flex;align-items:center;gap:11px;margin-top:16px}
+.oo-av{width:38px;height:38px;flex:0 0 38px;border-radius:50%;background:var(--sky-soft);color:var(--navy);display:flex;align-items:center;justify-content:center;font-size:13.5px;font-weight:800}
+.oo-hvem b{display:block;font-size:14.5px;color:var(--navy)}
+.oo-hvem small{display:block;font-size:12.5px;color:var(--navy-soft)}
+/* Mærkatet må ALDRIG fjernes så længe anmeldelserne er opdigtede. */
+.oo-anm-note{margin-top:16px;text-align:center;font-size:12.5px;font-weight:700;color:#B03A3A;background:#FDF4F4;border:1px solid #F3C9C9;border-radius:10px;padding:10px 14px}
+
+/* ---------- SÅDAN VIRKER DET ---------- */
+.oo-trin{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.oo-trin-kort{background:#fff;border:1px solid var(--line);border-radius:14px;padding:24px 20px;box-shadow:var(--shadow)}
+.oo-nr{width:34px;height:34px;border-radius:10px;background:var(--sky-soft);color:var(--navy);display:flex;align-items:center;justify-content:center;font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:16px;margin-bottom:14px}
+.oo-trin-kort h3{font-family:'Plus Jakarta Sans','Inter',sans-serif;font-weight:700;font-size:17px;color:var(--navy);margin-bottom:8px}
+.oo-trin-kort p{font-size:14.5px;line-height:1.6;color:var(--navy-soft)}
+
+/* Facilitator-banneret er juridisk indhold, ikke pynt: det er her vi siger at Birdly
+   ikke er part i aftalen. Det skal være synligt uden at man folder noget ud. */
+.oo-facil{margin-top:22px;background:var(--navy);color:#fff;border-radius:16px;padding:24px 26px;display:flex;gap:16px;align-items:flex-start}
+.oo-facil svg{flex:0 0 auto;margin-top:2px}
+.oo-facil h3{font-family:'Plus Jakarta Sans','Inter',sans-serif;font-weight:700;font-size:17px;margin-bottom:8px}
+.oo-facil p{font-size:14.5px;line-height:1.65;color:rgba(255,255,255,.82)}
+
+/* ---------- FAQ ----------
+   Samme mønster som forsiden (<details>/<summary> + plus-tegn), men genskabt her
+   fordi forsidens regler ligger inde i .birdly-home. */
+.oo-faq details{background:#fff;border:1px solid var(--line);border-radius:14px;padding:2px 22px;margin-bottom:12px;box-shadow:var(--shadow)}
+.oo-faq summary{list-style:none;cursor:pointer;padding:19px 0;font-family:'Plus Jakarta Sans','Inter',sans-serif;font-weight:700;font-size:16.5px;color:var(--navy);display:flex;justify-content:space-between;gap:16px;align-items:center}
+.oo-faq summary::-webkit-details-marker{display:none}
+.oo-faq .oo-pm{color:var(--teal);font-size:22px;font-weight:400;line-height:1;flex:0 0 auto}
+.oo-faq details[open] .oo-pm{transform:rotate(45deg)}
+.oo-faq .oo-svar{padding:0 0 20px;font-size:15px;line-height:1.7;color:var(--navy-soft)}
+
+/* ---------- MOBIL ---------- */
+@media(max-width:760px){
+  .oo-hero{padding:42px 20px 38px}
+  .oo-hero h1{font-size:31px}
+  .oo-hero p{font-size:16px}
+  .oo-blok{padding:44px 0}
+  .oo-hoved h2{font-size:25px}
+  .oo-anm,.oo-trin{grid-template-columns:1fr}
+  .oo-to{grid-template-columns:1fr}
+  .oo-facil{flex-direction:column;gap:12px;padding:22px}
+  .oo-top-inner{height:60px;padding:0 18px}
+}

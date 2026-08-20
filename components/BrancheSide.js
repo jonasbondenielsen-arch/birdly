@@ -3,6 +3,8 @@ import Footer from "./Footer";
 import { Logo } from "./Logo";
 import StickyCta from "./StickyCta";
 import OpgaveTaeller from "./OpgaveTaeller";
+import OpretOpgaveCta from "./OpretOpgaveCta";
+import { OPRET_OPGAVE_I_NAV } from "../lib/opretOpgave";
 import { regionerForFag } from "../lib/regioner";
 import { daTal } from "../lib/opgaveTal";
 import "../app/forside.css";
@@ -66,7 +68,7 @@ export default function BrancheSide({ data, region = null, opgaveTal = null }) {
     <div className="birdly-home har-sticky-cta">
       {/* HEADER — samme som forsiden */}
       <header>
-        <div className="wrap bar">
+        <div className={"wrap bar" + (OPRET_OPGAVE_I_NAV ? " bar-2cta" : "")}>
           <Logo height={32} />
           <nav className="menu">
             <a href="/#hvorfor">Hvorfor Birdly</a>
@@ -77,6 +79,7 @@ export default function BrancheSide({ data, region = null, opgaveTal = null }) {
           </nav>
           <div className="right">
             <Link href={funnel} className="nav-cta">Find opgaver nu</Link>
+            <OpretOpgaveCta />
           </div>
         </div>
         {/* Tælleren står allerede på fagets eget tal — derfor ingen branchevælger her;
