@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { BirdMark } from "./Logo";
 import { fetchCatalog } from "../lib/catalog";
+import { opretOpgave } from "../lib/privatOpgave";
 import { OPRET_OPGAVE_ANMELDELSER } from "../lib/opretOpgave";
 import "../app/start.css";
 import "../app/opret-opgave.css";
@@ -102,6 +103,9 @@ export default function OpretOpgave() {
   const [sender, setSender] = useState(false);
   const [fejl, setFejl] = useState("");
   const [sendt, setSendt] = useState(false);
+  // Honeypot: skjult for mennesker. Er det udfyldt, er afsenderen en bot.
+  const [hp, setHp] = useState("");
+  const [listeUrl, setListeUrl] = useState("");
 
   // Samme kilde som funnelen. Fejler opslaget, står listen tom frem for at falde
   // tilbage på en hardkodet kopi der kan være forældet.
@@ -144,21 +148,43 @@ export default function OpretOpgave() {
     if (!samtykke) return setFejl("Sæt kryds i feltet, så vi må dele din opgave med virksomhederne.");
 
     setSender(true);
-    // ⚠️ AFSENDELSEN ER IKKE BYGGET ENDNU — og det er et bevidst stop, ikke en mangel.
-    // Opgaven skal matches mod kunderne med den eksisterende motor, og den wiring
-    // afventer Jonas' go efter match-diagnosen. Indtil da fanges opgaven ikke: vi
-    // viser kvitteringen, men lover ikke noget vi ikke kan holde — teksten nedenfor
-    // siger derfor at vi vender tilbage, ikke at opgaven er sendt videre.
-    //
-    // NÅR den bygges: den skal kalde en NY, isoleret Edge Function der skriver til sin
-    // egen tabel. Den må ALDRIG kalde ind i match/notify/ingest — genbruget af
-    // matchLogic sker server-side som et separat lag, efter samme mønster som
-    // pin_matches (birdly-admin/lib/pin/pinMatch.js).
-    setTimeout(() => {
-      setSender(false);
-      setSendt(true);
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }, 400);
+    (async () => {
+      try {
+        const r = await opretOpgave({
+          udbyder_type: udbyder,
+          cvr: udbyder === "b2b" ? cvr.replace(/\s/g, "") : null,
+          beskrivelse,
+          fag_keys: valgteFag.filter((k) => k !== ANDET),
+          fag_andet: harAndet ? andetTekst : null,
+          region_key: regionKey,
+          postnr: postnr.trim(),
+          hvornaar,
+          kontakt_navn: navn.trim(),
+          kontakt_telefon: telefon.trim(),
+          kontakt_email: email.trim(),
+          samtykke: true,
+          hp,
+        });
+        // ⚠️ LINKET VISES OG SENDES. Opretteren har ingen konto — mister hun linket,
+        // kan hun ikke se sin opgave. Derfor står det på kvitteringen OG går med i
+        // mail/SMS, frem for kun ét af stederne.
+        if (r.list_token) setListeUrl(`/opgave/${r.list_token}`);
+        setSendt(true);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } catch (e) {
+        // Serverens koder oversættes her — brugeren skal se hvad hun kan gøre ved det,
+        // ikke en teknisk nøgle.
+        const tekster = {
+          manglende_samtykke: "Sæt kryds i feltet, så vi må dele din opgave.",
+          manglende_fag: "Vælg mindst én opgaveart.",
+          manglende_kontakt: "Skriv enten telefon eller e-mail.",
+          ukendt_fag: "En af opgavearterne kunne ikke genkendes. Prøv at vælge dem igen.",
+        };
+        setFejl(tekster[e.kode] || "Vi kunne ikke gemme din opgave lige nu. Prøv igen om lidt.");
+      } finally {
+        setSender(false);
+      }
+    })();
   }
 
   return (
@@ -212,6 +238,19 @@ export default function OpretOpgave() {
                     Du forpligter dig ikke til noget — og du bestemmer selv, om du vil gå
                     videre med en af dem, der kontakter dig.
                   </p>
+                  {listeUrl && (
+                    <>
+                      {/* ⚠️ LINKET SKAL STÅ HER, ikke kun i mailen. Opretteren har ingen
+                          konto; mister hun linket, kan hun ikke se sin egen opgave. */}
+                      <a href={listeUrl} className="oo-send" style={{ display: "block", textDecoration: "none", textAlign: "center", marginTop: 20 }}>
+                        Se din opgave
+                      </a>
+                      <p style={{ fontSize: 13.5, color: "var(--navy-soft)", marginTop: 12, lineHeight: 1.6 }}>
+                        Din opgave er aktiv i 3 dage. Du kan til enhver tid lukke den eller
+                        forlænge den — vi sender dig også linket, så du har det.
+                      </p>
+                    </>
+                  )}
                 </div>
               ) : (
                 <form onSubmit={send} noValidate>
@@ -339,6 +378,17 @@ export default function OpretOpgave() {
                   <label className="st-lab" htmlFor="oo-mail">E-mail</label>
                   <input id="oo-mail" className="st-felt" type="email" placeholder="dig@eksempel.dk"
                     value={email} onChange={(e) => setEmail(e.target.value)} />
+
+                  {/* ⚠️ HONEYPOT. Skjult for mennesker (ikke display:none — nogle bots
+                      læser det); et menneske kan hverken se eller tabbe til det.
+                      Udfyldt = bot, og serveren gemmer intet. Åben formular + betalt
+                      trafik tiltrækker junk, og junk-leads der rammer betalende
+                      virksomheder koster tillid. */}
+                  <div aria-hidden="true" style={{ position: "absolute", left: "-9999px", width: 1, height: 1, overflow: "hidden" }}>
+                    <label htmlFor="oo-firmanavn2">Firmanavn</label>
+                    <input id="oo-firmanavn2" type="text" tabIndex={-1} autoComplete="off"
+                      value={hp} onChange={(e) => setHp(e.target.value)} />
+                  </div>
 
                   {/* Samtykke */}
                   <label className="st-tjek">

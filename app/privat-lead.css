@@ -1,0 +1,93 @@
+/* ============================================================
+   /o/[token] — virksomhedens anonyme opgave-side (fra SMS'en)
+   /opgave/[token] — opretterens egen opgaveliste
+
+   ⚠️ INGEN NYE FARVER. Tokens fra globals.css. Formularfelter kommer fra start.css
+   (uscoped, nul bare element-selektorer) — forside.css importeres IKKE, fordi den
+   ligger nested i .birdly-home og ville tage hele forsidens layout med.
+   Samme valg som /opret-opgave; se noten der.
+   ============================================================ */
+
+.pl { background: var(--white); min-height: 100vh }
+
+.pl-top { background: var(--navy) }
+.pl-mark { display:inline-flex; align-items:center; gap:8px; color:#fff; font-family:'Plus Jakarta Sans','Inter',sans-serif; font-weight:800; font-size:19px; letter-spacing:-.03em; padding:0 22px; height:58px }
+.pl-dk { color: var(--sky); font-weight:700 }
+
+.pl-wrap { max-width: 560px; margin: 0 auto; padding: 20px 18px 72px }
+.pl-henter { padding: 40px 0; text-align:center; color: var(--navy-soft) }
+
+.pl-h1 { font-family:'Plus Jakarta Sans','Inter',sans-serif; font-weight:800; font-size:24px; letter-spacing:-.02em; color:var(--navy); margin:18px 0 14px }
+
+/* ---------- TÆLLEREN ----------
+   Sidens vigtigste element. Den er ægte urgency — der ER kun tre pladser — så den
+   skal kunne læses på en telefon i en bilrude uden at man zoomer. */
+.pl-taeller { background:#F1FAF8; border:1.5px solid #BFE7DF; border-radius:12px; padding:13px 15px; font-size:15px; color:var(--navy); text-align:center }
+.pl-taeller b { color: var(--teal-dk) }
+.pl-taeller.sidste { background:#FFF7E8; border-color:#F0D9A8 }
+.pl-taeller.sidste b { color:#8a6d1f }
+/* Optaget er ikke en fejl — det er et udfald. Grå, ikke rød. */
+.pl-taeller.tom { background: var(--grey); border-color: var(--line); color: var(--navy-soft) }
+.pl-taeller.tom b { color: var(--navy) }
+
+.pl-kort, .pl-hvorfor, .pl-kontakt, .pl-sadan, .pl-fjern {
+  background:#fff; border:1px solid var(--line); border-radius:14px; padding:18px 18px 20px; margin-top:14px; box-shadow:var(--shadow);
+}
+.pl-kort h2, .pl-hvorfor h2, .pl-kontakt h2, .pl-sadan h2, .pl-fjern h2 {
+  font-family:'Plus Jakarta Sans','Inter',sans-serif; font-weight:700; font-size:16px; color:var(--navy); margin-bottom:10px;
+}
+.pl-besk { font-size:15.5px; line-height:1.6; color:var(--navy) }
+.pl-meta { display:flex; flex-wrap:wrap; gap:8px 16px; margin-top:12px; font-size:13.5px; color:var(--navy-soft) }
+
+/* ---------- HVORFOR DET PASSER ----------
+   Samme ærinde som på de offentlige udbud: sig HVORFOR, ikke bare hvad. */
+.pl-hvorfor { background: var(--sky-soft); border-color: var(--sky-200) }
+.pl-hvorfor ul { list-style:none; display:flex; flex-direction:column; gap:8px }
+.pl-hvorfor li { font-size:14.5px; line-height:1.5; color:var(--navy) }
+.pl-hvorfor li span { color: var(--navy-soft) }
+
+/* ---------- KONTAKT (kun med plads) ---------- */
+.pl-kontakt { border-color:#BFE7DF; background:#F1FAF8 }
+.pl-krow { display:flex; justify-content:space-between; gap:14px; padding:9px 0; border-bottom:1px solid rgba(13,27,42,.07); font-size:15px }
+.pl-krow:last-of-type { border-bottom:0 }
+.pl-krow span { color: var(--navy-soft) }
+.pl-krow a { color: var(--teal-dk); font-weight:700 }
+.pl-note { margin-top:12px; font-size:13.5px; line-height:1.55; color:var(--navy-soft) }
+
+.pl-sadan p { font-size:14.5px; line-height:1.6; color:var(--navy-soft) }
+
+/* ---------- KNAPPER ----------
+   Genskabt frem for importeret — .btn i forside.css er reelt .birdly-home .btn.
+   Målene er taget fra .btn-teal, så de står som sitets øvrige primærknap. */
+.pl-btn { width:100%; margin-top:16px; border:0; cursor:pointer; background:var(--teal); color:#fff; padding:15px 24px; border-radius:12px; font-family:'Plus Jakarta Sans','Inter',sans-serif; font-weight:700; font-size:16px; box-shadow:0 10px 24px rgba(0,179,166,.28); transition:transform .15s, box-shadow .15s }
+.pl-btn:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 16px 32px rgba(0,179,166,.36) }
+.pl-btn:disabled { opacity:.55; cursor:default; box-shadow:none; transform:none }
+.pl-btn-ghost { width:100%; margin-top:10px; cursor:pointer; background:#fff; color:var(--navy); padding:13px 22px; border-radius:12px; border:1.5px solid var(--line); font-family:'Inter',sans-serif; font-weight:600; font-size:15px }
+.pl-btn-ghost:hover { border-color:var(--sky); color:var(--sky) }
+
+.pl-optaget-note { margin-top:14px; background:var(--grey); border-radius:10px; padding:12px 14px; font-size:14px; line-height:1.5; color:var(--navy-soft) }
+
+.pl-fjern-hj { font-size:13.5px; color:var(--navy-soft); margin-bottom:12px }
+.pl-fjern .st-omrk { margin-bottom:8px }
+
+/* ---------- OPRETTERENS LISTE ---------- */
+.pl-opg { background:#fff; border:1px solid var(--line); border-radius:14px; padding:16px 18px; margin-top:12px; box-shadow:var(--shadow) }
+.pl-opg-top { display:flex; justify-content:space-between; align-items:flex-start; gap:12px }
+.pl-opg-fag { font-family:'Plus Jakarta Sans','Inter',sans-serif; font-weight:700; font-size:15.5px; color:var(--navy) }
+.pl-status { flex:0 0 auto; font-size:11.5px; font-weight:700; letter-spacing:.03em; text-transform:uppercase; padding:4px 9px; border-radius:999px }
+.pl-status.aktiv { background:#F1FAF8; color:var(--teal-dk) }
+.pl-status.fuld { background:var(--sky-soft); color:var(--navy) }
+.pl-status.lukket { background:var(--grey); color:var(--navy-soft) }
+.pl-opg-besk { margin-top:8px; font-size:14.5px; line-height:1.55; color:var(--navy-soft) }
+.pl-opg-pladser { margin-top:10px; font-size:14px; color:var(--navy) }
+.pl-opg-pladser b { color:var(--teal-dk) }
+.pl-opg-handling { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px }
+.pl-mini { cursor:pointer; background:#fff; border:1.5px solid var(--line); border-radius:10px; padding:9px 14px; font-family:'Inter',sans-serif; font-size:14px; font-weight:600; color:var(--navy) }
+.pl-mini:hover { border-color:var(--sky); color:var(--sky) }
+.pl-mini.primaer { background:var(--teal); border-color:var(--teal); color:#fff }
+.pl-mini:disabled { opacity:.55; cursor:default }
+
+@media (max-width: 560px) {
+  .pl-wrap { padding:16px 14px 60px }
+  .pl-h1 { font-size:21px }
+}
