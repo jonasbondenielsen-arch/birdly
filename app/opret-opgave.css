@@ -133,3 +133,9 @@
 /* Ansvarsfraskrivelsen under samtykket. Mindre skrift end samtykket selv — den er
    uddybning, ikke det man krydser af — men ikke så lille at den ligner det med småt. */
 .oo-disclaimer{margin-top:12px;font-size:12.5px;line-height:1.6;color:var(--navy-soft)}
+
+/* Postnummer-kvittering. Grøn = vi forstod hvor opgaven ligger; grå = ukendt
+   postnummer, og så må brugeren vælge landsdel selv. Ingen rød — et postnummer vi
+   ikke kender er ikke brugerens fejl. */
+.oo-postnr-ok{margin-top:7px;font-size:13.5px;font-weight:600;color:var(--teal-dk)}
+.oo-postnr-nej{margin-top:7px;font-size:13px;color:var(--navy-soft)}

@@ -7,6 +7,7 @@ import { fetchCatalog } from "../lib/catalog";
 import { opretOpgave } from "../lib/privatOpgave";
 import { FORMIDLER_TEKST } from "../lib/formidlerTekst";
 import { OMFANG } from "../lib/omfang";
+import { slaaPostnrOp } from "../lib/postnumre";
 import { OPRET_OPGAVE_ANMELDELSER } from "../lib/opretOpgave";
 import "../app/start.css";
 import "../app/opret-opgave.css";
@@ -132,6 +133,22 @@ export default function OpretOpgave() {
       })
       .catch(() => { setFagListe([]); setRegioner([]); });
   }, []);
+
+  // ⚠️ UDLEDT, IKKE GEMT I STATE. Slår man bynavnet op i en useEffect og lægger det i
+  // sin egen state, kan de to nå at være uenige et kort øjeblik — og brugeren ser en
+  // by der ikke passer til det hun lige har tastet. Her kan de ikke komme ud af trit.
+  const postnrTraef = slaaPostnrOp(postnr);
+
+  // ⚠️ LANDSDELEN AUTO-VÆLGES, MEN LÅSES IKKE. 23 postnumre strækker sig over to
+  // regioner (fx 2640 Hedehusene, 7100 Vejle); for dem er forvalget afgjort af
+  // postnummerets geografiske centrum, og en adresse kan ligge på den anden side af
+  // grænsen. Derfor sætter vi kun landsdelen når brugeren ikke selv har rørt feltet —
+  // et manuelt valg må aldrig blive overskrevet af et opslag.
+  const [regionRoert, setRegionRoert] = useState(false);
+  useEffect(() => {
+    if (regionRoert) return;
+    if (postnrTraef?.region_key) setRegionKey(postnrTraef.region_key);
+  }, [postnrTraef?.region_key, regionRoert]);
 
   const harAndet = valgteFag.includes(ANDET);
 
@@ -332,17 +349,37 @@ export default function OpretOpgave() {
                       postnummer-intervaller ville være omtrentligt og vist som sikkert
                       — samme fælde som den ikke-verificerede branchekode-seed.
                       Postnummeret er til mennesket der ringer dig op; landsdelen er
-                      det matchet regner på. */}
+                      det matchet regner på.
+
+                      ⚠️ SIDEN 20-08-2026 udfyldes landsdelen automatisk fra et opslag i
+                      Danmarks officielle adresseregister (lib/postnumre.js). Feltet
+                      bliver stående synligt og redigerbart — 23 postnumre krydser en
+                      regionsgrænse, og der er forvalget et kvalificeret gæt. */}
                   <div className="oo-to" style={{ marginTop: 20 }}>
                     <div>
                       <label className="st-lab" style={{ marginTop: 0 }} htmlFor="oo-post">Hvor skal det laves?</label>
                       <input id="oo-post" className="st-felt" type="text" inputMode="numeric" maxLength={4}
                         placeholder="Postnummer, fx 4300"
-                        value={postnr} onChange={(e) => setPostnr(e.target.value)} />
+                        value={postnr} onChange={(e) => setPostnr(e.target.value.replace(/\D/g, ""))} />
+                      {/* Kvitteringen er hele pointen med opslaget: brugeren kan SE at vi
+                          forstod hvor opgaven ligger, frem for at skulle stole på det. */}
+                      {postnr.length === 4 && (
+                        postnrTraef ? (
+                          <div className="oo-postnr-ok">✓ {postnr} {postnrTraef.by}</div>
+                        ) : (
+                          <div className="oo-postnr-nej">Vi kender ikke det postnummer — vælg landsdel selv.</div>
+                        )
+                      )}
                     </div>
                     <div>
-                      <label className="st-lab" style={{ marginTop: 0 }} htmlFor="oo-region">Landsdel</label>
-                      <select id="oo-region" className="st-felt" value={regionKey} onChange={(e) => setRegionKey(e.target.value)}>
+                      <label className="st-lab" style={{ marginTop: 0 }} htmlFor="oo-region">
+                        Landsdel
+                        {postnrTraef && !regionRoert && (
+                          <span style={{ fontWeight: 400, color: "var(--navy-soft)" }}> — udfyldt automatisk</span>
+                        )}
+                      </label>
+                      <select id="oo-region" className="st-felt" value={regionKey}
+                        onChange={(e) => { setRegionRoert(true); setRegionKey(e.target.value); }}>
                         <option value="">Vælg landsdel …</option>
                         {regioner.map((r) => <option key={r.key} value={r.key}>{r.name || r.key}</option>)}
                       </select>

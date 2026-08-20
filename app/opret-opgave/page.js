@@ -13,7 +13,7 @@ import Footer from "../../components/Footer";
 export const metadata = {
   title: "Opret opgave — få lokale virksomheder til at kontakte dig | Birdly",
   description:
-    "Beskriv din opgave på 60 sekunder. Birdly sender den videre til relevante lokale virksomheder, der kan hjælpe dig. Gratis og uforpligtende.",
+    "Beskriv din opgave på 60 sekunder. Birdly sender den videre til lokale virksomheder, der arbejder med din opgave. Gratis og uforpligtende.",
   robots: { index: false, follow: false },
 };
 
