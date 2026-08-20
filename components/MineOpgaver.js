@@ -3,7 +3,13 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Logo } from "./Logo";
-import { fetchMyTasks, previewCriteria, saveMyCriteria, undoMyCriteria, dismissTask, sendDismissReason, markerSomRelevant, afvisNaerMatch, saetSmsBesked } from "../lib/share";
+
+// ⚠️ SLUKKET INDTIL TEKSTEN ER GODKENDT. Afsnittet om private opgaver beskriver hvad
+// kunden siger ja til, og et samtykke bygger på ordlyden — derfor må den ikke stå
+// live før Jonas har godkendt den som juridisk tekst. Mekanikken bagved (flag, kald,
+// logning) er færdig og virker; det er kun visningen der venter.
+const PRIVATE_OPGAVER_SYNLIG = String(process.env.NEXT_PUBLIC_PRIVATE_OPGAVER || "").trim() === "1";
+import { fetchMyTasks, previewCriteria, saveMyCriteria, undoMyCriteria, dismissTask, sendDismissReason, markerSomRelevant, afvisNaerMatch, saetSmsBesked, saetPrivateOpgaver } from "../lib/share";
 
 // Samlesiden "Mine opgaver" (Spor 3b) — den side samle-SMS'en og -mailen peger på.
 // Ingen login: kundens eget list_token er nøglen, og siden er LEVENDE (viser altid
@@ -760,6 +766,7 @@ function SorterPanel({ token, kriterier, fag, regioner, kanFortryde, onFortryd, 
   // SMS-kanalen. Gemmes med det samme ved klik — ikke sammen med kriterierne, fordi
   // den ikke ændrer HVILKE opgaver kunden får, kun hvordan hun høres om dem.
   const [sms, setSms] = useState(kriterier?.notify_sms !== false);
+  const [privateOpg, setPrivateOpg] = useState(kriterier?.wants_private_opgaver === true);
   const [preview, setPreview] = useState(null);
   const [henter, setHenter] = useState(false);
   const [gemmer, setGemmer] = useState(false);
@@ -871,6 +878,46 @@ function SorterPanel({ token, kriterier, fag, regioner, kanFortryde, onFortryd, 
           Udbud der gælder hele landet får du uanset hvad du vælger her.
         </p>
       </Sporgsmaal>
+
+      {/* --- PRIVATE OPGAVER — et selvstændigt tilvalg ---
+          ⚠️ TEKSTEN NEDENFOR AFVENTER JONAS' GODKENDELSE. Det er en juridisk tekst:
+          den beskriver hvad kunden siger ja til, og markedsføringsloven §10 kræver at
+          samtykket dækker netop den henvendelse hun senere får. Skriv den ikke om
+          uden at få den godkendt igen.
+
+          ⚠️ DEFAULT FRA. Fluebenet må aldrig være sat på forhånd — så er det ikke et
+          tilvalg. Fravalg bruger samme kald og virker lige så let. */}
+      {PRIVATE_OPGAVER_SYNLIG && (
+        <div style={{ borderTop: "1px solid #E6EAEF", marginTop: 18, paddingTop: 16 }}>
+          <p style={{ margin: "0 0 10px", fontWeight: 700, color: NAVY, fontSize: 15.5 }}>
+            Private opgaver <span style={{ color: TEAL, fontSize: 13 }}>(nyt)</span>
+          </p>
+          <label style={{ display: "flex", gap: 11, alignItems: "flex-start", cursor: "pointer" }}>
+            <input
+              type="checkbox"
+              checked={privateOpg}
+              onChange={async (e) => {
+                const ny = e.target.checked;
+                setPrivateOpg(ny);
+                const r = await saetPrivateOpgaver(token, ny);
+                if (!r) setPrivateOpg(!ny);
+              }}
+              style={{ marginTop: 3, width: 17, height: 17, accentColor: TEAL, flex: "0 0 17px" }}
+            />
+            <span>
+              <b style={{ color: NAVY, fontSize: 15 }}>
+                Ja tak — send mig også private opgaver i mit fag og område.
+              </b>
+              <div style={{ color: MUTED, fontSize: 13.5, lineHeight: 1.55, marginTop: 2 }}>
+                Ud over offentlige udbud kan du også modtage opgaver fra privatpersoner
+                og virksomheder i dit område — fx en privat husejer, der skal have lavet
+                et stykke arbejde i dit fag. Det er et nyt, frivilligt tilvalg, og du kan
+                slå det fra igen når som helst.
+              </div>
+            </span>
+          </label>
+        </div>
+      )}
 
       {/* --- BESKEDKANAL — adskilt fra kriterierne med vilje ---
           De tre spørgsmål ovenfor ændrer HVAD kunden får; dette ændrer HVORDAN hun
