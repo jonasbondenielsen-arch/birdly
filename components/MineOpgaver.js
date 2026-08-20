@@ -125,6 +125,7 @@ export default function MineOpgaver({ token, data, intern = null }) {
   const [lagtTilSide, setLagtTilSide] = useState(data?.lagt_til_side || []);
   const [bunkeAaben, setBunkeAaben] = useState(false);
   // NÆR-MATCH: forslag over kundens beløbsloft. Tom når flaget er slukket.
+  const [privateOpgaver, setPrivateOpgaver] = useState(data?.private_opgaver || []);
   const [naerMatch, setNaerMatch] = useState(data?.naer_match || []);
   // FOKUS-TILBUD: null for alle under tærsklen ⇒ intet renderes.
   const fokus = data?.fokus || null;
@@ -244,6 +245,7 @@ export default function MineOpgaver({ token, data, intern = null }) {
     setKriterier(friske.kriterier || null);
     setKanFortryde(!!friske.kan_fortryde);
     setLagtTilSide(friske.lagt_til_side || []);
+    setPrivateOpgaver(friske.private_opgaver || []);
   }
 
   async function haandterFortryd() {
@@ -458,6 +460,15 @@ export default function MineOpgaver({ token, data, intern = null }) {
         </div>
       ) : (
         <div style={{ display: "grid", gap: 12 }}>
+          {/* ⚠️ PRIVATE OPGAVER ØVERST — og det er ikke fordi de er vigtigere.
+              De har et ur på: tre pladser der kan blive taget af andre inden for
+              timer. Et offentligt udbud har typisk uger til fristen og er der stadig
+              i morgen. Lå de private nederst i en liste på fyrre kort, ville
+              pladserne være væk inden kunden scrollede ned — og så ville funktionen
+              være værdiløs for hende. */}
+          {privateOpgaver.map((p) => (
+            <PrivatOpgaveKort key={p.opgave_id} p={p} intern={intern} />
+          ))}
           {visteOpgaver.map((o) => (
             <OpgaveKort key={o.match_id} o={o} intern={intern} onFjern={() => haandterFjern(o.match_id, o.title)} />
           ))}
@@ -575,6 +586,93 @@ export default function MineOpgaver({ token, data, intern = null }) {
 // naerMatch: forslag der matcher alt undtagen beløbet. SAMME kort som de rigtige
 // opgaver — ikke en ny komponent — så de aldrig kan komme til at se ud som to
 // forskellige produkter. Forskellen er ét badge, én knap og hvor "Se opgaven" peger.
+// ============================================================================
+// PRIVAT OPGAVE PÅ SAMLESIDEN.
+//
+// ⚠️ TO TRIN, ALDRIG ÉT. Kortet har INGEN "Kontakt kunden"-knap. Den ligger kun på
+// opgavens egen side, og det er en sikkerhedsbeslutning, ikke en designpræference:
+// rammer en fumlende finger knappen i en liste på en telefon, spærrer den en af de
+// tre pladser OG afslører en privatpersons telefonnummer. Begge dele kan ikke gøres
+// om. Åbn opgaven → læs den → tryk derinde.
+//
+// ⚠️ ANONYMT. Intet navn, ingen adresse, intet nummer. Serveren sender det ikke med
+// til listen, så kortet kan ikke komme til at vise det.
+// ============================================================================
+function PrivatOpgaveKort({ p, intern }) {
+  const taget = p.pladser?.taget ?? 0;
+  const iAlt = p.pladser?.i_alt ?? 3;
+  const tilbage = Math.max(0, iAlt - taget);
+  const harPlads = p.min_plads != null;
+  const url = `/o/${p.share_token}${intern ? `?intern=${encodeURIComponent(intern)}` : ""}`;
+
+  return (
+    <article style={{ ...CARD, borderColor: "#C9A227", background: "#FFFDF5" }}>
+      <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginBottom: 8 }}>
+        {/* ⚠️ EGEN FARVE, IKKE BLÅ. Kunden skal på et halvt sekund kunne se at dette
+            IKKE er et offentligt udbud: der er ingen udbudsmateriale, ingen frist fra
+            en myndighed, og reglerne er helt andre. Samme farve som de øvrige
+            "læs lige den her"-signaler på siden. */}
+        <Badge bg="#FDF6E3" farve="#8a6d1f" kant="#E8D08A">Privat opgave</Badge>
+        {p.er_ny && <Badge bg="#EAF6FF" farve="#0D274A" kant="#B8DFF8">Nyt</Badge>}
+        {harPlads
+          ? <Badge bg="#F1FAF8" farve="#1E9E8A" kant="#BFE7DF">Du har taget den</Badge>
+          : tilbage === 1 && <Badge bg="#FFF1F1" farve="#B03A3A" kant="#F3C9C9">Sidste plads</Badge>}
+      </div>
+
+      <h2 style={{ fontSize: 18, lineHeight: 1.35, margin: "0 0 6px", color: NAVY }}>
+        {p.fag?.length ? p.fag.join(", ") : "Privat opgave"}
+        {p.postnr ? ` · ${p.postnr}` : ""}
+      </h2>
+      <p style={{ margin: "0 0 10px", color: MUTED, fontSize: 14 }}>
+        Privatperson
+        {p.hvornaar ? ` · ${p.hvornaar.toLowerCase()}` : ""}
+        {p.omfang && omfangTekst(p.omfang) ? ` · ${omfangTekst(p.omfang)}` : ""}
+      </p>
+
+      {/* Samme note-boks som udbuddene har — men med pladsreglen i SAMME boks, så
+          kunden ikke skal lede efter den. */}
+      <div style={{ background: "#FFF9E8", border: "1px solid #E8D08A", borderRadius: 10, padding: "11px 13px", marginBottom: 12 }}>
+        <div style={{ fontWeight: 700, fontSize: 13.5, color: "#8a6d1f", marginBottom: 5 }}>
+          Hvorfor det passer til dig
+        </div>
+        <ul style={{ margin: 0, paddingLeft: 17, color: NAVY, fontSize: 13.5, lineHeight: 1.6 }}>
+          {p.fag?.length > 0 && <li>Opgaven er mærket som {p.fag.join(", ")} — det ligger i dit fag.</li>}
+          <li>Opgaven ligger i dit område.</li>
+          <li>
+            De første {iAlt} virksomheder, der melder tilbage, får adgang til kundens
+            telefon- og kontaktinfo (og e-mail, hvis kunden har oplyst den).
+          </li>
+        </ul>
+      </div>
+
+      {/* Tælleren skal også stå HER, ikke kun inde på siden — kunden skal kunne se om
+          det haster, før hun beslutter sig for at klikke. */}
+      <div style={{
+        display: "inline-block", marginBottom: 12, padding: "6px 12px", borderRadius: 999,
+        fontSize: 13.5, fontWeight: 700,
+        background: harPlads ? "#F1FAF8" : tilbage === 0 ? "#F5F6F8" : tilbage === 1 ? "#FFF1F1" : "#FFF9E8",
+        color: harPlads ? "#1E9E8A" : tilbage === 0 ? MUTED : tilbage === 1 ? "#B03A3A" : "#8a6d1f",
+      }}>
+        {harPlads
+          ? `Du har plads ${p.min_plads} af ${iAlt}`
+          : tilbage === 0
+          ? "Optaget"
+          : `${taget} af ${iAlt} pladser taget${tilbage === 1 ? " · 1 tilbage" : ""}`}
+      </div>
+
+      <p style={{ margin: "0 0 12px", color: NAVY, fontSize: 14.5, lineHeight: 1.6 }}>{p.beskrivelse}</p>
+
+      <div>
+        {/* ⚠️ "Se opgaven", ikke "Kontakt kunden". Knappen ÅBNER kun — den reserverer
+            intet og afslører intet. Se noten øverst. */}
+        <Link href={url} style={{ ...KNAP_PRIMARY, textDecoration: "none", display: "inline-block" }}>
+          {harPlads ? "Se kundens kontaktoplysninger" : "Se opgaven"}
+        </Link>
+      </div>
+    </article>
+  );
+}
+
 function OpgaveKort({ o, onFjern, intern = null, tilSide = false, onRelevant = null, naerMatch = false, onAfvis = null }) {
   const dage = dageTil(o.deadline);
   // Ingen "haster"-badge uden en frist — vi kan ikke vide om den haster, og et gæt
