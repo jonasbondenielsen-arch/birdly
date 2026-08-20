@@ -103,3 +103,8 @@
 .pl-vk-cvr{font-size:12.5px;color:var(--navy-soft);margin-top:2px}
 .pl-vk-linje{font-size:14.5px;color:var(--navy);margin-top:5px}
 .pl-vk-linje a{color:var(--teal-dk);font-weight:700}
+
+/* Kvittering efter en rettelse. */
+.pl-rettet{background:#F1FAF8;border:1px solid #BFE7DF;border-radius:11px;padding:11px 14px;font-size:14.5px;font-weight:600;color:var(--teal-dk);margin-bottom:14px}
+/* "Rediger opgave" er et <Link>, men skal se ud som de øvrige mini-knapper. */
+a.pl-mini{display:inline-block;text-decoration:none}

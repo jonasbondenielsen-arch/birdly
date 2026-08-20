@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { BirdMark } from "./Logo";
 import { fetchCatalog } from "../lib/catalog";
-import { opretOpgave } from "../lib/privatOpgave";
+import { opretOpgave, redigerOpgave } from "../lib/privatOpgave";
 import { FORMIDLER_TEKST } from "../lib/formidlerTekst";
 import { OMFANG } from "../lib/omfang";
 import { slaaPostnrOp } from "../lib/postnumre";
@@ -93,24 +93,40 @@ function Flueben({ farve = "var(--teal)", size = 16 }) {
   );
 }
 
-export default function OpretOpgave() {
+// ⚠️ ÉN FORMULAR, TO TILSTANDE. `rediger` er { list_token, opgave } og slår
+// komponenten om til redigering: samme felter, samme validering, samme fejlbeskeder.
+// En separat redigerings-formular ville uundgåeligt drive fra denne — et felt tilføjet
+// det ene sted og glemt det andet — og så ville opretteren kunne rette i noget hun
+// ikke kunne oprette, eller omvendt.
+//
+// I redigerings-tilstand skjules hero, anmeldelser, "sådan virker det" og FAQ: hun
+// kender siden, hun skal rette en stavefejl.
+export default function OpretOpgave({ rediger = null }) {
+  const erRedigering = !!rediger;
+  const forud = rediger?.opgave || null;
   const [fagListe, setFagListe] = useState([]);
   const [regioner, setRegioner] = useState([]);
-  const [udbyder, setUdbyder] = useState("privat");
-  const [cvr, setCvr] = useState("");
-  const [beskrivelse, setBeskrivelse] = useState("");
-  const [valgteFag, setValgteFag] = useState([]);
-  const [andetTekst, setAndetTekst] = useState("");
-  const [postnr, setPostnr] = useState("");
-  const [regionKey, setRegionKey] = useState("");
-  const [hvornaar, setHvornaar] = useState(HVORNAAR[0]);
+  const [udbyder, setUdbyder] = useState(forud?.udbyder_type || "privat");
+  const [cvr, setCvr] = useState(forud?.cvr || "");
+  const [beskrivelse, setBeskrivelse] = useState(forud?.beskrivelse || "");
+  const [valgteFag, setValgteFag] = useState(
+    forud ? [...(forud.fag_keys || []), ...(forud.fag_andet ? [ANDET] : [])] : []
+  );
+  const [andetTekst, setAndetTekst] = useState(forud?.fag_andet || "");
+  const [postnr, setPostnr] = useState(forud?.postnr || "");
+  const [regionKey, setRegionKey] = useState(forud?.region_key || "");
+  const [hvornaar, setHvornaar] = useState(forud?.hvornaar || HVORNAAR[0]);
   // ⚠️ VALGFRIT — tom streng = sprunget over. Se noten ved feltet.
-  const [omfang, setOmfang] = useState("");
+  const [omfang, setOmfang] = useState(forud?.omfang || "");
   const [filer, setFiler] = useState([]);
-  const [navn, setNavn] = useState("");
-  const [telefon, setTelefon] = useState("");
-  const [email, setEmail] = useState("");
-  const [samtykke, setSamtykke] = useState(false);
+  const [navn, setNavn] = useState(forud?.kontakt_navn || "");
+  const [telefon, setTelefon] = useState(forud?.kontakt_telefon || "");
+  const [email, setEmail] = useState(forud?.kontakt_email || "");
+  // ⚠️ SAMTYKKET KRÆVES IKKE IGEN VED REDIGERING. Hun gav det da opgaven blev
+  // oprettet, og det er stadig i kraft. At bede om det igen ville antyde at det var
+  // udløbet — og et kryds hun sætter rutinemæssigt er et dårligere samtykke end det
+  // hun gav bevidst første gang.
+  const [samtykke, setSamtykke] = useState(erRedigering);
   const [sender, setSender] = useState(false);
   const [fejl, setFejl] = useState("");
   const [sendt, setSendt] = useState(false);
@@ -144,7 +160,7 @@ export default function OpretOpgave() {
   // postnummerets geografiske centrum, og en adresse kan ligge på den anden side af
   // grænsen. Derfor sætter vi kun landsdelen når brugeren ikke selv har rørt feltet —
   // et manuelt valg må aldrig blive overskrevet af et opslag.
-  const [regionRoert, setRegionRoert] = useState(false);
+  const [regionRoert, setRegionRoert] = useState(erRedigering);
   useEffect(() => {
     if (regionRoert) return;
     if (postnrTraef?.region_key) setRegionKey(postnrTraef.region_key);
@@ -177,7 +193,7 @@ export default function OpretOpgave() {
     setSender(true);
     (async () => {
       try {
-        const r = await opretOpgave({
+        const felter = {
           udbyder_type: udbyder,
           cvr: udbyder === "b2b" ? cvr.replace(/\s/g, "") : null,
           beskrivelse,
@@ -192,10 +208,19 @@ export default function OpretOpgave() {
           kontakt_email: email.trim(),
           samtykke: true,
           hp,
-        });
+        };
+        const r = erRedigering
+          ? await redigerOpgave(rediger.list_token, rediger.opgave.id, felter)
+          : await opretOpgave(felter);
         // ⚠️ LINKET VISES OG SENDES. Opretteren har ingen konto — mister hun linket,
         // kan hun ikke se sin opgave. Derfor står det på kvitteringen OG går med i
         // mail/SMS, frem for kun ét af stederne.
+        if (erRedigering) {
+          // Tilbage til listen — hun rettede en stavefejl, ikke oprettede noget nyt,
+          // og en "tak for din opgave"-kvittering ville være forvirrende.
+          window.location.href = `/opgave/${rediger.list_token}?rettet=1`;
+          return;
+        }
         if (r.list_token) setListeUrl(`/opgave/${r.list_token}`);
         setSendt(true);
         window.scrollTo({ top: 0, behavior: "smooth" });
@@ -207,6 +232,8 @@ export default function OpretOpgave() {
           manglende_fag: "Vælg mindst én opgaveart.",
           manglende_kontakt: "Skriv enten telefon eller e-mail.",
           ukendt_fag: "En af opgavearterne kunne ikke genkendes. Prøv at vælge dem igen.",
+          kan_ikke_redigeres: "Opgaven er lukket og kan ikke rettes længere.",
+          link_udloebet: "Dit link er udløbet. Opret en ny opgave, så får du et nyt.",
         };
         setFejl(tekster[e.kode] || "Vi kunne ikke gemme din opgave lige nu. Prøv igen om lidt.");
       } finally {
@@ -234,7 +261,10 @@ export default function OpretOpgave() {
         </div>
       </header>
 
-      {/* ---------- HERO ---------- */}
+      {/* ---------- HERO ----------
+          Skjult ved redigering: hun kender siden og skal rette en stavefejl, ikke
+          overbevises om at bruge tjenesten. */}
+      {!erRedigering && (
       <div className="oo-hero">
         <div className="oo-eyebrow">Opret opgave — gratis</div>
         <h1>Skal du have lavet noget?</h1>
@@ -248,11 +278,12 @@ export default function OpretOpgave() {
           <span><Flueben /> Lokale virksomheder</span>
         </div>
       </div>
+      )}
 
       <main>
         <div className="oo-wrap">
           {/* ---------- FORMULAR ---------- */}
-          <div className="oo-form">
+          <div className={erRedigering ? "" : "oo-form"}>
             <div className="st-kort">
               {sendt ? (
                 <div className="oo-kvit">
@@ -282,8 +313,12 @@ export default function OpretOpgave() {
                 </div>
               ) : (
                 <form onSubmit={send} noValidate>
-                  <h1>Opret din opgave</h1>
-                  <p className="st-hj">Udfyld felterne herunder — det tager under et minut.</p>
+                  <h1>{erRedigering ? "Ret din opgave" : "Opret din opgave"}</h1>
+                  <p className="st-hj">
+                    {erRedigering
+                      ? "Ret det du vil — virksomheder der allerede har taget opgaven, beholder den."
+                      : "Udfyld felterne herunder — det tager under et minut."}
+                  </p>
 
                   {/* 1. Udbyder */}
                   <label className="st-lab" style={{ marginTop: 26 }}>Udbyder af opgaven er</label>
@@ -491,7 +526,7 @@ export default function OpretOpgave() {
                   {fejl && <div className="st-fejl" style={{ marginTop: 16 }}>{fejl}</div>}
 
                   <button type="submit" className="oo-send" disabled={sender}>
-                    {sender ? "Sender …" : "Find virksomheder →"}
+                    {sender ? "Gemmer …" : erRedigering ? "Gem ændringer" : "Find virksomheder →"}
                   </button>
                   <div className="oo-efter">Det er gratis, og du forpligter dig ikke til noget.</div>
                 </form>
@@ -501,7 +536,7 @@ export default function OpretOpgave() {
 
           {/* ---------- ANMELDELSER ----------
               Slukket som default. Se lib/opretOpgave.js. */}
-          {OPRET_OPGAVE_ANMELDELSER && (
+          {!erRedigering && OPRET_OPGAVE_ANMELDELSER && (
             <section className="oo-blok">
               <div className="oo-hoved">
                 <div className="oo-eyebrow">Anmeldelser</div>
@@ -527,6 +562,7 @@ export default function OpretOpgave() {
           )}
 
           {/* ---------- SÅDAN VIRKER DET ---------- */}
+          {!erRedigering && (
           <section className="oo-blok">
             <div className="oo-hoved">
               <div className="oo-eyebrow">Sådan virker det</div>
@@ -565,7 +601,10 @@ export default function OpretOpgave() {
             </div>
           </section>
 
+          )}
+
           {/* ---------- FAQ ---------- */}
+          {!erRedigering && (
           <section className="oo-blok">
             <div className="oo-hoved">
               <div className="oo-eyebrow">Spørgsmål &amp; svar</div>
@@ -580,6 +619,15 @@ export default function OpretOpgave() {
               ))}
             </div>
           </section>
+          )}
+
+          {erRedigering && (
+            <p style={{ marginTop: 18, textAlign: "center" }}>
+              <a href={`/opgave/${rediger.list_token}`} style={{ color: "var(--navy-soft)", fontSize: 14 }}>
+                ← Tilbage uden at gemme
+              </a>
+            </p>
+          )}
         </div>
       </main>
     </div>

@@ -101,6 +101,11 @@ export default function MinOpgaveListe({ token }) {
 
   return (
     <Ramme>
+      {/* Kvittering efter en rettelse — ellers ser hun bare listen igen og ved ikke
+          om det blev gemt. */}
+      {typeof window !== "undefined" && new URLSearchParams(window.location.search).get("rettet") === "1" && (
+        <div className="pl-rettet">✓ Din opgave er rettet.</div>
+      )}
       <h1 className="pl-h1">Dine opgaver</h1>
       <p className="pl-besk" style={{ marginBottom: 6 }}>
         {aktive.length === 0
@@ -174,6 +179,12 @@ export default function MinOpgaveListe({ token }) {
               <div className="pl-opg-handling">
                 {kanLukke && (
                   <>
+                    {/* ⚠️ ÅBNER SAMME FORMULAR SOM /opret-opgave, forudfyldt. Ikke en
+                        redigerings-kopi: to formularer for det samme ville drive fra
+                        hinanden, og så kunne hun rette i noget hun ikke kunne oprette. */}
+                    <Link className="pl-mini" href={`/opgave/${token}/rediger/${o.id}`}>
+                      Rediger opgave
+                    </Link>
                     <button className="pl-mini primaer" disabled={travl === o.id}
                       onClick={() => handling(() => opgaveLoest(token, o.id), o.id)}>
                       Opgaven er løst
