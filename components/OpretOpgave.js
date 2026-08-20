@@ -6,6 +6,7 @@ import { BirdMark } from "./Logo";
 import { fetchCatalog } from "../lib/catalog";
 import { opretOpgave } from "../lib/privatOpgave";
 import { FORMIDLER_TEKST } from "../lib/formidlerTekst";
+import { OMFANG } from "../lib/omfang";
 import { OPRET_OPGAVE_ANMELDELSER } from "../lib/opretOpgave";
 import "../app/start.css";
 import "../app/opret-opgave.css";
@@ -13,7 +14,13 @@ import "../app/opret-opgave.css";
 // ============================================================================
 // /opret-opgave — den offentlige side hvor private og virksomheder lægger en opgave op.
 //
-// ⚠️ AL COPY ER ORDRET FRA DEN GODKENDTE MOCKUP. Overskrifter, FAQ-svar og
+// ⚠️ ORDET "RELEVANT" BRUGES ALDRIG I KUNDEVENDT TEKST. Det er husreglen, og der er
+// en ekstra grund her: "relevante virksomheder" antyder at vi har vurderet og udvalgt
+// dem. Det gør vi ikke — vi matcher på fag og område. Betingelsernes §7 siger
+// udtrykkeligt at vi ikke indestår for den enkelte virksomhed, og hero-teksten må ikke
+// love noget de fralægger sig tre klik senere.
+//
+// ⚠️ AL ØVRIG COPY ER ORDRET FRA DEN GODKENDTE MOCKUP. Overskrifter, FAQ-svar og
 // facilitator-teksten er juridisk gennemtænkte formuleringer ("Birdly er på ingen måde
 // part eller mellemmand"). Skriv dem ikke om for at gøre dem kortere.
 //
@@ -60,7 +67,7 @@ const FAQ = [
   },
   {
     sp: "Hvad gør I med mine oplysninger?",
-    sv: "Vi bruger dine oplysninger til at sende din opgave videre til relevante virksomheder, så de kan kontakte dig. Vi deler dem ikke til andre formål. Læs mere i vores privatlivspolitik.",
+    sv: "Vi bruger dine oplysninger til at sende din opgave videre til de virksomheder, der arbejder med din opgave, så de kan kontakte dig. Vi deler dem ikke til andre formål. Læs mere i vores privatlivspolitik.",
   },
   {
     sp: "Er jeg forpligtet til at vælge en af virksomhederne?",
@@ -96,6 +103,8 @@ export default function OpretOpgave() {
   const [postnr, setPostnr] = useState("");
   const [regionKey, setRegionKey] = useState("");
   const [hvornaar, setHvornaar] = useState(HVORNAAR[0]);
+  // ⚠️ VALGFRIT — tom streng = sprunget over. Se noten ved feltet.
+  const [omfang, setOmfang] = useState("");
   const [filer, setFiler] = useState([]);
   const [navn, setNavn] = useState("");
   const [telefon, setTelefon] = useState("");
@@ -160,6 +169,7 @@ export default function OpretOpgave() {
           region_key: regionKey,
           postnr: postnr.trim(),
           hvornaar,
+          omfang: omfang || null,
           kontakt_navn: navn.trim(),
           kontakt_telefon: telefon.trim(),
           kontakt_email: email.trim(),
@@ -212,8 +222,8 @@ export default function OpretOpgave() {
         <div className="oo-eyebrow">Opret opgave — gratis</div>
         <h1>Skal du have lavet noget?</h1>
         <p>
-          Beskriv din opgave på 60 sekunder. Så sender vi den videre til relevante lokale
-          virksomheder, der kan hjælpe dig.
+          Beskriv din opgave på 60 sekunder. Så sender vi den videre til lokale
+          virksomheder, der arbejder med din opgave.
         </p>
         <div className="oo-trust">
           <span><Flueben /> Helt gratis at oprette</span>
@@ -345,6 +355,30 @@ export default function OpretOpgave() {
                     </select>
                   </div>
 
+                  {/* ⚠️ VALGFRIT, OG DET ER EN BESLUTNING. Et påkrævet budgetfelt er den
+                      slags friktion der får folk til at lukke fanen: en privatperson VED
+                      sjældent hvad et nyt tag koster, og tvinger man hende til at gætte,
+                      får virksomheden et tal der er værre end ingenting.
+                      "Det ved jeg ikke" er derfor et rigtigt valg, ikke bare fravær —
+                      så kan virksomheden se forskel på "hun sprang over" og "hun sagde
+                      det". */}
+                  <label className="st-lab">
+                    Hvad anslår du opgavens omfang til?{" "}
+                    <span style={{ fontWeight: 400, color: "var(--navy-soft)" }}>— valgfrit</span>
+                  </label>
+                  <div className="st-omr">
+                    {OMFANG.map((o) => (
+                      <label key={o.key} className={"st-omrk" + (omfang === o.key ? " on" : "")}>
+                        <input type="radio" name="omfang" checked={omfang === o.key}
+                          onChange={() => setOmfang(o.key)} />
+                        <span>
+                          <b>{o.label}</b>
+                          {o.interval && <i>{o.interval}</i>}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+
                   {/* 5. Billeder */}
                   <label className="st-lab" htmlFor="oo-fil">
                     Billeder <span style={{ fontWeight: 400, color: "var(--navy-soft)" }}>— valgfrit</span>
@@ -470,7 +504,7 @@ export default function OpretOpgave() {
               <div className="oo-trin-kort">
                 <div className="oo-nr">2</div>
                 <h3>Birdly finder de rette</h3>
-                <p>Vi matcher din opgave med relevante lokale virksomheder ud fra fag og område.</p>
+                <p>Vi sender din opgave til de lokale virksomheder, der arbejder med netop den type opgave i dit område.</p>
               </div>
               <div className="oo-trin-kort">
                 <div className="oo-nr">3</div>

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { BirdMark } from "./Logo";
 import Link from "next/link";
 import { hentLead, reserverPlads, afvisLead, fjernLead } from "../lib/privatOpgave";
+import { omfangTekst } from "../lib/omfang";
 import "../app/start.css";
 import "../app/privat-lead.css";
 
@@ -142,6 +143,17 @@ export default function PrivatLead({ token }) {
           )}
           {opgave.hvornaar && (
             <li><span>{HVORFOR.hvornaar}</span> <b>{opgave.hvornaar.toLowerCase()}</b>.</li>
+          )}
+          {/* ⚠️ VISES FØR EN PLADS TAGES — det er hele pointen. Virksomheden skal kunne
+              vurdere om opgaven er hendes tid værd uden at bruge en af de tre pladser
+              på at finde ud af det.
+              "Kundens eget skøn" står der med vilje: det er ikke et tilbud, og det må
+              ikke kunne læses som et budget hun kan regne med. */}
+          {opgave.omfang && omfangTekst(opgave.omfang) && (
+            <li>
+              <span>Omfang</span> <b>{omfangTekst(opgave.omfang)}</b>
+              <span style={{ color: "var(--navy-soft)" }}> — kundens eget skøn.</span>
+            </li>
           )}
         </ul>
       </div>
