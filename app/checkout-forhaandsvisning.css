@@ -1,0 +1,58 @@
+/* ============================================================
+   /checkout-forhaandsvisning — kun de elementer der IKKE findes i tilmeld.css.
+
+   ⚠️ ALT DER OGSÅ ER I FUNNELEN GENBRUGES FRA tilmeld.css. Denne fil indeholder
+   udelukkende det der er nyt: forhåndsvisnings-banneret, sælger-blokken,
+   ydelsesbeskrivelsen, abonnements-vilkårene, Frisbii-pladsholderen og
+   tjeklisten. Skrev vi funnelens stilarter af her, ville replikaen drive fra
+   virkeligheden ved den første rettelse i funnelen.
+   ============================================================ */
+
+.cfv .cfv-maerkat{
+  font-size:12px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;
+  color:#8a6d1f;background:#FFF7E8;border:1px solid #F0D9A8;border-radius:999px;padding:5px 12px;
+}
+
+/* Banneret skal ses på første skærm — også af os selv. */
+.cfv .cfv-banner{
+  background:#FFF7E8;border:1.5px solid #F0D9A8;border-radius:12px;padding:14px 16px;
+  font-size:14.5px;line-height:1.6;color:var(--navy);margin-bottom:18px;
+}
+
+/* CLEARHAUS 1 — sælger */
+.cfv .cfv-saelger{
+  border:1px solid var(--line);border-radius:12px;padding:13px 15px;margin-bottom:16px;background:#FCFDFE;
+}
+.cfv .cfv-saelger-navn{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:16px;color:var(--navy)}
+.cfv .cfv-saelger-info{font-size:13px;color:var(--navy-soft);margin-top:2px}
+
+/* CLEARHAUS 2 — ydelsen */
+.cfv .cfv-ydelse{margin-bottom:18px}
+.cfv .cfv-ydelse p{font-size:14.5px;line-height:1.6;color:var(--navy);margin-top:6px}
+
+/* CLEARHAUS 3+6+7 — abonnementsvilkår. Fremhævet, fordi det er dét afsnit der
+   afgør om kunden forstår hvad hun siger ja til. */
+.cfv .cfv-abon{
+  background:var(--sky-soft);border:1px solid var(--sky-200);border-radius:12px;
+  padding:14px 16px;margin:16px 0;
+}
+.cfv .cfv-abon-h{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:15px;color:var(--navy);margin-bottom:6px}
+.cfv .cfv-abon p{font-size:14.5px;line-height:1.65;color:var(--navy)}
+.cfv .cfv-link{display:inline-block;margin-top:9px;font-size:14px;font-weight:700;color:var(--teal-dk)}
+
+/* Frisbii-pladsholder. Stiplet, så den ikke kan forveksles med et rigtigt felt. */
+.cfv .cfv-frisbii{
+  border:1.5px dashed var(--line);border-radius:12px;padding:26px 20px;text-align:center;background:#FCFDFE;
+}
+.cfv .cfv-frisbii-ic{color:var(--navy-soft);display:flex;justify-content:center;margin-bottom:10px}
+.cfv .cfv-frisbii-t{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:15px;color:var(--navy)}
+.cfv .cfv-frisbii-s{font-size:13px;line-height:1.6;color:var(--navy-soft);margin-top:8px;max-width:420px;margin-left:auto;margin-right:auto}
+
+/* Tjekliste til modtageren. */
+.cfv .cfv-tjek{margin-top:20px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+.cfv .cfv-tjek-h{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:15px;color:var(--navy);margin-bottom:10px}
+.cfv .cfv-tjek ol{margin:0;padding-left:20px}
+.cfv .cfv-tjek li{font-size:14px;line-height:1.7;color:var(--navy-soft)}
+.cfv .cfv-tjek li b{color:var(--navy)}
+.cfv .cfv-b2b{margin-top:9px;font-size:13.5px;line-height:1.6;color:var(--navy-soft)}
+.cfv .cfv-links{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:9px}
