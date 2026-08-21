@@ -254,7 +254,23 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
   // ⚠️ Fejler kataloget, er katalog null og kortloes false — altså NORMAL
   // kortbetaling. Fejler LUKKET, samme retning som erTaendt server-side: en
   // netværksfejl må aldrig kunne give nogen gratis adgang.
-  const kortloes = katalog?.kortloes_onboarding === true;
+  // ⚠️ PREVIEW-ONLY OMGÅELSE, så betalingstrinnet kan ses uden at slukke det DELTE
+  // feature-flag. kortloes_onboarding gælder produktionen også; slukkes det for at
+  // kigge, møder enhver ny kunde i det vindue et kortformular bygget på TEST-nøgler
+  // mens indløseraftalen ikke er godkendt. Det er ikke en risiko der er værd at løbe
+  // for et kig.
+  //
+  // ⚠️ DØD I PRODUKTION. VERCEL_ENV er "production" på det rigtige domæne, og så
+  // findes flaget ikke — parameteren kan ikke bruges af nogen udefra. Den virker kun
+  // på preview- og udviklings-deployments.
+  //
+  // Fjern den gerne når betalingstrinnet er live; indtil da er den den eneste måde at
+  // se trin 5 på uden at røre produktionen.
+  const maaOmgaa = process.env.NEXT_PUBLIC_VERCEL_ENV !== "production";
+  const tvingBetaling =
+    maaOmgaa && typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).get("vis") === "betaling";
+  const kortloes = katalog?.kortloes_onboarding === true && !tvingBetaling;
 
   const fagListe = katalog?.fag || [];
   const fagByKey = useMemo(

@@ -1,58 +1,142 @@
 /* ============================================================
-   /checkout-forhaandsvisning — kun de elementer der IKKE findes i tilmeld.css.
+   /checkout-forhaandsvisning — porteret ORDRET fra "Birdly – Betaling.html".
 
-   ⚠️ ALT DER OGSÅ ER I FUNNELEN GENBRUGES FRA tilmeld.css. Denne fil indeholder
-   udelukkende det der er nyt: forhåndsvisnings-banneret, sælger-blokken,
-   ydelsesbeskrivelsen, abonnements-vilkårene, Frisbii-pladsholderen og
-   tjeklisten. Skrev vi funnelens stilarter af her, ville replikaen drive fra
-   virkeligheden ved den første rettelse i funnelen.
+   ⚠️ MOCKUPPEN HAR SIT EGET DESIGN og bruger IKKE funnelens tilmeld.css: egen
+   460px-kolonne, egen typografi, eget farvesæt, egne radier. Derfor er stilarterne
+   porteret frem for genbrugt — havde jeg tvunget siden ind i tilmeld.css, ville den
+   ikke længere ligne dét Jonas har godkendt.
+
+   ⚠️ ALLE KLASSER ER PRÆFIKSET cfv-. Filen er global (Next importerer den fra
+   komponenten), og uden præfiks ville .card, .plan, .field og .inp kollidere med
+   funnelens egne klasser i samme dokument.
+
+   ⚠️ FARVERNE ER MOCKUPPENS EGNE, ikke globals.css-tokens. --muted #64748B og
+   --line #E4E9EF findes ikke i vores tokensæt, og en tilnærmelse ville betyde at
+   siden ikke længere er 1:1. Navy og teal er identiske med brandet.
    ============================================================ */
 
-.cfv .cfv-maerkat{
-  font-size:12px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;
-  color:#8a6d1f;background:#FFF7E8;border:1px solid #F0D9A8;border-radius:999px;padding:5px 12px;
+.cfv-side {
+  --cfv-navy: #0D1B2A;
+  --cfv-teal: #00B3A6;
+  --cfv-teal-dark: #009488;
+  --cfv-sky: #2EB7FF;
+  --cfv-ink: #0D1B2A;
+  --cfv-muted: #64748B;
+  --cfv-line: #E4E9EF;
+
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color: var(--cfv-ink);
+  background: linear-gradient(180deg, #F6F9FC 0%, #EDF1F6 100%);
+  -webkit-font-smoothing: antialiased;
+  padding: 32px 16px 56px;
+  min-height: 100vh;
+}
+.cfv-side *, .cfv-side *::before, .cfv-side *::after { box-sizing: border-box }
+
+.cfv-wrap { max-width: 460px; margin: 0 auto }
+
+/* Banneret er ikke i mockuppen — det er tilføjet fordi siden ligner en rigtig
+   betalingsside, og enhver der åbner linket skal vide at den ikke er det. */
+.cfv-banner {
+  background: #FFF7E8; border: 1.5px solid #F0D9A8; border-radius: 12px;
+  padding: 12px 14px; font-size: 13px; line-height: 1.55; color: var(--cfv-ink);
+  margin-bottom: 18px;
 }
 
-/* Banneret skal ses på første skærm — også af os selv. */
-.cfv .cfv-banner{
-  background:#FFF7E8;border:1.5px solid #F0D9A8;border-radius:12px;padding:14px 16px;
-  font-size:14.5px;line-height:1.6;color:var(--navy);margin-bottom:18px;
+.cfv-brand-row { display: flex; align-items: center; justify-content: center; gap: 9px; margin-bottom: 22px }
+.cfv-brand-mark {
+  width: 30px; height: 30px; border-radius: 9px;
+  background: linear-gradient(135deg, var(--cfv-teal), var(--cfv-sky));
+  display: flex; align-items: center; justify-content: center;
+}
+.cfv-brand-mark svg { width: 17px; height: 17px; display: block }
+.cfv-brand { font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; font-weight: 800; font-size: 22px; letter-spacing: -.02em; color: var(--cfv-navy) }
+
+.cfv-card {
+  background: #fff; border: 1px solid var(--cfv-line); border-radius: 20px;
+  padding: 26px 24px; box-shadow: 0 18px 44px -24px rgba(13, 27, 42, .28);
+}
+.cfv-eyebrow { font-size: 12.5px; font-weight: 600; color: var(--cfv-teal-dark); text-transform: uppercase; letter-spacing: .08em; margin: 0 0 6px }
+.cfv-card h1 { font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; font-size: 24px; line-height: 1.15; font-weight: 800; letter-spacing: -.02em; margin: 0 0 12px }
+.cfv-sub { font-size: 15px; color: var(--cfv-muted); margin: 0 0 4px; font-weight: 500 }
+.cfv-sub strong { color: var(--cfv-ink); font-weight: 600 }
+.cfv-merchant { font-size: 13px; color: var(--cfv-muted); margin: 14px 0 0; line-height: 1.5 }
+
+/* Plan-valg */
+.cfv-plan { display: flex; gap: 8px; margin: 2px 0 12px }
+.cfv-plan-opt {
+  flex: 1; border: 1.5px solid var(--cfv-line); background: #fff; border-radius: 12px;
+  padding: 11px 12px; text-align: left; cursor: pointer; font-family: inherit;
+  transition: border-color .12s, background .12s; position: relative;
+}
+.cfv-po-title { display: block; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 14px; color: var(--cfv-ink) }
+.cfv-po-sub { display: block; font-size: 11.5px; color: var(--cfv-muted); margin-top: 2px; font-weight: 500 }
+.cfv-plan-opt.active { border-color: var(--cfv-teal); background: #F0FBFA }
+.cfv-plan-opt.active .cfv-po-sub { color: var(--cfv-teal-dark) }
+.cfv-po-tag {
+  position: absolute; top: -8px; right: 10px; background: var(--cfv-teal); color: #fff;
+  font-family: 'Plus Jakarta Sans', sans-serif; font-size: 9.5px; font-weight: 700;
+  padding: 2px 7px; border-radius: 20px; letter-spacing: .03em;
 }
 
-/* CLEARHAUS 1 — sælger */
-.cfv .cfv-saelger{
-  border:1px solid var(--line);border-radius:12px;padding:13px 15px;margin-bottom:16px;background:#FCFDFE;
+/* "Sådan fungerer det" */
+.cfv-terms { margin: 18px 0 4px; border: 1px solid var(--cfv-line); border-radius: 14px; background: #F8FAFC; padding: 14px 15px }
+.cfv-terms h3 { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 13px; margin: 0 0 9px; font-weight: 700; letter-spacing: -.01em }
+.cfv-terms ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 7px }
+.cfv-terms li { display: flex; gap: 9px; font-size: 13.2px; line-height: 1.45; color: #334155 }
+.cfv-tick { flex: none; width: 16px; height: 16px; border-radius: 50%; background: var(--cfv-teal); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 10px; margin-top: 1px }
+.cfv-terms a { color: var(--cfv-teal-dark); font-weight: 600; text-decoration: none; border-bottom: 1px solid rgba(0, 179, 166, .35) }
+
+/* Betalingsmodulet */
+.cfv-pay { margin-top: 20px; border: 1px solid var(--cfv-line); border-radius: 16px; padding: 16px 15px 15px; background: #fff }
+.cfv-pay-cap { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--cfv-muted); font-weight: 600; margin-bottom: 12px }
+.cfv-pay-cap svg { width: 12px; height: 12px; flex: none }
+
+.cfv-wallet { display: flex; flex-direction: column; gap: 9px }
+/* ⚠️ <span>, ikke <button>. Se noten i komponenten: et klikbart element ville
+   invitere til et forsøg. Derfor heller ingen cursor:pointer. */
+.cfv-wbtn { height: 46px; border-radius: 11px; font-weight: 600; font-size: 15px; display: flex; align-items: center; justify-content: center; gap: 7px; user-select: none }
+.cfv-wbtn.apple { background: #000; color: #fff }
+.cfv-wbtn.mp { background: #5A78FF; color: #fff }
+.cfv-apple-mark { width: 17px; height: 17px; flex: none; display: block; margin-top: -2px }
+.cfv-mpmark { width: 18px; height: 18px; border-radius: 5px; background: #fff; color: #5A78FF; font-weight: 800; font-size: 12px; display: flex; align-items: center; justify-content: center }
+
+.cfv-or { display: flex; align-items: center; gap: 10px; color: var(--cfv-muted); font-size: 12px; margin: 14px 0 }
+.cfv-or::before, .cfv-or::after { content: ""; height: 1px; background: var(--cfv-line); flex: 1 }
+
+.cfv-field { margin-bottom: 10px }
+.cfv-field label { display: block; font-size: 12px; color: var(--cfv-muted); font-weight: 600; margin-bottom: 5px }
+.cfv-inp { height: 44px; border: 1px solid #D6DEE7; border-radius: 10px; display: flex; align-items: center; padding: 0 12px; color: #94A3B8; font-size: 14px; background: #fff; justify-content: space-between }
+.cfv-brandmini { display: flex; gap: 4px }
+.cfv-row2 { display: flex; gap: 10px }
+.cfv-row2 .cfv-field { flex: 1 }
+
+.cfv-consent { display: flex; gap: 9px; align-items: flex-start; margin: 16px 2px 4px; font-size: 13px; color: #334155; line-height: 1.45 }
+.cfv-cbox { flex: none; width: 18px; height: 18px; border-radius: 5px; background: var(--cfv-teal); display: flex; align-items: center; justify-content: center; margin-top: 1px }
+.cfv-cbox svg { width: 11px; height: 11px }
+.cfv-consent a { color: var(--cfv-teal-dark); font-weight: 600; text-decoration: none; border-bottom: 1px solid rgba(0, 179, 166, .35) }
+
+.cfv-cta {
+  margin-top: 14px; height: 52px; width: 100%; border-radius: 13px; background: var(--cfv-teal);
+  color: #fff; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 16px;
+  letter-spacing: -.01em; box-shadow: 0 12px 24px -12px rgba(0, 179, 166, .7);
+  display: flex; align-items: center; justify-content: center; gap: 8px; user-select: none;
 }
-.cfv .cfv-saelger-navn{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:16px;color:var(--navy)}
-.cfv .cfv-saelger-info{font-size:13px;color:var(--navy-soft);margin-top:2px}
+.cfv-undercta { font-size: 12.5px; color: var(--cfv-muted); text-align: center; margin: 12px 4px 0; line-height: 1.5 }
+.cfv-undercta strong { color: var(--cfv-ink); font-weight: 600 }
 
-/* CLEARHAUS 2 — ydelsen */
-.cfv .cfv-ydelse{margin-bottom:18px}
-.cfv .cfv-ydelse p{font-size:14.5px;line-height:1.6;color:var(--navy);margin-top:6px}
+.cfv-trust { margin-top: 15px; padding-top: 14px; border-top: 1px solid var(--cfv-line); display: flex; flex-direction: column; gap: 9px; align-items: center }
+.cfv-locks { font-size: 12px; color: var(--cfv-muted); font-weight: 600; display: flex; align-items: center; gap: 6px }
+.cfv-badges { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center }
+.cfv-bdg { height: 22px; padding: 0 8px; border: 1px solid var(--cfv-line); border-radius: 6px; display: flex; align-items: center; font-size: 10.5px; font-weight: 700; color: #475569; background: #fff; letter-spacing: .01em }
+.cfv-bdg.visa { color: #1A1F71 } .cfv-bdg.mc { color: #1a1a1a } .cfv-bdg.dk { color: #B01116 }
+.cfv-bdg.mp { color: #5A78FF } .cfv-bdg.ap { color: #000 }
 
-/* CLEARHAUS 3+6+7 — abonnementsvilkår. Fremhævet, fordi det er dét afsnit der
-   afgør om kunden forstår hvad hun siger ja til. */
-.cfv .cfv-abon{
-  background:var(--sky-soft);border:1px solid var(--sky-200);border-radius:12px;
-  padding:14px 16px;margin:16px 0;
-}
-.cfv .cfv-abon-h{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:15px;color:var(--navy);margin-bottom:6px}
-.cfv .cfv-abon p{font-size:14.5px;line-height:1.65;color:var(--navy)}
-.cfv .cfv-link{display:inline-block;margin-top:9px;font-size:14px;font-weight:700;color:var(--teal-dk)}
-
-/* Frisbii-pladsholder. Stiplet, så den ikke kan forveksles med et rigtigt felt. */
-.cfv .cfv-frisbii{
-  border:1.5px dashed var(--line);border-radius:12px;padding:26px 20px;text-align:center;background:#FCFDFE;
-}
-.cfv .cfv-frisbii-ic{color:var(--navy-soft);display:flex;justify-content:center;margin-bottom:10px}
-.cfv .cfv-frisbii-t{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:15px;color:var(--navy)}
-.cfv .cfv-frisbii-s{font-size:13px;line-height:1.6;color:var(--navy-soft);margin-top:8px;max-width:420px;margin-left:auto;margin-right:auto}
-
-/* Tjekliste til modtageren. */
-.cfv .cfv-tjek{margin-top:20px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px 20px}
-.cfv .cfv-tjek-h{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:15px;color:var(--navy);margin-bottom:10px}
-.cfv .cfv-tjek ol{margin:0;padding-left:20px}
-.cfv .cfv-tjek li{font-size:14px;line-height:1.7;color:var(--navy-soft)}
-.cfv .cfv-tjek li b{color:var(--navy)}
-.cfv .cfv-b2b{margin-top:9px;font-size:13.5px;line-height:1.6;color:var(--navy-soft)}
-.cfv .cfv-links{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:9px}
+/* Tjeklisten er ikke i mockuppen — den er til modtageren, så de syv punkter kan
+   krydses af uden at lede. */
+.cfv-tjek { margin-top: 20px; background: #fff; border: 1px solid var(--cfv-line); border-radius: 16px; padding: 18px 20px }
+.cfv-tjek-h { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 14px; color: var(--cfv-navy); margin-bottom: 10px }
+.cfv-tjek ol { margin: 0; padding-left: 20px }
+.cfv-tjek li { font-size: 13px; line-height: 1.7; color: var(--cfv-muted) }
+.cfv-tjek li b { color: var(--cfv-ink) }
+.cfv-tjek-note { margin: 12px 0 0; font-size: 12.5px; line-height: 1.55; color: var(--cfv-muted) }

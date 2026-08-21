@@ -1,262 +1,229 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import { Logo } from "./Logo";
 import { PLAN, TRIAL_DAYS, YEARLY_SAVING, priceText } from "../lib/pakke";
-import "../app/tilmeld.css";
 import "../app/checkout-forhaandsvisning.css";
 
 // ============================================================================
-// /checkout-forhaandsvisning — 1:1 replika af betalingstrinnet, til Clearhaus.
+// /checkout-forhaandsvisning — den planlagte betalingsside, vist til godkendelse.
 //
-// ⚠️ DEN KAN IKKE TRÆKKE PENGE, og det er ikke en indstilling man kan komme til at
-// slå fra. Filen indlæser IKKE checkout.reepay.com/checkout.js, kalder IKKE
+// ⚠️ DEN KAN IKKE TRÆKKE PENGE, og det er ikke en indstilling man kan slå fra.
+// Filen indlæser IKKE checkout.reepay.com/checkout.js, kalder IKKE
 // create-subscription-session, og har INGEN submit-handler. Der findes ingen kodesti
 // herfra til Frisbii. Tilføj aldrig en.
 //
-// ⚠️ REPLIKAEN SPEJLER /start (Start.js trin 5) — IKKE Tilmeld.js.
-// Rettet 21-08-2026: /tilmeld er permanent redirectet til /kom-i-gang i
-// next.config.mjs og er uopnåelig for kunder. Første udgave af denne side spejlede
-// Tilmeld.js, altså en død fil — og havde Clearhaus godkendt den, ville de have
-// godkendt en side ingen kunde kan nå.
+// ⚠️ KORTFELTERNE ER EN STATISK GENGIVELSE af det modul Frisbii kommer til at
+// rendere. Det er ikke en attrap af noget der ikke findes: det ER den planlagte side,
+// forelagt til godkendelse før den kan gå live — standard i en indløser-onboarding.
+// Captionen "Sikre betalingsfelter leveres af Frisbii" står i modulet, så det aldrig
+// kan læses som om Birdly selv tager imod kortnumre.
 //
-// ⚠️ ORDLYDEN SKAL STEMME ORDRET MED Start.js trin 5. Layoutet må gerne afvige
-// (funnelen har fem trin, dette er én side), men teksterne om pris, prøveperiode,
-// fornyelse, opsigelse og fortrydelsesret skal være identiske. Ændrer du den ene,
-// skal du ændre den anden — ellers viser vi indløseren noget andet end kunden møder.
+// ⚠️ 1:1 MED "Birdly – Betaling.html" (21-08-2026). Den mockup har sit EGET design —
+// 460px kolonne, egen typografi, eget farvesæt — og bruger IKKE funnelens tilmeld.css.
+// Derfor er CSS'en porteret frem for genbrugt. Ændrer Jonas mockuppen, skal begge
+// filer følge med.
 //
-// CSS'en er stadig tilmeld.css: den er scoped under .birdly-tilmeld og giver de
-// visuelle byggeklodser (.card, .plans, .plan, .submit, .consent). Det er
-// TEKSTERNE der skal matche /start, ikke pixelplaceringen.
-//
-// ⚠️ PRISEN KOMMER FRA lib/pakke.js — samme kilde som funnelen. Aldrig hardkodet:
-// et tal skrevet af her ville kunne blive stående efter en prisændring, og så ville
+// ⚠️ TALLENE KOMMER FRA lib/pakke.js. Mockuppen har dem hardkodet; det må denne side
+// ikke. Et tal skrevet af her ville blive stående efter en prisændring, og så ville
 // Clearhaus have godkendt en pris vi ikke opkræver.
 //
-// ⚠️ FRISBII-FELTERNE ER EN MÆRKET PLADSHOLDER, ikke en tegning. En attrap af
-// kortformularen ville vise Clearhaus noget der ikke findes — og de skal kunne stole
-// på at det de ser, er det kunden møder. Frisbii's iframe er PCI-området; vi ejer
-// alt uden om den.
-//
-// ⚠️ FIRE AF DE SYV OPLYSNINGER FINDES ENDNU IKKE I DEN RIGTIGE FUNNEL (punkt 1, 3,
-// 4 og 7 — se noterne nedenfor). De står her, fordi Clearhaus kræver dem. Den rigtige
-// checkout skal have de samme tilføjelser FØR go-live; ellers er godkendelsen bygget
-// på noget der ikke findes. Det er en separat beslutning, der rører den live funnel.
+// ⚠️ SAMTYKKET STÅR ÉT STED — ved prisen, lige over knappen. Ikke gentaget. Det er
+// bevidst en anden struktur end den live funnel, hvor krydset også står på trin 4
+// fordi kontoen oprettes dér. Her er der ingen konto at oprette.
 // ============================================================================
 
-export default function CheckoutForhaandsvisning() {
-  const [billing, setBilling] = useState("yearly");
-  const pris = billing === "yearly" ? priceText.yearly : priceText.monthly;
-  // ⚠️ "hvert år", ikke "hver år". "hver" bøjes efter køn: hver måned (fælleskøn),
-  // hvert år (intetkøn). Ordet står fire steder på siden, så bøjningen følger med
-  // intervallet frem for at blive skrevet i hånden hvert sted.
-  const hverFrekvens = billing === "yearly" ? "hvert år" : "hver måned";
+const PLANER = {
+  year: {
+    kort: priceText.yearly,
+    fuld: `${priceText.yearly} ekskl. moms`,
+    freq: "hvert år",
+    // ⚠️ Beløbet, ikke procenten. Mockuppen siger "spar 998 kr." — et kronebeløb er
+    // konkret dér hvor "~17 %" kræver hovedregning.
+    sub: `${priceText.yearly} · spar ${YEARLY_SAVING.amount.toLocaleString("da-DK")} kr.`,
+  },
+  month: {
+    kort: priceText.monthly,
+    fuld: `${priceText.monthly} ekskl. moms`,
+    freq: "hver måned",
+    sub: priceText.monthly,
+  },
+};
 
+export default function CheckoutForhaandsvisning() {
+  // ⚠️ ÅR ER DEFAULT. Samme forvalg som den live funnel (Start.js: interval =
+  // "yearly"), så replikaen viser dét kunden faktisk møder først.
+  const [plan, setPlan] = useState("year");
+  const v = PLANER[plan];
 
   return (
-    <div className="birdly-tilmeld cfv">
-      <header>
-        <div className="bar">
-          <Logo height={30} />
-          <span className="cfv-maerkat">Forhåndsvisning — ikke en aktiv betalingsside</span>
-        </div>
-      </header>
-
-      <div className="wrap" style={{ paddingTop: 26, paddingBottom: 60 }}>
-        {/* ⚠️ BANNERET ER IKKE PYNT. Enhver der åbner linket — også internt — skal på
+    <div className="cfv-side">
+      <div className="cfv-wrap">
+        {/* Banneret er ikke pynt: enhver der åbner linket — også internt — skal på
             første skærm forstå at der ikke kan gennemføres en betaling her. */}
         <div className="cfv-banner">
-          <b>Dette er en forhåndsvisning af Birdlys betalingsside.</b> Siden er bygget til
-          gennemsyn og kan ikke gennemføre en betaling eller oprette et abonnement. Den er
-          ikke en del af tilmeldingsflowet og kan ikke nås fra birdly.dk.
+          <b>Forhåndsvisning.</b> Dette er Birdlys planlagte betalingsside, vist til
+          godkendelse. Den kan ikke gennemføre en betaling eller oprette et abonnement,
+          og den er ikke en del af tilmeldingsflowet.
         </div>
 
-        <div className="card">
-          <h1 style={{ fontSize: 24, marginBottom: 6 }}>Vælg dit abonnement</h1>
-          <p className="sub">Gratis prøveperiode · du betaler intet i dag · opsig når som helst inden.</p>
+        <div className="cfv-brand-row">
+          <div className="cfv-brand-mark">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M4 14c4-1 7-4 9-8 1 3 3 5 6 6-3 2-5 4-6 8-1-3-4-5-9-6z" fill="#fff" />
+            </svg>
+          </div>
+          <div className="cfv-brand">Birdly</div>
+        </div>
 
-          {/* ── CLEARHAUS 1: VIRKSOMHEDSNAVN ──
-              ⚠️ FINDES IKKE I DEN RIGTIGE FUNNEL I DAG. Det står kun i footeren.
-              Clearhaus kræver at sælger er identificeret dér hvor kortet indtastes. */}
-          <div className="cfv-saelger">
-            <div className="cfv-saelger-navn">Birdly.dk</div>
-            <div className="cfv-saelger-info">CVR 35764283 · Fjordvej 4, 4300 Holbæk, Danmark</div>
-            <div className="cfv-saelger-info">support@birdly.dk</div>
+        <div className="cfv-card">
+          <p className="cfv-eyebrow">Kom i gang</p>
+          <h1>Start din prøveperiode</h1>
+
+          {/* ── CLEARHAUS 5: PRIS + VALUTA ── */}
+          <div className="cfv-plan" role="group" aria-label="Vælg abonnement">
+            <button type="button" className={"cfv-plan-opt" + (plan === "year" ? " active" : "")}
+              onClick={() => setPlan("year")} aria-pressed={plan === "year"}>
+              <span className="cfv-po-tag">MEST VALGT</span>
+              <span className="cfv-po-title">Årligt</span>
+              <span className="cfv-po-sub">{PLANER.year.sub}</span>
+            </button>
+            <button type="button" className={"cfv-plan-opt" + (plan === "month" ? " active" : "")}
+              onClick={() => setPlan("month")} aria-pressed={plan === "month"}>
+              <span className="cfv-po-title">Månedligt</span>
+              <span className="cfv-po-sub">{PLANER.month.sub}</span>
+            </button>
           </div>
 
-          {/* ── CLEARHAUS 2: BESKRIVELSE AF YDELSEN ──
-              ⚠️ I den rigtige funnel står her kun en recap af kundens EGNE valg
-              ("Tømrer · Sjælland · SMS + e-mail"). Det siger hvad hun valgte, ikke
-              hvad hun køber. Clearhaus skal kunne se ydelsen beskrevet. */}
-          <div className="cfv-ydelse">
-            <div className="bredde-q">Hvad abonnementet giver adgang til</div>
-            <p>
-              Birdly overvåger danske offentlige udbud og sender dig besked, når der er en
-              opgave, der passer til dit fag, dit område og din opgavestørrelse. Du får
-              beskeder på SMS og e-mail, adgang til din personlige opgaveliste med alle
-              dine matches, og en bud-skabelon til de opgaver, du vil byde på.
-            </p>
-            <p className="sub" style={{ marginTop: 6 }}>
-              Digital abonnementstjeneste. Leveres straks ved oprettelse.
-            </p>
-          </div>
-
-          {/* Plan-toggle — nøjagtig samme markup og klasser som Tilmeld.js trin 4. */}
-          <div className="plans plans-2" role="radiogroup" aria-label="Vælg betalingsinterval">
-            <label className={"plan" + (billing === "monthly" ? " on" : "")}>
-              <input type="radio" name="billing" checked={billing === "monthly"} onChange={() => setBilling("monthly")} />
-              <div className="nm">Månedlig</div>
-              <div className="pr">{PLAN.monthly.toLocaleString("da-DK")}<span> kr./md</span></div>
-              <div className="ds">ex. moms</div>
-            </label>
-            <label className={"plan" + (billing === "yearly" ? " on" : "")}>
-              <span className="feat">Spar {YEARLY_SAVING.pct}%</span>
-              <input type="radio" name="billing" checked={billing === "yearly"} onChange={() => setBilling("yearly")} />
-              <div className="nm">Årlig</div>
-              <div className="pr">{PLAN.yearly.toLocaleString("da-DK")}<span> kr./år</span></div>
-              <div className="ds">ex. moms · forudbetalt</div>
-            </label>
-          </div>
-
-          {/* ── CLEARHAUS 3, 6 og 7: STARTDATO + VARIGHED, FREKVENS, OPSIGELSE ──
-              Ordlyden er Jonas'. Prisen følger den valgte plan og kommer fra
-              lib/pakke.js — den kan ikke komme til at stå forkert efter en
-              prisændring. */}
-          <div className="cfv-abon">
-            <div className="cfv-abon-h">Sådan fungerer betalingen</div>
-            <p>
-              Abonnementet starter <b>i dag</b> med <b>{TRIAL_DAYS} dages gratis prøveperiode</b>.
-              Du betaler <b>0 kr. i dag</b>. {TRIAL_DAYS === 14 ? "3" : "3"} dage før prøveperioden
-              udløber, sender vi dig en påmindelse. Herefter fortsætter medlemskabet
-              automatisk til <b>{pris} ex. moms</b> og fornyes løbende {hverFrekvens},{" "}
-              <b>indtil du opsiger</b>. Du kan til enhver tid opsige med virkning fra næste
-              betalingsperiode.
-            </p>
-            {/* ⚠️ FORTRYDELSESRET OG REFUSION STÅR I HVER SIT DOKUMENT — verificeret:
-                refusionsreglen i abonnementsbetingelserne §4.4, fortrydelsesretten i
-                handelsbetingelserne §1.3. Linker vi kun til det ene, peger siden på
-                noget svagere end den lover.
-
-                ⚠️ "Ingen fortrydelsesret" er IKKE en mangel, det er et faktum om
-                aftaletypen: tjenesten sælges udelukkende B2B, og
-                forbrugerfortrydelsesretten gælder ikke erhvervskøb. Det skal stå
-                positivt frem for at blive udeladt — Clearhaus skal kunne se at vi ved
-                det, og kunden skal ikke tro hun har en ret hun ikke har. */}
-            <p className="cfv-b2b">
-              Birdly sælges udelukkende til erhvervsdrivende. Da der er tale om et
-              erhvervskøb, gælder der ingen forbrugerfortrydelsesret. En
-              abonnementsperiode, der allerede er påbegyndt og betalt, refunderes ikke.
-            </p>
-            <div className="cfv-links">
-              <Link href="/abonnementsbetingelser" className="cfv-link">
-                Opsigelses- og refusionsvilkår
-              </Link>
-              <Link href="/handelsbetingelser" className="cfv-link">
-                Handels- og leveringsbetingelser
-              </Link>
-            </div>
-          </div>
-
-          {/* Betalingsmetoder — samme markup som funnelen. */}
-          <div className="bredde-q" style={{ marginTop: 4 }}>Betaling</div>
-          <div className="pay-methods" aria-hidden="true">
-            <span className="pm-tab">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 20.94c1.5 0 2.75-1.06 4-1.06 1.25 0 2.5 1.06 4 1.06" /><path d="M16 6c-1.5 0-3 1-4 3-1-2-2.5-3-4-3-2 0-3.5 2-3.5 5 0 4 3.5 8 5.5 8" /></svg>
-              Apple Pay
-            </span>
-            <span className="pm-tab">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="5" width="18" height="14" rx="2" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
-              Kort
-            </span>
-            <span className="pm-tab">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="7" y="3" width="10" height="18" rx="2" /><line x1="11" y1="18" x2="13" y2="18" /></svg>
-              MobilePay
-            </span>
-          </div>
-          <p className="sub" style={{ margin: "0 0 16px 36px" }}>Du vælger metode og indtaster kort i betalingsvinduet.</p>
-
-          {/* Samme linje som funnelen viser over kortfelterne. */}
-          <div className="betaling-note">
-            <b>Til betaling i dag: 0,00 kr.</b>
-            {" "}· {TRIAL_DAYS} dages gratis prøveperiode · første træk om {TRIAL_DAYS} dage
-          </div>
-
-          {/* ── FRISBII-OMRÅDET ──
-              ⚠️ PLADSHOLDER, IKKE ATTRAP. Her ligger Frisbii's iframe i den rigtige
-              funnel. Vi ejer alt uden om den; kortnummeret ser vi aldrig. */}
-          <div className="cfv-frisbii">
-            <div className="cfv-frisbii-ic">
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-                <rect x="4" y="11" width="16" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" />
-              </svg>
-            </div>
-            <div className="cfv-frisbii-t">Her indlæses Frisbii&apos;s PCI-sikre kortformular</div>
-            <div className="cfv-frisbii-s">
-              I den rigtige tilmelding indsætter Frisbii sit betalingsvindue på denne plads.
-              Kortoplysninger indtastes direkte hos Frisbii — Birdly ser eller gemmer aldrig
-              kortnummeret. Feltet er bevidst tomt i denne forhåndsvisning, så siden ikke kan
-              gennemføre en betaling.
-            </div>
-          </div>
-
-          {/* ── CLEARHAUS 4: GRUNDVILKÅR + KORTINDEHAVERS ACCEPT ──
-              ⚠️ I den rigtige funnel ligger disse to flueben på TRIN 3, ikke ved
-              betalingen. Clearhaus vil se accepten dér hvor kortet indtastes. Samme
-              .consent-klasser som funnelen bruger — spejling, ikke ny stil. */}
-          <div className="consent-block" style={{ marginTop: 18 }}>
-            <label className="consent">
-              <input type="checkbox" defaultChecked readOnly />
-              <span>Jeg accepterer Birdlys betingelser, og at SMS og mail er en del af tjenesten.</span>
-            </label>
-            <div className="consent-links">
-              <Link href="/handelsbetingelser">Handels- og leveringsbetingelser</Link>
-              <Link href="/privatlivspolitik">Privatlivspolitik</Link>
-            </div>
-            <label className="consent">
-              <input type="checkbox" defaultChecked readOnly />
-              <span>
-                Jeg accepterer abonnementsbetingelserne — herunder at abonnementet fornyes
-                automatisk til {pris} ex. moms {hverFrekvens}, at der ikke trækkes betaling
-                i prøveperioden, og at mit betalingskort gemmes hos vores betalingsudbyder,
-                indtil jeg siger op.
-              </span>
-            </label>
-            <div className="consent-links">
-              <Link href="/abonnementsbetingelser">Abonnementsbetingelser</Link>
-            </div>
-          </div>
-
-          {/* CTA — ser ud som funnelens, men er deaktiveret. Ingen handler. */}
-          <button type="button" className="submit" disabled style={{ marginTop: 18 }}>
-            Start gratis prøveperiode →
-          </button>
-          <p className="sub" style={{ textAlign: "center", marginTop: 8 }}>
-            Knappen er slået fra i denne forhåndsvisning.
+          <p className="cfv-sub">
+            <strong>{TRIAL_DAYS} dage gratis</strong> · derefter {v.kort} ekskl. moms
           </p>
 
-          <div className="pay-secure" style={{ justifyContent: "center", marginTop: 14 }}>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="4" y="11" width="16" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg>
-            Sikker betaling via Frisbii · Ingen binding · Opsig når som helst
+          {/* ── CLEARHAUS 1 + 2: SÆLGER OG YDELSE ──
+              Samlet i én linje, som mockuppen. Kompakt, men begge oplysninger er der:
+              hvem sælger, og hvad man køber. */}
+          <p className="cfv-merchant">
+            Birdly.dk · Offentlige og private opgaver i dit fag, leveret direkte på SMS og
+            e-mail. Abonnement hos Birdly.dk, CVR 35764283, Fjordvej 4, 4300 Holbæk.
+          </p>
+
+          {/* ── CLEARHAUS 3, 6 og 7: STARTDATO, FREKVENS, OPSIGELSE ──
+              ⚠️ Pris OG frekvens følger den valgte plan. Skifter kunden til månedlig,
+              skifter både beløbet og "hver måned" med — ellers ville teksten love
+              noget andet end knappen ovenfor. */}
+          <div className="cfv-terms">
+            <h3>Sådan fungerer det</h3>
+            <ul>
+              <li><span className="cfv-tick">✓</span><span>Abonnementet <b>starter i dag</b> med {TRIAL_DAYS} dages gratis prøveperiode.</span></li>
+              <li><span className="cfv-tick">✓</span><span>Du betaler <b>0 kr. i dag</b>. 3 dage før prøveperioden udløber, sender vi en påmindelse.</span></li>
+              <li><span className="cfv-tick">✓</span><span>Derefter <b>{v.fuld}</b>, der fornyes automatisk <b>{v.freq}</b>, indtil du opsiger.</span></li>
+              <li><span className="cfv-tick">✓</span><span>Opsig når som helst med virkning fra næste betalingsperiode. <a href="/abonnementsbetingelser" target="_blank" rel="noreferrer">Opsigelses- og refusionsvilkår</a></span></li>
+              {/* ⚠️ FORTRYDELSESRETTEN STÅR I HANDELSBETINGELSERNE §1.3, refusionen i
+                  abonnementsbetingelserne §4.4 — derfor links til begge.
+                  "Ingen fortrydelsesret" står positivt frem for at blive udeladt: det er
+                  ikke en mangel, men et faktum om aftaletypen (B2B). Kunden skal ikke
+                  tro hun har en ret hun ikke har. */}
+              <li><span className="cfv-tick">✓</span><span>Erhvervskøb — ingen forbrugerfortrydelsesret. Påbegyndt periode refunderes ikke. <a href="/handelsbetingelser" target="_blank" rel="noreferrer">Handelsbetingelser</a></span></li>
+            </ul>
           </div>
-          <div className="note" style={{ marginTop: 10 }}>
-            Kortoplysninger indtastes direkte hos vores PCI-sikre betalingspartner (Frisbii).
-            Birdly ser eller gemmer aldrig dit kortnummer.
+
+          {/* ── BETALINGSMODULET ──
+              Statisk gengivelse. Se noten øverst: ingen SDK, ingen session, ingen
+              handler. Feltværdierne er pladsholder-tekst, ikke inputs. */}
+          <div className="cfv-pay">
+            <div className="cfv-pay-cap">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M6 10V8a6 6 0 0112 0v2" stroke="#94A3B8" strokeWidth="2" />
+                <rect x="4" y="10" width="16" height="10" rx="2" fill="#CBD5E1" />
+              </svg>
+              Sikre betalingsfelter leveres af Frisbii
+            </div>
+
+            <div className="cfv-wallet">
+              {/* ⚠️ APPLE-LOGOET SOM SVG, ikke glyffen . Mockuppen bruger tegnet
+                  , som kun findes i Apples egne skrifttyper: på Windows og Android
+                  falder det ud, og knappen står bare med "Pay". Clearhaus skal kunne
+                  SE at Apple Pay tilbydes — og de kigger på ukendt hardware.
+                  Formen er den samme; kun kilden er robust. */}
+              <span className="cfv-wbtn apple">
+                <svg className="cfv-apple-mark" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M16.4 12.7c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.1-2.8.9-3.5.9-.7 0-1.8-.8-3-.8-1.5 0-3 .9-3.8 2.3-1.6 2.8-.4 7 1.2 9.3.8 1.1 1.7 2.4 2.9 2.3 1.2 0 1.6-.7 3-.7s1.8.7 3 .7c1.3 0 2.1-1.1 2.9-2.3.9-1.3 1.3-2.6 1.3-2.6-.1 0-2.6-1-2.6-3.8zM14.2 5.9c.6-.8 1.1-1.9 1-3-1 0-2.1.7-2.8 1.5-.6.7-1.2 1.8-1 2.9 1.1.1 2.2-.6 2.8-1.4z" />
+                </svg>
+                Apple Pay
+              </span>
+              <span className="cfv-wbtn mp"><span className="cfv-mpmark">M</span> MobilePay</span>
+            </div>
+
+            <div className="cfv-or">eller betal med kort</div>
+
+            <div className="cfv-field">
+              <label>Kortnummer</label>
+              <div className="cfv-inp">
+                <span>1234&nbsp;1234&nbsp;1234&nbsp;1234</span>
+                <span className="cfv-brandmini">
+                  <span className="cfv-bdg dk">Dankort</span>
+                  <span className="cfv-bdg visa">VISA</span>
+                  <span className="cfv-bdg mc">MC</span>
+                </span>
+              </div>
+            </div>
+            <div className="cfv-row2">
+              <div className="cfv-field"><label>Udløb</label><div className="cfv-inp"><span>MM / ÅÅ</span></div></div>
+              <div className="cfv-field"><label>CVC</label><div className="cfv-inp"><span>123</span></div></div>
+            </div>
+
+            {/* ── CLEARHAUS 4: KORTINDEHAVERENS ACCEPT ── */}
+            <div className="cfv-consent">
+              <span className="cfv-cbox">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M5 12l5 5 9-11" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </span>
+              <span>
+                Jeg accepterer Birdlys{" "}
+                <a href="/handelsbetingelser" target="_blank" rel="noreferrer">handelsbetingelser</a> og{" "}
+                <a href="/abonnementsbetingelser" target="_blank" rel="noreferrer">abonnementsvilkår</a> — herunder
+                at abonnementet fornyes automatisk {v.freq}, og at mit kort gemmes hos
+                betalingsudbyderen, indtil jeg opsiger.
+              </span>
+            </div>
+
+            {/* ⚠️ IKKE EN <button>. Et klikbart element ville invitere til et forsøg og
+                efterlade indtryk af at siden kan noget. Den er markup, ikke kontrol. */}
+            <div className="cfv-cta" aria-disabled="true">Start {TRIAL_DAYS} dage gratis →</div>
+            <p className="cfv-undercta">
+              <strong>Du betaler 0 kr. i dag.</strong> Efter {TRIAL_DAYS} dage fortsætter Birdly
+              automatisk til {v.kort} ekskl. moms, indtil du opsiger.
+            </p>
+          </div>
+
+          <div className="cfv-trust">
+            <div className="cfv-locks">🔒 Sikker betaling · SSL-krypteret</div>
+            <div className="cfv-badges">
+              <span className="cfv-bdg dk">Dankort</span>
+              <span className="cfv-bdg visa">VISA</span>
+              <span className="cfv-bdg mc">Mastercard</span>
+              <span className="cfv-bdg mp">MobilePay</span>
+              <span className="cfv-bdg ap"> Pay</span>
+            </div>
           </div>
         </div>
 
-        {/* Oversigt til gennemsyn — så modtageren kan krydse af uden at lede. */}
+        {/* Oversigt til modtageren — så de syv punkter kan krydses af uden at lede. */}
         <div className="cfv-tjek">
           <div className="cfv-tjek-h">De syv oplysninger på denne side</div>
           <ol>
-            <li><b>Virksomhedsnavn</b> — Birdly.dk, CVR 35764283, øverst i kortet</li>
-            <li><b>Beskrivelse af ydelsen</b> — &ldquo;Hvad abonnementet giver adgang til&rdquo;</li>
-            <li><b>Startdato + varighed</b> — &ldquo;Sådan fungerer betalingen&rdquo;</li>
-            <li><b>Grundvilkår + kortindehavers accept</b> — de to afkrydsningsbokse med links</li>
-            <li><b>Pris + valuta</b> — plan-kortene ({priceText.monthly} / {priceText.yearly}, ex. moms)</li>
-            <li><b>Fast tilbagevendende frekvens</b> — &ldquo;fornyes løbende {hverFrekvens}, indtil du opsiger&rdquo;</li>
-            <li><b>Opsigelse, refusion og fortrydelsesret</b> — samme afsnit, med links til begge betingelses-dokumenter</li>
+            <li><b>Virksomhedsnavn</b> — Birdly.dk, CVR 35764283, i linjen under prisen</li>
+            <li><b>Beskrivelse af ydelsen</b> — samme linje</li>
+            <li><b>Startdato + varighed</b> — &ldquo;Sådan fungerer det&rdquo;, punkt 1</li>
+            <li><b>Grundvilkår + kortindehavers accept</b> — afkrydsningsboksen over knappen</li>
+            <li><b>Pris + valuta</b> — plan-knapperne ({PLAN.monthly.toLocaleString("da-DK")} kr./md. / {PLAN.yearly.toLocaleString("da-DK")} kr./år, ekskl. moms)</li>
+            <li><b>Fast tilbagevendende frekvens</b> — &ldquo;fornyes automatisk {v.freq}, indtil du opsiger&rdquo;</li>
+            <li><b>Opsigelse, refusion og fortrydelsesret</b> — punkt 4 og 5, med links til begge betingelses-dokumenter</li>
           </ol>
+          <p className="cfv-tjek-note">
+            Betalingsfelterne ovenfor er en statisk gengivelse af det modul Frisbii leverer.
+            Siden kan ikke gennemføre en betaling.
+          </p>
         </div>
       </div>
     </div>
