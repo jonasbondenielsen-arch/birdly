@@ -23,7 +23,7 @@
 .birdly-betingelser .section-title{font-family:'Plus Jakarta Sans';font-weight:800;font-size:22px;text-align:center;margin:24px 0 22px}
 
 .birdly-betingelser .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
-.birdly-betingelser .card{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:28px 22px;text-align:center;display:flex;flex-direction:column;align-items:center;transition:transform .18s,box-shadow .18s,border-color .18s;color:inherit}
+.birdly-betingelser .card{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:28px 22px;text-align:center;display:flex;flex-direction:column;align-items:center;transition:transform .18s,box-shadow .18s,border-color .18s,background .18s;color:inherit}
 .birdly-betingelser a.card:hover{transform:translateY(-3px);box-shadow:var(--shadow);border-color:transparent}
 .birdly-betingelser .card .ic{width:54px;height:54px;border-radius:15px;background:var(--sky-soft);display:grid;place-items:center;margin-bottom:16px}
 .birdly-betingelser .card .ic svg{width:27px;height:27px;color:var(--sky)}
@@ -33,13 +33,28 @@
 .birdly-betingelser .card p{font-size:13.5px;color:var(--navy-soft);margin-bottom:18px;flex:1;line-height:1.55}
 .birdly-betingelser .card .btn{background:var(--sky-soft);color:var(--teal-dk);border:0;border-radius:10px;padding:10px 22px;font-family:'Plus Jakarta Sans';font-weight:700;font-size:13.5px;text-decoration:none}
 
-/* fremhævet kort (Handelsbetingelser) */
-.birdly-betingelser .card.featured{background:linear-gradient(150deg,var(--teal),var(--teal-dk));border-color:transparent}
-.birdly-betingelser .card.featured .ic{background:rgba(255,255,255,.18)}
-.birdly-betingelser .card.featured .ic svg{color:#fff}
-.birdly-betingelser .card.featured h3{color:#fff}
-.birdly-betingelser .card.featured p{color:rgba(255,255,255,.85)}
-.birdly-betingelser .card.featured .btn{background:#fff;color:var(--teal-dk)}
+/* ⚠️ TEAL KUN PÅ HOVER (21-08-2026).
+   Her stod tidligere en permanent teal-fyld på .card.featured, som gav to grønne kort
+   blandt seks hvide. Det læste som en anbefaling ("start her"), men Handelsbetingelser
+   og Abonnementsbetingelser er ikke vigtigere end de øvrige — de er bare to
+   dokumenter blandt flere, og en besøgende der leder efter privatlivspolitikken blev
+   trukket mod det forkerte kort.
+
+   Nu er ALLE kort ens i hviletilstand, og teal bruges til dét farven er god til:
+   at vise hvad musen er over. .featured beholdes som klasse, så markup ikke skal
+   ændres — den er bare visuelt neutral nu. */
+.birdly-betingelser a.card:hover{
+  background:linear-gradient(150deg,var(--teal),var(--teal-dk));
+  border-color:transparent;
+}
+.birdly-betingelser a.card:hover .ic{background:rgba(255,255,255,.18)}
+.birdly-betingelser a.card:hover .ic svg{color:#fff}
+.birdly-betingelser a.card:hover h3{color:#fff}
+.birdly-betingelser a.card:hover p{color:rgba(255,255,255,.85)}
+.birdly-betingelser a.card:hover .btn{background:#fff;color:var(--teal-dk)}
+/* Fuglemærket er et billede og kan ikke farves om — flisen får en baggrund i stedet,
+   så mærket stadig kan ses på den grønne hover. */
+.birdly-betingelser a.card:hover .ic.ic-bird{background:rgba(255,255,255,.18)}
 
 /* "kommer senere"-kort (dæmpet, stiplet, ikke-klikbart) */
 .birdly-betingelser .card.soon{opacity:.72;border-style:dashed}

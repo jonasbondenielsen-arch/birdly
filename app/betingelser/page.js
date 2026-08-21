@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Footer from "../../components/Footer";
 import { Logo, BirdMark } from "../../components/Logo";
+import { OPRET_OPGAVE_I_NAV } from "../../lib/opretOpgave";
 import "../betingelser.css";
 
 export const metadata = {
@@ -105,6 +106,23 @@ export default function BetingelserPage() {
             <p>Reglerne for at bruge hjemmesiden og tjenesten.</p>
             <span className="btn">Klik her</span>
           </Link>
+
+          {/* ⚠️ BAG LAUNCH-FLAGET, og det er ikke overforsigtighed: teksten er stadig
+              et UDKAST der afventer advokat, og siden er noindex. Stod kortet her nu,
+              ville et juridisk udkast være offentligt tilgængeligt fra husets
+              betingelses-oversigt — altså præcis det sted en besøgende læser som
+              "sådan er reglerne".
+
+              Samme flag som "Opret opgave"-knappen i navigationen: de to skal tændes
+              samtidig, fordi de er den samme beslutning — at tjenesten findes. */}
+          {OPRET_OPGAVE_I_NAV && (
+            <Link href="/betingelser-private-opgaver" className="card">
+              <div className="ic">{ICONS.doc}</div>
+              <h3>Betingelser for private opgaver</h3>
+              <p>For dig der opretter en opgave som privatperson: formidling, ansvar og deling af dine oplysninger.</p>
+              <span className="btn">Klik her</span>
+            </Link>
+          )}
 
           <Link href="/privatlivspolitik" className="card">
             <div className="ic">{ICONS.shieldCheck}</div>
