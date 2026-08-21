@@ -461,12 +461,6 @@ export default function Tilmeld({ initialFag = null, initialRegion = null, opgav
   // lukkede uden at gennemføre → bliv på trin 4.
   function openPaymentModal() {
     if (!sessionId || sessionLoading || saving) return;
-    // ⚠️ SAMTYKKET GATER OGSÅ HER (Clearhaus, 21-08-2026). Fluebenene sættes på trin 3
-    // og gentages ved betalingen, fordi kortindehaverens accept skal være synlig dér
-    // hvor kortet indtastes. Uden dette tjek ville gentagelsen være pynt: kunden kunne
-    // fjerne krydset og alligevel åbne betalingsvinduet.
-    if (!terms) return setErr("Sæt flueben i handelsbetingelserne for at fortsætte.");
-    if (!abonnement) return setErr("Sæt flueben i abonnementsbetingelserne for at fortsætte.");
     setErr("");
     // Containeren skal være i DOM'en FØR SDK'et monterer i den.
     setBetalingAaben(true);
@@ -794,31 +788,6 @@ export default function Tilmeld({ initialFag = null, initialRegion = null, opgav
                   {/* Kompakt recap (read-only) */}
                   {recapText && <div className="recap">{recapText}</div>}
 
-                  {/* ── CLEARHAUS 1: SÆLGER ──
-                      Kortindehaveren skal kunne se HVEM hun betaler, dér hvor kortet
-                      indtastes. Stod før kun i footeren. */}
-                  <div className="cfv-saelger">
-                    <div className="cfv-saelger-navn">Birdly.dk</div>
-                    <div className="cfv-saelger-info">CVR 35764283 · Fjordvej 4, 4300 Holbæk, Danmark</div>
-                    <div className="cfv-saelger-info">support@birdly.dk</div>
-                  </div>
-
-                  {/* ── CLEARHAUS 2: HVAD HUN KØBER ──
-                      Recappen ovenfor viser hendes EGNE valg ("Tømrer · Sjælland ·
-                      SMS + e-mail"). Det siger hvad hun valgte, ikke hvad ydelsen er. */}
-                  <div className="cfv-ydelse">
-                    <div className="bredde-q">Hvad abonnementet giver adgang til</div>
-                    <p>
-                      Birdly overvåger danske offentlige udbud og sender dig besked, når der er
-                      en opgave, der passer til dit fag, dit område og din opgavestørrelse. Du
-                      får beskeder på SMS og e-mail, adgang til din personlige opgaveliste med
-                      alle dine matches, og en bud-skabelon til de opgaver, du vil byde på.
-                    </p>
-                    <p className="sub" style={{ marginTop: 6 }}>
-                      Digital abonnementstjeneste. Leveres straks ved oprettelse.
-                    </p>
-                  </div>
-
                   {/* Plan-toggle — to kort i den eksisterende .plan-stil (samme som ville
                       blive brugt til pakkevalg). Skift gen-opretter sessionen. */}
                   <div className="plans plans-2" role="radiogroup" aria-label="Vælg betalingsinterval">
@@ -835,52 +804,6 @@ export default function Tilmeld({ initialFag = null, initialRegion = null, opgav
                       <div className="pr">{PLAN.yearly.toLocaleString("da-DK")}<span> kr./år</span></div>
                       <div className="ds">ex. moms · forudbetalt</div>
                     </label>
-                  </div>
-
-                  {/* ── CLEARHAUS 3, 6 og 7: STARTDATO + VARIGHED, FREKVENS, OPSIGELSE ──
-                      ⚠️ ORDLYDEN ER GODKENDT AF JONAS og skal stemme ORDRET med
-                      /checkout-forhaandsvisning, som Clearhaus har fået forelagt. Ændrer
-                      du den ene, skal du ændre den anden — ellers viser vi indløseren
-                      noget andet end kunden møder.
-
-                      Prisen kommer fra lib/pakke.js, aldrig hardkodet: et tal skrevet
-                      af her ville blive stående efter en prisændring. */}
-                  <div className="cfv-abon">
-                    <div className="cfv-abon-h">Sådan fungerer betalingen</div>
-                    {udenProeve ? (
-                      <p>
-                        Abonnementet starter <b>i dag</b> og fornyes automatisk til{" "}
-                        <b>{billing === "yearly" ? priceText.yearly : priceText.monthly} ex. moms</b>{" "}
-                        {billing === "yearly" ? "hvert år" : "hver måned"}, <b>indtil du opsiger</b>.
-                        Du kan til enhver tid opsige med virkning fra næste betalingsperiode.
-                      </p>
-                    ) : (
-                      <p>
-                        Abonnementet starter <b>i dag</b> med <b>{TRIAL_DAYS} dages gratis
-                        prøveperiode</b>. Du betaler <b>0 kr. i dag</b>. 3 dage før prøveperioden
-                        udløber, sender vi dig en påmindelse. Herefter fortsætter medlemskabet
-                        automatisk til{" "}
-                        <b>{billing === "yearly" ? priceText.yearly : priceText.monthly} ex. moms</b>{" "}
-                        og fornyes løbende {billing === "yearly" ? "hvert år" : "hver måned"},{" "}
-                        <b>indtil du opsiger</b>. Du kan til enhver tid opsige med virkning fra
-                        næste betalingsperiode.
-                      </p>
-                    )}
-                    {/* ⚠️ FORTRYDELSESRET OG REFUSION STÅR I HVER SIT DOKUMENT —
-                        refusion i abonnementsbetingelserne §4.4, fortrydelsesretten i
-                        handelsbetingelserne §1.3. Derfor links til BEGGE.
-                        "Ingen fortrydelsesret" står positivt: det er ikke en mangel, men
-                        et faktum om aftaletypen (B2B). Kunden skal ikke tro hun har en
-                        ret hun ikke har. */}
-                    <p className="cfv-b2b">
-                      Birdly sælges udelukkende til erhvervsdrivende. Da der er tale om et
-                      erhvervskøb, gælder der ingen forbrugerfortrydelsesret. En
-                      abonnementsperiode, der allerede er påbegyndt og betalt, refunderes ikke.
-                    </p>
-                    <div className="cfv-links">
-                      <Link href="/abonnementsbetingelser" className="cfv-link">Opsigelses- og refusionsvilkår</Link>
-                      <Link href="/handelsbetingelser" className="cfv-link">Handels- og leveringsbetingelser</Link>
-                    </div>
                   </div>
 
                   {/* Betaling — accepterede metoder (valg sker i selve betalingsvinduet) */}
@@ -900,40 +823,6 @@ export default function Tilmeld({ initialFag = null, initialRegion = null, opgav
                     </span>
                   </div>
                   <p className="sub" style={{ margin: "0 0 16px 36px" }}>Du vælger metode og indtaster kort i betalingsvinduet.</p>
-
-                  {/* ── CLEARHAUS 4: KORTINDEHAVERENS ACCEPT VED BETALINGEN ──
-                      ⚠️ SAMME STATE SOM TRIN 3, ikke en ny afkrydsning. `terms` og
-                      `abonnement` er de samme variabler; hun har allerede sat dem for at
-                      komme hertil, så de står afkrydsede og der er INGEN ekstra friktion.
-                      Men de er ægte: fjerner hun et kryds, gater openPaymentModal.
-
-                      ⚠️ IKKE FLYTTET FRA TRIN 3 — GENTAGET. Trin 3 er dér hun accepterer
-                      at SMS og mail er en del af tjenesten, hvilket hun skal vide FØR hun
-                      vælger kanaler. Her handler det om betalingen. Samme samtykke, to
-                      steder det er relevant. */}
-                  <div className="consent-block" style={{ marginTop: 4, marginBottom: 16 }}>
-                    <label className="consent">
-                      <input type="checkbox" checked={terms} onChange={(e) => setTerms(e.target.checked)} />
-                      <span>Jeg accepterer Birdlys betingelser, og at SMS og mail er en del af tjenesten.</span>
-                    </label>
-                    <div className="consent-links">
-                      <Link href="/handelsbetingelser">Handels- og leveringsbetingelser</Link>
-                      <Link href="/privatlivspolitik">Privatlivspolitik</Link>
-                    </div>
-                    <label className="consent">
-                      <input type="checkbox" checked={abonnement} onChange={(e) => setAbonnement(e.target.checked)} />
-                      <span>
-                        Jeg accepterer abonnementsbetingelserne — herunder at abonnementet fornyes
-                        automatisk til {billing === "yearly" ? priceText.yearly : priceText.monthly} ex. moms{" "}
-                        {billing === "yearly" ? "hvert år" : "hver måned"}
-                        {udenProeve ? "" : ", at der ikke trækkes betaling i prøveperioden"}, og at mit
-                        betalingskort gemmes hos vores betalingsudbyder, indtil jeg siger op.
-                      </span>
-                    </label>
-                    <div className="consent-links">
-                      <Link href="/abonnementsbetingelser">Abonnementsbetingelser</Link>
-                    </div>
-                  </div>
 
                   {/* Primær CTA — åbner Frisbii-betalingen som modal (overlay) for den
                       valgte plans session. Deaktiveret indtil sessionen er klar. */}

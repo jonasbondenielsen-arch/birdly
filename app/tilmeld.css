@@ -255,25 +255,4 @@
 }
 @media(max-width:640px){
   .birdly-tilmeld::before{ display:none; }   /* mobil: kun gradienten, watermark skjult */
-
-  /* ── CLEARHAUS-OPLYSNINGER PÅ BETALINGSTRINNET (21-08-2026) ──
-     ⚠️ SAMME KLASSENAVNE SOM /checkout-forhaandsvisning, med vilje. Replikaen er dét
-     Clearhaus har fået forelagt, og de to skal se ens ud. Klassenavnene deles derfor,
-     mens hver fil har sin egen definition — tilmeld.css er scoped under
-     .birdly-tilmeld, replikaens fil er det ikke, og en delt fil ville trække
-     funnelens layout med over på replikaen. Ændrer du udseendet her, skal du ændre
-     app/checkout-forhaandsvisning.css tilsvarende. */
-  .cfv-saelger{border:1px solid var(--line);border-radius:12px;padding:13px 15px;margin-bottom:16px;background:#FCFDFE}
-  .cfv-saelger-navn{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:16px;color:var(--navy)}
-  .cfv-saelger-info{font-size:13px;color:var(--navy-soft);margin-top:2px}
-
-  .cfv-ydelse{margin-bottom:18px}
-  .cfv-ydelse p{font-size:14.5px;line-height:1.6;color:var(--navy);margin-top:6px}
-
-  .cfv-abon{background:var(--sky-soft);border:1px solid var(--sky-200);border-radius:12px;padding:14px 16px;margin:16px 0}
-  .cfv-abon-h{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:15px;color:var(--navy);margin-bottom:6px}
-  .cfv-abon p{font-size:14.5px;line-height:1.65;color:var(--navy)}
-  .cfv-b2b{margin-top:9px;font-size:13.5px;line-height:1.6;color:var(--navy-soft)}
-  .cfv-links{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:9px}
-  .cfv-link{font-size:14px;font-weight:700;color:var(--teal-dk)}
 }

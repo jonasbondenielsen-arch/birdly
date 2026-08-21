@@ -549,6 +549,11 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
   // Aktiveringen er og bliver webhookens ansvar, ikke redirect'ens.
   function aabnBetaling() {
     if (!sessionId || arbejder) return;
+    // ⚠️ SAMTYKKET GATER OGSÅ HER (Clearhaus, 21-08-2026). Uden dette tjek ville
+    // fluebenene ved prisen være pynt: kunden kunne fjerne krydset og alligevel
+    // sendes til betaling.
+    if (!betingelser) return setFejl("Sæt flueben i handelsbetingelserne for at fortsætte.");
+    if (!abonnement) return setFejl("Sæt flueben i abonnementsbetingelserne for at fortsætte.");
     setFejl("");
     // Se noten ved STASH: siden forlades helt, så id'et skal med over på den anden
     // side for at dubletnøglen kan være pr. kunde.
@@ -965,10 +970,100 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
             </span>
           </p>
 
+          {/* ══════════════════════════════════════════════════════════════════
+              CLEARHAUS-OPLYSNINGERNE. Kortindehaveren skal kunne se HVEM hun betaler,
+              HVAD hun får, HVORNÅR der trækkes, HVOR OFTE, og HVORDAN hun kommer ud —
+              dér hvor hun træffer beslutningen.
+
+              ⚠️ ORDLYDEN SKAL STEMME ORDRET MED /checkout-forhaandsvisning, som
+              Clearhaus har fået forelagt. Ændrer du den ene, skal du ændre den anden.
+
+              ⚠️ ALLE TAL KOMMER FRA priceText/TRIAL_DAYS. Hardkod aldrig et beløb —
+              det var netop dét der efterlod tre steder med den gamle pris.
+              ══════════════════════════════════════════════════════════════════ */}
+
+          {/* 1 — SÆLGER. Stod før kun i footeren. */}
+          <div className="st-saelger">
+            <div className="st-saelger-navn">Birdly.dk</div>
+            <div className="st-saelger-info">CVR 35764283 · Fjordvej 4, 4300 Holbæk, Danmark</div>
+            <div className="st-saelger-info">support@birdly.dk</div>
+          </div>
+
+          {/* 2 — HVAD HUN KØBER. Resten af funnelen viser hendes EGNE valg; dette
+              siger hvad ydelsen er. */}
+          <div className="st-ydelse">
+            <b>Hvad abonnementet giver adgang til</b>
+            <p>
+              Birdly overvåger danske offentlige udbud og sender dig besked, når der er en
+              opgave, der passer til dit fag, dit område og din opgavestørrelse. Du får
+              beskeder på SMS og e-mail, adgang til din personlige opgaveliste med alle dine
+              matches, og en bud-skabelon til de opgaver, du vil byde på.
+            </p>
+            <p className="st-ydelse-sub">Digital abonnementstjeneste. Leveres straks ved oprettelse.</p>
+          </div>
+
+          {/* 3, 6 og 7 — STARTDATO + VARIGHED, FREKVENS, OPSIGELSE.
+              ⚠️ Pris OG frekvens følger den valgte plan. Skifter hun til månedlig,
+              skifter både beløbet og "hver måned" med — ellers ville teksten love
+              noget andet end knappen ovenfor. */}
+          <div className="st-abon">
+            <b>Sådan fungerer betalingen</b>
+            {udenProeve ? (
+              <p>
+                Abonnementet starter <b>i dag</b> og fornyes automatisk til <b>{pris} ekskl. moms</b>{" "}
+                {interval === "yearly" ? "hvert år" : "hver måned"}, <b>indtil du opsiger</b>. Du kan
+                til enhver tid opsige med virkning fra næste betalingsperiode.
+              </p>
+            ) : (
+              <p>
+                Abonnementet starter <b>i dag</b> med <b>{TRIAL_DAYS} dages gratis prøveperiode</b>.
+                Du betaler <b>0 kr. i dag</b>. 3 dage før prøveperioden udløber, sender vi dig en
+                påmindelse. Herefter fortsætter medlemskabet automatisk til <b>{pris} ekskl. moms</b>{" "}
+                og fornyes løbende {interval === "yearly" ? "hvert år" : "hver måned"},{" "}
+                <b>indtil du opsiger</b>. Du kan til enhver tid opsige med virkning fra næste
+                betalingsperiode.
+              </p>
+            )}
+            {/* ⚠️ FORTRYDELSESRET OG REFUSION STÅR I HVER SIT DOKUMENT — refusion i
+                abonnementsbetingelserne §4.4, fortrydelsesretten i
+                handelsbetingelserne §1.3. Derfor links til BEGGE.
+                "Ingen fortrydelsesret" står positivt: det er ikke en mangel, men et
+                faktum om aftaletypen (B2B). Kunden skal ikke tro hun har en ret hun
+                ikke har. */}
+            <p className="st-b2b">
+              Birdly sælges udelukkende til erhvervsdrivende. Da der er tale om et erhvervskøb,
+              gælder der ingen forbrugerfortrydelsesret. En abonnementsperiode, der allerede er
+              påbegyndt og betalt, refunderes ikke.
+            </p>
+            <div className="st-abon-links">
+              <a href="/abonnementsbetingelser" target="_blank" rel="noreferrer">Opsigelses- og refusionsvilkår</a>
+              <a href="/handelsbetingelser" target="_blank" rel="noreferrer">Handels- og leveringsbetingelser</a>
+            </div>
+          </div>
+
           <div className="st-garanti">
             <b>Matchgaranti</b>
             <p>Får du ingen match, betaler du ikke en krone.</p>
           </div>
+
+          {/* 4 — KORTINDEHAVERENS ACCEPT, VED PRISEN.
+              ⚠️ SAMME STATE SOM TRIN 4, ikke en ny afkrydsning. `betingelser` og
+              `abonnement` er de samme variabler, så fluebenene står afkrydsede når hun
+              når hertil: INGEN ekstra friktion for en kunde der allerede har accepteret.
+
+              ⚠️ IKKE FLYTTET FRA TRIN 4 — GENTAGET, og det er ikke et valg om smag.
+              Trin 4 opretter kunden med terms_accepted: true og starter prøveperioden
+              (create_signup, migration 0010). Fjernede vi krydset dér, ville vi
+              registrere en accept hun ikke havde givet, og lade prøven køre uden den.
+              Her handler det om betalingen — samme samtykke, to steder det er relevant. */}
+          <label className="st-tjek">
+            <input type="checkbox" checked={betingelser} onChange={(e) => setBetingelser(e.target.checked)} />
+            <span>Jeg accepterer <a href="/handelsbetingelser" target="_blank" rel="noreferrer">handelsbetingelserne</a> og <a href="/privatlivspolitik" target="_blank" rel="noreferrer">privatlivspolitikken</a>.</span>
+          </label>
+          <label className="st-tjek">
+            <input type="checkbox" checked={abonnement} onChange={(e) => setAbonnement(e.target.checked)} />
+            <span>Jeg accepterer <a href="/abonnementsbetingelser" target="_blank" rel="noreferrer">abonnementsbetingelserne</a> — herunder at abonnementet fornyes automatisk, og at mit betalingskort gemmes hos vores betalingsudbyder, indtil jeg siger op.</span>
+          </label>
 
           <button className="btn btn-teal st-bred" onClick={aabnBetaling} disabled={!sessionId || arbejder}>
             {skifter ? "Skifter plan…" : arbejder ? "Et øjeblik…" : "Start min gratis prøve"}

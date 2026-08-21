@@ -15,12 +15,20 @@ import "../app/checkout-forhaandsvisning.css";
 // create-subscription-session, og har INGEN submit-handler. Der findes ingen kodesti
 // herfra til Frisbii. Tilføj aldrig en.
 //
-// ⚠️ 1:1 KOMMER FRA SAMME CSS, ikke fra en kopi af stilarterne. Siden wrappes i
-// .birdly-tilmeld og bruger tilmeld.css — nøjagtig de klasser Tilmeld.js trin 4
-// bruger (.card, .plans, .plan, .pay-methods, .betaling-note, .submit, .consent…).
-// Havde jeg skrevet stilarterne af, ville replikaen drive fra virkeligheden ved den
-// første rettelse i funnelen, og Clearhaus ville have godkendt noget der ikke længere
-// findes.
+// ⚠️ REPLIKAEN SPEJLER /start (Start.js trin 5) — IKKE Tilmeld.js.
+// Rettet 21-08-2026: /tilmeld er permanent redirectet til /kom-i-gang i
+// next.config.mjs og er uopnåelig for kunder. Første udgave af denne side spejlede
+// Tilmeld.js, altså en død fil — og havde Clearhaus godkendt den, ville de have
+// godkendt en side ingen kunde kan nå.
+//
+// ⚠️ ORDLYDEN SKAL STEMME ORDRET MED Start.js trin 5. Layoutet må gerne afvige
+// (funnelen har fem trin, dette er én side), men teksterne om pris, prøveperiode,
+// fornyelse, opsigelse og fortrydelsesret skal være identiske. Ændrer du den ene,
+// skal du ændre den anden — ellers viser vi indløseren noget andet end kunden møder.
+//
+// CSS'en er stadig tilmeld.css: den er scoped under .birdly-tilmeld og giver de
+// visuelle byggeklodser (.card, .plans, .plan, .submit, .consent). Det er
+// TEKSTERNE der skal matche /start, ikke pixelplaceringen.
 //
 // ⚠️ PRISEN KOMMER FRA lib/pakke.js — samme kilde som funnelen. Aldrig hardkodet:
 // et tal skrevet af her ville kunne blive stående efter en prisændring, og så ville

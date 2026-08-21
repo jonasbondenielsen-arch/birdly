@@ -133,3 +133,25 @@ select.st-felt{appearance:none;background-image:url("data:image/svg+xml;utf8,<sv
 .st-note{margin-top:20px;background:#FFFDF5;border:1px solid #F2D98A;border-radius:12px;padding:16px 18px;text-align:left}
 .st-note b{display:block;font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:800;color:#8a6d1f;margin-bottom:5px}
 .st-note p{margin:0;font-size:14.5px;line-height:1.6;color:#6b5a1f}
+
+/* ── CLEARHAUS-OPLYSNINGER PÅ BETALINGSTRINNET (21-08-2026) ──
+   ⚠️ SAMME KLASSE-IDÉ som /checkout-forhaandsvisning, men egne definitioner:
+   start.css er uscoped, replikaens fil er det også, og en delt fil ville betyde at
+   en rettelse ét sted tavst ændrede det andet. Ændrer du udseendet her, skal du
+   ændre app/checkout-forhaandsvisning.css tilsvarende — replikaen er dét Clearhaus
+   har fået forelagt. */
+.st-saelger{border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-top:18px;background:#FCFDFE}
+.st-saelger-navn{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:15.5px;color:var(--navy)}
+.st-saelger-info{font-size:12.5px;color:var(--navy-soft);margin-top:2px}
+
+.st-ydelse{margin-top:16px}
+.st-ydelse b{display:block;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:14.5px;color:var(--navy);margin-bottom:5px}
+.st-ydelse p{font-size:14px;line-height:1.6;color:var(--navy)}
+.st-ydelse-sub{font-size:13px;color:var(--navy-soft);margin-top:5px}
+
+.st-abon{background:var(--sky-soft);border:1px solid var(--sky-200);border-radius:12px;padding:13px 15px;margin-top:16px}
+.st-abon b{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:14.5px;color:var(--navy)}
+.st-abon p{font-size:14px;line-height:1.65;color:var(--navy);margin-top:5px}
+.st-b2b{font-size:13px;line-height:1.6;color:var(--navy-soft)}
+.st-abon-links{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:9px}
+.st-abon-links a{font-size:13.5px;font-weight:700;color:var(--teal-dk)}
