@@ -10,6 +10,11 @@
    komponenten), og uden præfiks ville .card, .plan, .field og .inp kollidere med
    funnelens egne klasser i samme dokument.
 
+   ⚠️ INGEN EKSTRA-STILARTER. Filen indeholder KUN klasser der har en modsvarighed i
+   mockuppen. Banneret (.cfv-banner), captionen (.cfv-pay-cap) og tjeklisten (.cfv-tjek*)
+   er fjernet 22-08 sammen med deres markup — se noten i komponenten. Tilføjer du en
+   klasse her uden at den findes i mockuppen, er siden ikke længere 1:1.
+
    ⚠️ FARVERNE ER MOCKUPPENS EGNE, ikke globals.css-tokens. --muted #64748B og
    --line #E4E9EF findes ikke i vores tokensæt, og en tilnærmelse ville betyde at
    siden ikke længere er 1:1. Navy og teal er identiske med brandet.
@@ -35,14 +40,6 @@
 
 .cfv-wrap { max-width: 460px; margin: 0 auto }
 
-/* Banneret er ikke i mockuppen — det er tilføjet fordi siden ligner en rigtig
-   betalingsside, og enhver der åbner linket skal vide at den ikke er det. */
-.cfv-banner {
-  background: #FFF7E8; border: 1.5px solid #F0D9A8; border-radius: 12px;
-  padding: 12px 14px; font-size: 13px; line-height: 1.55; color: var(--cfv-ink);
-  margin-bottom: 18px;
-}
-
 .cfv-brand-row { display: flex; align-items: center; justify-content: center; gap: 9px; margin-bottom: 22px }
 .cfv-brand-mark {
   width: 30px; height: 30px; border-radius: 9px;
@@ -60,7 +57,7 @@
 .cfv-card h1 { font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; font-size: 24px; line-height: 1.15; font-weight: 800; letter-spacing: -.02em; margin: 0 0 12px }
 .cfv-sub { font-size: 15px; color: var(--cfv-muted); margin: 0 0 4px; font-weight: 500 }
 .cfv-sub strong { color: var(--cfv-ink); font-weight: 600 }
-.cfv-merchant { font-size: 13px; color: var(--cfv-muted); margin: 14px 0 0; line-height: 1.5 }
+.cfv-merchant { font-size: 12.5px; color: var(--cfv-muted); margin: 10px 0 0; line-height: 1.5 }
 
 /* Plan-valg */
 .cfv-plan { display: flex; gap: 8px; margin: 2px 0 12px }
@@ -79,18 +76,18 @@
   padding: 2px 7px; border-radius: 20px; letter-spacing: .03em;
 }
 
-/* "Sådan fungerer det" */
-.cfv-terms { margin: 18px 0 4px; border: 1px solid var(--cfv-line); border-radius: 14px; background: #F8FAFC; padding: 14px 15px }
-.cfv-terms h3 { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 13px; margin: 0 0 9px; font-weight: 700; letter-spacing: -.01em }
+/* "Sådan fungerer betalingen" — står UNDER kortboksen (22-08).
+   Overskriften er bevidst dæmpet (12px, versaler, muted) og punkterne mindre end før:
+   den essentielle oplysning står allerede ved knappen, og det her er detaljerne. */
+.cfv-terms { margin: 16px 0 0; border: 1px solid var(--cfv-line); border-radius: 14px; background: #F8FAFC; padding: 14px 15px }
+.cfv-terms h3 { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 12px; margin: 0 0 9px; font-weight: 700; letter-spacing: .02em; text-transform: uppercase; color: var(--cfv-muted) }
 .cfv-terms ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 7px }
-.cfv-terms li { display: flex; gap: 9px; font-size: 13.2px; line-height: 1.45; color: #334155 }
+.cfv-terms li { display: flex; gap: 9px; font-size: 12.8px; line-height: 1.45; color: #334155 }
 .cfv-tick { flex: none; width: 16px; height: 16px; border-radius: 50%; background: var(--cfv-teal); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 10px; margin-top: 1px }
 .cfv-terms a { color: var(--cfv-teal-dark); font-weight: 600; text-decoration: none; border-bottom: 1px solid rgba(0, 179, 166, .35) }
 
 /* Betalingsmodulet */
-.cfv-pay { margin-top: 20px; border: 1px solid var(--cfv-line); border-radius: 16px; padding: 16px 15px 15px; background: #fff }
-.cfv-pay-cap { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--cfv-muted); font-weight: 600; margin-bottom: 12px }
-.cfv-pay-cap svg { width: 12px; height: 12px; flex: none }
+.cfv-pay { margin-top: 18px; border: 1px solid var(--cfv-line); border-radius: 16px; padding: 16px 15px 15px; background: #fff }
 
 .cfv-wallet { display: flex; flex-direction: column; gap: 9px }
 /* ⚠️ <span>, ikke <button>. Se noten i komponenten: et klikbart element ville
@@ -131,12 +128,3 @@
 .cfv-bdg { height: 22px; padding: 0 8px; border: 1px solid var(--cfv-line); border-radius: 6px; display: flex; align-items: center; font-size: 10.5px; font-weight: 700; color: #475569; background: #fff; letter-spacing: .01em }
 .cfv-bdg.visa { color: #1A1F71 } .cfv-bdg.mc { color: #1a1a1a } .cfv-bdg.dk { color: #B01116 }
 .cfv-bdg.mp { color: #5A78FF } .cfv-bdg.ap { color: #000 }
-
-/* Tjeklisten er ikke i mockuppen — den er til modtageren, så de syv punkter kan
-   krydses af uden at lede. */
-.cfv-tjek { margin-top: 20px; background: #fff; border: 1px solid var(--cfv-line); border-radius: 16px; padding: 18px 20px }
-.cfv-tjek-h { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 14px; color: var(--cfv-navy); margin-bottom: 10px }
-.cfv-tjek ol { margin: 0; padding-left: 20px }
-.cfv-tjek li { font-size: 13px; line-height: 1.7; color: var(--cfv-muted) }
-.cfv-tjek li b { color: var(--cfv-ink) }
-.cfv-tjek-note { margin: 12px 0 0; font-size: 12.5px; line-height: 1.55; color: var(--cfv-muted) }

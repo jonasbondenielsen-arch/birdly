@@ -10,8 +10,12 @@ import CheckoutForhaandsvisning from "../../components/CheckoutForhaandsvisning"
 //
 // ⚠️ IKKE LINKET FRA NOGET. Hverken nav, funnel, footer eller betingelses-oversigt.
 // Adressen deles direkte af Jonas.
+// ⚠️ TITLEN ER /start'S EGEN, ikke en beskrivelse af hvad siden er.
+// Den stod før som "Forhåndsvisning af betalingsside — Birdly", og fanebladet er
+// synligt på ethvert skærmbillede: så ville replikaen afsløre sig selv som noget
+// andet end det den skal vise. Samme regel som resten af siden — ingen meta-tekst.
 export const metadata = {
-  title: "Forhåndsvisning af betalingsside — Birdly",
+  title: "Kom i gang | Birdly",
   robots: { index: false, follow: false },
 };
 
