@@ -462,7 +462,14 @@ export default function OpretOpgave({ rediger = null }) {
                       <select id="oo-region" className="st-felt" value={regionKey}
                         onChange={(e) => { setRegionRoert(true); setRegionKey(e.target.value); }}>
                         <option value="">Vælg landsdel …</option>
-                        {regioner.map((r) => <option key={r.key} value={r.key}>{r.name || r.key}</option>)}
+                        {/* ⚠️ `label_da`, IKKE `name`. Kataloget har aldrig haft et
+                            `name`-felt, så fallbacken slog til og dropdownen viste de rå
+                            nøgler: "sjaelland" uden æ, alt i småt, på en side en
+                            privatperson lander på. Funnelen (Start.js) læste hele tiden
+                            label_da korrekt — det var kun her feltnavnet var gættet.
+                            Fallback til key beholdt, så et nyt fag/region uden label
+                            stadig kan vælges frem for at stå som en tom linje. */}
+                        {regioner.map((r) => <option key={r.key} value={r.key}>{r.label_da || r.name || r.key}</option>)}
                       </select>
                     </div>
                   </div>
