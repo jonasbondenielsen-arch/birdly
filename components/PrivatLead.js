@@ -162,9 +162,33 @@ export default function PrivatLead({ token }) {
       <div className="pl-kort">
         <h2>Opgaven</h2>
         <p className="pl-besk">{opgave.beskrivelse}</p>
+
+        {/* ⚠️ BILLEDERNE VISES FØR EN PLADS TAGES — samme side af stregen som
+            beskrivelse og omfang. Det er vurderings-information: et foto af taget
+            fortæller mere om opgavens omfang end noget felt kan, og virksomheden skal
+            kunne afgøre om den er hendes tid værd uden at bruge en af de tre pladser.
+            Kontaktoplysningerne er stadig gated, se nedenfor.
+
+            ⚠️ LINKENE ER SIGNEREDE OG UDLØBER EFTER EN TIME. Bucket'en er privat;
+            adressen her er værdiløs i morgen. Derfor ingen "kopiér link"-funktion —
+            den ville give et link der er dødt inden det når frem. */}
+        {(opgave.billeder || []).length > 0 && (
+          <div className="pl-billeder">
+            {opgave.billeder.map((b) => (
+              <a key={b.id} href={b.url} target="_blank" rel="noopener noreferrer" title="Åbn i fuld størrelse">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={b.url} alt={"Billede af opgaven: " + (b.navn || "")} loading="lazy" />
+              </a>
+            ))}
+          </div>
+        )}
+
         <div className="pl-meta">
           {opgave.postnr && <span>Postnummer {opgave.postnr}</span>}
           {opgave.udbyder_type === "b2b" && <span>Oprettet af en virksomhed</span>}
+          {(opgave.billeder || []).length > 0 && (
+            <span>{opgave.billeder.length} {opgave.billeder.length === 1 ? "billede" : "billeder"} fra kunden</span>
+          )}
         </div>
       </div>
 

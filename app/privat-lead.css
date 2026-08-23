@@ -108,3 +108,12 @@
 .pl-rettet{background:#F1FAF8;border:1px solid #BFE7DF;border-radius:11px;padding:11px 14px;font-size:14.5px;font-weight:600;color:var(--teal-dk);margin-bottom:14px}
 /* "Rediger opgave" er et <Link>, men skal se ud som de øvrige mini-knapper. */
 a.pl-mini{display:inline-block;text-decoration:none}
+
+/* Billeder fra kunden. Grid frem for en raekke: paa en telefon skal fem billeder
+   ikke blive fem frimaerker, og paa en skaerm skal de ikke fylde en hel side.
+   object-fit: cover, saa et staaende og et liggende foto staar lige hoejt - ellers
+   hopper raekken. */
+.pl-billeder { display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:8px; margin-top:14px }
+.pl-billeder a { display:block; border-radius:10px; overflow:hidden; border:1px solid var(--line); background:#F3F6F9 }
+.pl-billeder img { display:block; width:100%; height:120px; object-fit:cover }
+.pl-billeder a:hover { border-color:var(--teal) }

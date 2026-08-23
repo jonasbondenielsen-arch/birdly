@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { BirdMark } from "./Logo";
 import { fetchCatalog } from "../lib/catalog";
-import { opretOpgave, redigerOpgave } from "../lib/privatOpgave";
+import { opretOpgave, redigerOpgave, uploadOpgaveBillede } from "../lib/privatOpgave";
 import { FORMIDLER_TEKST } from "../lib/formidlerTekst";
 import { OMFANG } from "../lib/omfang";
 import { slaaPostnrOp } from "../lib/postnumre";
@@ -48,6 +48,13 @@ const HVORNAAR = [
 // fritekstfelt. Holdes adskilt fra katalogets nøgler så den aldrig kan forveksles
 // med et rigtigt fag når opgaven skal matches.
 const ANDET = "__andet__";
+
+// ⚠️ SKAL STEMME MED opgave-billeder (Edge Function) OG bucket-loftet i 0085. De tre
+// steder håndhæver hver sit lag: browseren for at give besked med det samme,
+// function'en fordi klienten kan omgås, bucket'en fordi function'en kan rettes ved et
+// uheld. Ændrer du tallet her, så ændr det alle tre steder.
+const MAKS_BILLEDER = 5;
+const MAKS_BILLED_BYTES = 10 * 1024 * 1024;
 
 const FAQ = [
   {
@@ -133,6 +140,9 @@ export default function OpretOpgave({ rediger = null }) {
   // Honeypot: skjult for mennesker. Er det udfyldt, er afsenderen en bot.
   const [hp, setHp] = useState("");
   const [listeUrl, setListeUrl] = useState("");
+  // Hvor mange billeder der faktisk kom frem. Vises på kvitteringen, fordi hun ellers
+  // ikke kan vide om de nåede med — og det var netop dét feltet før lod som om.
+  const [billedStatus, setBilledStatus] = useState(null);
 
   // Samme kilde som funnelen. Fejler opslaget, står listen tom frem for at falde
   // tilbage på en hardkodet kopi der kan være forældet.
@@ -222,6 +232,30 @@ export default function OpretOpgave({ rediger = null }) {
           return;
         }
         if (r.list_token) setListeUrl(`/opgave/${r.list_token}`);
+
+        // ⚠️ BILLEDERNE SENDES HER — EFTER opgaven findes, og ALDRIG som betingelse
+        // for den. Opgaven er allerede gemt på dette punkt: fejler en upload, mister
+        // hun et billede, ikke sin opgave. Den omvendte rækkefølge ville lade et
+        // dårligt mobilsignal koste hende hele oprettelsen.
+        //
+        // Én ad gangen frem for parallelt: fem samtidige uploads fra en telefon på
+        // mobildata er den sikreste måde at få dem alle til at fejle på.
+        if (filer.length && r.list_token && r.opgave_id) {
+          let ok = 0;
+          for (const fil of filer) {
+            try {
+              await uploadOpgaveBillede(r.list_token, r.opgave_id, fil);
+              ok++;
+            } catch (uf) {
+              console.error("[opret-opgave] billede ikke uploadet:", fil.name, uf?.kode || uf?.message);
+            }
+          }
+          // ⚠️ SIGES HØJT PÅ KVITTERINGEN. Gik et billede tabt, skal hun vide det —
+          // ellers tror hun håndværkeren kan se noget han ikke kan, og det var præcis
+          // den løgn feltet fortalte før.
+          setBilledStatus({ ok, i_alt: filer.length });
+        }
+
         setSendt(true);
         window.scrollTo({ top: 0, behavior: "smooth" });
       } catch (e) {
@@ -297,6 +331,18 @@ export default function OpretOpgave({ rediger = null }) {
                     Du forpligter dig ikke til noget — og du bestemmer selv, om du vil gå
                     videre med en af dem, der kontakter dig.
                   </p>
+                  {billedStatus && (
+                    billedStatus.ok === billedStatus.i_alt ? (
+                      <p style={{ fontSize: 14 }}>
+                        {billedStatus.ok === 1 ? "Dit billede" : `Dine ${billedStatus.ok} billeder`} følger med opgaven.
+                      </p>
+                    ) : (
+                      <p style={{ fontSize: 14, color: "#C2410C" }}>
+                        {billedStatus.ok} af {billedStatus.i_alt} billeder blev sendt med. Du kan
+                        tilføje resten fra din opgaveside.
+                      </p>
+                    )
+                  )}
                   {listeUrl && (
                     <>
                       {/* ⚠️ LINKET SKAL STÅ HER, ikke kun i mailen. Opretteren har ingen
@@ -459,10 +505,27 @@ export default function OpretOpgave({ rediger = null }) {
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6B7785" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                       <path d="M12 16V4m0 0L8 8m4-4l4 4M3 18h18" />
                     </svg>
-                    <div>Træk billeder hertil, eller <b>vælg fra din enhed</b></div>
+                    <div>
+                      Træk billeder hertil, eller <b>vælg fra din enhed</b>
+                      <div style={{ fontSize: 12.5, color: "var(--navy-soft)", marginTop: 4 }}>
+                        Op til {MAKS_BILLEDER} billeder, maks 10 MB hver. Virksomhederne kan se dem sammen med opgaven.
+                      </div>
+                    </div>
                   </label>
                   <input id="oo-fil" type="file" multiple accept="image/*" style={{ display: "none" }}
-                    onChange={(e) => setFiler([...(e.target.files || [])])} />
+                    onChange={(e) => {
+                      // ⚠️ LOFTET STÅR OGSÅ SERVER-SIDE (opgave-billeder). Her er det for
+                      // at hun får besked med det samme frem for at opdage det bagefter.
+                      const valgte = [...(e.target.files || [])];
+                      if (valgte.length > MAKS_BILLEDER) {
+                        setFejl(`Du kan vedhæfte op til ${MAKS_BILLEDER} billeder — de første ${MAKS_BILLEDER} er valgt.`);
+                      }
+                      const forStore = valgte.filter((f) => f.size > MAKS_BILLED_BYTES).map((f) => f.name);
+                      if (forStore.length) {
+                        setFejl(`Disse billeder er over 10 MB og kan ikke sendes med: ${forStore.join(", ")}`);
+                      }
+                      setFiler(valgte.filter((f) => f.size <= MAKS_BILLED_BYTES).slice(0, MAKS_BILLEDER));
+                    }} />
                   {filer.length > 0 && (
                     <div className="oo-filnavne">
                       {filer.length} {filer.length === 1 ? "billede" : "billeder"} valgt: {filer.map((f) => f.name).join(", ")}
