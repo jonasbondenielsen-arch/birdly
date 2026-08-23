@@ -17,7 +17,7 @@ import "../app/opret-opgave.css";
 //
 // ⚠️ ORDET "RELEVANT" BRUGES ALDRIG I KUNDEVENDT TEKST. Det er husreglen, og der er
 // en ekstra grund her: "relevante virksomheder" antyder at vi har vurderet og udvalgt
-// dem. Det gør vi ikke — vi matcher på fag og område. Betingelsernes §7 siger
+// dem. Det gør vi ikke — vi matcher på fag og område. Betingelsernes §8 siger
 // udtrykkeligt at vi ikke indestår for den enkelte virksomhed, og hero-teksten må ikke
 // love noget de fralægger sig tre klik senere.
 //
@@ -508,7 +508,13 @@ export default function OpretOpgave({ rediger = null }) {
                     <div>
                       Træk billeder hertil, eller <b>vælg fra din enhed</b>
                       <div style={{ fontSize: 12.5, color: "var(--navy-soft)", marginTop: 4 }}>
-                        Op til {MAKS_BILLEDER} billeder, maks 10 MB hver. Virksomhederne kan se dem sammen med opgaven.
+                        Op til {MAKS_BILLEDER} billeder, maks 10 MB hver.
+                      </div>
+                      {/* ⚠️ UX-TEKST, IKKE JURIDISK — men den står her frem for i
+                          betingelserne, fordi det er HER hun vælger filerne. En advarsel
+                          hun først møder efter uploaden er ubrugelig. */}
+                      <div style={{ fontSize: 12.5, color: "var(--navy-soft)", marginTop: 4 }}>
+                        Upload kun billeder, der viser selve opgaven. Undgå ansigter, dokumenter og andet, du ikke vil dele.
                       </div>
                     </div>
                   </label>
@@ -565,19 +571,25 @@ export default function OpretOpgave({ rediger = null }) {
                       klientkald ikke kan springe det over. To lag, fordi samtykket er
                       hjemlen til overhovedet at dele nummeret videre.
 
-                      ⚠️ ORDLYDEN ER JURIDISK TEKST og afventer Jonas + advokat. Skriv den
-                      ikke om for at gøre den kortere. Den tidligere formulering sagde
-                      "relevante virksomheder" — det ord bruger vi ikke i kundevendt
-                      tekst, og det antyder desuden en udvælgelse vi ikke foretager. */}
+                      ⚠️ ORDLYDEN ER JURIDISK TEKST, skrevet af Jonas 23-08-2026 og indsat
+                      ORDRET. Skriv den ikke om — heller ikke for at gøre den kortere.
+                      Advokat kigger den efter; indtil da er den som den er.
+
+                      ⚠️ DEN BESKRIVER TO FORSKELLIGE DELINGER, og forskellen er hele
+                      pointen: beskrivelse + billeder går til ALLE matchede virksomheder,
+                      så de kan vurdere opgaven — kontaktoplysningerne først til de op til
+                      3 der aktivt byder. Slås de to sammen i en kortere sætning, lover
+                      teksten noget andet end systemet gør. */}
                   <label className="st-tjek">
                     <input type="checkbox" checked={samtykke} onChange={(e) => setSamtykke(e.target.checked)} />
                     <span>
-                      Jeg accepterer{" "}
+                      Jeg accepterer, at Birdly deler min opgavebeskrivelse og eventuelle
+                      billeder med de virksomheder, der matcher min opgave — og at mine
+                      kontaktoplysninger først deles med de op til 3 virksomheder, der
+                      vælger at byde på opgaven. Se{" "}
                       <Link href="/betingelser-private-opgaver" target="_blank" rel="noopener noreferrer">
-                        Betingelser for oprettelse af private opgaver
-                      </Link>{" "}
-                      og at Birdly deler mine kontaktoplysninger med de virksomheder, der
-                      tager min opgave.
+                        betingelser for private opgaver
+                      </Link>.
                     </span>
                   </label>
 
