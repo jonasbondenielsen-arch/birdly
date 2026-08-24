@@ -893,6 +893,27 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
               <label className="st-lab" htmlFor="tlf">Mobilnummer <span className="st-valgfri">(det er her beskeden lander)</span></label>
               <input id="tlf" className="st-felt" inputMode="tel" value={tlf} onChange={(e) => setTlf(e.target.value)} autoComplete="tel" placeholder="12 34 56 78" />
 
+              {/* ⚠️ OPLYSNINGSPLIGT, IKKE ET SAMTYKKE — og derfor bevidst IKKE et
+                  flueben. Nye kunder får wants_private_opgaver = true som standard
+                  (migration 0090). Opt-out-modellen holder kun, hvis kunden ER blevet
+                  oplyst; annonceringen 24-08-2026 lukkede hullet for de eksisterende
+                  kunder, og denne linje lukker det for alle fremtidige.
+
+                  ⚠️ ET FLUEBEN HER VILLE GØRE DET TIL ET TILVALG IGEN og dermed vende
+                  hele modellen tilbage til opt-in. Hun skal informeres, ikke spørges.
+
+                  ⚠️ DEN STÅR OVER SAMTYKKERNE, ikke under knappen. Oplysningen skal
+                  være læst inden hun accepterer — ikke findes bagefter.
+
+                  ⚠️ ORDLYDEN ER JONAS' OG ER INDSAT ORDRET. Skriv den ikke om. Den
+                  peger på "Rediger" på opgavesiden, og dét sted skal blive ved med at
+                  hedde det — se noten i MineOpgaver.js. */}
+              <p className="st-hj" style={{ marginTop: 18 }}>
+                Din overvågning inkluderer både offentlige udbud og private opgaver i dit
+                fag og område. Du kan til enhver tid fravælge private opgaver under
+                &ldquo;Rediger&rdquo; på din opgaveside.
+              </p>
+
               {/* ⚠️ TO SEPARATE SAMTYKKER (Clearhaus-krav). Handelsbetingelser og
                   abonnementsbetingelser skal accepteres hver for sig, så det er
                   tydeligt hvad kunden siger ja til. Begge er PÅKRÆVEDE og gater
