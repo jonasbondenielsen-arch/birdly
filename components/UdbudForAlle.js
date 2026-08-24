@@ -28,9 +28,9 @@ export default function UdbudForAlle() {
       <div className="hero">
         <div className="wrap">
           <span className="ey">🐦 Vores holdning</span>
-          <h1>Opgaver er for alle</h1>
-          <div className="psst">— ikke kun for de store</div>
-          <p>Offentlige opgaver burde ikke kun være for dem med en hel udbudsafdeling. Hos Birdly gør vi dem tilgængelige for de små og mellemstore — helt automatisk.</p>
+          <h1>Gode opgaver er ikke kun for de store</h1>
+          <div className="psst">— hverken de offentlige eller de private</div>
+          <p>Birdly finder både offentlige og private opgaver til virksomheder i alle størrelser. Du vælger selv, hvilke der passer til dig.</p>
           <div className="btns">
             <Link href="/kom-i-gang" className="btn btn-teal">Find opgaver nu</Link>
             <a href="/#hvordan" className="btn btn-ghost">Se hvordan det virker</a>
@@ -64,6 +64,18 @@ export default function UdbudForAlle() {
           <div className="lead">Brug krudtet på det, der faktisk tæller</div>
           <p className="body">Når overvågningen er ude af jeres hænder, kan I lægge energien dér, hvor den gør en forskel: at skære jeres tilbud til, beskrive jeres ydelser skarpt og samle de rette referencer.</p>
           <p className="body">Det er dét, der vinder opgaver — ikke at sidde og scrolle i endeløse udbudslister.</p>
+        </div>
+      </section>
+
+      {/* ⚠️ PRIVATE OPGAVER SOM DEN LETTE INDGANG. Sektionerne over denne forklarer
+          hvorfor offentlige udbud er tunge — og præcis dér er indvendingen størst:
+          "det er ikke noget for os". Private opgaver er svaret, fordi de ikke har
+          udbudsmateriale, frister eller formalia. Står den længere nede, har læseren
+          allerede besluttet sig. */}
+      <section>
+        <div className="wrap">
+          <div className="lead">Vil du hellere have de simple opgaver?</div>
+          <p className="body">Ikke alle virksomheder har lyst til at starte med offentlige udbud. Derfor sender Birdly også private opgaver direkte fra kunder, der leder efter virksomheder som din. Ingen udbudsmateriale. Ingen kompliceret proces. <b>Bare en kunde med en opgave.</b></p>
         </div>
       </section>
 
@@ -173,7 +185,7 @@ export default function UdbudForAlle() {
       <section className="cta">
         <div className="wrap">
           <h2>Giv din virksomhed en fair chance</h2>
-          <p>Tilmeld dig på to minutter, og lad os holde øje med udbuddene — så du kan bruge tiden på at vinde dem.</p>
+          <p>Det tager to minutter. Så holder Birdly øje med både offentlige og private opgaver — og du bruger tiden på at vinde dem.</p>
           <Link href="/kom-i-gang" className="btn btn-teal">Find opgaver nu</Link>
         </div>
       </section>

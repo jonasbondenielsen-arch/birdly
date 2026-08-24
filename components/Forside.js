@@ -233,15 +233,19 @@ export default function Forside({ opgaveTal = null }) {
               <svg className="ic" viewBox="0 0 24 24" fill="none">
                 <path d="M5 7h14M5 12h14M5 17h9" stroke="#2EB7FF" strokeWidth="2.2" strokeLinecap="round" />
               </svg>{" "}
-              Brevduen for offentlige opgaver
+              Brevduen for opgaver til din virksomhed
             </span>
-            <h1>Offentlige opgaver.<br />Direkte på <span className="sky-em">SMS.</span></h1>
-            {/* ⚠️ KUN TEKSTEN (03-08-2026). Samme <p className="sub"> som før — ingen
-                ny klasse, ingen ny margin. <br /> deler den i to linjer, fordi
-                sætningerne siger to forskellige ting: hvad du får, og hvad du slipper
-                for. "relevante" er bevidst væk; resten af copy'en siger "passer". */}
+            <h1>Opgaver til din virksomhed.<br />Direkte på <span className="sky-em">SMS.</span></h1>
+            {/* ⚠️ KUN TEKSTEN. Samme <p className="sub"> som før — ingen ny klasse,
+                ingen ny margin. <br /> deler den i to linjer, fordi sætningerne siger
+                to forskellige ting: hvad du får, og hvad du slipper for.
+
+                ⚠️ "RELEVANTE OPGAVER" ER OK — "RELEVANTE VIRKSOMHEDER" ER IKKE.
+                Birdly matcher opgaver mod de kriterier kunden selv har valgt; vi
+                screener, vurderer eller anbefaler ingen virksomheder. Den skelnen
+                gælder hele B2B-fladen. */}
             <p className="sub">
-              Du får kun besked, når der er en offentlig opgave, der passer til din virksomhed.
+              Birdly finder relevante offentlige og private opgaver, der passer til din virksomhed — og sender dig besked, når der er et match.
               <br />
               Ingen søgning. Ingen portal. Kun de opgaver, der passer til dig — direkte på SMS og mail.
             </p>
@@ -295,9 +299,9 @@ export default function Forside({ opgaveTal = null }) {
       <section>
         <div className="wrap">
           <div className="center reveal">
-            <h2 className="big">Slip for selv at holde øje med offentlige opgaver.</h2>
-            <p className="lead">Hver dag offentliggøres nye opgaver. Birdly holder automatisk øje med dem for dig og sender kun dem, der matcher din virksomhed. Du bruger tiden på kunder og projekter — ikke på søgninger.</p>
-            <p className="owner-line reveal">Du fortæller os, hvilke opgaver du leder efter. Vi holder øje. Du får besked.</p>
+            <h2 className="big">Slip for selv at lede efter opgaver.</h2>
+            <p className="lead">Birdly holder øje for dig. Når en relevant opgave dukker op, får du besked direkte på SMS og mail. Du bruger tiden på kunder og projekter — ikke på søgninger.</p>
+            <p className="owner-line reveal">Du fortæller os, hvad du vil have. Vi finder resten.</p>
           </div>
         </div>
       </section>
@@ -347,23 +351,23 @@ export default function Forside({ opgaveTal = null }) {
           <div className="center reveal">
             <span className="kick">Kender du det?</span>
             <h2 className="big">Opgaverne er der.<br />De er bare svære at finde.</h2>
-            <p className="lead">Mange firmaer går glip af gode opgaver fra det offentlige — de ligger spredt, og fristen er der, før man opdager dem.</p>
+            <p className="lead">Gode opgaver dukker op mange steder — nogle slås offentligt op, andre oprettes direkte af private kunder. Birdly samler dem og sender de relevante til dig.</p>
           </div>
           <div className="pain-grid">
             <div className="pcard reveal">
               <div className="ic"><svg width="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#FF6B6B" strokeWidth="2" /><path d="M12 7v5l3 2" stroke="#FF6B6B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg></div>
               <h3>Du ser dem for sent</h3>
-              <p>Fristen er der tit, før du overhovedet opdager opgaven.</p>
+              <p>Den gode opgave er allerede taget.</p>
             </div>
             <div className="pcard reveal">
               <div className="ic"><svg width="22" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h10" stroke="#FF6B6B" strokeWidth="2" strokeLinecap="round" /></svg></div>
               <h3>De ligger spredt</h3>
-              <p>Opgaverne er fordelt på tunge portaler med login. At holde øje koster timer hver uge.</p>
+              <p>Du skal lede flere steder.</p>
             </div>
             <div className="pcard reveal">
               <div className="ic"><svg width="22" viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="#FF6B6B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /><path d="M14 2v6h6" stroke="#FF6B6B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /><path d="M16 13H8M16 17H8M10 9H8" stroke="#FF6B6B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg></div>
-              <h3>Buddet tager tid</h3>
-              <p>Når du endelig finder en opgave, æder selve tilbuddet de timer, du ikke har.</p>
+              <h3>Du har andet at lave</h3>
+              <p>Din tid er bedre brugt på arbejdet.</p>
             </div>
           </div>
           <p className="pain-bridge reveal">Du får beskeden om de rette opgaver — og en skabelon klar, hvis du vil byde. Resten bestemmer du selv.</p>
@@ -380,7 +384,7 @@ export default function Forside({ opgaveTal = null }) {
           </div>
           <div className="steps">
             <div className="stp reveal"><div className="num">1</div><h3>Fortæl os hvad du laver</h3><p>Vælg branche, område og ønsket opgavestørrelse. Det tager få minutter.</p></div>
-            <div className="stp reveal"><div className="num">2</div><h3>Birdly holder øje</h3><p>Vi holder øje med relevante offentlige opgaver. Du behøver ikke logge ind eller søge hver dag.</p></div>
+            <div className="stp reveal"><div className="num">2</div><h3>Birdly holder øje</h3><p>Vi finder relevante offentlige og private opgaver. Du behøver ikke logge ind eller søge hver dag.</p></div>
             <div className="stp reveal"><div className="num">3</div><h3>Få besked</h3><p>Når vi finder relevante opgaver, får du én samlet besked med dagens matches.</p></div>
             <div className="stp reveal"><div className="num">4</div><h3>Vi hjælper dig i mål</h3><p>Skabelonen følger med i linket. Brug den eller lad være — men den sparer mange for timers arbejde.</p></div>
           </div>
@@ -485,7 +489,7 @@ export default function Forside({ opgaveTal = null }) {
         <div className="wrap">
           <div className="center reveal">
             <h2 className="big">Du skal ikke finde flere opgaver.<br />Du skal finde de rigtige.</h2>
-            <p className="lead">Der offentliggøres tusindvis af udbud. De færreste er relevante for netop din virksomhed. Birdly sorterer dem fra på forhånd, så du kun ser de opgaver, der passer til dine valg.</p>
+            <p className="lead">Der findes masser af opgaver. Problemet er at finde dem, der faktisk passer til din virksomhed. Du vælger fag, område og type — Birdly sorterer resten.</p>
             <p className="owner-line reveal">Du bestemmer selv fag, område, opgavetype og kontraktværdi. Birdly sender kun opgaver, der matcher dine valg.</p>
           </div>
         </div>
@@ -534,7 +538,7 @@ export default function Forside({ opgaveTal = null }) {
           <div className="price-incl reveal">
             <h3>Det får du — uanset hvad du vælger</h3>
             <ul>
-              <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>Alle kommunale &amp; statslige opgaver — i <b>din region eller hele Danmark</b>, samme pris</span></li>
+              <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>Offentlige <b>og private</b> opgaver — i <b>din region eller hele Danmark</b>, samme pris</span></li>
               <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>SMS + mail ved match — resumé, dato og link</span></li>
               <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>Bud-skabelon inkluderet</span></li>
               <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>Betal månedligt — eller spar ~{YEARLY_SAVING.pct} % på årsbetaling</span></li>
@@ -542,7 +546,7 @@ export default function Forside({ opgaveTal = null }) {
             </ul>
           </div>
 
-          <p className="price-note">En enkelt offentlig opgave kan betale abonnementet mange gange hjem. De første 14 dage er gratis — opsiger du inden da, trækkes der intet. Alle priser er ekskl. moms.</p>
+          <p className="price-note">En enkelt opgave kan betale abonnementet mange gange hjem. De første 14 dage er gratis — opsiger du inden da, trækkes der intet. Alle priser er ekskl. moms.</p>
         </div>
       </section>
 
@@ -593,7 +597,7 @@ export default function Forside({ opgaveTal = null }) {
         <div className="wrap">
           <div className="su-grid">
             <div className="reveal">
-              <span className="kick">Kom i gang</span>
+              <span className="kick">Sådan starter du</span>
               <h2>Få dit første match — gratis i 14 dage.</h2>
               <p className="lead">Udfyld få oplysninger, så holder Birdly øje for dig. Du hører fra os, så snart der er en opgave, der passer.</p>
               <ul>

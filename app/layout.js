@@ -5,9 +5,18 @@ import { SITE_URL } from "../lib/site";
 
 // Standard-metadata for hele sitet (undersider med egen title/description
 // overstyrer disse). metadataBase gør og:image/relative URL'er absolutte.
-const SITE_TITLE = "Offentlige opgaver direkte på SMS | Birdly";
+// ⚠️ "offentlige" BLIVER STÅENDE — der TILFØJES kun. Sitet rangerer på præcis den
+// term, og en title uden den ville koste den placering uden at vinde en ny. Men
+// Birdly leverer nu også private opgaver, og en title der kun siger "offentlige"
+// beskriver ikke længere produktet. Derfor begge dele, i den rækkefølge Google
+// allerede kender.
+//
+// ⚠️ FORSIDEN FORBLIVER B2B. /opret-opgave har sin egen B2C-title og sin egen
+// selv-refererende canonical — de to sider målretter hver sin søgeintention og må
+// ikke konkurrere. Se app/opret-opgave/page.js.
+const SITE_TITLE = "Offentlige og private opgaver direkte på SMS | Birdly";
 const SITE_DESCRIPTION =
-  "Få besked, når kommuner, regioner og staten har en opgave, der passer til dit fag og dit område. Birdly sender dig en SMS — gratis i 14 dage.";
+  "Få besked, når der er en opgave, der passer til dit fag og dit område — fra kommuner, regioner og staten, eller direkte fra private kunder. Birdly sender dig en SMS — gratis i 14 dage.";
 
 export const metadata = {
   // ⚠️ SKAL være den vært der svarer 200. apex omdirigerer til www, så canonical og

@@ -21,9 +21,11 @@ import { FAQ_SCHEMA } from "../lib/faq";
 // Kopieret ville de to sæt langsomt drive fra hinanden.
 
 export const metadata = {
-  title: "Offentlige opgaver direkte på SMS | Birdly",
+  // Samme afvejning som i app/layout.js: "offentlige" bliver staaende, fordi sitet
+  // rangerer paa den term - "private" laegges til, fordi Birdly nu leverer begge dele.
+  title: "Offentlige og private opgaver direkte på SMS | Birdly",
   description:
-    "Få besked, når kommuner, regioner og staten har en opgave, der passer til dit fag og dit område. Birdly sender dig en SMS — gratis i 14 dage.",
+    "Få besked, når der er en opgave, der passer til dit fag og dit område — fra kommuner, regioner og staten, eller direkte fra private kunder. Birdly sender dig en SMS — gratis i 14 dage.",
   // Forsiden manglede canonical HELT — den vigtigste side var den svagest mærkede på
   // hele sitet, mens undersiderne havde deres i orden.
   alternates: { canonical: "/" },

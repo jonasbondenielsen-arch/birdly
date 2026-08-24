@@ -32,7 +32,16 @@ const HouseIcon = () => (
 // bevidst ikke en ny sidetype: to skabeloner for det samme ville drive fra hinanden,
 // og så ville halvdelen af siderne stille og roligt holde op med at ligne Birdly.
 export default function BrancheSide({ data, region = null, opgaveTal = null }) {
-  const { slug, nounPlural, nounSingular, fagKey, arbejde, ex1, ex2, kortSvarExtra, whyHeading, whyText, eksemplerIntro, examples, faq } = data;
+  const { slug, nounPlural, nounSingular, fagKey, arbejde, ex1, ex2, kortSvarExtra, whyHeading, whyText, eksemplerIntro, examples, faq, privatRelevans, privatLinje } = data;
+
+  // ⚠️ ÆRLIGHEDSREGEL, IKKE EN STILVARIANT (Jonas 24-08-2026). Private opgaver må kun
+  // loves dér hvor de reelt kommer. En tømrer får private opgaver hver uge; et
+  // IT-firma eller en revisor gør ikke, og en side der lover dem sælger noget vi ikke
+  // kan levere — og det opdager kunden allerede i sin første måned.
+  //
+  // Klassificeringen står som et felt PR. BRANCHE i lib/branche.js, ikke som en
+  // liste her: så er det ét sted at rette den dag et fag flytter gruppe.
+  const harPrivate = privatRelevans === "hoej";
   // Funnelen forstår allerede ?fag=; ?region= er tilføjet efter samme mønster, så
   // kunden lander med både fag og område forvalgt og har færre klik tilbage.
   const funnel = "/kom-i-gang?fag=" + fagKey + (region ? "&region=" + region.slug : "");
@@ -92,13 +101,19 @@ export default function BrancheSide({ data, region = null, opgaveTal = null }) {
         <div className="wrap center" style={{ position: "relative", zIndex: 2 }}>
           <span className="pill">🐦 Gratis i 14 dage — ingen binding</span>
           <h1>
-            Offentlige opgaver for {nounPlural}{sted}
+            {harPrivate ? "Opgaver for " : "Relevante opgaver til "}{nounPlural}{sted}
             <br />— direkte på <span className="sky-em">SMS</span>
           </h1>
           <p className="sub" style={{ marginLeft: "auto", marginRight: "auto" }}>
-            {region
-              ? `Kommunerne ${region.praep} ${region.navn} har hele tiden opgaver til ${nounPlural}. Birdly holder øje med dem alle sammen og sender dig en SMS, når der er en, der passer til dit firma.`
-              : `Kommuner, regioner og staten har hele tiden opgaver til ${nounPlural}. Birdly finder dem, der passer til dit firma, og sender dig en SMS, når der er et match.`}
+            {/* Samme sætning, to sandheder: fag med private opgaver får dem nævnt,
+                de øvrige får den rene offentlige formulering. Se harPrivate ovenfor. */}
+            {harPrivate
+              ? (region
+                  ? `Birdly finder relevante offentlige og private opgaver til ${nounPlural} ${region.praep} ${region.navn} — og sender dig besked, når der er et match.`
+                  : `Birdly finder relevante offentlige og private opgaver til ${nounPlural} og sender dig besked, når der er et match.`)
+              : (region
+                  ? `Kommunerne ${region.praep} ${region.navn} har hele tiden opgaver til ${nounPlural}. Birdly holder øje med dem alle sammen og sender dig en SMS, når der er en, der passer til dit firma.`
+                  : `Kommuner, regioner og staten har hele tiden opgaver til ${nounPlural}. Birdly finder dem, der passer til dit firma, og sender dig en SMS, når der er et match.`)}
           </p>
           <div className="checks" style={{ justifyContent: "center" }}>
             <span><Check /> Kun opgaver, der passer til dig</span>
@@ -114,10 +129,17 @@ export default function BrancheSide({ data, region = null, opgaveTal = null }) {
       <section>
         <div className="wrap center" style={{ maxWidth: 820 }}>
           <span className="kick">Det korte svar</span>
-          <h2 className="big">Ja — også dit firma kan byde.</h2>
+          <h2 className="big">{harPrivate ? "Ja — også opgaver dit firma kan byde på." : "Ja — også dit firma kan byde."}</h2>
           <p className="lead">
             Det offentlige køber hele tiden {arbejde} hos private firmaer — fra {ex1} til {ex2}. Du behøver ikke være stor. Du skal bare kunne se opgaverne i tide — og det er præcis det, Birdly hjælper med.{kortSvarExtra ? " " + kortSvarExtra : ""}
           </p>
+          {/* Kun hvor der faktisk kommer private opgaver. Sætningen står pr. branche
+              i lib/branche.js, så eksemplerne er fagets egne og ikke generiske. */}
+          {harPrivate && privatLinje && (
+            <p className="lead" style={{ marginTop: 14 }}>
+              <b>{privatLinje}</b> Birdly holder øje og sender dig de opgaver, der passer til dit firma.
+            </p>
+          )}
         </div>
       </section>
 
@@ -127,6 +149,11 @@ export default function BrancheSide({ data, region = null, opgaveTal = null }) {
           <span className="kick">Hvorfor det er værd at kigge</span>
           <h2 className="big">{whyHeading}</h2>
           <p className="lead">{whyText}</p>
+          {harPrivate && (
+            <p className="lead" style={{ marginTop: 14 }}>
+              Du vælger selv område og type opgave. Birdly finder mulighederne og sender dig besked.
+            </p>
+          )}
           <div className="cta" style={{ justifyContent: "center", marginTop: 22 }}>
             <Link href={funnel} className="btn btn-teal">Find opgaver nu</Link>
           </div>

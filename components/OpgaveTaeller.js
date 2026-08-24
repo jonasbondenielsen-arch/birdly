@@ -55,8 +55,15 @@ export default function OpgaveTaeller({ tal }) {
             tæller hele beholdningen — også udbud hvis frist er passeret — og om dem
             ville "klar til at blive budt på" være usandt. "Vi holder øje med" er
             sandt om alle, og er den formulering fag-siderne allerede bruger. */}
+        {/* ⚠️ TALLET DÆKKER KUN DE OFFENTLIGE, OG DET SKAL DET BLIVE VED MED.
+            Birdly leverer nu også private opgaver, men der er ~0 af dem i dag.
+            Lægges de sammen — eller opfindes der et privat tal — er baren ikke
+            længere sand om noget som helst, og den er hele sidens eneste
+            beviselige tal. Private nævnes derfor som en MULIGHED uden tal, indtil
+            antallet kan måles troværdigt. */}
         <span className="opgtal-tekst">
           Vi holder øje med <b className="opgtal-num">{daTal(n)}</b> offentlige {n === 1 ? "opgave" : "opgaver"}
+          <span className="opgtal-privat"> — og nu også private opgaver</span>
         </span>
         {/* Ægte tidspunkt for seneste hentning — aldrig klientens ur. Mangler det,
             står linjen der slet ikke; et tal uden dato er bedre end en dato vi har

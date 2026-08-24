@@ -81,10 +81,10 @@ export default function BrancherPage() {
         <div className="wrap center" style={{ position: "relative", zIndex: 2 }}>
           <span className="pill">🐦 For dit fag</span>
           <h1>
-            Offentlige opgaver — for <span className="sky-em">dit fag</span>
+            Opgaver — for <span className="sky-em">dit fag</span>
           </h1>
           <p className="sub" style={{ marginLeft: "auto", marginRight: "auto" }}>
-            Vælg din branche og se, hvordan Birdly finder de opgaver, der passer til dig — og sender dig en SMS, når der er et match.
+            Vælg din branche og se, hvordan Birdly finder relevante opgaver til virksomheder som din.
           </p>
         </div>
       </section>

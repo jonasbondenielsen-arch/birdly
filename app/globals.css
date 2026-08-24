@@ -35,6 +35,11 @@ img{display:block;max-width:100%}
 .opgtal-inner{max-width:1080px;margin:0 auto;padding:11px 22px;display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap}
 .opgtal-tekst{font-size:15.5px;color:var(--navy);line-height:1.4}
 .opgtal-tekst b{font-weight:800}
+/* "— og nu ogsaa private opgaver": daempet, fordi det IKKE er et tal. Samme vaegt
+   som resten ville laese som om der stod et antal bag. Skjules paa smalle skaerme,
+   hvor baren ellers wrapper til to linjer og skubber sidens indhold ned. */
+.opgtal-privat{color:var(--navy-soft);font-weight:500}
+@media (max-width:560px){.opgtal-privat{display:none}}
 /* Tallet er den visuelle helt — teal, stort, Plus Jakarta 800. */
 .opgtal-num{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:25px;color:var(--teal);letter-spacing:-.02em;line-height:1;vertical-align:-2px;margin:0 3px}
 /* Dioden pulserer blødt — en "live"-indikator, ikke en alarm. 2,4 s og en meget
