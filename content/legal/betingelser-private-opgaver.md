@@ -48,7 +48,7 @@ Vi behandler dine oplysninger for at kunne formidle din opgave. Kontaktoplysning
 
 ## 10. Opgavens levetid
 
-En opgave er aktiv i tre dage. Du kan når som helst lukke den eller markere den som løst. Bliver den ikke taget af nogen virksomhed inden for tre dage, tages den ned fra vores matchmotor, og du kan vælge at opdatere og genudbyde den én gang.
+En opgave er aktiv i en periode, der fremgår på din kvittering og på din opgaveside. Du kan når som helst lukke den eller markere den som løst. Bliver den ikke taget af nogen virksomhed inden for perioden, tages den ned fra vores matchmotor, og du kan vælge at opdatere og genudbyde den én gang.
 
 ## 11. Dit ansvar
 
