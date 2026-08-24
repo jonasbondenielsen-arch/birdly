@@ -204,3 +204,9 @@ a.pl-mini{display:inline-block;text-decoration:none}
   .of-ark{align-items:center;padding:20px}
   .of-kort{border-radius:18px}
 }
+
+/* Fravalgs-henvisningen nederst paa den private opgave-side (krav 3, 0090).
+   Dæmpet, men laesbar: den skal kunne findes, ikke konkurrere med knappen. */
+.pl-fravalg{max-width:560px;margin:0 auto;padding:18px 20px 30px;
+  font-size:12.5px;line-height:1.6;color:var(--navy-soft);text-align:center}
+.pl-fravalg b{color:var(--navy)}

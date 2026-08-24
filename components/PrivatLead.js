@@ -282,6 +282,28 @@ function Ramme({ children }) {
         </Link>
       </header>
       <main className="pl-wrap">{children}</main>
+
+      {/* ⚠️ FRAVALGET SKAL STÅ PÅ HVER ENESTE PRIVATE-OPGAVE-BESKED (krav 3 i
+          migration 0090). Det står HER og ikke i SMS'en, og det er en målt beslutning,
+          ikke en bekvem en:
+
+          SMS'en ligger på 151 GSM-7-enheder. Selv den korteste brugbare formulering,
+          " Fravælg: Opgaver > Rediger", bringer den til 178 — altså TO segmenter. Den
+          besked går til alle matchende virksomheder på hver eneste opgave, så det er
+          en varig fordobling af prisen på hele fan-outen, ikke en engangsudgift.
+
+          Denne side er det sted modtageren rent faktisk lander og handler, og den er
+          ét tryk væk fra SMS'en. Fravalget er derfor synligt på selve beskeden — bare
+          på det led af den, hvor der er plads til at forklare det.
+
+          ⚠️ SAMME STED SOM I ANNONCERINGEN: "Opgaver > Rediger". Tre tekster peger nu
+          på det samme sted (SMS, mail, denne side). Flytter knappen sig, skal alle tre
+          rettes — se noten i MineOpgaver.js. */}
+      <footer className="pl-fravalg">
+        Du får private opgaver, fordi de matcher dit fag og område.{" "}
+        Vil du ikke modtage dem, kan du slå dem fra på din opgaveside under{" "}
+        <b>Rediger</b>.
+      </footer>
     </div>
   );
 }

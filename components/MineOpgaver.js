@@ -8,7 +8,6 @@ import { Logo } from "./Logo";
 // kunden siger ja til, og et samtykke bygger på ordlyden — derfor må den ikke stå
 // live før Jonas har godkendt den som juridisk tekst. Mekanikken bagved (flag, kald,
 // logning) er færdig og virker; det er kun visningen der venter.
-const PRIVATE_OPGAVER_SYNLIG = String(process.env.NEXT_PUBLIC_PRIVATE_OPGAVER || "").trim() === "1";
 import { fetchMyTasks, previewCriteria, saveMyCriteria, undoMyCriteria, dismissTask, sendDismissReason, markerSomRelevant, afvisNaerMatch, saetSmsBesked, saetPrivateOpgaver } from "../lib/share";
 
 // Samlesiden "Mine opgaver" (Spor 3b) — den side samle-SMS'en og -mailen peger på.
@@ -864,7 +863,10 @@ function SorterPanel({ token, kriterier, fag, regioner, kanFortryde, onFortryd, 
   // SMS-kanalen. Gemmes med det samme ved klik — ikke sammen med kriterierne, fordi
   // den ikke ændrer HVILKE opgaver kunden får, kun hvordan hun høres om dem.
   const [sms, setSms] = useState(kriterier?.notify_sms !== false);
-  const [privateOpg, setPrivateOpg] = useState(kriterier?.wants_private_opgaver === true);
+  // ⚠️ !== false, IKKE === true. Opt-out: mangler feltet i svaret (gammel klient, ny
+  // kunde inden foerste hentning), er hun tilmeldt. Med === true ville boksen staa
+  // tom for en tilmeldt kunde, og hun ville tro hun ikke fik private opgaver.
+  const [privateOpg, setPrivateOpg] = useState(kriterier?.wants_private_opgaver !== false);
   const [preview, setPreview] = useState(null);
   const [henter, setHenter] = useState(false);
   const [gemmer, setGemmer] = useState(false);
@@ -977,45 +979,52 @@ function SorterPanel({ token, kriterier, fag, regioner, kanFortryde, onFortryd, 
         </p>
       </Sporgsmaal>
 
-      {/* --- PRIVATE OPGAVER — et selvstændigt tilvalg ---
-          ⚠️ TEKSTEN NEDENFOR AFVENTER JONAS' GODKENDELSE. Det er en juridisk tekst:
-          den beskriver hvad kunden siger ja til, og markedsføringsloven §10 kræver at
-          samtykket dækker netop den henvendelse hun senere får. Skriv den ikke om
-          uden at få den godkendt igen.
+      {/* --- PRIVATE OPGAVER — til som standard, kunden kan slå fra ---
+          ⚠️ DETTE ER FRAVALGET, og det er dét beskederne peger paa. Annoncerings-SMS'en
+          og -mailen (24-08-2026) siger begge "slå dem fra under Opgaver > Rediger", og
+          HER er det sted. Flyttes boksen et andet hen, peger de beskeder ud i luften —
+          og fravalget er en forudsætning for at opt-out-modellen overhovedet holder
+          (se migration 0090, krav 2). Flyt den ikke uden at rette begge tekster.
 
-          ⚠️ DEFAULT FRA. Fluebenet må aldrig være sat på forhånd — så er det ikke et
-          tilvalg. Fravalg bruger samme kald og virker lige så let. */}
-      {PRIVATE_OPGAVER_SYNLIG && (
-        <div style={{ borderTop: "1px solid #E6EAEF", marginTop: 18, paddingTop: 16 }}>
-          <p style={{ margin: "0 0 10px", fontWeight: 700, color: NAVY, fontSize: 15.5 }}>
-            Private opgaver <span style={{ color: TEAL, fontSize: 13 }}>(nyt)</span>
-          </p>
-          <label style={{ display: "flex", gap: 11, alignItems: "flex-start", cursor: "pointer" }}>
-            <input
-              type="checkbox"
-              checked={privateOpg}
-              onChange={async (e) => {
-                const ny = e.target.checked;
-                setPrivateOpg(ny);
-                const r = await saetPrivateOpgaver(token, ny);
-                if (!r) setPrivateOpg(!ny);
-              }}
-              style={{ marginTop: 3, width: 17, height: 17, accentColor: TEAL, flex: "0 0 17px" }}
-            />
-            <span>
-              <b style={{ color: NAVY, fontSize: 15 }}>
-                Ja tak — send mig også private opgaver i mit fag og område.
-              </b>
-              <div style={{ color: MUTED, fontSize: 13.5, lineHeight: 1.55, marginTop: 2 }}>
-                Ud over offentlige udbud kan du også modtage opgaver fra privatpersoner
-                og virksomheder i dit område — fx en privat husejer, der skal have lavet
-                et stykke arbejde i dit fag. Det er et nyt, frivilligt tilvalg, og du kan
-                slå det fra igen når som helst.
-              </div>
-            </span>
-          </label>
-        </div>
-      )}
+          ⚠️ INGEN ENV-GATE LÆNGERE. Den stod bag NEXT_PUBLIC_PRIVATE_OPGAVER, fordi
+          tilvalget var usynligt indtil funktionen var klar. Med opt-out er det omvendt:
+          kunden ER tilmeldt, og så SKAL knappen kunne findes. En skjult fravalgsknap
+          med en tændt funktion er ikke et fravalg.
+
+          ⚠️ FLUEBENET ER SAT SOM UDGANGSPUNKT, og det er en bevidst anden model end
+          i 0078. Det er ikke et samtykke der hentes her — samtykket er dækket af
+          annonceringen. Her fortrydes det. */}
+      <div style={{ borderTop: "1px solid #E6EAEF", marginTop: 18, paddingTop: 16 }}>
+        <p style={{ margin: "0 0 10px", fontWeight: 700, color: NAVY, fontSize: 15.5 }}>
+          Private opgaver
+        </p>
+        <label style={{ display: "flex", gap: 11, alignItems: "flex-start", cursor: "pointer" }}>
+          <input
+            type="checkbox"
+            checked={privateOpg}
+            onChange={async (e) => {
+              const ny = e.target.checked;
+              setPrivateOpg(ny);
+              const r = await saetPrivateOpgaver(token, ny);
+              if (!r) setPrivateOpg(!ny);
+            }}
+            style={{ marginTop: 3, width: 17, height: 17, accentColor: TEAL, flex: "0 0 17px" }}
+          />
+          <span>
+            <b style={{ color: NAVY, fontSize: 15 }}>
+              Send mig private opgaver i mit fag og område
+            </b>
+            <div style={{ color: MUTED, fontSize: 13.5, lineHeight: 1.55, marginTop: 2 }}>
+              {/* ⚠️ SIG HVAD DER SKER NÅR MAN SLÅR FRA. Samme regel som SMS-feltet
+                  nedenfor: uden den sætning gætter kunden, og nogle vil tro de slukker
+                  for alt — også de offentlige udbud de betaler for. */}
+              Ud over offentlige udbud kan du modtage opgaver fra privatpersoner i dit
+              område — fx en husejer, der skal have lavet et stykke arbejde i dit fag.
+              Slår du fra, får du kun offentlige udbud. Dine øvrige opgaver berøres ikke.
+            </div>
+          </span>
+        </label>
+      </div>
 
       {/* --- BESKEDKANAL — adskilt fra kriterierne med vilje ---
           De tre spørgsmål ovenfor ændrer HVAD kunden får; dette ændrer HVORDAN hun
