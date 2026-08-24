@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BirdMark } from "./Logo";
 
 // ============================================================================
 // MINIMAL FOOTER TIL /opret-opgave — B2C.
@@ -16,16 +17,31 @@ import Link from "next/link";
 //
 // ⚠️ "Birdly.dk", ALDRIG "Birdly ApS". Der findes ikke et ApS; virksomheden er
 // personligt ejet, og at opfinde en selskabsform i en footer er en oplysning om
-// juridisk identitet der ikke passer. c/o-linjen er den Clearhaus har bedt om.
+// juridisk identitet der ikke passer.
 //
-// ⚠️ INGEN GADEADRESSE HER. Den bor i handelsbetingelserne, som der linkes til.
+// ⚠️ HVERKEN GADEADRESSE ELLER "c/o Jonas Bonde Nielsen" HER. Begge dele bor i
+// handelsbetingelserne, hvor Clearhaus' krav om c/o er opfyldt — verificeret live
+// 24-08-2026, to steder i dokumentet (§1.2 og kontaktafsnittet). Footeren linker
+// derhen. Fjern det ALDRIG fra betingelserne; dér er det et krav, her er det støj.
+//
+// ⚠️ NAVY-BAGGRUND MED SAMME TOKEN SOM TOPBAREN (var(--navy)), ikke en hex-værdi
+// der ligner. To steder med hver sin kopi af den samme farve driver fra hinanden
+// første gang nogen justerer den ene.
+//
+// ⚠️ ORDMÆRKET ER TOPBARENS, ikke en ny styling. Samme BirdMark + samme .oo-mark/
+// .oo-dk-klasser, så de to ender af siden er identiske. Det fulde logo i /public er
+// tegnet til LYSE baggrunde og forsvinder næsten på navy — derfor mærket plus tekst,
+// præcis som i headeren.
 // ============================================================================
 export default function FooterB2C() {
   return (
     <footer className="foot-b2c">
       <div className="foot-b2c-inner">
-        <div className="foot-b2c-navn">Birdly.dk</div>
-        <div className="foot-b2c-linje">CVR 35764283 · c/o Jonas Bonde Nielsen</div>
+        <Link href="/" className="oo-mark foot-b2c-mark" aria-label="Birdly forside">
+          <BirdMark size={26} />
+          <span>Birdly<span className="oo-dk">.dk</span></span>
+        </Link>
+        <div className="foot-b2c-linje">CVR 35764283</div>
         <div className="foot-b2c-linje">
           <a href="mailto:support@birdly.dk">support@birdly.dk</a>
         </div>

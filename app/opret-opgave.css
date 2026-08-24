@@ -167,15 +167,22 @@
 /* ==========================================================================
    B2C-FOOTER — minimal, ingen B2B-links, ingen doede sociale ikoner
    ========================================================================== */
-.foot-b2c{border-top:1px solid var(--line);background:#FBFCFD;padding:28px 18px 34px;margin-top:32px}
+/* ⚠️ SAMME TOKEN SOM TOPBAREN, ikke en hex der ligner: var(--navy). Justeres den
+   ene, foelger den anden med. */
+.foot-b2c{background:var(--navy);padding:30px 18px 34px;margin-top:36px}
 .foot-b2c-inner{max-width:560px;margin:0 auto;text-align:center}
-.foot-b2c-navn{font-family:'Plus Jakarta Sans','Inter',sans-serif;font-weight:800;font-size:16px;color:var(--navy)}
-.foot-b2c-linje{font-size:13.5px;color:var(--navy-soft);margin-top:4px}
-.foot-b2c-linje a{color:var(--navy-soft)}
-.foot-b2c-links{margin-top:12px;font-size:13.5px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;align-items:center}
-.foot-b2c-links a{color:var(--teal);font-weight:600}
-.foot-b2c-links span{color:var(--line)}
-.foot-b2c-copy{margin-top:14px;font-size:12.5px;color:#9AA7B4}
+/* Ordmaerket arver .oo-mark fra topbaren; her centreres det kun. */
+.foot-b2c-mark{justify-content:center;margin-bottom:10px}
+/* Lys tekst paa navy - samme opacitet som topbarens sekundaere tekst, saa
+   kontrasten er den samme i begge ender af siden. */
+.foot-b2c-linje{font-size:13.5px;color:rgba(255,255,255,.72);margin-top:4px}
+.foot-b2c-linje a{color:rgba(255,255,255,.86);text-decoration:underline;text-underline-offset:2px}
+.foot-b2c-linje a:hover{color:#fff}
+.foot-b2c-links{margin-top:14px;font-size:13.5px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;align-items:center}
+.foot-b2c-links a{color:var(--sky);font-weight:600}
+.foot-b2c-links a:hover{color:#fff}
+.foot-b2c-links span{color:rgba(255,255,255,.32)}
+.foot-b2c-copy{margin-top:16px;font-size:12.5px;color:rgba(255,255,255,.5)}
 
 /* ==========================================================================
    MOBILE-FIRST FINPUDSNING (375-430 px)
