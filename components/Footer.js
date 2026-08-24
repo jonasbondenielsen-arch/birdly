@@ -1,6 +1,15 @@
 import Link from "next/link";
 import { BirdMark } from "./Logo";
 import SamtykkeLink from "./SamtykkeLink";
+import { SOCIALE } from "../lib/social";
+
+// SVG'erne er de samme som før — kun deres href har ændret sig.
+const IKON = {
+  facebook: (<svg width="17" viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 21v-7h2.3l.4-2.8h-2.7V9.4c0-.8.2-1.3 1.4-1.3h1.4V5.6c-.7-.1-1.4-.1-2.1-.1-2 0-3.4 1.2-3.4 3.5v1.9H8.5V14h2.3v7z" /></svg>),
+  instagram: (<svg width="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="4" y="4" width="16" height="16" rx="5" /><circle cx="12" cy="12" r="3.4" /><circle cx="16.6" cy="7.4" r="1" fill="currentColor" stroke="none" /></svg>),
+  google: (<svg width="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"><path d="M20 12a8 8 0 10-2.4 5.7" strokeLinecap="round" /><path d="M20.5 12H13" strokeLinecap="round" /></svg>),
+  trustpilot: (<svg width="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l2.6 5.6 6.1.7-4.5 4.1 1.2 6L12 16.9 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z" /></svg>),
+};
 import "../app/footer.css";
 
 /* Delt footer — kompakt og centreret: alle navigations-links i én vandret,
@@ -45,20 +54,28 @@ export default function Footer() {
             <a href="mailto:hello@birdly.dk">hello@birdly.dk</a>
           </div>
 
+          {/* ⚠️ IKONERNE VISES KUN NÅR ADRESSEN FINDES. Her stod tidligere fire
+              rå placeholdere — [FACEBOOK-URL] og tre lignende — og fordi de ikke
+              starter med http, læste browseren dem som relative stier: et klik
+              landede på birdly.dk/[FACEBOOK-URL]. Verificeret 404 på alle fire,
+              live, på hver eneste side med footer.
+
+              Adresserne sættes nu i env (se lib/social.js); tomme værdier giver
+              intet ikon frem for et dødt et. Hele blokken forsvinder når ingen af
+              dem er sat, så footeren ikke står med et tomt hul.
+
+              ⚠️ target="_blank" + rel: eksterne links skal ikke tage brugeren væk
+              fra siden, og noopener lukker window.opener-hullet. */}
+          {SOCIALE.length > 0 && (
           <div className="fsocial">
-            <a href="[FACEBOOK-URL]" aria-label="Birdly på Facebook">
-              <svg width="17" viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 21v-7h2.3l.4-2.8h-2.7V9.4c0-.8.2-1.3 1.4-1.3h1.4V5.6c-.7-.1-1.4-.1-2.1-.1-2 0-3.4 1.2-3.4 3.5v1.9H8.5V14h2.3v7z" /></svg>
-            </a>
-            <a href="[INSTAGRAM-URL]" aria-label="Birdly på Instagram">
-              <svg width="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="4" y="4" width="16" height="16" rx="5" /><circle cx="12" cy="12" r="3.4" /><circle cx="16.6" cy="7.4" r="1" fill="currentColor" stroke="none" /></svg>
-            </a>
-            <a href="[GOOGLE-ANMELDELSER-URL]" aria-label="Birdly på Google anmeldelser">
-              <svg width="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"><path d="M20 12a8 8 0 10-2.4 5.7" strokeLinecap="round" /><path d="M20.5 12H13" strokeLinecap="round" /></svg>
-            </a>
-            <a href="[TRUSTPILOT-URL]" aria-label="Birdly på Trustpilot">
-              <svg width="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l2.6 5.6 6.1.7-4.5 4.1 1.2 6L12 16.9 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z" /></svg>
-            </a>
+            {SOCIALE.map((s) => (
+              <a key={s.key} href={s.url} target="_blank" rel="noopener noreferrer"
+                aria-label={`Birdly på ${s.navn}`}>
+                {IKON[s.key]}
+              </a>
+            ))}
           </div>
+          )}
         </div>
       </div>
     </footer>
