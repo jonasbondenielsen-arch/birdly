@@ -5,6 +5,7 @@ import Link from "next/link";
 import { BirdMark } from "./Logo";
 import { hentMinListe, opgaveLoest, opgaveIkkeLoest, genaabnOpgave } from "../lib/privatOpgave";
 import { FORMIDLER_TEKST } from "../lib/formidlerTekst";
+import OpgaveFeedback from "./OpgaveFeedback";
 import "../app/start.css";
 import "../app/privat-lead.css";
 
@@ -63,6 +64,11 @@ export default function MinOpgaveListe({ token }) {
   const [fejl, setFejl] = useState("");
   const [travl, setTravl] = useState("");
   const [grundFor, setGrundFor] = useState(null);
+  // ⚠️ HELE OPGAVEN GEMMES, IKKE KUN ET ID. Skemaet skal kunne vise de virksomheder
+  // der tog opgaven, som valgmuligheder til "hvem løste den?" - og efter lukningen
+  // returnerer listen dem ikke længere. Fanger vi dem ikke her, står spørgsmålet
+  // tilbage uden noget at vælge imellem.
+  const [feedbackFor, setFeedbackFor] = useState(null);
   const [grund, setGrund] = useState("fandt_ingen");
 
   const hent = useCallback(async () => {
@@ -76,9 +82,9 @@ export default function MinOpgaveListe({ token }) {
 
   useEffect(() => { hent(); }, [hent]);
 
-  async function handling(fn, id) {
+  async function handling(fn, id, efter) {
     setTravl(id);
-    try { await fn(); await hent(); setGrundFor(null); }
+    try { await fn(); await hent(); setGrundFor(null); if (efter) efter(); }
     catch (e) { setFejl(e.kode === "link_udloebet" ? "udloebet" : "fejl"); }
     finally { setTravl(""); }
   }
@@ -228,8 +234,11 @@ export default function MinOpgaveListe({ token }) {
 
                     <div className="pl-afslut">
                       <div className="pl-afslut-h">Er du færdig med opgaven?</div>
+                      {/* Skemaet aabnes EFTER lukningen er lykkedes. Fejler kaldet,
+                          er opgaven ikke lukket, og saa ville et "Dejligt at hoere!"
+                          vaere forkert. */}
                       <button className="pl-mini primaer" disabled={travl === o.id}
-                        onClick={() => handling(() => opgaveLoest(token, o.id), o.id)}>
+                        onClick={() => handling(() => opgaveLoest(token, o.id), o.id, () => setFeedbackFor(o))}>
                         ✓ Opgaven er løst
                       </button>
                       {/* ⚠️ "Jeg fandt ikke den rette hjælp", IKKE "Opgaven blev ikke
@@ -269,6 +278,10 @@ export default function MinOpgaveListe({ token }) {
           </div>
         );
       })}
+
+      {feedbackFor && (
+        <OpgaveFeedback token={token} opgave={feedbackFor} onLuk={() => setFeedbackFor(null)} />
+      )}
 
       {fejl === "fejl" && <div className="st-fejl" style={{ marginTop: 14 }}>Noget gik galt. Prøv igen.</div>}
 

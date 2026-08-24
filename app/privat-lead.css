@@ -166,3 +166,41 @@ a.pl-mini{display:inline-block;text-decoration:none}
 .pl-vilkaar-link{color:var(--sky);font-weight:700;text-decoration:underline}
 .pl-vilkaar[open]>summary{margin-bottom:2px}
 .pl-vilkaar a{color:var(--sky)}
+
+/* ── FEEDBACK-ARK EFTER "OPGAVEN ER LØST" ─────────────────────────────────
+   Bundark på mobil (der hvor tommelen er), centreret kort på desktop. */
+.of-ark{position:fixed;inset:0;z-index:60;background:rgba(11,31,59,.45);
+  display:flex;align-items:flex-end;justify-content:center;padding:0}
+.of-kort{position:relative;width:100%;max-width:520px;max-height:92vh;overflow-y:auto;
+  background:#fff;border-radius:18px 18px 0 0;padding:22px 20px 26px}
+.of-kort h2{margin:6px 0 0;font-family:'Plus Jakarta Sans','Inter',sans-serif;
+  font-size:21px;color:var(--navy)}
+.of-emoji{font-size:30px;line-height:1}
+/* 44px, samme grund som knapperne på visitkortene. */
+.of-luk{position:absolute;top:8px;right:8px;width:44px;height:44px;border:0;
+  background:transparent;font-size:26px;line-height:1;color:var(--navy-soft);cursor:pointer}
+.of-sp{margin-top:20px;font-weight:700;font-size:15px;color:var(--navy)}
+.of-tovalg,.of-nemhed{display:flex;flex-wrap:wrap;gap:8px;margin-top:9px}
+.of-valg{flex:1 1 auto;min-height:44px;cursor:pointer;background:#fff;
+  border:1.5px solid var(--line);border-radius:10px;padding:10px 14px;
+  font-family:'Inter',sans-serif;font-size:14.5px;font-weight:600;color:var(--navy)}
+.of-valg.on{border-color:var(--teal);background:#F1FAF8;color:var(--teal-dk)}
+.of-firmaer{display:flex;flex-direction:column;gap:8px;margin-top:9px}
+.of-firma{min-height:44px;text-align:left;cursor:pointer;background:#fff;
+  border:1.5px solid var(--line);border-radius:10px;padding:11px 14px;
+  font-family:'Inter',sans-serif;font-size:15px;font-weight:600;color:var(--navy)}
+.of-firma.on{border-color:var(--teal);background:#F1FAF8;color:var(--teal-dk)}
+.of-stjerner{display:flex;gap:4px;margin-top:9px}
+.of-stjerne{width:46px;height:46px;border:0;background:transparent;cursor:pointer;
+  font-size:30px;line-height:1;color:#D8DEE7;padding:0}
+.of-stjerne.on{color:#F2B705}
+.of-tekst{margin-top:8px;resize:vertical;font-family:'Inter',sans-serif}
+.of-tjek{margin-top:16px}
+.of-send{margin-top:18px;width:100%;min-height:48px}
+.of-ark .pl-mini.daempet{display:block;margin:10px auto 0}
+.of-tak{text-align:center;padding-top:30px}
+.of-tak .pl-mini{margin-top:18px}
+@media (min-width:640px){
+  .of-ark{align-items:center;padding:20px}
+  .of-kort{border-radius:18px}
+}
