@@ -302,6 +302,45 @@ export default function Forside({ opgaveTal = null }) {
         </div>
       </section>
 
+      {/* ---------- B2C-INDGANG ----------
+          ⚠️ FORSIDEN ER B2B. Alt andet her sælger udbudsovervågning til VIRKSOMHEDER.
+          Denne ene blok taler til en PRIVATPERSON, og de to må ikke kunne forveksles:
+          en håndværker der klikker her, tror han skal betale for at få opgaver, og en
+          husejer der klikker på "Kom i gang" havner i et CVR-felt.
+          Derfor er den visuelt adskilt og siger hvem den er til i første linje.
+
+          ⚠️ "Er du privat?" FØRST, ikke "Opret opgave" først. Overskriften skal
+          afvise 9 ud af 10 læsere med det samme — det er en virksomhedsforside, og
+          langt de fleste her er virksomheder. En blok der ikke siger hvem den er til,
+          stjæler klik fra B2B-funnelen.
+
+          ⚠️ "100 % gratis" STÅR HER, fordi det er den eneste grund til at en
+          privatperson klikker videre fra en side der ellers viser 499 kr./md. Uden
+          det læses knappen som endnu et abonnement.
+
+          ⚠️ SAMME FLAG SOM NAVIGATIONEN (OPRET_OPGAVE_I_NAV). Ét håndtag, så indgangen
+          ikke kan stå ét sted og mangle et andet — se lib/opretOpgave.js. */}
+      {OPRET_OPGAVE_I_NAV && (
+        <section className="b2c-band">
+          <div className="wrap">
+            <div className="b2c-kort reveal">
+              <div>
+                <div className="b2c-eyebrow">Er du privat?</div>
+                <h2>Har du en opgave, der skal laves?</h2>
+                <p>
+                  Beskriv den på 1 minut, så finder Birdly op til 3 virksomheder i dit
+                  område, der arbejder med den. Helt gratis, og du forpligter dig ikke
+                  til noget.
+                </p>
+              </div>
+              <Link href="/opret-opgave" className="b2c-knap">
+                Opret gratis <span aria-hidden="true">&rarr;</span>
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* PAIN / HVORFOR */}
       <section className="pain" id="hvorfor">
         <div className="wrap">

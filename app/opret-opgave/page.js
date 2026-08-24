@@ -44,12 +44,11 @@ export const metadata = {
   },
   twitter: { card: "summary_large_image", title: B2C_TITLE, description: B2C_BESKRIVELSE },
 
-  // ⚠️ TÆNDES AF JONAS, IKKE AF EN UDRULNING. Fjern hele robots-linjen for at gøre
-  // siden indekserbar. Siden må først findes i Google når den rigtige distribution
-  // er bevist live — ellers lander de første besøgende i et tomt rum.
-  // Knappen i navigationen er et SEPARAT håndtag (NEXT_PUBLIC_OPRET_OPGAVE, se
-  // lib/opretOpgave.js), så siden kan være åben uden at være i søgeresultater.
-  robots: { index: false, follow: false },
+  // ⚠️ NOINDEX ER FJERNET 24-08-2026, efter at distributionen er bevist live: opgave
+  // -> fan-out-SMS til virksomhederne -> accept -> virksomhederne synlige på kundens
+  // side. Betingelsen for at aabne var netop, at en besoegende ikke maa kunne oprette
+  // en opgave der ikke naar ud til nogen. Saet den ikke tilbage uden grund - siden er
+  // nu maalet for betalt trafik.
 };
 
 // ⚠️ BYGGET AF SIDENS EGEN FAQ-LISTE (lib/opretOpgaveFaq.js). Structured data der ikke

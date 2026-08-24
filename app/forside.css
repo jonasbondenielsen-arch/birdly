@@ -444,3 +444,42 @@ body.samtykke-vises .chat-panel{bottom:calc(var(--samtykke-h,132px) + 108px)}
   /* CTA-noten gÃ¸r den primÃ¦re knap-kolonne hÃ¸jere end sekundÃ¦r-knappen.
      flex-start holder dem justeret i toppen, sÃ¥ layoutet er som fÃ¸r. */
   .hero .cta{align-items:flex-start}
+
+/* ── B2C-INDGANG PÅ FORSIDEN (24-08-2026) ─────────────────────────────────
+   ⚠️ VISUELT ADSKILT MED VILJE. Resten af forsiden er B2B; denne ene blok
+   taler til en privatperson. Ser den ud som naboerne, forveksles de to — og
+   så klikker håndværkeren på den forkerte knap og husejeren på den anden.
+   Lys ramme på egen baggrund, ikke endnu et hvidt afsnit i rækken. */
+.b2c-band { padding: 8px 0 4px; }
+.b2c-kort {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 22px; flex-wrap: wrap;
+  background: #F1FAF8; border: 1.5px solid #BFE7DF; border-radius: 18px;
+  padding: 26px 28px;
+}
+.b2c-eyebrow {
+  font-size: 12.5px; font-weight: 800; letter-spacing: .7px;
+  text-transform: uppercase; color: var(--teal-dk, #0E8A6E); margin-bottom: 6px;
+}
+.b2c-kort h2 {
+  margin: 0 0 8px; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+  font-size: 24px; line-height: 1.25; color: var(--navy, #0D274A);
+}
+.b2c-kort p {
+  margin: 0; max-width: 60ch; font-size: 15.5px; line-height: 1.6;
+  color: var(--navy-soft, #33414f);
+}
+/* 48px høj: den skal kunne rammes med en tommel på mobil. */
+.b2c-knap {
+  flex: 0 0 auto; display: inline-flex; align-items: center; gap: 8px;
+  min-height: 48px; padding: 13px 24px; border-radius: 12px;
+  background: var(--teal, #00B3A6); color: #fff; text-decoration: none;
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+  font-weight: 800; font-size: 15.5px;
+}
+.b2c-knap:hover { filter: brightness(.96); }
+@media (max-width: 720px) {
+  .b2c-kort { flex-direction: column; align-items: flex-start; padding: 22px 20px; }
+  .b2c-kort h2 { font-size: 21px; }
+  .b2c-knap { width: 100%; justify-content: center; }
+}
