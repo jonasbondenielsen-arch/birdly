@@ -139,3 +139,61 @@
    ikke kender er ikke brugerens fejl. */
 .oo-postnr-ok{margin-top:7px;font-size:13.5px;font-weight:600;color:var(--teal-dk)}
 .oo-postnr-nej{margin-top:7px;font-size:13px;color:var(--navy-soft)}
+
+/* ==========================================================================
+   FAG-VAELGER
+   ⚠️ FORSLAGENE STAAR I NORMAL FLOW, IKKE SOM ABSOLUT OVERLAY. Paa mobil daekker
+   tastaturet den nederste halvdel af skaermen; et overlay ville lande under det og
+   vaere umuligt at ramme. I flow kan siden rulle listen frem.
+   ========================================================================== */
+.fv{position:relative}
+.fv-valgte{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+/* ⚠️ 44 px MINIMUM. En chip er ogsaa en sletteknap; er den mindre, rammer en
+   tommelfinger nabochippen og fjerner det forkerte fag. */
+.fv-chip{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:8px 14px;border-radius:22px;
+  border:1.5px solid var(--teal);background:#F1FAF8;color:#0B5F58;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit}
+.fv-chip span{font-size:18px;line-height:1;opacity:.65}
+.fv-chip:hover span{opacity:1}
+.fv-input{font-size:16px}          /* 16px forhindrer at iOS zoomer ind ved fokus */
+.fv-liste{list-style:none;margin:8px 0 0;padding:6px;border:1px solid var(--line);border-radius:12px;background:#fff;
+  box-shadow:0 12px 28px -18px rgba(13,27,42,.45);max-height:none}
+.fv-forslag{display:block;width:100%;text-align:left;min-height:48px;padding:12px 14px;border:0;border-radius:9px;
+  background:transparent;font-size:16px;color:var(--navy);cursor:pointer;font-family:inherit}
+.fv-forslag.on,.fv-forslag:hover{background:#F1FAF8;color:#0B5F58;font-weight:600}
+.fv-tom{padding:12px 14px;font-size:14.5px;color:var(--navy-soft);line-height:1.5}
+.fv-andet{border:0;background:none;padding:0;color:var(--teal);font-weight:700;font-size:14.5px;cursor:pointer;
+  text-decoration:underline;font-family:inherit}
+
+/* ==========================================================================
+   B2C-FOOTER — minimal, ingen B2B-links, ingen doede sociale ikoner
+   ========================================================================== */
+.foot-b2c{border-top:1px solid var(--line);background:#FBFCFD;padding:28px 18px 34px;margin-top:32px}
+.foot-b2c-inner{max-width:560px;margin:0 auto;text-align:center}
+.foot-b2c-navn{font-family:'Plus Jakarta Sans','Inter',sans-serif;font-weight:800;font-size:16px;color:var(--navy)}
+.foot-b2c-linje{font-size:13.5px;color:var(--navy-soft);margin-top:4px}
+.foot-b2c-linje a{color:var(--navy-soft)}
+.foot-b2c-links{margin-top:12px;font-size:13.5px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;align-items:center}
+.foot-b2c-links a{color:var(--teal);font-weight:600}
+.foot-b2c-links span{color:var(--line)}
+.foot-b2c-copy{margin-top:14px;font-size:12.5px;color:#9AA7B4}
+
+/* ==========================================================================
+   MOBILE-FIRST FINPUDSNING (375-430 px)
+   ⚠️ 16px PAA ALLE FELTER. Under 16px zoomer iOS automatisk ind naar feltet faar
+   fokus, og saa staar hun med en side der er bredere end skaermen og skal zoome ud
+   igen ved hvert felt. Det er den enkelte staerkeste mobil-fix paa en formular.
+   ========================================================================== */
+@media(max-width:760px){
+  .st-felt,.fv-input,.fv-forslag{font-size:16px}
+  /* Touch targets: 48 px paa alt der kan trykkes. */
+  .oo-send{min-height:54px;font-size:16.5px}
+  .st-omrk{min-height:56px}
+  .oo-fil{padding:22px 16px}
+  /* Heroen skal ikke aede foerste viewport - formularen skal helst vaere i syne. */
+  .oo-hero{padding-top:26px;padding-bottom:74px}
+  .oo-hero h1{font-size:30px;line-height:1.15}
+  .oo-hero p{font-size:15.5px}
+  .oo-trust{gap:6px 14px;font-size:13px}
+  .fv-liste{padding:4px}
+  .foot-b2c{padding:24px 16px 30px}
+}

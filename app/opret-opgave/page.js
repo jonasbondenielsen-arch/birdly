@@ -1,5 +1,5 @@
 import OpretOpgave from "../../components/OpretOpgave";
-import Footer from "../../components/Footer";
+import FooterB2C from "../../components/FooterB2C";
 
 // ⚠️ NOINDEX INDTIL LAUNCH. Siden findes på sin adresse, så den kan vises frem og
 // gennemses — men den må ikke kunne findes. En offentlig "opret opgave"-side flytter
@@ -21,7 +21,9 @@ export default function Page() {
   return (
     <>
       <OpretOpgave />
-      <Footer />
+      {/* ⚠️ B2C-FOOTER, ikke den almindelige. Se noten i FooterB2C.js — den
+          normale linker til "Priser" med B2B-abonnementet på 499 kr./md. */}
+      <FooterB2C />
     </>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { BirdMark } from "./Logo";
 import { fetchCatalog } from "../lib/catalog";
@@ -8,6 +8,9 @@ import { opretOpgave, redigerOpgave, uploadOpgaveBillede } from "../lib/privatOp
 import { OMFANG } from "../lib/omfang";
 import { slaaPostnrOp } from "../lib/postnumre";
 import { OPRET_OPGAVE_ANMELDELSER } from "../lib/opretOpgave";
+import FagVaelger from "./FagVaelger";
+import { spor, sporEnGang } from "../lib/pixel";
+import { fangAttribution, hentAttribution } from "../lib/attribution";
 import "../app/start.css";
 import "../app/opret-opgave.css";
 
@@ -70,7 +73,7 @@ const OMFANG_KUNDE = {
   mindre: "Mindre opgave",
   mellem: "Mellemstor opgave",
   stor: "Større opgave",
-  ved_ikke: "Det ved jeg ikke",
+  ved_ikke: "Ved ikke",
 };
 
 const MAKS_BILLEDER = 5;
@@ -89,11 +92,15 @@ const MAKS_BILLED_BYTES = 10 * 1024 * 1024;
 const FAQ = [
   {
     sp: "Koster det noget at oprette en opgave?",
-    sv: "Nej. Det er helt gratis for dig at oprette en opgave på Birdly. Vi tager ikke betaling for at folk lægger opgaver op på vores side.",
+    sv: "Nej. Det er 100 % gratis for dig at oprette en opgave på Birdly. Du betaler hverken Birdly for at oprette opgaven eller for at blive matchet med virksomheder.",
   },
   {
     sp: "Hvor mange virksomheder får mine oplysninger?",
-    sv: "Din opgavebeskrivelse og eventuelle billeder deles med de virksomheder, der arbejder med din type opgave i dit område, så de kan vurdere den. Dine kontaktoplysninger deles først, når en virksomhed aktivt tager opgaven — og kun med de op til tre første. Derefter lukkes opgaven for flere.",
+    // ⚠️ SVARET SKAL SPEJLE SAMTYKKET, ikke marketing-linjen. "Maks. 3" handler om
+    // hvem der KONTAKTER hende; beskrivelse og billeder ses af alle matchede, så de
+    // kan vurdere opgaven. Skriver vi "kun 3 ser din opgave", modsiger FAQ'en det
+    // hun lige har sat kryds i.
+    sv: "Din opgavebeskrivelse og eventuelle billeder deles med de virksomheder, der arbejder med din type opgave i dit område, så de kan vurdere den. Dine kontaktoplysninger deles først, når en virksomhed aktivt tager opgaven — og maks. 3 virksomheder får mulighed for at kontakte dig. Derefter lukkes opgaven for flere.",
   },
   {
     sp: "Er jeg forpligtet til at vælge en virksomhed?",
@@ -178,8 +185,31 @@ export default function OpretOpgave({ rediger = null }) {
   // ikke kan vide om de nåede med — og det var netop dét feltet før lod som om.
   const [billedStatus, setBilledStatus] = useState(null);
 
+  // ⚠️ MÅLINGEN MÅ ALDRIG KUNNE VÆLTE FORMULAREN. spor() gater selv på
+  // marketing-samtykket og på at fbq findes, men den kaldes fra hændelser midt i
+  // hendes indtastning — så alt er pakket ind. En fejlet måling er et hul i en graf;
+  // en fejlet formular er en tabt kunde.
+  const sporTrin = (navn, data) => { try { spor(navn, data); } catch { /* måling må aldrig vælte */ } };
+  // Hvert trin må kun tælle én gang pr. udfyldning, ellers måler vi tastetryk.
+  const trinSendt = useRef(new Set());
+  const trin = (navn, data) => {
+    if (trinSendt.current.has(navn)) return;
+    trinSendt.current.add(navn);
+    sporTrin(navn, data);
+  };
+
   // Samme kilde som funnelen. Fejler opslaget, står listen tom frem for at falde
   // tilbage på en hardkodet kopi der kan være forældet.
+  // ⚠️ LandingPageView fyres KUN her, ikke i layoutet: den skal tælle besøg på DENNE
+  // funnel, ikke på birdly.dk generelt. Og attributionen fanges samtidig, saa
+  // ?utm_campaign er gemt inden hun navigerer videre i formularen.
+  useEffect(() => {
+    if (erRedigering) return;
+    try { fangAttribution(); } catch { /* attribution maa aldrig vaelte siden */ }
+    sporTrin("B2C_LandingPageView");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   useEffect(() => {
     fetchCatalog()
       .then((k) => {
@@ -219,7 +249,11 @@ export default function OpretOpgave({ rediger = null }) {
   const harAndet = valgteFag.includes(ANDET);
 
   function skiftFag(key) {
-    setValgteFag((f) => (f.includes(key) ? f.filter((x) => x !== key) : [...f, key]));
+    setValgteFag((f) => {
+      const ny = f.includes(key) ? f.filter((x) => x !== key) : [...f, key];
+      if (ny.length) { trin("B2C_FormStart"); trin("B2C_TradeSelected"); }
+      return ny;
+    });
   }
 
   function send(e) {
@@ -263,6 +297,12 @@ export default function OpretOpgave({ rediger = null }) {
           kontakt_email: email.trim(),
           samtykke: true,
           hp,
+          // ⚠️ ATTRIBUTIONEN GEMMES PÅ OPGAVEN, så Jonas kan se hvilke Meta-annoncer
+          // der skaber RIGTIGE opgaver og ikke bare klik. Genbruger funnelens
+          // eksisterende lag (lib/attribution.js): første berøring vinder, og det
+          // ligger i sessionStorage, så et besøg tre uger senere ikke krediteres den
+          // gamle annonce. Serveren hvidlister felterne — se noten i edge functionen.
+          attribution: (() => { try { return hentAttribution(); } catch { return {}; } })(),
         };
         const r = erRedigering
           ? await redigerOpgave(rediger.list_token, rediger.opgave.id, felter)
@@ -301,6 +341,23 @@ export default function OpretOpgave({ rediger = null }) {
           setBilledStatus({ ok, i_alt: filer.length });
         }
 
+        // ⚠️ HER, OG KUN HER. Eventet fyres når opgaven FAKTISK er oprettet — ikke
+        // ved klik på knappen. Et CTA-klik der fejler validering ville ellers tælle
+        // som en konvertering, og Meta ville optimere mod folk der klikker uden at
+        // gennemføre.
+        //
+        // ⚠️ NAVNET ER `OpgaveOprettet` OG MÅ IKKE DØBES OM. Det er det kanoniske
+        // submit-event; omdøbes det, mister en eventuel konfigureret konvertering i
+        // Ads Manager sin historik og sin optimering. B2C_JobSubmitted ligger ved
+        // siden af som funnel-event, ikke i stedet for.
+        //
+        // sporEnGang på opgave-id: to faneblade eller et dobbeltklik må ikke tælle to
+        // konverteringer.
+        try {
+          sporEnGang(`opgave_${r.opgave_id}`, "OpgaveOprettet", { content_category: "privat_opgave" });
+          sporTrin("B2C_JobSubmitted", { content_category: "privat_opgave" });
+        } catch { /* måling må aldrig vælte kvitteringen */ }
+
         setSendt(true);
         window.scrollTo({ top: 0, behavior: "smooth" });
       } catch (e) {
@@ -334,9 +391,10 @@ export default function OpretOpgave({ rediger = null }) {
             <BirdMark size={28} />
             <span>Birdly<span className="oo-dk">.dk</span></span>
           </Link>
-          <Link href="/" className="oo-tilbage">
-            <span aria-hidden="true">←</span> Tilbage til forsiden
-          </Link>
+          {/* ⚠️ "Tilbage til forsiden" ER FJERNET. Det var en exit midt i en
+              betalt funnel: en Meta-bruger der klikker den, lander på B2B-forsiden
+              med abonnementspriser og er væk. Logoet linker stadig hjem, så vejen
+              ud findes — den er bare ikke længere en invitation. */}
         </div>
       </header>
 
@@ -345,20 +403,22 @@ export default function OpretOpgave({ rediger = null }) {
           overbevises om at bruge tjenesten. */}
       {!erRedigering && (
       <div className="oo-hero">
-        <div className="oo-eyebrow">Opret opgave — gratis</div>
+        <div className="oo-eyebrow">OPRET OPGAVE · 100 % GRATIS</div>
         <h1>Skal du have lavet noget?</h1>
         {/* ⚠️ RESULTAT, IKKE PROCES. "Så sender vi den videre" beskriver hvad VI
             gør; "Birdly matcher dig med op til 3 virksomheder" beskriver hvad hun
             får. Tallet 3 er ikke pynt — det er loftet i systemet (PLADSER), og det
             besvarer "hvor mange ringer til mig?" før hun når at spørge. */}
+        {/* ⚠️ IKKE "relevante virksomheder". Det antyder en screening vi ikke
+            laver. "der arbejder med din opgave" siger det samme uden at love det. */}
         <p>
-          Beskriv din opgave på 1 minut. Birdly matcher dig med op til 3 virksomheder
-          i dit område, der arbejder med din opgave.
+          Beskriv din opgave på 1 minut. Birdly finder op til 3 virksomheder i dit
+          område, der arbejder med din opgave — helt gratis.
         </p>
         <div className="oo-trust">
-          <span><Flueben /> Helt gratis og uforpligtende</span>
-          <span><Flueben /> Ingen konto nødvendig</span>
-          <span><Flueben /> Maks. 3 virksomheder kontakter dig</span>
+          <span><Flueben /> 100 % gratis</span>
+          <span><Flueben /> Ingen konto</span>
+          <span><Flueben /> Maks. 3 virksomheder</span>
         </div>
       </div>
       )}
@@ -408,11 +468,11 @@ export default function OpretOpgave({ rediger = null }) {
                 </div>
               ) : (
                 <form onSubmit={send} noValidate>
-                  <h1>{erRedigering ? "Ret din opgave" : "Fortæl os, hvad du skal have lavet"}</h1>
+                  <h1>{erRedigering ? "Ret din opgave" : "Find virksomheder til din opgave"}</h1>
                   <p className="st-hj">
                     {erRedigering
                       ? "Ret det du vil — virksomheder der allerede har taget opgaven, beholder den."
-                      : "Det tager ca. 1 minut – så finder Birdly virksomheder i dit fag og område."}
+                      : "Fortæl kort, hvad du skal have lavet – det tager ca. 1 minut."}
                   </p>
 
                   {/* 1. Udbyder */}
@@ -451,28 +511,30 @@ export default function OpretOpgave({ rediger = null }) {
                   </p>
                   <textarea id="oo-besk" className="st-felt" rows={5}
                     placeholder="Fx: Vi skal have skiftet ca. 120 m² tag på vores villa. Det gamle tag skal fjernes, og vi vil gerne have arbejdet udført inden for 3 måneder."
-                    value={beskrivelse} onChange={(e) => setBeskrivelse(e.target.value)} />
+                    value={beskrivelse}
+                    onChange={(e) => { setBeskrivelse(e.target.value); trin("B2C_FormStart"); }}
+                    onBlur={() => { if (beskrivelse.trim().length >= 15) trin("B2C_DescriptionCompleted"); }} />
 
                   {/* 3. Opgaveart */}
-                  <label className="st-lab">
-                    Hvilken type hjælp søger du? <span style={{ fontWeight: 400, color: "var(--navy-soft)" }}>— vælg gerne flere</span>
-                  </label>
-                  <div className="oo-chips">
-                    {fagListe.map((f) => (
-                      <button type="button" key={f.key}
-                        className={"oo-chip" + (valgteFag.includes(f.key) ? " on" : "")}
-                        aria-pressed={valgteFag.includes(f.key)}
-                        onClick={() => skiftFag(f.key)}>
-                        {f.label_da || f.label || f.key}
-                      </button>
-                    ))}
-                    <button type="button"
-                      className={"oo-chip" + (harAndet ? " on" : "")}
-                      aria-pressed={harAndet}
-                      onClick={() => skiftFag(ANDET)}>
-                      Andet
-                    </button>
-                  </div>
+                  {/* 3. Opgaveart */}
+                  {/* ⚠️ 22 CHIPS ER VÆK. De fyldte over en halv mobilskærm og skubbede
+                      resten af formularen ned under folden — på en side hvor hele
+                      pointen er at hun når til bunden. Søgefeltet viser højst 6
+                      forslag ad gangen.
+
+                      ⚠️ SØGNINGEN OPRETTER ALDRIG ET FAG. Den finder kun frem til
+                      kataloget nøgler; det er dem der gemmes. Se lib/fagSoeg.js. */}
+                  <label className="st-lab" htmlFor="oo-fag">Hvilken hjælp har du brug for?</label>
+                  <p className="st-hj" style={{ margin: "0 0 8px" }}>
+                    Du kan vælge flere, hvis opgaven kræver forskellige fag.
+                  </p>
+                  <FagVaelger
+                    fagListe={fagListe}
+                    valgte={valgteFag.filter((k) => k !== ANDET)}
+                    onSkift={skiftFag}
+                    andetValgt={harAndet}
+                    onAndet={() => skiftFag(ANDET)}
+                  />
                   {harAndet && (
                     <input className="st-felt" style={{ marginTop: 10 }} type="text"
                       placeholder="Beskriv opgavearten selv…"
@@ -534,7 +596,7 @@ export default function OpretOpgave({ rediger = null }) {
                   )}
 
                   <div style={{ marginTop: 20 }}>
-                    <label className="st-lab" style={{ marginTop: 0 }} htmlFor="oo-hvornaar">Hvornår vil du gerne have det lavet?</label>
+                    <label className="st-lab" style={{ marginTop: 0 }} htmlFor="oo-hvornaar">Hvornår skal opgaven helst laves?</label>
                     <select id="oo-hvornaar" className="st-felt" value={hvornaar} onChange={(e) => setHvornaar(e.target.value)}>
                       {HVORNAAR.map((h) => <option key={h}>{h}</option>)}
                     </select>
@@ -548,7 +610,7 @@ export default function OpretOpgave({ rediger = null }) {
                       så kan virksomheden se forskel på "hun sprang over" og "hun sagde
                       det". */}
                   <label className="st-lab">
-                    Hvor stor tror du opgaven er?{" "}
+                    Hvor stor er opgaven cirka?{" "}
                     <span style={{ fontWeight: 400, color: "var(--navy-soft)" }}>— valgfrit</span>
                   </label>
                   <div className="st-omr">
@@ -567,14 +629,14 @@ export default function OpretOpgave({ rediger = null }) {
                     Har du billeder? <span style={{ fontWeight: 400, color: "var(--navy-soft)" }}>— valgfrit</span>
                   </label>
                   <p className="st-hj" style={{ margin: "0 0 8px" }}>
-                    Billeder gør det lettere for virksomhederne at vurdere din opgave.
+                    Tilføj gerne billeder – så kan virksomhederne hurtigere vurdere din opgave.
                   </p>
                   <label className="oo-fil" htmlFor="oo-fil">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6B7785" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                       <path d="M12 16V4m0 0L8 8m4-4l4 4M3 18h18" />
                     </svg>
                     <div>
-                      Træk billeder hertil, eller <b>vælg fra din enhed</b>
+                      <b>Tag et billede eller vælg fra din telefon</b>
                       <div style={{ fontSize: 12.5, color: "var(--navy-soft)", marginTop: 4 }}>
                         Op til {MAKS_BILLEDER} billeder, maks 10 MB hver.
                       </div>
@@ -614,18 +676,22 @@ export default function OpretOpgave({ rediger = null }) {
                       tager opgaven. */}
                   <label className="st-lab" style={{ marginTop: 26 }}>Hvor kan virksomhederne kontakte dig?</label>
                   <p className="st-hj" style={{ margin: "0 0 12px" }}>
-                    Dine kontaktoplysninger deles kun med de op til 3 virksomheder, der tager din opgave.
+                    Dine oplysninger deles kun med op til 3 virksomheder, som ønsker at tage kontakt om din opgave.
                   </p>
                   <div className="oo-to" style={{ marginTop: 0 }}>
                     <div>
                       <label className="st-lab" style={{ marginTop: 0 }} htmlFor="oo-navn">Dit navn</label>
                       <input id="oo-navn" className="st-felt" type="text" placeholder="Fornavn Efternavn"
-                        value={navn} onChange={(e) => setNavn(e.target.value)} />
+                        value={navn}
+                        onFocus={() => trin("B2C_ContactStepReached")}
+                        onChange={(e) => setNavn(e.target.value)} />
                     </div>
                     <div>
                       <label className="st-lab" style={{ marginTop: 0 }} htmlFor="oo-tlf">Telefon</label>
                       <input id="oo-tlf" className="st-felt" type="tel" placeholder="+45 12 34 56 78"
-                        value={telefon} onChange={(e) => setTelefon(e.target.value)} />
+                        value={telefon}
+                        onFocus={() => trin("B2C_ContactStepReached")}
+                        onChange={(e) => setTelefon(e.target.value)} />
                     </div>
                   </div>
                   <label className="st-lab" htmlFor="oo-mail">
@@ -684,9 +750,9 @@ export default function OpretOpgave({ rediger = null }) {
                   {fejl && <div className="st-fejl" style={{ marginTop: 16 }}>{fejl}</div>}
 
                   <button type="submit" className="oo-send" disabled={sender}>
-                    {sender ? "Gemmer …" : erRedigering ? "Gem ændringer" : "Find op til 3 virksomheder →"}
+                    {sender ? "Gemmer …" : erRedigering ? "Gem ændringer" : "Find op til 3 virksomheder – GRATIS →"}
                   </button>
-                  <div className="oo-efter">Gratis · Uforpligtende · Ingen konto</div>
+                  <div className="oo-efter">✓ 100 % gratis · ✓ Uforpligtende · ✓ Ingen konto</div>
                 </form>
               )}
             </div>
@@ -728,6 +794,7 @@ export default function OpretOpgave({ rediger = null }) {
                   revisor, IT, catering, vagt. En privatperson der søger en advokat
                   skal ikke læse at vi finder håndværkere til hende. */}
               <h2>Fra opgave til virksomhed på 3 trin</h2>
+              <p>Gratis for dig – hele vejen.</p>
             </div>
             <div className="oo-trin">
               <div className="oo-trin-kort">
@@ -741,8 +808,12 @@ export default function OpretOpgave({ rediger = null }) {
                     vi ikke foretager — vi matcher på fag og område, punktum.
                     Betingelsernes §8 fralægger sig udtrykkeligt indeståelse for den
                     enkelte virksomhed, og forsiden må ikke love det modsatte. */}
+                {/* ⚠️ Promptens "Birdly finder de rette" er bevidst IKKE brugt.
+                    "De rette" antyder at vi har vurderet og udvalgt dem; vi matcher
+                    på fag og område, og betingelsernes §8 fralægger sig udtrykkeligt
+                    indeståelse for den enkelte virksomhed. */}
                 <h3>Birdly matcher din opgave</h3>
-                <p>Vi sender den til op til 3 virksomheder i dit fag og område.</p>
+                <p>Vi matcher din opgave med op til 3 virksomheder i dit område, der arbejder med din type opgave.</p>
               </div>
               <div className="oo-trin-kort">
                 <div className="oo-nr">3</div>
@@ -758,8 +829,9 @@ export default function OpretOpgave({ rediger = null }) {
               <div>
                 <h3>Birdly er ikke part i opgaven</h3>
                 <p>
-                  Vi matcher dig med virksomheder, der arbejder med din opgave. Pris, tilbud
-                  og selve arbejdet aftaler du direkte med virksomheden. Birdly tager ikke
+                  Vi matcher dig med virksomheder, der arbejder med din type opgave. Du vælger
+                  selv, hvem du vil gå videre med. Pris, tilbud og selve arbejdet aftaler du
+                  direkte med virksomheden — Birdly er ikke part i aftalen og tager ikke
                   betaling fra dig.
                 </p>
               </div>
