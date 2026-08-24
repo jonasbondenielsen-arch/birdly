@@ -149,6 +149,11 @@ export default function OpretOpgave({ rediger = null }) {
   // Honeypot: skjult for mennesker. Er det udfyldt, er afsenderen en bot.
   const [hp, setHp] = useState("");
   const [listeUrl, setListeUrl] = useState("");
+  // ⚠️ LØBETIDEN KOMMER FRA SERVEREN, den skrives ikke her. Tallet står i basen
+  // (feature_flags 'privat_opgave_levetid_dage', 0093) og kan ændres uden en
+  // udrulning — en hardcoded "3 dage" på kvitteringen ville blive et løfte vi brød
+  // i samme sekund tallet blev skruet op. Faldskærmen er 7, samme som serverens.
+  const [levetidDage, setLevetidDage] = useState(7);
   // Hvor mange billeder der faktisk kom frem. Vises på kvitteringen, fordi hun ellers
   // ikke kan vide om de nåede med — og det var netop dét feltet før lod som om.
   const [billedStatus, setBilledStatus] = useState(null);
@@ -285,6 +290,9 @@ export default function OpretOpgave({ rediger = null }) {
           return;
         }
         if (r.list_token) setListeUrl(`/opgave/${r.list_token}`);
+        if (Number.isFinite(Number(r.levetid_dage)) && Number(r.levetid_dage) > 0) {
+          setLevetidDage(Number(r.levetid_dage));
+        }
 
         // ⚠️ BILLEDERNE SENDES HER — EFTER opgaven findes, og ALDRIG som betingelse
         // for den. Opgaven er allerede gemt på dette punkt: fejler en upload, mister
@@ -428,7 +436,7 @@ export default function OpretOpgave({ rediger = null }) {
                         Se din opgave
                       </a>
                       <p style={{ fontSize: 13.5, color: "var(--navy-soft)", marginTop: 12, lineHeight: 1.6 }}>
-                        Din opgave er aktiv i 3 dage. Du kan til enhver tid lukke den eller
+                        Din opgave er aktiv i {levetidDage} dage. Du kan til enhver tid lukke den eller
                         forlænge den — vi sender dig også linket, så du har det.
                       </p>
                     </>
