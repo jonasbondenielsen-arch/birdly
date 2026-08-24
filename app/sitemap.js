@@ -22,6 +22,16 @@ export default function sitemap() {
     //   /tilmeld     omdirigerer permanent til salgssiden. En 301'et URL hører
     //                ikke hjemme i et sitemap — den svarer "flyt videre".
     "",
+    // ⚠️ B2C-FUNNELEN. Egen soegeintention ("find haandvaerker"), egen title og egen
+    // selv-refererende canonical - se app/opret-opgave/page.js. Den konkurrerer
+    // derfor ikke med roden, som er B2B.
+    //
+    // ⚠️ DEN STAAR HER FOER NOINDEX ER FJERNET, og det er med vilje: sitemap og
+    // noindex trækker ikke hver sin vej. Et sitemap er en INVITATION til at crawle,
+    // og Google SKAL kunne crawle siden for overhovedet at laese vores noindex.
+    // Saa laenge robots-blokken staar i page.js, bliver den ikke indekseret; den dag
+    // blokken fjernes, er siden allerede annonceret og bliver fundet med det samme.
+    "/opret-opgave",
     "/brancher",
     "/udbud-for-alle",
     "/betingelser",
@@ -40,6 +50,10 @@ export default function sitemap() {
   return [...staticPaths, ...fagPaths, ...geoPaths].map((p) => ({
     url: BASE + (p || "/"),
     changeFrequency: p === "" ? "daily" : "weekly",
-    priority: p === "" ? 1 : p.startsWith("/fag/") || p === "/brancher" ? 0.8 : 0.5,
+    priority:
+      p === "" ? 1
+      : p === "/opret-opgave" ? 0.9
+      : p.startsWith("/fag/") || p === "/brancher" ? 0.8
+      : 0.5,
   }));
 }
