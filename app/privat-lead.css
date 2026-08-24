@@ -117,3 +117,90 @@ a.pl-mini{display:inline-block;text-decoration:none}
 .pl-billeder a { display:block; border-radius:10px; overflow:hidden; border:1px solid var(--line); background:#F3F6F9 }
 .pl-billeder img { display:block; width:100%; height:120px; object-fit:cover }
 .pl-billeder a:hover { border-color:var(--teal) }
+
+/* ── STRAMNINGER PÅ "DINE OPGAVER" (24-08-2026) ────────────────────────────
+   Hierarki, copy og mobilfriktion. Ingen nye features. Alt herunder er
+   additivt: ingen af de eksisterende .pl-*-regler er ændret. */
+
+/* "3 virksomheder har sagt ja" — den ene linje der betyder noget på siden,
+   så den er den tungeste. Flueben efter teksten, ikke før: øjet skal ramme
+   tallet først. */
+.pl-ja{display:flex;align-items:baseline;gap:7px;font-size:16px;line-height:1.4}
+.pl-ja b{color:var(--teal-dk)}
+.pl-ja-flueben{flex:0 0 auto;color:var(--teal-dk);font-weight:800}
+
+/* ⚠️ 44px MINIMUMSHØJDE PÅ HANDLINGSKNAPPERNE. Hun står typisk i et rum med
+   en vandskade og en telefon i den ene hånd. Under ~44px stiger fejlklik
+   markant, og et fejlklik her ringer til den forkerte virksomhed. */
+.pl-vk-person{margin-top:3px;font-size:14.5px;color:var(--navy);font-weight:600}
+.pl-vk-knapper{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.pl-vk-btn{flex:1 1 auto;min-height:44px;display:inline-flex;align-items:center;
+  justify-content:center;gap:6px;text-decoration:none;border-radius:10px;
+  padding:10px 14px;font-family:'Inter',sans-serif;font-size:14.5px;font-weight:700;
+  background:#fff;border:1.5px solid #BFE7DF;color:var(--teal-dk)}
+.pl-vk-btn.ring{background:var(--teal);border-color:var(--teal);color:#fff}
+.pl-vk-btn:hover{filter:brightness(.97)}
+/* Nummer og CVR beholdes — men som kvittering, ikke som handling. */
+.pl-vk-sekundaer{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:9px;
+  font-size:12.5px;color:var(--navy-soft)}
+.pl-vk-sekundaer a{color:var(--navy-soft);text-decoration:underline}
+
+/* Afslutningen står for sig selv med sin egen overskrift, i stedet for som
+   en tredje ligeværdig knap ved siden af "Rediger". */
+.pl-afslut{margin-top:18px;padding-top:14px;border-top:1px solid var(--line);
+  display:flex;flex-direction:column;align-items:flex-start;gap:9px}
+.pl-afslut-h{font-family:'Plus Jakarta Sans','Inter',sans-serif;font-weight:700;
+  font-size:15px;color:var(--navy)}
+.pl-afslut .pl-mini{min-height:44px}
+/* Nedtonet: stadig en rigtig knap med rigtigt klikareal, bare uden vægt. */
+.pl-mini.daempet{background:transparent;border-color:transparent;color:var(--navy-soft);
+  font-weight:600;padding-left:0;padding-right:0;text-decoration:underline}
+.pl-mini.daempet:hover{color:var(--sky);border-color:transparent}
+
+/* Vilkårene er foldet sammen, ikke fjernet. Trekanten skjules, så linjen
+   ligner den sætning den er. */
+.pl-vilkaar{margin-top:20px}
+.pl-vilkaar>summary{cursor:pointer;list-style:none;font-size:13px;line-height:1.55;
+  color:var(--navy-soft)}
+.pl-vilkaar>summary::-webkit-details-marker{display:none}
+.pl-vilkaar-link{color:var(--sky);font-weight:700;text-decoration:underline}
+.pl-vilkaar[open]>summary{margin-bottom:2px}
+.pl-vilkaar a{color:var(--sky)}
+
+/* ── FEEDBACK-ARK EFTER "OPGAVEN ER LØST" ─────────────────────────────────
+   Bundark på mobil (der hvor tommelen er), centreret kort på desktop. */
+.of-ark{position:fixed;inset:0;z-index:60;background:rgba(11,31,59,.45);
+  display:flex;align-items:flex-end;justify-content:center;padding:0}
+.of-kort{position:relative;width:100%;max-width:520px;max-height:92vh;overflow-y:auto;
+  background:#fff;border-radius:18px 18px 0 0;padding:22px 20px 26px}
+.of-kort h2{margin:6px 0 0;font-family:'Plus Jakarta Sans','Inter',sans-serif;
+  font-size:21px;color:var(--navy)}
+.of-emoji{font-size:30px;line-height:1}
+/* 44px, samme grund som knapperne på visitkortene. */
+.of-luk{position:absolute;top:8px;right:8px;width:44px;height:44px;border:0;
+  background:transparent;font-size:26px;line-height:1;color:var(--navy-soft);cursor:pointer}
+.of-sp{margin-top:20px;font-weight:700;font-size:15px;color:var(--navy)}
+.of-tovalg,.of-nemhed{display:flex;flex-wrap:wrap;gap:8px;margin-top:9px}
+.of-valg{flex:1 1 auto;min-height:44px;cursor:pointer;background:#fff;
+  border:1.5px solid var(--line);border-radius:10px;padding:10px 14px;
+  font-family:'Inter',sans-serif;font-size:14.5px;font-weight:600;color:var(--navy)}
+.of-valg.on{border-color:var(--teal);background:#F1FAF8;color:var(--teal-dk)}
+.of-firmaer{display:flex;flex-direction:column;gap:8px;margin-top:9px}
+.of-firma{min-height:44px;text-align:left;cursor:pointer;background:#fff;
+  border:1.5px solid var(--line);border-radius:10px;padding:11px 14px;
+  font-family:'Inter',sans-serif;font-size:15px;font-weight:600;color:var(--navy)}
+.of-firma.on{border-color:var(--teal);background:#F1FAF8;color:var(--teal-dk)}
+.of-stjerner{display:flex;gap:4px;margin-top:9px}
+.of-stjerne{width:46px;height:46px;border:0;background:transparent;cursor:pointer;
+  font-size:30px;line-height:1;color:#D8DEE7;padding:0}
+.of-stjerne.on{color:#F2B705}
+.of-tekst{margin-top:8px;resize:vertical;font-family:'Inter',sans-serif}
+.of-tjek{margin-top:16px}
+.of-send{margin-top:18px;width:100%;min-height:48px}
+.of-ark .pl-mini.daempet{display:block;margin:10px auto 0}
+.of-tak{text-align:center;padding-top:30px}
+.of-tak .pl-mini{margin-top:18px}
+@media (min-width:640px){
+  .of-ark{align-items:center;padding:20px}
+  .of-kort{border-radius:18px}
+}
