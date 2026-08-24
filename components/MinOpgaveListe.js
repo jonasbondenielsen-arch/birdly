@@ -43,6 +43,13 @@ const GRUNDE = [
   ["andet", "Andet"],
 ];
 
+// Fornavn til knapteksten: "Ring til Peter" er en anden handling end "Ring".
+// Mangler navnet, staar der bare "Ring" - aldrig "Ring til undefined".
+function fornavnAf(navn) {
+  const f = String(navn || "").trim().split(/\s+/)[0];
+  return f || null;
+}
+
 const STATUS = {
   aktiv: ["aktiv", "Aktiv"],
   match_fuldfoert: ["fuld", "Match fuldført"],
@@ -124,16 +131,26 @@ export default function MinOpgaveListe({ token }) {
             </div>
             <div className="pl-opg-besk">{o.beskrivelse}</div>
 
+            {/* ⚠️ "SAGT JA", IKKE "TAGET OPGAVEN". Ingen af dem har nødvendigvis
+                fået arbejdet endnu — de har sagt ja til at kontakte hende. Den gamle
+                ordlyd lød som om opgaven allerede var uddelt, og det er den ikke.
+                Anden linje siger hvad der SKER nu, så hun ved at bolden er hos dem. */}
             <div className="pl-opg-pladser">
-              {/* Antal, aldrig hvem. Se noten øverst. */}
-              <b>{o.pladser.taget} af {o.pladser.i_alt}</b>{" "}
-              {o.pladser.taget === 0
-                ? "virksomheder har taget opgaven endnu"
-                : o.pladser.taget === 1
-                ? "virksomhed har taget opgaven og kontakter dig"
-                : "virksomheder har taget opgaven og kontakter dig"}
+              {o.pladser.taget === 0 ? (
+                <span>Ingen virksomheder har sagt ja endnu</span>
+              ) : (
+                <>
+                  <div className="pl-ja">
+                    <b>{o.pladser.taget} {o.pladser.taget === 1 ? "virksomhed har" : "virksomheder har"} sagt ja til din opgave</b>
+                    <span className="pl-ja-flueben" aria-hidden="true">✓</span>
+                  </div>
+                  <div className="pl-opg-besk" style={{ marginTop: 2 }}>
+                    De har fået dine kontaktoplysninger og kan nu kontakte dig.
+                  </div>
+                </>
+              )}
               {o.status === "aktiv" && o.udloeber_at && (
-                <div className="pl-opg-besk" style={{ marginTop: 4 }}>
+                <div className="pl-opg-besk" style={{ marginTop: 6 }}>
                   Aktiv indtil {new Date(o.udloeber_at).toLocaleDateString("da-DK", { day: "numeric", month: "long" })}
                 </div>
               )}
@@ -142,17 +159,33 @@ export default function MinOpgaveListe({ token }) {
             {/* ---------- VISITKORT ---------- */}
             {(o.virksomheder || []).length > 0 && (
               <div className="pl-visitkort">
+                {/* ⚠️ MÅLET ER KONTAKT, IKKE AT STUDERE KORTET. Før stod nummeret og
+                    mailen som tekstlinjer, hun selv skulle ramme med fingeren. Nu er de
+                    to knapper. Nummeret vises stadig — men som sekundær linje, ikke som
+                    det visuelt tungeste. */}
                 {o.virksomheder.map((v) => (
                   <div className="pl-vk" key={v.plads}>
                     <div className="pl-vk-top">
                       <div className="pl-vk-navn">{v.firma || "Virksomhed"}</div>
                       <span className="pl-vk-plads">{v.plads} af {o.pladser.i_alt}</span>
                     </div>
-                    {v.cvr && <div className="pl-vk-cvr">CVR {v.cvr}</div>}
-                    {v.kontakt && <div className="pl-vk-linje">{v.kontakt}</div>}
-                    {/* Klikbare, fordi hun sidder med telefonen i hånden. */}
-                    {v.telefon && <div className="pl-vk-linje"><a href={`tel:${v.telefon}`}>{v.telefon}</a></div>}
-                    {v.email && <div className="pl-vk-linje"><a href={`mailto:${v.email}`}>{v.email}</a></div>}
+                    {v.kontakt && <div className="pl-vk-person">{v.kontakt}</div>}
+                    <div className="pl-vk-knapper">
+                      {v.telefon && (
+                        <a className="pl-vk-btn ring" href={`tel:${v.telefon}`}>
+                          <span aria-hidden="true">📞</span> Ring{fornavnAf(v.kontakt) ? ` til ${fornavnAf(v.kontakt)}` : ""}
+                        </a>
+                      )}
+                      {v.email && (
+                        <a className="pl-vk-btn" href={`mailto:${v.email}`}>
+                          <span aria-hidden="true">✉️</span> Send e-mail
+                        </a>
+                      )}
+                    </div>
+                    <div className="pl-vk-sekundaer">
+                      {v.telefon && <a href={`tel:${v.telefon}`}>{v.telefon}</a>}
+                      {v.cvr && <span>CVR {v.cvr}</span>}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -160,7 +193,7 @@ export default function MinOpgaveListe({ token }) {
 
             {grundFor === o.id ? (
               <div style={{ marginTop: 12 }}>
-                <div className="pl-fjern-hj">Hvorfor blev den ikke løst?</div>
+                <div className="pl-fjern-hj">Hvorfor fandt du ikke den rette hjælp?</div>
                 {GRUNDE.map(([k, t]) => (
                   <label key={k} className={"st-omrk" + (grund === k ? " on" : "")} style={{ marginBottom: 8 }}>
                     <input type="radio" name={"g" + o.id} checked={grund === k} onChange={() => setGrund(k)} />
@@ -176,34 +209,62 @@ export default function MinOpgaveListe({ token }) {
                 </div>
               </div>
             ) : (
-              <div className="pl-opg-handling">
+              <>
+                {/* ⚠️ HIERARKIET ER VENDT. Før stod tre knapper side om side, alle lige
+                    tunge: rediger, løst, ikke løst. Men hun har måske lige fået tre
+                    virksomheder — den primære handling er at TAGE IMOD kontakt, ikke at
+                    administrere. Rediger er nedtonet til en tekstlink-agtig knap, og
+                    afslutningen er flyttet ned under sin egen overskrift. */}
                 {kanLukke && (
                   <>
-                    {/* ⚠️ ÅBNER SAMME FORMULAR SOM /opret-opgave, forudfyldt. Ikke en
-                        redigerings-kopi: to formularer for det samme ville drive fra
-                        hinanden, og så kunne hun rette i noget hun ikke kunne oprette. */}
-                    <Link className="pl-mini" href={`/opgave/${token}/rediger/${o.id}`}>
-                      Rediger opgave
-                    </Link>
-                    <button className="pl-mini primaer" disabled={travl === o.id}
-                      onClick={() => handling(() => opgaveLoest(token, o.id), o.id)}>
-                      Opgaven er løst
-                    </button>
-                    <button className="pl-mini" onClick={() => { setGrundFor(o.id); setGrund("fandt_ingen"); }}>
-                      Opgaven blev ikke løst
-                    </button>
+                    <div className="pl-opg-handling">
+                      {/* ⚠️ ÅBNER SAMME FORMULAR SOM /opret-opgave, forudfyldt. Ikke en
+                          redigerings-kopi: to formularer for det samme ville drive fra
+                          hinanden, og så kunne hun rette i noget hun ikke kunne oprette. */}
+                      <Link className="pl-mini daempet" href={`/opgave/${token}/rediger/${o.id}`}>
+                        Rediger opgave
+                      </Link>
+                    </div>
+
+                    <div className="pl-afslut">
+                      <div className="pl-afslut-h">Er du færdig med opgaven?</div>
+                      <button className="pl-mini primaer" disabled={travl === o.id}
+                        onClick={() => handling(() => opgaveLoest(token, o.id), o.id)}>
+                        ✓ Opgaven er løst
+                      </button>
+                      {/* ⚠️ "Jeg fandt ikke den rette hjælp", IKKE "Opgaven blev ikke
+                          løst". Det gamle kunne betyde ti ting — udsat, for dyrt, ingen
+                          meldte tilbage — og gjorde svaret ubrugeligt som data. Det nye
+                          siger hvad der faktisk skete, og grunden spørges bagefter. */}
+                      <button className="pl-mini daempet" onClick={() => { setGrundFor(o.id); setGrund("fandt_ingen"); }}>
+                        Jeg fandt ikke den rette hjælp
+                      </button>
+                    </div>
                   </>
                 )}
+
+                {/* ⚠️ "Find nye virksomheder", IKKE "Genaktivér i 3 dage". Genaktivere
+                    hvad? Hendes behov er ikke at forlænge en periode — det er at få nogen
+                    andre. Kun teksten er ny: knappen kalder samme genåbnings-mekanisme,
+                    med samme loft på antal genåbninger. */}
                 {o.kan_genaabne && (
-                  <button className="pl-mini primaer" disabled={travl === o.id}
-                    onClick={() => handling(() => genaabnOpgave(token, o.id), o.id)}>
-                    {travl === o.id ? "Åbner …" : "Genaktivér i 3 dage"}
-                  </button>
+                  <div className="pl-afslut">
+                    <div className="pl-afslut-h">Fik du ikke den rette hjælp?</div>
+                    <button className="pl-mini primaer" disabled={travl === o.id}
+                      onClick={() => handling(() => genaabnOpgave(token, o.id), o.id)}>
+                      {travl === o.id ? "Søger …" : "Find nye virksomheder"}
+                    </button>
+                    <div className="pl-opg-besk" style={{ marginTop: 6 }}>
+                      Vi forsøger at finde nye virksomheder til din opgave.
+                    </div>
+                  </div>
                 )}
                 {o.status === "udloebet" && !o.kan_genaabne && (
-                  <span className="pl-opg-besk">Opgaven kan ikke genaktiveres flere gange.</span>
+                  <div className="pl-opg-besk" style={{ marginTop: 10 }}>
+                    Vi kan ikke søge efter nye virksomheder til denne opgave igen.
+                  </div>
                 )}
-              </div>
+              </>
             )}
           </div>
         );
@@ -211,8 +272,22 @@ export default function MinOpgaveListe({ token }) {
 
       {fejl === "fejl" && <div className="st-fejl" style={{ marginTop: 14 }}>Noget gik galt. Prøv igen.</div>}
 
-      {/* ⚠️ SAMME ORDLYD SOM VED OPRETTELSEN — én kilde, se lib/formidlerTekst.js. */}
-      <p className="pl-note" style={{ marginTop: 20 }}>{FORMIDLER_TEKST}</p>
+      {/* ⚠️ TEKSTEN ER IKKE SLETTET — DEN ER FOLDET SAMMEN. Den fulde ordlyd står
+          uændret bag "Se vilkår" (samme kilde, lib/formidlerTekst.js), så den stadig
+          er tilgængelig; kun vægten på skærmen er skåret ned. Et langt juridisk afsnit
+          nederst på en mobilside bliver alligevel ikke læst — en linje hun forstår,
+          plus vejen til resten, er mere ærligt end en mur ingen scroller forbi.
+          <details> frem for et modal: den virker uden JavaScript og kan søges i. */}
+      <details className="pl-vilkaar">
+        <summary>
+          Birdly formidler kontakten – aftalen indgås direkte mellem dig og virksomheden.{" "}
+          <span className="pl-vilkaar-link">Se vilkår</span>
+        </summary>
+        <p className="pl-note">{FORMIDLER_TEKST}</p>
+        <p className="pl-note" style={{ marginTop: 8 }}>
+          <Link href="/betingelser-private-opgaver">Betingelser for private opgaver</Link>
+        </p>
+      </details>
     </Ramme>
   );
 }

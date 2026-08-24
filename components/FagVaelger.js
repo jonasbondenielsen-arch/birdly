@@ -85,7 +85,10 @@ export default function FagVaelger({ fagListe, valgte, onSkift, andetValgt, onAn
         // ⚠️ IKKE type="search": Safari lægger sit eget ryd-kryds og en anden
         // tastaturknap på, og det kolliderer med vores egen liste.
         autoComplete="off"
-        placeholder="Søg efter fag eller service…"
+        // ⚠️ EKSEMPLER, IKKE EN INSTRUKTION. "Søg efter fag eller service" beskriver
+        // feltet; "Søg fx tømrer, murer, rengøring" viser at hun må skrive i
+        // hverdagssprog - og at listen også dækker service, ikke kun håndværk.
+        placeholder="Søg fx tømrer, murer, rengøring…"
         value={q}
         onChange={(e) => { setQ(e.target.value); setAaben(true); }}
         onFocus={() => setAaben(true)}

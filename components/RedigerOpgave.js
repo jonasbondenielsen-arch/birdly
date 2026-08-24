@@ -18,11 +18,12 @@ import "../app/privat-lead.css";
 
 export default function RedigerOpgave({ listToken, opgaveId }) {
   const [opgave, setOpgave] = useState(null);
+  const [taget, setTaget] = useState(0);
   const [fejl, setFejl] = useState("");
 
   useEffect(() => {
     hentTilRedigering(listToken, opgaveId)
-      .then((r) => setOpgave(r.opgave))
+      .then((r) => { setOpgave(r.opgave); setTaget(r.taget || 0); })
       .catch((e) =>
         setFejl(
           e.kode === "link_udloebet" ? "udloebet"
@@ -57,5 +58,5 @@ export default function RedigerOpgave({ listToken, opgaveId }) {
     return <div className="pl"><main className="pl-wrap"><div className="pl-henter">Henter opgaven …</div></main></div>;
   }
 
-  return <OpretOpgave rediger={{ list_token: listToken, opgave }} />;
+  return <OpretOpgave rediger={{ list_token: listToken, opgave, taget }} />;
 }

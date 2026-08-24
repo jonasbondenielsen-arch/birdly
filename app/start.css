@@ -155,3 +155,29 @@ select.st-felt{appearance:none;background-image:url("data:image/svg+xml;utf8,<sv
 .st-b2b{font-size:13px;line-height:1.6;color:var(--navy-soft)}
 .st-abon-links{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:9px}
 .st-abon-links a{font-size:13.5px;font-weight:700;color:var(--teal-dk)}
+
+/* ── FOLDEDE FELTER I REDIGERINGS-TILSTAND (24-08-2026) ────────────────────
+   Kun brugt når `erRedigering`. Oprettelsesflowet er urørt: der skal intet
+   være foldet sammen, for der er hvert felt nyt for hende. */
+.oo-fold{margin-top:26px;border:1.5px solid var(--line);border-radius:12px;
+  background:#fff;overflow:hidden}
+.oo-fold>summary{cursor:pointer;list-style:none;min-height:48px;display:flex;
+  align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;
+  font-family:'Inter',sans-serif;font-weight:700;font-size:14.5px;color:var(--navy)}
+.oo-fold>summary::-webkit-details-marker{display:none}
+/* Trekanten tegnes selv, så den kan vende ved åbning uden JavaScript. */
+.oo-fold>summary::after{content:"▾";flex:0 0 auto;color:var(--navy-soft);font-size:13px}
+.oo-fold[open]>summary::after{content:"▴"}
+/* Nuværende værdi i overskriften: hun skal kunne se hvad der står uden at åbne. */
+.oo-fold-vaerdi{margin-left:auto;font-weight:600;font-size:13px;color:var(--navy-soft);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:55%}
+.oo-fold>summary::after{order:2}
+.oo-fold-krop{padding:0 14px 14px}
+
+/* Advarsel når virksomheder allerede har taget opgaven. Rav, ikke rød: det er
+   ikke en fejl hun har lavet, og rød ville få hende til at lade være med at
+   rette noget som helst. */
+.oo-advarsel{margin-top:18px;border:1.5px solid #F2D27A;background:#FEF8E7;
+  border-radius:12px;padding:12px 14px}
+.oo-advarsel-h{font-size:14.5px;line-height:1.45;color:var(--navy)}
+.oo-advarsel p{margin:6px 0 0;font-size:13.5px;line-height:1.55;color:var(--navy-soft)}

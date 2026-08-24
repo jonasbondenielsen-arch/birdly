@@ -151,6 +151,8 @@ function Flueben({ farve = "var(--teal)", size = 16 }) {
 // kender siden, hun skal rette en stavefejl.
 export default function OpretOpgave({ rediger = null }) {
   const erRedigering = !!rediger;
+  // Antal virksomheder der allerede har taget opgaven. 0 ved oprettelse.
+  const tagetAntal = rediger?.taget || 0;
   const forud = rediger?.opgave || null;
   const [fagListe, setFagListe] = useState([]);
   const [regioner, setRegioner] = useState([]);
@@ -471,25 +473,86 @@ export default function OpretOpgave({ rediger = null }) {
                   <h1>{erRedigering ? "Ret din opgave" : "Find virksomheder til din opgave"}</h1>
                   <p className="st-hj">
                     {erRedigering
-                      ? "Ret det du vil — virksomheder der allerede har taget opgaven, beholder den."
+                      ? "Opdater kun det, der har ændret sig."
                       : "Fortæl kort, hvad du skal have lavet – det tager ca. 1 minut."}
                   </p>
+
+                  {/* ⚠️ ADVARSEL, IKKE EN SPÆRRING. Hun må stadig rette alt — men hun
+                      skal vide at nogen allerede har sagt ja på det gamle grundlag.
+                      Uden boksen kan hun i god tro ændre opgaven fra "skifte en stikkontakt"
+                      til "renovere hele el-installationen" og først opdage forskellen når
+                      elektrikeren står i døren.
+
+                      ⚠️ DEN NÆVNER PRÆCIS DE FIRE FELTER der ændrer HVAD opgaven er
+                      (beskrivelse, størrelse, fag, område) — ikke stavefejl i navnet
+                      eller et rettet telefonnummer. En advarsel der fyrer på alt bliver
+                      klikket væk på alt.
+
+                      ⚠️ INGEN AUTO-BESKED TIL VIRKSOMHEDERNE HERFRA (Jonas 24-08). Den
+                      ville røre afsender-kæden, som er flag-lukket lige nu. Boksen
+                      oplyser hende; den underretter ingen. Skriv den ikke om til at love
+                      at "virksomhederne får besked" — det passer ikke i dag. */}
+                  {erRedigering && tagetAntal > 0 && (
+                    <div className="oo-advarsel" role="status">
+                      <div className="oo-advarsel-h">
+                        <span aria-hidden="true">⚠️</span>{" "}
+                        <b>{tagetAntal} {tagetAntal === 1 ? "virksomhed har" : "virksomheder har"} allerede modtaget din opgave</b>
+                      </div>
+                      <p>
+                        Hvis du ændrer beskrivelse, størrelse, fag eller område, kan det
+                        ændre opgaven væsentligt.
+                      </p>
+                    </div>
+                  )}
 
                   {/* 1. Udbyder */}
                   {/* ⚠️ "Udbyder" er udbuds-/B2B-sprog. Siden her er B2C — en
                       privatperson der skal have malet sin stue kalder ikke sig selv
-                      udbyder. Kun label'en ændres; feltet og værdierne er de samme. */}
-                  <label className="st-lab" style={{ marginTop: 26 }}>Hvem opretter opgaven?</label>
-                  <div className="st-omr">
-                    <label className={"st-omrk" + (udbyder === "privat" ? " on" : "")}>
-                      <input type="radio" name="udbyder" checked={udbyder === "privat"} onChange={() => setUdbyder("privat")} />
-                      <span><b>Privatperson</b><i>Jeg opretter opgaven privat</i></span>
-                    </label>
-                    <label className={"st-omrk" + (udbyder === "b2b" ? " on" : "")}>
-                      <input type="radio" name="udbyder" checked={udbyder === "b2b"} onChange={() => setUdbyder("b2b")} />
-                      <span><b>Virksomhed</b><i>Jeg opretter på vegne af en virksomhed</i></span>
-                    </label>
-                  </div>
+                      udbyder. Kun label'en ændres; feltet og værdierne er de samme.
+
+                      ⚠️ VED REDIGERING ER DEN FOLDET SAMMEN. Hun kom hertil for at rette
+                      en beskrivelse eller en dato — ikke for at skifte fra privatperson
+                      til virksomhed. Radioknapperne er de SAMME (samme state, samme
+                      B2B-CVR-gren), kun pakket ind, så de ikke er det første hun møder.
+                      Fjern dem ikke: har hun valgt forkert ved oprettelsen, er det her
+                      hendes eneste vej til at rette det.
+
+                      ⚠️ ÉT SÆT RADIOKNAPPER, ikke to. De deler name="udbyder", så to
+                      samtidige kopier i DOM'en ville dele gruppe og slå hinandens valg
+                      ihjel — derfor står markuppen ét sted og pakkes ind af Ramme. */}
+                  {(() => {
+                    const valg = (
+                      <div className="st-omr">
+                        <label className={"st-omrk" + (udbyder === "privat" ? " on" : "")}>
+                          <input type="radio" name="udbyder" checked={udbyder === "privat"} onChange={() => setUdbyder("privat")} />
+                          <span><b>Privatperson</b><i>Jeg opretter opgaven privat</i></span>
+                        </label>
+                        <label className={"st-omrk" + (udbyder === "b2b" ? " on" : "")}>
+                          <input type="radio" name="udbyder" checked={udbyder === "b2b"} onChange={() => setUdbyder("b2b")} />
+                          <span><b>Virksomhed</b><i>Jeg opretter på vegne af en virksomhed</i></span>
+                        </label>
+                      </div>
+                    );
+                    // Ved redigering bærer <summary> spørgsmålet, så label'en ville
+                    // stå to gange lige over hinanden.
+                    if (!erRedigering) {
+                      return (
+                        <>
+                          <label className="st-lab" style={{ marginTop: 26 }}>Hvem opretter opgaven?</label>
+                          {valg}
+                        </>
+                      );
+                    }
+                    return (
+                      <details className="oo-fold">
+                        <summary>
+                          Hvem opretter opgaven?
+                          <span className="oo-fold-vaerdi">{udbyder === "b2b" ? "Virksomhed" : "Privatperson"}</span>
+                        </summary>
+                        <div className="oo-fold-krop">{valg}</div>
+                      </details>
+                    );
+                  })()}
 
                   {/* CVR — folder sig ud ved B2B */}
                   {udbyder === "b2b" && (
@@ -673,32 +736,67 @@ export default function OpretOpgave({ rediger = null }) {
                       indvending der stopper folk lige inden de taster det - saa den
                       besvares HER, over felterne, ikke i en FAQ laengere nede.
                       Teksten spejler samtykket praecist: op til 3, og kun dem der
-                      tager opgaven. */}
-                  <label className="st-lab" style={{ marginTop: 26 }}>Hvor kan virksomhederne kontakte dig?</label>
-                  <p className="st-hj" style={{ margin: "0 0 12px" }}>
-                    Dine oplysninger deles kun med op til 3 virksomheder, som ønsker at tage kontakt om din opgave.
-                  </p>
-                  <div className="oo-to" style={{ marginTop: 0 }}>
-                    <div>
-                      <label className="st-lab" style={{ marginTop: 0 }} htmlFor="oo-navn">Dit navn</label>
-                      <input id="oo-navn" className="st-felt" type="text" placeholder="Fornavn Efternavn"
-                        value={navn}
-                        onFocus={() => trin("B2C_ContactStepReached")}
-                        onChange={(e) => setNavn(e.target.value)} />
-                    </div>
-                    <div>
-                      <label className="st-lab" style={{ marginTop: 0 }} htmlFor="oo-tlf">Telefon</label>
-                      <input id="oo-tlf" className="st-felt" type="tel" placeholder="+45 12 34 56 78"
-                        value={telefon}
-                        onFocus={() => trin("B2C_ContactStepReached")}
-                        onChange={(e) => setTelefon(e.target.value)} />
-                    </div>
-                  </div>
-                  <label className="st-lab" htmlFor="oo-mail">
-                    E-mail <span style={{ fontWeight: 400, color: "var(--navy-soft)" }}>— valgfri</span>
-                  </label>
-                  <input id="oo-mail" className="st-felt" type="email" placeholder="dig@eksempel.dk"
-                    value={email} onChange={(e) => setEmail(e.target.value)} />
+                      tager opgaven.
+
+                      ⚠️ VED REDIGERING ER FELTERNE FOLDET SAMMEN. Navn, telefon og mail
+                      aendrer hun sjaeldnest, og de er samtidig de tre laengste felter paa
+                      skaermen - udfoldet skubber de opgavens egne felter, dem hun kom for
+                      at rette, under kanten paa en mobil. Sammenfoldet staar navn og
+                      telefon i overskriften, saa hun kan tjekke dem uden at aabne noget.
+
+                      ⚠️ ÉT SAET FELTER, ikke to kopier. Samme id'er, samme state, samme
+                      validering; kun indpakningen skifter. To kopier ville betyde
+                      dobbelte id'er den dag nogen glemmer at holde grenene gensidigt
+                      udelukkende - og de sendes med uanset om hun aabner boksen. */}
+                  {(() => {
+                    const felter = (
+                      <>
+                        <div className="oo-to" style={{ marginTop: 0 }}>
+                          <div>
+                            <label className="st-lab" style={{ marginTop: 0 }} htmlFor="oo-navn">Dit navn</label>
+                            <input id="oo-navn" className="st-felt" type="text" placeholder="Fornavn Efternavn"
+                              value={navn}
+                              onFocus={() => trin("B2C_ContactStepReached")}
+                              onChange={(e) => setNavn(e.target.value)} />
+                          </div>
+                          <div>
+                            <label className="st-lab" style={{ marginTop: 0 }} htmlFor="oo-tlf">Telefon</label>
+                            <input id="oo-tlf" className="st-felt" type="tel" placeholder="+45 12 34 56 78"
+                              value={telefon}
+                              onFocus={() => trin("B2C_ContactStepReached")}
+                              onChange={(e) => setTelefon(e.target.value)} />
+                          </div>
+                        </div>
+                        <label className="st-lab" htmlFor="oo-mail">
+                          E-mail <span style={{ fontWeight: 400, color: "var(--navy-soft)" }}>— valgfri</span>
+                        </label>
+                        <input id="oo-mail" className="st-felt" type="email" placeholder="dig@eksempel.dk"
+                          value={email} onChange={(e) => setEmail(e.target.value)} />
+                      </>
+                    );
+                    if (!erRedigering) {
+                      return (
+                        <>
+                          <label className="st-lab" style={{ marginTop: 26 }}>Hvor kan virksomhederne kontakte dig?</label>
+                          <p className="st-hj" style={{ margin: "0 0 12px" }}>
+                            Dine oplysninger deles kun med op til 3 virksomheder, som ønsker at tage kontakt om din opgave.
+                          </p>
+                          {felter}
+                        </>
+                      );
+                    }
+                    return (
+                      <details className="oo-fold">
+                        <summary>
+                          Kontaktoplysninger
+                          <span className="oo-fold-vaerdi">
+                            {[navn.trim(), telefon.trim()].filter(Boolean).join(" · ") || "Ikke udfyldt"}
+                          </span>
+                        </summary>
+                        <div className="oo-fold-krop">{felter}</div>
+                      </details>
+                    );
+                  })()}
 
                   {/* ⚠️ HONEYPOT. Skjult for mennesker (ikke display:none — nogle bots
                       læser det); et menneske kan hverken se eller tabbe til det.
