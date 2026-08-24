@@ -5,7 +5,6 @@ import Link from "next/link";
 import { BirdMark } from "./Logo";
 import { fetchCatalog } from "../lib/catalog";
 import { opretOpgave, redigerOpgave, uploadOpgaveBillede } from "../lib/privatOpgave";
-import { FORMIDLER_TEKST } from "../lib/formidlerTekst";
 import { OMFANG } from "../lib/omfang";
 import { slaaPostnrOp } from "../lib/postnumre";
 import { OPRET_OPGAVE_ANMELDELSER } from "../lib/opretOpgave";
@@ -38,7 +37,10 @@ import "../app/opret-opgave.css";
 // ============================================================================
 
 const HVORNAAR = [
-  "Snarest muligt",
+  // ⚠️ "Hurtigst muligt" frem for "Snarest muligt" (Jonas 24-08). Vaerdien gemmes som
+  // fritekst paa opgaven og vises til virksomheden, saa aendringen slaar igennem
+  // begge steder. Sikkert i dag: der er nul opgaver i basen.
+  "Hurtigst muligt",
   "Inden for 1 måned",
   "Inden for 3 måneder",
   "Jeg er fleksibel",
@@ -53,33 +55,65 @@ const ANDET = "__andet__";
 // steder håndhæver hver sit lag: browseren for at give besked med det samme,
 // function'en fordi klienten kan omgås, bucket'en fordi function'en kan rettes ved et
 // uheld. Ændrer du tallet her, så ændr det alle tre steder.
+// ⚠️ KUNDE-VENDTE LABELS, OG DE AFVIGER BEVIDST FRA lib/omfang.js.
+//
+// Kunden ser IKKE kr.-intervallerne (Jonas 24-08). Med beloeb pa skaermen bliver
+// spoergsmaalet reelt "hvad er dit budget?", og en privatperson der ikke ved hvad et
+// tag koster, gaetter et tal hun ikke kan staa inde for - eller lukker fanen.
+// Virksomheden ser stadig baandet MED interval; det er en anden beslutning, og
+// lib/omfang.js er derfor uroert.
+//
+// ⚠️ NOEGLEN ER DET ENESTE DER GEMMES. Teksterne her er ren visning; `key` er det der
+// staar i basen og i event-loggen. Aendrer du en key, aendrer du data - aendrer du en
+// tekst her, aendrer du kun hvad hun laeser.
+const OMFANG_KUNDE = {
+  mindre: "Mindre opgave",
+  mellem: "Mellemstor opgave",
+  stor: "Større opgave",
+  ved_ikke: "Det ved jeg ikke",
+};
+
 const MAKS_BILLEDER = 5;
 const MAKS_BILLED_BYTES = 10 * 1024 * 1024;
 
+// ⚠️ RÆKKEFØLGEN ER EFTER HVAD EN PRIVAT BRUGER FAKTISK SPØRGER OM, ikke efter hvad
+// der er nemmest at svare på. Pris først, derefter "hvem får mine oplysninger" — det
+// er den indvending der stopper folk, og den skal ikke ligge nummer fem.
+//
+// ⚠️ "Er Birdly part i aftalen?" er FJERNET som FAQ. Den mørke boks over FAQ'en siger
+// præcis det samme, og to svar på samme spørgsmål læser som om vi forsvarer os.
+//
+// ⚠️ ANTYD ALDRIG EN GODKENDELSE VI IKKE FORETAGER. Vi finder virksomheder ud fra fag
+// og område og indestår ikke for den enkelte — det står i betingelsernes §8, og
+// intet svar her må love mere end det.
 const FAQ = [
   {
     sp: "Koster det noget at oprette en opgave?",
     sv: "Nej. Det er helt gratis for dig at oprette en opgave på Birdly. Vi tager ikke betaling for at folk lægger opgaver op på vores side.",
   },
   {
-    sp: "Er Birdly part i aftalen med virksomheden?",
-    sv: "Nej. Birdly er på ingen måde part eller mellemmand på opgaven — vi faciliterer kun kontakten mellem udbyder og opgavetager. Vi blander os ikke i det økonomiske eller på anden måde i indgåelsen af aftalen mellem parterne. Birdly er ren og skær en marketplace, der forbinder dem, der vil have udført en opgave, med dem, der påtager sig den.",
+    sp: "Hvor mange virksomheder får mine oplysninger?",
+    sv: "Din opgavebeskrivelse og eventuelle billeder deles med de virksomheder, der arbejder med din type opgave i dit område, så de kan vurdere den. Dine kontaktoplysninger deles først, når en virksomhed aktivt tager opgaven — og kun med de op til tre første. Derefter lukkes opgaven for flere.",
   },
   {
-    sp: "Hvem kontakter mig?",
-    sv: "De virksomheder i vores netværk, hvis fag og område passer til din opgave. De tager selv fat i dig via telefon eller mail, så I kan aftale det videre direkte.",
+    sp: "Er jeg forpligtet til at vælge en virksomhed?",
+    sv: "Nej. Du bestemmer helt selv, om du vil gå videre med en af de virksomheder, der kontakter dig. Du forpligter dig ikke til noget ved at oprette en opgave.",
+  },
+  {
+    sp: "Hvordan bliver jeg kontaktet?",
+    sv: "Virksomhederne kontakter dig direkte på telefon eller mail. Det er dem, der tager fat i dig — du skal ikke ringe rundt selv.",
   },
   {
     sp: "Skal jeg oprette en konto?",
-    sv: "Nej. Du skal blot udfylde formularen. Ingen konto, ingen adgangskode, ingen app.",
+    sv: "Nej. Du skal blot udfylde formularen. Ingen konto, ingen adgangskode, ingen app. Du får et personligt link på SMS, som du bruger til at følge din opgave.",
+  },
+  {
+    sp: "Hvordan retter eller lukker jeg min opgave?",
+    sv: "Gennem dit personlige link. Der kan du rette teksten, tilføje billeder og lukke opgaven, når du har fundet den hjælp, du søgte.",
   },
   {
     sp: "Hvad gør I med mine oplysninger?",
-    sv: "Vi bruger dine oplysninger til at sende din opgave videre til de virksomheder, der arbejder med din opgave, så de kan kontakte dig. Vi deler dem ikke til andre formål. Læs mere i vores privatlivspolitik.",
-  },
-  {
-    sp: "Er jeg forpligtet til at vælge en af virksomhederne?",
-    sv: "Nej. Du bestemmer helt selv, om du vil gå videre med en af de virksomheder, der kontakter dig. Du forpligter dig ikke til noget ved at oprette en opgave.",
+    sv: "Vi bruger dine oplysninger til at sende din opgave videre til de virksomheder, der arbejder med den, så de kan kontakte dig. Vi deler dem ikke til andre formål, og oplysningerne på en lukket opgave slettes eller anonymiseres senest 30 dage efter. Læs mere i vores privatlivspolitik.",
   },
 ];
 
@@ -165,16 +199,22 @@ export default function OpretOpgave({ rediger = null }) {
   // by der ikke passer til det hun lige har tastet. Her kan de ikke komme ud af trit.
   const postnrTraef = slaaPostnrOp(postnr);
 
-  // ⚠️ LANDSDELEN AUTO-VÆLGES, MEN LÅSES IKKE. 23 postnumre strækker sig over to
-  // regioner (fx 2640 Hedehusene, 7100 Vejle); for dem er forvalget afgjort af
-  // postnummerets geografiske centrum, og en adresse kan ligge på den anden side af
-  // grænsen. Derfor sætter vi kun landsdelen når brugeren ikke selv har rørt feltet —
-  // et manuelt valg må aldrig blive overskrevet af et opslag.
-  const [regionRoert, setRegionRoert] = useState(erRedigering);
+  // ⚠️ REGIONEN UDLEDES, KUNDEN VÆLGER DEN IKKE (Jonas 24-08-2026). Opslaget vinder
+  // altid når det giver et træf — der er ikke længere et manuelt valg at beskytte.
   useEffect(() => {
-    if (regionRoert) return;
     if (postnrTraef?.region_key) setRegionKey(postnrTraef.region_key);
-  }, [postnrTraef?.region_key, regionRoert]);
+  }, [postnrTraef?.region_key]);
+
+  // Vælgeren foldes kun frem når vi IKKE kan udlede regionen. Uden dette ville et
+  // ukendt postnummer være en blindgyde: valideringen kræver en region, og der ville
+  // ikke være noget felt at vælge den i.
+  const maaVaelgeLandsdel = postnr.length === 4 && !postnrTraef;
+
+  // Navnet på den udledte region — vises i kvitteringen, så udledningen er synlig og
+  // ikke sker i det skjulte.
+  const regionNavn = postnrTraef?.region_key
+    ? (regioner.find((r) => r.key === postnrTraef.region_key)?.label_da || null)
+    : null;
 
   const harAndet = valgteFag.includes(ANDET);
 
@@ -195,9 +235,14 @@ export default function OpretOpgave({ rediger = null }) {
     if (!valgteFag.length) return setFejl("Vælg mindst én opgaveart.");
     if (harAndet && !andetTekst.trim()) return setFejl("Beskriv opgavearten, når du har valgt “Andet”.");
     if (!/^\d{4}$/.test(postnr.trim())) return setFejl("Skriv et dansk postnummer på 4 cifre.");
-    if (!regionKey) return setFejl("Vælg hvilken landsdel opgaven ligger i.");
+    // Rammer i praksis kun ukendte postnumre, hvor vælgeren ER foldet frem.
+    if (!regionKey) return setFejl("Vi kunne ikke genkende postnummeret — vælg landsdel herunder.");
     if (!navn.trim()) return setFejl("Skriv dit navn.");
-    if (!telefon.trim() && !email.trim()) return setFejl("Skriv enten telefon eller e-mail, så virksomhederne kan få fat i dig.");
+    // ⚠️ TELEFON ER NU PAAKRAEVET (Jonas 24-08), e-mail valgfri. Virksomhederne
+    // ringer - en opgave uden nummer bliver liggende. Serveren accepterer stadig
+    // telefon ELLER mail, saa klienten er den strengeste af de to; det er den rigtige
+    // retning, for en loesere server kan ikke skabe en opgave ingen kan handle paa.
+    if (!telefon.trim()) return setFejl("Skriv dit telefonnummer, så virksomhederne kan ringe til dig.");
     if (!samtykke) return setFejl("Sæt kryds i feltet, så vi må dele din opgave med virksomhederne.");
 
     setSender(true);
@@ -302,14 +347,18 @@ export default function OpretOpgave({ rediger = null }) {
       <div className="oo-hero">
         <div className="oo-eyebrow">Opret opgave — gratis</div>
         <h1>Skal du have lavet noget?</h1>
+        {/* ⚠️ RESULTAT, IKKE PROCES. "Så sender vi den videre" beskriver hvad VI
+            gør; "Birdly matcher dig med op til 3 virksomheder" beskriver hvad hun
+            får. Tallet 3 er ikke pynt — det er loftet i systemet (PLADSER), og det
+            besvarer "hvor mange ringer til mig?" før hun når at spørge. */}
         <p>
-          Beskriv din opgave på 60 sekunder. Så sender vi den videre til lokale
-          virksomheder, der arbejder med din opgave.
+          Beskriv din opgave på 1 minut. Birdly matcher dig med op til 3 virksomheder
+          i dit område, der arbejder med din opgave.
         </p>
         <div className="oo-trust">
-          <span><Flueben /> Helt gratis at oprette</span>
+          <span><Flueben /> Helt gratis og uforpligtende</span>
           <span><Flueben /> Ingen konto nødvendig</span>
-          <span><Flueben /> Lokale virksomheder</span>
+          <span><Flueben /> Maks. 3 virksomheder kontakter dig</span>
         </div>
       </div>
       )}
@@ -359,15 +408,18 @@ export default function OpretOpgave({ rediger = null }) {
                 </div>
               ) : (
                 <form onSubmit={send} noValidate>
-                  <h1>{erRedigering ? "Ret din opgave" : "Opret din opgave"}</h1>
+                  <h1>{erRedigering ? "Ret din opgave" : "Fortæl os, hvad du skal have lavet"}</h1>
                   <p className="st-hj">
                     {erRedigering
                       ? "Ret det du vil — virksomheder der allerede har taget opgaven, beholder den."
-                      : "Udfyld felterne herunder — det tager under et minut."}
+                      : "Det tager ca. 1 minut – så finder Birdly virksomheder i dit fag og område."}
                   </p>
 
                   {/* 1. Udbyder */}
-                  <label className="st-lab" style={{ marginTop: 26 }}>Udbyder af opgaven er</label>
+                  {/* ⚠️ "Udbyder" er udbuds-/B2B-sprog. Siden her er B2C — en
+                      privatperson der skal have malet sin stue kalder ikke sig selv
+                      udbyder. Kun label'en ændres; feltet og værdierne er de samme. */}
+                  <label className="st-lab" style={{ marginTop: 26 }}>Hvem opretter opgaven?</label>
                   <div className="st-omr">
                     <label className={"st-omrk" + (udbyder === "privat" ? " on" : "")}>
                       <input type="radio" name="udbyder" checked={udbyder === "privat"} onChange={() => setUdbyder("privat")} />
@@ -375,7 +427,7 @@ export default function OpretOpgave({ rediger = null }) {
                     </label>
                     <label className={"st-omrk" + (udbyder === "b2b" ? " on" : "")}>
                       <input type="radio" name="udbyder" checked={udbyder === "b2b"} onChange={() => setUdbyder("b2b")} />
-                      <span><b>Virksomhed (B2B)</b><i>Jeg opretter på vegne af en virksomhed</i></span>
+                      <span><b>Virksomhed</b><i>Jeg opretter på vegne af en virksomhed</i></span>
                     </label>
                   </div>
 
@@ -389,16 +441,21 @@ export default function OpretOpgave({ rediger = null }) {
                   )}
 
                   {/* 2. Hvad */}
-                  <label className="st-lab" htmlFor="oo-besk">
-                    Hvad skal der laves? <span style={{ fontWeight: 400, color: "var(--navy-soft)" }}>— beskriv kort din opgave</span>
-                  </label>
+                  <label className="st-lab" htmlFor="oo-besk">Hvad skal du have lavet?</label>
+                  {/* ⚠️ "Du behøver ikke kende de tekniske detaljer" står der fordi
+                      den hyppigste grund til at en privatperson forlader sådan en
+                      formular er en fornemmelse af at hun ikke ved nok til at svare
+                      rigtigt. Virksomheden spørger selv ind bagefter. */}
+                  <p className="st-hj" style={{ margin: "0 0 8px" }}>
+                    Beskriv kort opgaven. Du behøver ikke kende de tekniske detaljer.
+                  </p>
                   <textarea id="oo-besk" className="st-felt" rows={5}
-                    placeholder="Fx: Jeg skal have udskiftet ca. 120 m² tag på en villa. Ønskes udført inden 3 måneder."
+                    placeholder="Fx: Vi skal have skiftet ca. 120 m² tag på vores villa. Det gamle tag skal fjernes, og vi vil gerne have arbejdet udført inden for 3 måneder."
                     value={beskrivelse} onChange={(e) => setBeskrivelse(e.target.value)} />
 
                   {/* 3. Opgaveart */}
                   <label className="st-lab">
-                    Opgaveart <span style={{ fontWeight: 400, color: "var(--navy-soft)" }}>— vælg en eller flere</span>
+                    Hvilken type hjælp søger du? <span style={{ fontWeight: 400, color: "var(--navy-soft)" }}>— vælg gerne flere</span>
                   </label>
                   <div className="oo-chips">
                     {fagListe.map((f) => (
@@ -423,58 +480,61 @@ export default function OpretOpgave({ rediger = null }) {
                   )}
 
                   {/* 4. Hvor / hvornår */}
-                  {/* ⚠️ POSTNUMMER OG LANDSDEL ER IKKE DET SAMME FELT, og dubletten er
-                      med vilje. Der findes ingen postnummer→geografi-tabel i systemet
-                      (migration 0008 udskød den, og det blev aldrig gjort), og
-                      virksomhederne er registreret på landsdel. Et gæt ud fra
-                      postnummer-intervaller ville være omtrentligt og vist som sikkert
-                      — samme fælde som den ikke-verificerede branchekode-seed.
-                      Postnummeret er til mennesket der ringer dig op; landsdelen er
-                      det matchet regner på.
+                  {/* ⚠️ LANDSDELEN ER IKKE ET FELT LÆNGERE (Jonas 24-08-2026). Den er
+                      det matchet regner på, men kunden skal ikke vælge den: hun ved
+                      hvor hendes hus ligger, ikke hvilken NUTS-region det hører til.
+                      Postnummeret er nok, og regionen udledes af opslaget i Danmarks
+                      adresseregister (lib/postnumre.js). Værdien sendes UÆNDRET til
+                      serveren — det er kun valget der er væk, ikke data.
 
-                      ⚠️ SIDEN 20-08-2026 udfyldes landsdelen automatisk fra et opslag i
-                      Danmarks officielle adresseregister (lib/postnumre.js). Feltet
-                      bliver stående synligt og redigerbart — 23 postnumre krydser en
-                      regionsgrænse, og der er forvalget et kvalificeret gæt. */}
-                  <div className="oo-to" style={{ marginTop: 20 }}>
-                    <div>
-                      <label className="st-lab" style={{ marginTop: 0 }} htmlFor="oo-post">Hvor skal det laves?</label>
-                      <input id="oo-post" className="st-felt" type="text" inputMode="numeric" maxLength={4}
-                        placeholder="Postnummer, fx 4300"
-                        value={postnr} onChange={(e) => setPostnr(e.target.value.replace(/\D/g, ""))} />
-                      {/* Kvitteringen er hele pointen med opslaget: brugeren kan SE at vi
-                          forstod hvor opgaven ligger, frem for at skulle stole på det. */}
-                      {postnr.length === 4 && (
-                        postnrTraef ? (
-                          <div className="oo-postnr-ok">✓ {postnr} {postnrTraef.by}</div>
-                        ) : (
-                          <div className="oo-postnr-nej">Vi kender ikke det postnummer — vælg landsdel selv.</div>
-                        )
-                      )}
-                    </div>
-                    <div>
-                      <label className="st-lab" style={{ marginTop: 0 }} htmlFor="oo-region">
-                        Landsdel
-                        {postnrTraef && !regionRoert && (
-                          <span style={{ fontWeight: 400, color: "var(--navy-soft)" }}> — udfyldt automatisk</span>
-                        )}
-                      </label>
+                      ⚠️ PRISEN ER KENDT: 23 postnumre strækker sig over to regioner (fx
+                      2640 Hedehusene, 7100 Vejle). Før kunne kunden rette forvalget;
+                      nu står opslagets gæt fast for dem. Til gengæld er det gæt
+                      kvalificeret — postnummerets geografiske centrum — og fejlen
+                      rammer kun hvilke virksomheder der ser opgaven, aldrig kundens
+                      egne oplysninger.
+
+                      ⚠️ FALLBACKEN ER IKKE VALGFRI. Kender vi ikke postnummeret, er
+                      der ingen region at udlede, og valideringen ville blokere hende
+                      med en fejl om et felt der ikke findes — en blindgyde uden vej ud.
+                      Derfor foldes vælgeren frem PRÆCIS dér, og kun dér. */}
+                  <div style={{ marginTop: 20 }}>
+                    <label className="st-lab" style={{ marginTop: 0 }} htmlFor="oo-post">Hvor skal opgaven udføres?</label>
+                    <input id="oo-post" className="st-felt" type="text" inputMode="numeric" maxLength={4}
+                      placeholder="Postnummer, fx 4300"
+                      value={postnr} onChange={(e) => setPostnr(e.target.value.replace(/\D/g, ""))} />
+                    {/* Kvitteringen er hele pointen med opslaget: hun kan SE at vi forstod
+                        hvor opgaven ligger — nu inkl. regionen, siden hun ikke selv vælger
+                        den længere. Uden den ville udledningen ske i det skjulte. */}
+                    {postnr.length === 4 && (
+                      postnrTraef ? (
+                        <div className="oo-postnr-ok">
+                          ✓ {postnr} {postnrTraef.by}
+                          {regionNavn && <> · {regionNavn}</>}
+                        </div>
+                      ) : (
+                        <div className="oo-postnr-nej">Vi kender ikke det postnummer — vælg landsdel herunder.</div>
+                      )
+                    )}
+                  </div>
+
+                  {/* Kun når postnummeret ikke gav et træf. Se noten ovenfor. */}
+                  {maaVaelgeLandsdel && (
+                    <div style={{ marginTop: 16 }}>
+                      <label className="st-lab" style={{ marginTop: 0 }} htmlFor="oo-region">Landsdel</label>
                       <select id="oo-region" className="st-felt" value={regionKey}
-                        onChange={(e) => { setRegionRoert(true); setRegionKey(e.target.value); }}>
+                        onChange={(e) => setRegionKey(e.target.value)}>
                         <option value="">Vælg landsdel …</option>
                         {/* ⚠️ `label_da`, IKKE `name`. Kataloget har aldrig haft et
                             `name`-felt, så fallbacken slog til og dropdownen viste de rå
-                            nøgler: "sjaelland" uden æ, alt i småt, på en side en
-                            privatperson lander på. Funnelen (Start.js) læste hele tiden
-                            label_da korrekt — det var kun her feltnavnet var gættet.
-                            Fallback til key beholdt, så et nyt fag/region uden label
-                            stadig kan vælges frem for at stå som en tom linje. */}
+                            nøgler: "sjaelland" uden æ, alt i småt. */}
                         {regioner.map((r) => <option key={r.key} value={r.key}>{r.label_da || r.name || r.key}</option>)}
                       </select>
                     </div>
-                  </div>
+                  )}
+
                   <div style={{ marginTop: 20 }}>
-                    <label className="st-lab" style={{ marginTop: 0 }} htmlFor="oo-hvornaar">Hvornår?</label>
+                    <label className="st-lab" style={{ marginTop: 0 }} htmlFor="oo-hvornaar">Hvornår vil du gerne have det lavet?</label>
                     <select id="oo-hvornaar" className="st-felt" value={hvornaar} onChange={(e) => setHvornaar(e.target.value)}>
                       {HVORNAAR.map((h) => <option key={h}>{h}</option>)}
                     </select>
@@ -488,7 +548,7 @@ export default function OpretOpgave({ rediger = null }) {
                       så kan virksomheden se forskel på "hun sprang over" og "hun sagde
                       det". */}
                   <label className="st-lab">
-                    Hvad anslår du opgavens omfang til?{" "}
+                    Hvor stor tror du opgaven er?{" "}
                     <span style={{ fontWeight: 400, color: "var(--navy-soft)" }}>— valgfrit</span>
                   </label>
                   <div className="st-omr">
@@ -496,18 +556,19 @@ export default function OpretOpgave({ rediger = null }) {
                       <label key={o.key} className={"st-omrk" + (omfang === o.key ? " on" : "")}>
                         <input type="radio" name="omfang" checked={omfang === o.key}
                           onChange={() => setOmfang(o.key)} />
-                        <span>
-                          <b>{o.label}</b>
-                          {o.interval && <i>{o.interval}</i>}
-                        </span>
+                        {/* ⚠️ Ingen kr.-interval her. Se noten ved OMFANG_KUNDE. */}
+                        <span><b>{OMFANG_KUNDE[o.key] || o.label}</b></span>
                       </label>
                     ))}
                   </div>
 
                   {/* 5. Billeder */}
                   <label className="st-lab" htmlFor="oo-fil">
-                    Billeder <span style={{ fontWeight: 400, color: "var(--navy-soft)" }}>— valgfrit</span>
+                    Har du billeder? <span style={{ fontWeight: 400, color: "var(--navy-soft)" }}>— valgfrit</span>
                   </label>
+                  <p className="st-hj" style={{ margin: "0 0 8px" }}>
+                    Billeder gør det lettere for virksomhederne at vurdere din opgave.
+                  </p>
                   <label className="oo-fil" htmlFor="oo-fil">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6B7785" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                       <path d="M12 16V4m0 0L8 8m4-4l4 4M3 18h18" />
@@ -546,7 +607,16 @@ export default function OpretOpgave({ rediger = null }) {
                   )}
 
                   {/* 6. Kontakt */}
-                  <div className="oo-to" style={{ marginTop: 20 }}>
+                  {/* ⚠️ SVARET FOER SPOERGSMAALET. "Hvem faar mit nummer?" er den
+                      indvending der stopper folk lige inden de taster det - saa den
+                      besvares HER, over felterne, ikke i en FAQ laengere nede.
+                      Teksten spejler samtykket praecist: op til 3, og kun dem der
+                      tager opgaven. */}
+                  <label className="st-lab" style={{ marginTop: 26 }}>Hvor kan virksomhederne kontakte dig?</label>
+                  <p className="st-hj" style={{ margin: "0 0 12px" }}>
+                    Dine kontaktoplysninger deles kun med de op til 3 virksomheder, der tager din opgave.
+                  </p>
+                  <div className="oo-to" style={{ marginTop: 0 }}>
                     <div>
                       <label className="st-lab" style={{ marginTop: 0 }} htmlFor="oo-navn">Dit navn</label>
                       <input id="oo-navn" className="st-felt" type="text" placeholder="Fornavn Efternavn"
@@ -558,7 +628,9 @@ export default function OpretOpgave({ rediger = null }) {
                         value={telefon} onChange={(e) => setTelefon(e.target.value)} />
                     </div>
                   </div>
-                  <label className="st-lab" htmlFor="oo-mail">E-mail</label>
+                  <label className="st-lab" htmlFor="oo-mail">
+                    E-mail <span style={{ fontWeight: 400, color: "var(--navy-soft)" }}>— valgfri</span>
+                  </label>
                   <input id="oo-mail" className="st-felt" type="email" placeholder="dig@eksempel.dk"
                     value={email} onChange={(e) => setEmail(e.target.value)} />
 
@@ -600,17 +672,21 @@ export default function OpretOpgave({ rediger = null }) {
                     </span>
                   </label>
 
-                  {/* Ansvarsfraskrivelsen står BÅDE her og på opretterens opgaveliste,
-                      med samme ordlyd. Ser hun den kun ét sted, kan hun nå at glemme den
-                      inden virksomhederne ringer. */}
-                  <p className="oo-disclaimer">{FORMIDLER_TEKST}</p>
+                  {/* ⚠️ ANSVARSFRASKRIVELSEN ER FLYTTET UD AF FLOWET (Jonas 24-08).
+                      Den stod som en tekstvæg lige over knappen, præcis dér hvor
+                      tvivlen er dyrest. Substansen er der stadig, tre steder hun
+                      kommer forbi: den mørke boks "Birdly er ikke part i opgaven"
+                      længere nede, betingelserne som samtykket linker til (§7), og
+                      hendes egen opgaveliste efter oprettelsen — hvor den står ORDRET
+                      som teksten i lib/formidlerTekst.js. Fjern ikke ét af de tre
+                      steder uden at tænke over de to andre. */}
 
                   {fejl && <div className="st-fejl" style={{ marginTop: 16 }}>{fejl}</div>}
 
                   <button type="submit" className="oo-send" disabled={sender}>
-                    {sender ? "Gemmer …" : erRedigering ? "Gem ændringer" : "Find virksomheder →"}
+                    {sender ? "Gemmer …" : erRedigering ? "Gem ændringer" : "Find op til 3 virksomheder →"}
                   </button>
-                  <div className="oo-efter">Det er gratis, og du forpligter dig ikke til noget.</div>
+                  <div className="oo-efter">Gratis · Uforpligtende · Ingen konto</div>
                 </form>
               )}
             </div>
@@ -648,23 +724,30 @@ export default function OpretOpgave({ rediger = null }) {
           <section className="oo-blok">
             <div className="oo-hoved">
               <div className="oo-eyebrow">Sådan virker det</div>
-              <h2>Fra opgave til håndværker på 3 trin</h2>
+              {/* ⚠️ "virksomhed", ikke "håndværker". Kataloget rummer 21 fag —
+                  revisor, IT, catering, vagt. En privatperson der søger en advokat
+                  skal ikke læse at vi finder håndværkere til hende. */}
+              <h2>Fra opgave til virksomhed på 3 trin</h2>
             </div>
             <div className="oo-trin">
               <div className="oo-trin-kort">
                 <div className="oo-nr">1</div>
                 <h3>Beskriv din opgave</h3>
-                <p>Fortæl kort hvad du skal have lavet, hvor og hvornår. Det tager under et minut — ingen konto nødvendig.</p>
+                <p>Fortæl kort, hvad du skal have lavet. Det tager ca. 1 minut.</p>
               </div>
               <div className="oo-trin-kort">
                 <div className="oo-nr">2</div>
-                <h3>Birdly finder de rette</h3>
-                <p>Vi sender din opgave til de lokale virksomheder, der arbejder med netop den type opgave i dit område.</p>
+                {/* ⚠️ "de rette" er væk. Det antyder en udvælgelse eller godkendelse
+                    vi ikke foretager — vi matcher på fag og område, punktum.
+                    Betingelsernes §8 fralægger sig udtrykkeligt indeståelse for den
+                    enkelte virksomhed, og forsiden må ikke love det modsatte. */}
+                <h3>Birdly matcher din opgave</h3>
+                <p>Vi sender den til op til 3 virksomheder i dit fag og område.</p>
               </div>
               <div className="oo-trin-kort">
                 <div className="oo-nr">3</div>
                 <h3>De kontakter dig</h3>
-                <p>Virksomhederne, der kan hjælpe, tager direkte fat i dig. Så aftaler I resten indbyrdes.</p>
+                <p>Virksomhederne kan kontakte dig direkte. Du vælger selv, hvem du vil gå videre med.</p>
               </div>
             </div>
 
@@ -673,16 +756,51 @@ export default function OpretOpgave({ rediger = null }) {
                 <circle cx="12" cy="12" r="9" /><path d="M12 8v.5M12 11v5" />
               </svg>
               <div>
-                <h3>Birdly er ikke part i din opgave</h3>
+                <h3>Birdly er ikke part i opgaven</h3>
                 <p>
-                  Vi faciliterer udelukkende kontakten mellem dig og virksomhederne. Vi tager
-                  ikke betaling for at oprette opgaver, og vi blander os ikke i pris, aftale
-                  eller udførelse — det aftaler I selv, direkte.
+                  Vi matcher dig med virksomheder, der arbejder med din opgave. Pris, tilbud
+                  og selve arbejdet aftaler du direkte med virksomheden. Birdly tager ikke
+                  betaling fra dig.
                 </p>
               </div>
             </div>
           </section>
 
+          )}
+
+          {/* ---------- DIT SMS-OPGAVELINK ----------
+              ⚠️ DET ER HER BIRDLY ADSKILLER SIG, og det er værd at sige højt: hun får
+              styr på sin opgave uden at oprette noget som helst. Ingen konto, intet
+              password — kun et personligt link i en SMS.
+
+              ⚠️ FØRSTE PUNKT SIGER "der har taget din opgave", IKKE "der har fået
+              den". Opretteren ser KUN de virksomheder der aktivt har accepteret —
+              ikke alle matchede. Skrev vi det bredere, ville hun åbne sit link og
+              undre sig over at listen er kortere end lovet. */}
+          {!erRedigering && (
+          <section className="oo-blok">
+            <div className="oo-hoved">
+              <div className="oo-eyebrow">Dit opgavelink</div>
+              <h2>Du har styr på opgaven fra din mobil</h2>
+              <p>Når din opgave er oprettet, sender Birdly dig et personligt link på SMS.</p>
+            </div>
+            <div className="st-kort" style={{ maxWidth: 560, margin: "0 auto" }}>
+              <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 12 }}>
+                {[
+                  "Se hvilke virksomheder der har taget din opgave",
+                  "Ret din opgave eller tilføj billeder",
+                  "Luk opgaven, når du har fundet hjælp",
+                ].map((t) => (
+                  <li key={t} style={{ display: "flex", gap: 10, alignItems: "flex-start", fontSize: 15, lineHeight: 1.5 }}>
+                    <span style={{ flex: "none", marginTop: 3 }}><Flueben /></span>{t}
+                  </li>
+                ))}
+              </ul>
+              <p className="st-hj" style={{ margin: "16px 0 0" }}>
+                Ingen konto. Intet password. Bare dit personlige link.
+              </p>
+            </div>
+          </section>
           )}
 
           {/* ---------- FAQ ---------- */}
