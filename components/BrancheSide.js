@@ -59,9 +59,33 @@ export default function BrancheSide({ data, region = null, opgaveTal = null }) {
 
   // Regionsspecifikke spørgsmål lægges TIL fagets egne — ikke i stedet for. Så er hver
   // side unik uden at fagets gode svar går tabt.
+  // ⚠️ TO FAELLES SPOERGSMAAL PAA ALLE BRANCHESIDER (Jonas 25-08-2026), ordret.
+  // De besvarer praecis de to ting en virksomhed spoerger om paa en fag-side, og
+  // de hoerer hjemme HER frem for som en ny URL pr. fag - se noten om ét svar,
+  // mange spoergsmaal i lib/viden.js.
+  //
+  // ⚠️ SPOERGSMAALET OM PRIVATE OPGAVER VISES KUN VED HOEJ PRIVAT RELEVANS. Svaret
+  // er "Ja, Birdly kan ogsaa sende private [fag]-opgaver" - og paa en IT- eller
+  // revisor-side ville det love praecis det, aerlighedsreglen (privatRelevans)
+  // blev indfoert for at undgaa. Det ville ogsaa staa i FAQPage-schemaet og
+  // dermed vaere det, en answer engine citerede om os.
+  const faellesFaq = [
+    {
+      q: `Kan et lille ${nounSingular}-firma byde på offentlige opgaver?`,
+      a: `Ja. Et lille ${nounSingular}-firma kan byde på offentlige opgaver, hvis virksomheden opfylder kravene i den konkrete opgave. Det afgørende er ikke virksomhedens størrelse alene, men om den kan levere det efterspurgte og opfylde kravene.`,
+    },
+    ...(harPrivate
+      ? [{
+          q: `Finder Birdly private ${nounSingular}-opgaver?`,
+          a: `Ja. Birdly kan også sende private ${nounSingular}-opgaver, som privatpersoner eller virksomheder opretter direkte. Du vælger selv, om du ønsker både private og offentlige opgaver eller kun offentlige.`,
+        }]
+      : []),
+  ];
+
   const faqAlle = region
     ? [
         ...faq,
+        ...faellesFaq,
         {
           q: `Er der nok opgaver ${region.praep} ${region.navn}?`,
           a: `${region.naerhed} Du får kun besked, når en opgave rent faktisk passer til dit fag og dit område — så du mærker ikke forskel på travle og stille uger, ud over hvor mange beskeder der kommer.`,
@@ -71,7 +95,7 @@ export default function BrancheSide({ data, region = null, opgaveTal = null }) {
           a: `Ja. Vi holder øje med ${region.kommuner}. Du vælger selv, om du kun vil have opgaver herfra, eller om du også vil se opgaver i nabo­regionerne.`,
         },
       ]
-    : faq;
+    : [...faq, ...faellesFaq];
 
   // Ren FAQ-structured-data (FAQPage) til Google.
   const faqLd = {
