@@ -11,6 +11,10 @@ const IKON = {
   trustpilot: (<svg width="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l2.6 5.6 6.1.7-4.5 4.1 1.2 6L12 16.9 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z" /></svg>),
 };
 import "../app/footer.css";
+import { KLARE_GUIDES } from "../lib/viden";
+
+// Én kilde: samme betingelse som /viden selv bruger til at være indekserbar.
+const VIDEN_KLAR = KLARE_GUIDES.length > 0;
 
 /* Delt footer — kompakt og centreret: alle navigations-links i én vandret,
    centreret række øverst, en tynd skillelinje, og nederst tre zoner (logo +
@@ -29,6 +33,12 @@ export default function Footer() {
           <a href="/#faq">FAQ</a>
           <a href="/#om">Om os</a>
           <Link href="/brancher">For dit fag</Link>
+          {/* ⚠️ DISKRET, OG KUN NÅR DER ER NOGET AT LÆSE. /viden hører ikke hjemme i
+              hovedmenuen — den er købsrejsen. Guides er noget man lander på fra en
+              søgning, og footeren er nok til at Google og den interne linkstruktur
+              finder dem. Linket vises først når mindst én guide er publiceret, saa
+              vi ikke sender folk hen til en tom side. */}
+          {VIDEN_KLAR && <Link href="/viden">Viden</Link>}
           <Link href="/udbud-for-alle">Opgaver er for alle</Link>
           <a href="/#opsigelse">Opsigelse</a>
         </nav>

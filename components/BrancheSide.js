@@ -8,6 +8,9 @@ import { OPRET_OPGAVE_I_NAV } from "../lib/opretOpgave";
 import { regionerForFag } from "../lib/regioner";
 import { daTal } from "../lib/opgaveTal";
 import "../app/forside.css";
+// Guide-kortene genbruger /viden-stilen frem for en kopi.
+import { KLARE_GUIDES } from "../lib/viden";
+import "../app/viden/viden.css";
 
 // Branche-landingsside (SEO). Server-renderet — alt indhold er i HTML ved load.
 // Genbruger forsidens design (.birdly-home + forside.css): samme header, hero,
@@ -42,6 +45,10 @@ export default function BrancheSide({ data, region = null, opgaveTal = null }) {
   // Klassificeringen står som et felt PR. BRANCHE i lib/branche.js, ikke som en
   // liste her: så er det ét sted at rette den dag et fag flytter gruppe.
   const harPrivate = privatRelevans === "hoej";
+
+  // De guides der peger paa netop denne branche. Relationen staar i lib/viden.js,
+  // saa den redigeres ét sted sammen med guiden selv. Kun publicerede taeller.
+  const guides = KLARE_GUIDES.filter((g) => (g.brancher || []).includes(slug)).slice(0, 3);
   // Funnelen forstår allerede ?fag=; ?region= er tilføjet efter samme mønster, så
   // kunden lander med både fag og område forvalgt og har færre klik tilbage.
   const funnel = "/kom-i-gang?fag=" + fagKey + (region ? "&region=" + region.slug : "");
@@ -229,6 +236,32 @@ export default function BrancheSide({ data, region = null, opgaveTal = null }) {
           ))}
         </div>
       </section>
+
+      {/* ⚠️ BRANCHESIDEN ER EN PRODUKTSIDE, IKKE EN ARTIKEL. Den svarer kort paa
+          "kan mit fag byde?" og sender den der vil vide mere videre til den guide
+          der faktisk svarer — frem for et afsnit paa 2.000 ord der konkurrerer med
+          guiden om den samme soegning.
+
+          ⚠️ KUN PUBLICEREDE GUIDES. Er ingen klar, staar sektionen der slet ikke:
+          et link til en tom side er vaerre end intet link. */}
+      {guides.length > 0 && (
+        <section>
+          <div className="wrap" style={{ maxWidth: 900 }}>
+            <div className="center">
+              <span className="kick">Godt at vide</span>
+              <h2 className="big">Spørgsmål mange stiller</h2>
+            </div>
+            <div className="viden-grid" style={{ marginTop: 18 }}>
+              {guides.map((g) => (
+                <Link href={`/viden/${g.slug}`} className="viden-kort" key={g.slug}>
+                  <h3>{g.h1}</h3>
+                  <span className="viden-mere">Læs svaret &rarr;</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* REGIONER — binder fag-siden og dens fag×geo-varianter sammen, så de nye sider
           er en del af strukturen og ikke løse URL'er Google skal snuble over. */}

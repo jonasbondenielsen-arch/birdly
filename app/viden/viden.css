@@ -1,0 +1,78 @@
+/* ============================================================================
+   /viden — MINIMAL STIL OVENPÅ forside.css.
+   ⚠️ INGEN NYE FARVER, INGEN NY TYPOGRAFI. Alt arver forsidens tokens og
+   komponenter; her ligger kun det der ikke findes i forvejen (artikelbredde,
+   guide-kort, brødkrumme). Får /viden sit eget udseende, læses den som en
+   SEO-blog sat op ved siden af produktet — og det er præcis dét den ikke er.
+   ============================================================================ */
+
+/* Brødkrumme: lav vægt, men rigtigt klikareal på mobil. */
+.viden-krumme { padding: 14px 0 0; font-size: 13.5px; color: var(--navy-soft); }
+.viden-krumme a { color: var(--navy-soft); text-decoration: underline; }
+.viden-krumme a:hover { color: var(--sky); }
+.viden-krumme [aria-current="page"] { color: var(--navy); font-weight: 600; }
+
+/* ⚠️ MÅLT LÆSEBREDDE, IKKE SIDEBREDDE. Brødtekst over ~70 tegn pr. linje bliver
+   svær at følge; artiklen er derfor smallere end resten af sitet. 17px er
+   bevidst større end sitets 15,5 — det her er tekst man læser, ikke skimmer. */
+.viden-artikel { padding: 26px 0 10px; }
+.viden-artikel .wrap { max-width: 760px; }
+.viden-artikel h1 {
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+  font-size: 34px; line-height: 1.22; color: var(--navy); margin: 10px 0 18px;
+}
+.viden-artikel h2 {
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+  font-size: 23px; line-height: 1.3; color: var(--navy); margin: 34px 0 12px;
+}
+.viden-artikel h3 {
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+  font-size: 18px; color: var(--navy); margin: 22px 0 6px;
+}
+.viden-artikel p { font-size: 17px; line-height: 1.7; color: var(--navy-soft); margin: 0 0 14px; }
+.viden-artikel a { color: var(--sky); }
+
+/* Svaret markeres visuelt, fordi det er sidens vigtigste afsnit — for læseren
+   der skimmer, og som et tydeligt afgrænset stykke for den der citerer. */
+.viden-svar {
+  background: #F1FAF8; border: 1px solid #BFE7DF; border-radius: 14px;
+  padding: 18px 20px; margin: 6px 0 8px;
+}
+.viden-svar h2 { margin: 0 0 8px; font-size: 17px; }
+.viden-svar p { margin: 0; color: var(--navy); font-size: 17.5px; }
+
+.viden-qa { border-top: 1px solid var(--line); padding-top: 14px; margin-top: 14px; }
+.viden-qa h3 { margin-top: 0; }
+
+.viden-opdateret { font-size: 13.5px !important; color: var(--navy-soft); margin-top: 26px !important; }
+.viden-kilder ul { margin: 0; padding-left: 20px; }
+.viden-kilder li { font-size: 15px; line-height: 1.7; color: var(--navy-soft); }
+
+/* Guide-kort: samme form som forsidens kort, ikke en ny komponent. */
+.viden-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.viden-kort {
+  display: block; text-decoration: none; background: #fff;
+  border: 1.5px solid var(--line); border-radius: 16px; padding: 20px 22px;
+}
+.viden-kort:hover { border-color: var(--sky); }
+.viden-kort h3 {
+  margin: 0 0 8px; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+  font-size: 17.5px; line-height: 1.35; color: var(--navy);
+}
+.viden-kort p { margin: 0 0 10px; font-size: 14.5px; line-height: 1.6; color: var(--navy-soft); }
+.viden-mere { font-size: 14px; font-weight: 700; color: var(--sky); }
+
+.viden-relateret { padding-top: 10px; }
+.viden-relateret .wrap { max-width: 900px; }
+.viden-fag { margin-top: 18px; font-size: 15.5px; color: var(--navy-soft); }
+.viden-fag a { color: var(--sky); }
+
+.cta-band { padding: 26px 0 44px; }
+
+@media (max-width: 720px) {
+  .viden-artikel h1 { font-size: 27px; }
+  .viden-artikel h2 { font-size: 20px; }
+  /* 16px er gulvet: mindre, og iOS zoomer ved fokus i felter og gør teksten
+     ubehagelig at læse på en telefon i arbejdstøj. */
+  .viden-artikel p { font-size: 16.5px; }
+}

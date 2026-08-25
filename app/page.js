@@ -1,5 +1,6 @@
 import Forside from "../components/Forside";
 import { SITE_URL, abs } from "../lib/site";
+import { SOCIALE } from "../lib/social";
 import { hentOpgaveTal } from "../lib/opgaveTal";
 import { FAQ_SCHEMA } from "../lib/faq";
 
@@ -51,6 +52,15 @@ const ORGANIZATION = {
   },
   identifier: { "@type": "PropertyValue", name: "CVR", value: "35764283" },
   areaServed: { "@type": "Country", name: "Danmark" },
+  // ⚠️ sameAs KOBLER DOMÆNET TIL DE OFFICIELLE PROFILER, og det er dét en
+  // answer engine bruger til at afgøre at "Birdly" på tre forskellige sider er
+  // den SAMME virksomhed. Men den må kun indeholde profiler der findes: en
+  // sameAs til en død URL svækker entiteten i stedet for at styrke den.
+  //
+  // Listen er derfor ikke skrevet i hånden — den kommer fra lib/social.js, som
+  // kun returnerer adresser der er sat i miljøet OG starter med http(s). Er der
+  // ingen, udelades feltet helt frem for at stå som et tomt array.
+  ...(SOCIALE.length ? { sameAs: SOCIALE.map((x) => x.url) } : {}),
 };
 
 const WEBSITE = {

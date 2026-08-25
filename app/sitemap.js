@@ -1,6 +1,7 @@
 import { BRANCHER } from "../lib/branche";
 import { alleFagGeo } from "../lib/regioner";
 import { SITE_URL } from "../lib/site";
+import { KLARE_GUIDES } from "../lib/viden";
 
 // Sitemap for Google. Offentlige sider + alle 20 branchesider + samlesiden.
 // Værten kommer fra lib/site.js, så sitemap og canonical ALDRIG kan pege forskellige
@@ -43,16 +44,25 @@ export default function sitemap() {
     "/underdatabehandlere",
   ];
   const fagPaths = BRANCHER.map((b) => "/fag/" + b.slug);
+  // ⚠️ KUN PUBLICEREDE GUIDES. En URL i sitemap er en invitation til at crawle;
+  // peger den paa en tom eller noindex-side, bruger vi crawl-budget paa at vise
+  // ingenting. Er ingen guides klar, ryger /viden-forsiden ogsaa ud - den er
+  // noindex indtil da (se app/viden/page.js).
+  const videnPaths = KLARE_GUIDES.length
+    ? ["/viden", ...KLARE_GUIDES.map((g) => "/viden/" + g.slug)]
+    : [];
   // De 16 fag×geo-sider. Samme kilde som ruterne, så sitemap og virkelighed ikke
   // kan komme til at pege hver sin vej.
   const geoPaths = alleFagGeo().map(({ fag, region }) => `/fag/${fag}/${region}`);
 
-  return [...staticPaths, ...fagPaths, ...geoPaths].map((p) => ({
+  return [...staticPaths, ...videnPaths, ...fagPaths, ...geoPaths].map((p) => ({
     url: BASE + (p || "/"),
     changeFrequency: p === "" ? "daily" : "weekly",
     priority:
       p === "" ? 1
       : p === "/opret-opgave" ? 0.9
+      : p === "/viden" ? 0.7
+      : p.startsWith("/viden/") ? 0.6
       : p.startsWith("/fag/") || p === "/brancher" ? 0.8
       : 0.5,
   }));
