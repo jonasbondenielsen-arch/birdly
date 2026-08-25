@@ -23,8 +23,11 @@ import "../viden.css";
 // frem for at vise en tom skabelon. En tom guide er en tynd side, og otte af dem
 // ville skade sitet mere end de gavner. Se noten i lib/viden.js.
 //
-// ⚠️ FAQPage-SCHEMA KUN VED ÆGTE Q&A. Findes `sporgsmaal` ikke, udelades det
-// helt — schema må aldrig beskrive indhold der ikke står synligt på siden.
+// ⚠️ FAQPage-SCHEMA KUN VED ÆGTE Q&A — og her ER det ægte: guidernes H2'er ER
+// spørgsmålene, og afsnittet under er svaret. Schemaet bygges derfor af de H2'er
+// der ender på "?", ikke af en parallel liste. Har en guide hverken
+// spørgsmåls-H2'er eller et eksplicit `sporgsmaal`-felt, udelades FAQPage helt.
+// Se noten ved schemaFor().
 // ============================================================================
 
 export function generateStaticParams() {
@@ -73,12 +76,26 @@ function schemaFor(g) {
       ...(g.opdateret ? { dateModified: g.opdateret } : {}),
     },
   ];
-  // Kun når der ER synlige spørgsmål og svar på siden.
-  if (Array.isArray(g.sporgsmaal) && g.sporgsmaal.length) {
+  // ⚠️ FAQPage BYGGES AF DE H2'ER DER FAKTISK ER SPØRGSMÅL. Guidernes struktur er
+  // answer-first: hver H2 der ender på "?" er et spørgsmål, og afsnittet under er
+  // svaret. Det ER synligt Q&A — bare skrevet som artikel frem for som accordion,
+  // og schemaet skal beskrive det der står på siden, ikke en parallel struktur.
+  //
+  // ⚠️ "Det korte svar" og "Sådan fungerer det" ryger IKKE med: de er ikke
+  // spørgsmål, og et Question uden spørgsmålstegn er markup der beskriver noget
+  // andet end indholdet. Filteret er derfor selve tegnet, ikke en liste.
+  //
+  // ⚠️ EKSPLICITTE `sporgsmaal` VINDER, hvis en guide en dag får et rigtigt
+  // Q&A-afsnit — så beskriver schemaet dét frem for at gætte ud fra overskrifter.
+  const fraAfsnit = (g.afsnit || [])
+    .filter((a) => String(a.h2 || "").trim().endsWith("?"))
+    .map((a) => ({ q: a.h2, a: a.tekst }));
+  const qa = Array.isArray(g.sporgsmaal) && g.sporgsmaal.length ? g.sporgsmaal : fraAfsnit;
+  if (qa.length) {
     ud.push({
       "@context": "https://schema.org",
       "@type": "FAQPage",
-      mainEntity: g.sporgsmaal.map((s) => ({
+      mainEntity: qa.map((s) => ({
         "@type": "Question",
         name: s.q,
         acceptedAnswer: { "@type": "Answer", text: s.a },
