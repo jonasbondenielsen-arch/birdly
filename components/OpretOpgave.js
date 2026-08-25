@@ -330,6 +330,39 @@ export default function OpretOpgave({ rediger = null }) {
         // sporEnGang på opgave-id: to faneblade eller et dobbeltklik må ikke tælle to
         // konverteringer.
         try {
+          // ⚠️ `Lead` ER METAS STANDARDEVENT, og det er dét kampagnen optimeres
+          // efter. Et brugerdefineret event kan vises i Ads Manager, men Meta har
+          // ingen model bag det — algoritmen lærer langsommere og dårligere af et
+          // navn den ikke kender. Derfor sendes BEGGE: `Lead` til optimeringen,
+          // `OpgaveOprettet` fordi det er husets kanoniske submit-event og må
+          // beholde sin historik.
+          //
+          // ⚠️ EGEN NØGLE PR. EVENT (`lead_` vs `opgave_`). Delte de nøgle, ville
+          // det ene event spærre for det andet — og fordi `OpgaveOprettet` har
+          // kørt før `Lead` fandtes, ville nøglen allerede være sat for gamle
+          // opgaver og `Lead` ville aldrig fyre for dem.
+          //
+          // ⚠️ HER, EFTER SERVERENS SVAR — ikke i en effect på success-skærmen.
+          // `r.opgave_id` findes kun når backend HAR gemt opgaven, så et klik der
+          // fejler validering, en refresh eller et tidligere trin kan ikke udløse
+          // det. En effect på render ville fyre igen ved hver re-render, og
+          // localStorage-nøglen ville være det eneste der stod imellem.
+          // ⚠️ `Lead` FYRER OGSÅ I B2B-TILMELDINGEN (Start.js og Tilmeld.js), og
+          // det er dét der gør parametrene vigtige. Optimeres en kampagne på det
+          // rå `Lead`, blander Meta private opgave-oprettelser sammen med
+          // B2B-prøvetilmeldinger og lærer af den forkerte handling.
+          //
+          // Derfor bærer B2C-eventet sine EGNE, entydige værdier:
+          //   content_name     "Privat opgave oprettet"   (B2B: "Birdly 14 dages prøve")
+          //   content_category "privat_opgave"            (B2B: fag-liste eller interval)
+          //
+          // I Ads Manager bygges en brugerdefineret konvertering på Lead FILTRERET
+          // på en af dem — ikke på Lead alene. Ændres teksterne her, skal den
+          // konvertering rettes samme dag, ellers holder kampagnen op med at måle.
+          sporEnGang(`lead_${r.opgave_id}`, "Lead", {
+            content_name: "Privat opgave oprettet",
+            content_category: "privat_opgave",
+          });
           sporEnGang(`opgave_${r.opgave_id}`, "OpgaveOprettet", { content_category: "privat_opgave" });
           sporTrin("B2C_JobSubmitted", { content_category: "privat_opgave" });
         } catch { /* måling må aldrig vælte kvitteringen */ }
