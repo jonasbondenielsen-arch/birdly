@@ -24,11 +24,13 @@ import { SITE_URL } from "../lib/site";
 // ⚠️ OAI-SearchBot ER SØGNING, IKKE TRÆNING. Den henter sider, så ChatGPT Search kan
 // vise og citere dem — det er discovery, og det er dét vi vil have.
 //
-// ⚠️ GPTBot ER IKKE NÆVNT HER, OG DET ER EN BEVIDST IKKE-BESLUTNING (Jonas 25-08).
-// GPTBot henter til modeltræning, og det er et andet spørgsmål end at blive fundet.
-// MEN: fordi "*" tillader alt, HAR GPTBot adgang i dag. At undlade at nævne den er
-// altså ikke det samme som at holde den ude. Skal træning frabedes, kræver det en
-// EKSPLICIT { userAgent: "GPTBot", disallow: "/" } — ikke bare tavshed.
+// ⚠️ GPTBot ER TILLADT — BESLUTTET AF JONAS 25-08-2026. Den henter til
+// MODELTRÆNING, hvilket er et andet spørgsmål end at blive fundet i en søgning, og
+// derfor er den sin egen regel: skal træning en dag frabedes, ændres kun denne linje
+// til `disallow: "/"`, uden at søge-crawleren rører sig.
+//
+// Reglen stod ikke her før. Wildcarden tillod den allerede, så adfærden er uændret —
+// men nu er tilladelsen et valg nogen har truffet frem for en bivirkning af "*".
 //
 // ⚠️ ChatGPT-User er brugerudløst (nogen beder ChatGPT om at åbne birdly.dk) og
 // respekterer ifølge OpenAI ikke nødvendigvis robots.txt. Den kan derfor hverken
@@ -38,6 +40,7 @@ export default function robots() {
     rules: [
       { userAgent: "*", allow: "/" },
       { userAgent: "OAI-SearchBot", allow: "/" },
+      { userAgent: "GPTBot", allow: "/" },
     ],
     sitemap: `${SITE_URL}/sitemap.xml`,
     host: SITE_URL,
