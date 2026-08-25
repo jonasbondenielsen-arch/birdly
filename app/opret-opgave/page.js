@@ -1,7 +1,7 @@
 import OpretOpgave from "../../components/OpretOpgave";
 import { FAQ } from "../../lib/opretOpgaveFaq";
 import FooterB2C from "../../components/FooterB2C";
-import { SITE_URL } from "../../lib/site";
+import { SITE_URL, abs } from "../../lib/site";
 
 // ============================================================================
 // /opret-opgave — B2C-funnelen. SEO'en her er BEVIDST ADSKILT FRA FORSIDEN.
@@ -25,6 +25,13 @@ import { SITE_URL } from "../../lib/site";
 // kryds-canonical mellem de to sider i nogen retning.
 // ============================================================================
 
+// ⚠️ ABSOLUT URL PÅ SAMME VÆRT SOM CANONICAL. En relativ sti virker ikke til Open
+// Graph — Facebook, LinkedIn og SMS-previews henter billedet fra en anden kontekst
+// end siden og kan ikke opløse "/og-opret-opgave.png". abs() bygger den ud fra
+// lib/site.js, som også leverer canonical og og:url, så de tre ALDRIG kan komme til
+// at pege på hver sin vært (www vs. apex). Skrevet i hånden ville de kunne det.
+const OG_BILLEDE = abs("/og-opret-opgave.png");
+
 const B2C_TITLE = "Find håndværker – opret din opgave gratis | Birdly";
 const B2C_BESKRIVELSE =
   "Skal du bruge en håndværker eller anden hjælp? Opret din opgave gratis, så matcher " +
@@ -41,8 +48,28 @@ export const metadata = {
     type: "website",
     locale: "da_DK",
     siteName: "Birdly",
+    // ⚠️ ÉT BILLEDE, IKKE FLERE. Ligger der to og:image-tags, vælger Facebook selv,
+    // og previewet kan skifte mellem dem uden varsel. Sitet har intet default
+    // OG-billede i app/layout.js, så dette er det eneste på siden.
+    //
+    // ⚠️ MÅLENE STÅR EKSPLICIT (2400x1260, ratio 1,91:1). Uden width/height henter
+    // Facebook billedet ned og måler det selv, og indtil da vises previewet uden
+    // billede — netop den første gang linket deles, hvor det betyder mest.
+    images: [{
+      url: OG_BILLEDE,
+      secureUrl: OG_BILLEDE,
+      type: "image/png",
+      width: 2400,
+      height: 1260,
+      alt: "Birdly.dk - Opret din opgave gratis",
+    }],
   },
-  twitter: { card: "summary_large_image", title: B2C_TITLE, description: B2C_BESKRIVELSE },
+  twitter: {
+    card: "summary_large_image",
+    title: B2C_TITLE,
+    description: B2C_BESKRIVELSE,
+    images: [OG_BILLEDE],
+  },
 
   // ⚠️ NOINDEX ER FJERNET 24-08-2026, efter at distributionen er bevist live: opgave
   // -> fan-out-SMS til virksomhederne -> accept -> virksomhederne synlige på kundens
