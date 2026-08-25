@@ -210,3 +210,18 @@ a.pl-mini{display:inline-block;text-decoration:none}
 .pl-fravalg{max-width:560px;margin:0 auto;padding:18px 20px 30px;
   font-size:12.5px;line-height:1.6;color:var(--navy-soft);text-align:center}
 .pl-fravalg b{color:var(--navy)}
+
+/* ── FAKTURA-SIDEN (/f/[token]) ───────────────────────────────────────────
+   Genbruger .pl-kortet; her ligger kun fakta-listen og knappen. */
+.fak-fakta { margin: 18px 0 6px; border-top: 1px solid var(--line) }
+.fak-fakta > div {
+  display: flex; justify-content: space-between; gap: 14px;
+  padding: 11px 0; border-bottom: 1px solid var(--line); font-size: 15px;
+}
+.fak-fakta span { color: var(--navy-soft) }
+.fak-fakta b { color: var(--navy); text-align: right }
+/* 48px: den skal kunne rammes med en tommel — kunden åbner linket fra en SMS. */
+.fak-knap {
+  display: block; margin-top: 20px; min-height: 48px; line-height: 26px;
+  text-align: center; text-decoration: none;
+}
