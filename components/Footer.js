@@ -33,6 +33,13 @@ export default function Footer() {
           <a href="/#faq">FAQ</a>
           <a href="/#om">Om os</a>
           <Link href="/brancher">For dit fag</Link>
+          {/* ⚠️ DET ANDET SPOR. Footeren var indtil nu kun B2B'ens vej rundt
+              (hvorfor, hvordan, priser, FAQ, brancher) — alt sammen "find
+              offentlige opgaver". En privatperson havde ingen crawlbar vej til
+              funnelen uden om nav-knappen, og ét link pr. side er tyndt signal til
+              Google om at siden hører til her. Ordlyden er handlingen, ikke et
+              produktnavn. */}
+          <Link href="/opret-opgave">Opret en opgave</Link>
           {/* ⚠️ DISKRET, OG KUN NÅR DER ER NOGET AT LÆSE. /viden hører ikke hjemme i
               hovedmenuen — den er købsrejsen. Guides er noget man lander på fra en
               søgning, og footeren er nok til at Google og den interne linkstruktur

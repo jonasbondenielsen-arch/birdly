@@ -4,7 +4,9 @@ import { hentOpgaveTal } from "../../lib/opgaveTal";
 export const metadata = {
   title: "Kom i gang med Birdly — opret din profil",
   description:
-    "Opret din profil på to minutter, så finder Birdly de offentlige opgaver, der passer til dit fag og dit område. Gratis i 14 dage.",
+    // ⚠️ SIDEN ER INDEKSERBAR, og teksten var kun-offentlig. Kunden faar nu ogsaa
+    // private opgaver, saa beskrivelsen lovede mindre end produktet giver.
+    "Opret din profil på to minutter, så finder Birdly de offentlige og private opgaver, der passer til dit fag og dit område. Gratis i 14 dage.",
 };
 
 export default async function Page({ searchParams }) {

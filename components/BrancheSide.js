@@ -308,6 +308,30 @@ export default function BrancheSide({ data, region = null, opgaveTal = null }) {
         </section>
       )}
 
+      {/* ⚠️ DEN ANDEN LÆSER. Branchesiden er skrevet til en VIRKSOMHED, men den
+          rangerer på "tømreropgaver" — og nogle af dem der søger sådan, er
+          privatpersoner der skal have lavet noget. De havde ingen vej videre.
+          Denne ene linje giver dem den, uden at gøre siden til en B2C-side.
+
+          ⚠️ KUN HVOR PRIVATE OPGAVER FAKTISK KOMMER (harPrivate, samme regel som
+          resten af siden). På en IT- eller revisor-side ville linjen invitere en
+          privatperson ind i en funnel, der ikke kan levere noget til hende.
+
+          ⚠️ ALDRIG "relevante virksomheder" eller "de rette virksomheder". Birdly
+          screener eller udvælger ikke nogen — vi matcher på fag og område. Den
+          skelnen gælder al B2C-tekst, også denne ene sætning. */}
+      {harPrivate && (
+        <section>
+          <div className="wrap center" style={{ maxWidth: 760 }}>
+            <p className="lead" style={{ fontSize: 16 }}>
+              Skal du i stedet have udført en privat {nounSingular}-opgave?{" "}
+              <Link href="/opret-opgave">Opret den gratis på Birdly</Link> — så sender vi
+              den til virksomheder i dit område, hvis fag og område passer.
+            </p>
+          </div>
+        </section>
+      )}
+
       {/* AFSLUTTENDE CTA */}
       <section className="ctaband">
         <div className="wrap">

@@ -15,8 +15,17 @@ import { SITE_URL } from "../lib/site";
 // selv-refererende canonical — de to sider målretter hver sin søgeintention og må
 // ikke konkurrere. Se app/opret-opgave/page.js.
 const SITE_TITLE = "Offentlige og private opgaver direkte på SMS | Birdly";
+// ⚠️ BESKRIVELSEN SKAL TALE TIL BEGGE SIDER AF PRODUKTET. Den gamle var skrevet
+// udelukkende til en virksomhed der leder efter opgaver ("Få besked, når der er en
+// opgave, der passer til dit fag") — og en privatperson der læste snippet'et kunne
+// ikke se, at hun selv kunne oprette en opgave. Den her nævner begge dele i én
+// sætning, uden at love mere om nogen af dem.
+//
+// ⚠️ "relevante OPGAVER" er i orden — det er sandt: opgaverne matches mod kundens
+// egne kriterier. "Relevante VIRKSOMHEDER" må ALDRIG stå om den private side; det
+// ville antyde at Birdly screener eller udvælger virksomheder, og det gør vi ikke.
 const SITE_DESCRIPTION =
-  "Få besked, når der er en opgave, der passer til dit fag og dit område — fra kommuner, regioner og staten, eller direkte fra private kunder. Birdly sender dig en SMS — gratis i 14 dage.";
+  "Birdly hjælper virksomheder med at finde relevante offentlige opgaver og gør det nemt at oprette private opgaver. Direkte besked på SMS og mail.";
 
 export const metadata = {
   // ⚠️ SKAL være den vært der svarer 200. apex omdirigerer til www, så canonical og

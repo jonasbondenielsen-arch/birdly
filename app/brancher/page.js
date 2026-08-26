@@ -13,12 +13,12 @@ import "../forside.css";
 // fagets egen branchesides (/fag/[slug]).
 
 export const metadata = {
-  title: "Brancher — offentlige opgaver for dit fag | Birdly",
+  title: "Brancher — opgaver for dit fag | Birdly",
   description:
     "Vælg din branche og se, hvordan Birdly finder de offentlige opgaver, der passer til dit fag og dit område. Gratis i 14 dage.",
   alternates: { canonical: "/brancher" },
   openGraph: {
-    title: "Brancher — offentlige opgaver for dit fag | Birdly",
+    title: "Brancher — opgaver for dit fag | Birdly",
     description: "Vælg din branche og se, hvordan Birdly finder de offentlige opgaver, der passer til dit fag.",
     type: "website",
     locale: "da_DK",

@@ -26,7 +26,7 @@ export const metadata = {
   // rangerer paa den term - "private" laegges til, fordi Birdly nu leverer begge dele.
   title: "Offentlige og private opgaver direkte på SMS | Birdly",
   description:
-    "Få besked, når der er en opgave, der passer til dit fag og dit område — fra kommuner, regioner og staten, eller direkte fra private kunder. Birdly sender dig en SMS — gratis i 14 dage.",
+    "Birdly hjælper virksomheder med at finde relevante offentlige opgaver og gør det nemt at oprette private opgaver. Direkte besked på SMS og mail.",
   // Forsiden manglede canonical HELT — den vigtigste side var den svagest mærkede på
   // hele sitet, mens undersiderne havde deres i orden.
   alternates: { canonical: "/" },
@@ -41,6 +41,17 @@ const ORGANIZATION = {
   "@type": "Organization",
   name: "Birdly",
   url: SITE_URL,
+  // ⚠️ ENTITETENS EGEN BESKRIVELSE. Uden den udleder Google og answer engines selv,
+  // hvad Birdly er — typisk fra forsidens title, som i årevis kun nævnte offentlige
+  // opgaver. Her står begge dele én gang, kort og uden salgssprog.
+  //
+  // ⚠️ INGEN "relevante virksomheder". Birdly matcher en opgave mod virksomheder
+  // hvis fag og område passer; vi screener, vurderer eller anbefaler dem ikke.
+  // Formuleringen skal blive ved med at være mekanisk sand.
+  description:
+    "Birdly er en dansk tjeneste, der hjælper virksomheder med at finde offentlige opgaver, " +
+    "og som gør det muligt for private og virksomheder at oprette private opgaver og få dem " +
+    "matchet med virksomheder i deres område, hvis fag og område passer.",
   logo: abs("/icon.svg"),
   email: "hello@birdly.dk",
   address: {
