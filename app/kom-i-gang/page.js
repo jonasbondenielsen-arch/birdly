@@ -25,7 +25,11 @@ import { hentOpgaveTal } from "../../lib/opgaveTal";
 export const metadata = {
   title: "Kom i gang med Birdly",
   description:
-    "Fortæl os hvad I laver, og hvor. Så holder vi øje med de offentlige opgaver, der passer til jer, og sender besked på SMS.",
+    // ⚠️ SIDEN ER noindex (se robots nedenfor), saa teksten paavirker ikke Google.
+    // Den er rettet for konsistens: Birdly leverer baade offentlige og private
+    // opgaver, og en beskrivelse der kun naevner den ene bliver forkert i det
+    // oejeblik nogen kopierer den videre til en side der ER indekserbar.
+    "Fortæl os hvad I laver, og hvor. Så holder vi øje med de offentlige og private opgaver, der passer til jer, og sender besked på SMS.",
   robots: { index: false, follow: true },
 };
 

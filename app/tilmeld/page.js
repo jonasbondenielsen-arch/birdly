@@ -4,8 +4,10 @@ import { hentOpgaveTal } from "../../lib/opgaveTal";
 export const metadata = {
   title: "Kom i gang med Birdly — opret din profil",
   description:
-    // ⚠️ SIDEN ER INDEKSERBAR, og teksten var kun-offentlig. Kunden faar nu ogsaa
-    // private opgaver, saa beskrivelsen lovede mindre end produktet giver.
+    // ⚠️ DENNE METADATA SERVERES ALDRIG. /tilmeld er en permanent redirect til
+    // /kom-i-gang (next.config.mjs), saa Next naar aldrig at rendere siden. Teksten
+    // staar rettet alligevel, saa den er sand den dag redirecten maatte forsvinde -
+    // men forvent ikke at se den i Google. Den rigtige salgsside er /kom-i-gang.
     "Opret din profil på to minutter, så finder Birdly de offentlige og private opgaver, der passer til dit fag og dit område. Gratis i 14 dage.",
 };
 
