@@ -201,7 +201,13 @@ export default function MineOpgaver({ token, data, intern = null }) {
           <p style={{ margin: "0 0 20px", color: NAVY, lineHeight: 1.6 }}>
             Forny dit abonnement, så åbner listen igen — med de opgaver der passer til jer lige nu.
           </p>
-          <Link href="https://birdly.dk" style={{ ...KNAP_PRIMARY, textDecoration: "none", display: "inline-block" }}>
+          {/* ⚠️ KNAPPEN FOERER TIL HENDES EGEN FORNYELSESSIDE, ikke til forsiden.
+              Foer 28-08 pegede den paa https://birdly.dk - altsaa en kunde der
+              netop havde faaet at vide at hendes adgang var lukket, blev sendt
+              til en salgsforside uden at vi vidste hvem hun var. Nu baerer
+              linket hendes eget token, og /fornyt slaar firma og plan op
+              server-side. */}
+          <Link href={`/fornyt/${token}`} style={{ ...KNAP_PRIMARY, textDecoration: "none", display: "inline-block" }}>
             Forny abonnement
           </Link>
           <p style={{ marginTop: 20, color: MUTED, fontSize: 13, lineHeight: 1.6 }}>
