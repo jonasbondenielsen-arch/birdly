@@ -1053,7 +1053,10 @@ function SorterPanel({ token, kriterier, fag, regioner, kanFortryde, onFortryd, 
                   for alt — også de offentlige udbud de betaler for. */}
               Ud over offentlige udbud kan du modtage opgaver fra privatpersoner i dit
               område — fx en husejer, der skal have lavet et stykke arbejde i dit fag.
-              Slår du fra, får du kun offentlige udbud. Dine øvrige opgaver berøres ikke.
+              {" "}<b style={{ color: NAVY }}>Det inkluderer en SMS, når en opgave matcher dig</b>,
+              også selvom du har slået SMS fra nedenfor — de tre pladser bliver taget
+              i løbet af minutter, og en mail kommer for sent.
+              {" "}Slår du fra, får du kun offentlige udbud. Dine øvrige opgaver berøres ikke.
             </div>
           </span>
         </label>
@@ -1082,9 +1085,16 @@ function SorterPanel({ token, kriterier, fag, regioner, kanFortryde, onFortryd, 
             <b style={{ color: NAVY, fontSize: 15 }}>Send mig også en SMS</b>
             <div style={{ color: MUTED, fontSize: 13.5, lineHeight: 1.55, marginTop: 2 }}>
               {/* Sig hvad der sker når man slår fra — ellers gætter kunden, og nogle
-                  vil tro de slukker for alt og lade være. */}
-              Slår du fra, får du kun besked på mail. Mailen kan ikke slås fra — det er
-              sådan vi holder dig opdateret.
+                  vil tro de slukker for alt og lade være.
+
+                  ⚠️ OG SIG HVAD DEN IKKE DÆKKER (28-08-2026). Knappen står lige under
+                  "Private opgaver", så en kunde læser den naturligt som "SMS for alt".
+                  Det er den ikke: private opgaver har deres eget tilvalg og sender SMS
+                  uanset denne. Uden sætningen ville hun slå SMS fra, stadig få SMS om
+                  private opgaver, og med rette føle sig ført bag lyset. */}
+              Slår du fra, får du kun besked på mail om offentlige udbud. Mailen kan ikke
+              slås fra — det er sådan vi holder dig opdateret. Private opgaver styres af
+              feltet ovenfor og sender altid en SMS.
             </div>
           </span>
         </label>
