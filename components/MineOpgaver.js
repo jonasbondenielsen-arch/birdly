@@ -661,11 +661,38 @@ function PrivatOpgaveKort({ p, intern }) {
 
       <p style={{ margin: "0 0 12px", color: NAVY, fontSize: 14.5, lineHeight: 1.6 }}>{p.beskrivelse}</p>
 
+      {/* ⚠️ KONTAKTEN STÅR HER, NÅR PLADSEN ER TAGET (28-08-2026). Før fandtes
+          nummeret KUN på /o/[token], som kun findes i den SMS virksomheden fik.
+          Målt: to firmaer havde taget plads 1 og 2 på den første rigtige opgave og
+          kunne se opgaven her — uden kundens nummer. Så snart SMS'en var scrollet
+          væk, var der ingen vej tilbage til den kunde de netop havde sagt ja til.
+
+          ⚠️ SERVEREN AFGØR, IKKE DENNE KOMPONENT. `p.kontakt` findes kun i svaret
+          når get-my-tasks har set en taget plads; uden plads er nøglen slet ikke
+          med. Der er derfor intet at lække her, heller ikke hvis betingelsen
+          nedenfor en dag skrives forkert. */}
+      {harPlads && p.kontakt && (
+        <div style={{ background: "#F1FAF8", border: "1px solid #BFE7DF", borderRadius: 10, padding: "11px 13px", marginBottom: 12 }}>
+          <div style={{ fontWeight: 700, fontSize: 13.5, color: "#1E9E8A", marginBottom: 6 }}>
+            Kundens kontaktoplysninger
+          </div>
+          <div style={{ color: NAVY, fontSize: 14.5, lineHeight: 1.7 }}>
+            {p.kontakt.navn && <div>{p.kontakt.navn}</div>}
+            {p.kontakt.telefon && (
+              <div><a href={`tel:${p.kontakt.telefon}`} style={{ color: NAVY, fontWeight: 700 }}>{p.kontakt.telefon}</a></div>
+            )}
+            {p.kontakt.email && (
+              <div><a href={`mailto:${p.kontakt.email}`} style={{ color: NAVY }}>{p.kontakt.email}</a></div>
+            )}
+          </div>
+        </div>
+      )}
+
       <div>
         {/* ⚠️ "Se opgaven", ikke "Kontakt kunden". Knappen ÅBNER kun — den reserverer
             intet og afslører intet. Se noten øverst. */}
         <Link href={url} style={{ ...KNAP_PRIMARY, textDecoration: "none", display: "inline-block" }}>
-          {harPlads ? "Se kundens kontaktoplysninger" : "Se opgaven"}
+          {harPlads ? "Se opgaven og billeder" : "Se opgaven"}
         </Link>
       </div>
     </article>
