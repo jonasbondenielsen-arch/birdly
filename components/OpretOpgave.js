@@ -1,5 +1,6 @@
 "use client";
 
+import { fagHjaelpetekst } from "../lib/fagHjaelpetekst";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { BirdMark } from "./Logo";
@@ -54,6 +55,16 @@ const HVORNAAR = [
 // fritekstfelt. Holdes adskilt fra katalogets nøgler så den aldrig kan forveksles
 // med et rigtigt fag når opgaven skal matches.
 const ANDET = "__andet__";
+
+// ⚠️ ROLLERNE SPEJLER check-constrainten i 0105. Aendres den ene liste, skal den
+// anden med - ellers afviser serveren en vaerdi formularen selv tilbyder.
+const FORENING_ROLLER = [
+  ["beslutningstager", "Beslutningstager"],
+  ["repraesentant", "Repræsentant"],
+  ["formand", "Formand"],
+  ["bestyrelsesmedlem", "Bestyrelsesmedlem"],
+  ["andet", "Andet"],
+];
 
 // ⚠️ SKAL STEMME MED opgave-billeder (Edge Function) OG bucket-loftet i 0085. De tre
 // steder håndhæver hver sit lag: browseren for at give besked med det samme,
@@ -124,6 +135,8 @@ export default function OpretOpgave({ rediger = null }) {
   const [regioner, setRegioner] = useState([]);
   const [udbyder, setUdbyder] = useState(forud?.udbyder_type || "privat");
   const [cvr, setCvr] = useState(forud?.cvr || "");
+  const [foreningRolle, setForeningRolle] = useState(forud?.forening_rolle || "");
+  const [foreningRolleFri, setForeningRolleFri] = useState(forud?.forening_rolle_fritekst || "");
   const [beskrivelse, setBeskrivelse] = useState(forud?.beskrivelse || "");
   const [valgteFag, setValgteFag] = useState(
     forud ? [...(forud.fag_keys || []), ...(forud.fag_andet ? [ANDET] : [])] : []
@@ -238,6 +251,17 @@ export default function OpretOpgave({ rediger = null }) {
     if (udbyder === "b2b" && !/^\d{8}$/.test(cvr.replace(/\s/g, ""))) {
       return setFejl("Skriv et CVR-nummer på 8 cifre.");
     }
+    // ⚠️ FORENINGER HAR IKKE ALTID ET CVR. Feltet er valgfrit — men skriver hun
+    // noget, skal det være rigtigt. Tomt er tilladt; halvt udfyldt er ikke.
+    if (udbyder === "forening" && cvr.trim() && !/^\d{8}$/.test(cvr.replace(/\s/g, ""))) {
+      return setFejl("CVR-nummeret skal være på 8 cifre — eller lade feltet stå tomt.");
+    }
+    if (udbyder === "forening" && !foreningRolle) {
+      return setFejl("Vælg din rolle i foreningen.");
+    }
+    if (udbyder === "forening" && foreningRolle === "andet" && !foreningRolleFri.trim()) {
+      return setFejl("Skriv hvilken rolle du har i foreningen.");
+    }
     if (!beskrivelse.trim()) return setFejl("Beskriv kort hvad der skal laves.");
     if (!valgteFag.length) return setFejl("Vælg mindst én opgaveart.");
     if (harAndet && !andetTekst.trim()) return setFejl("Beskriv opgavearten, når du har valgt “Andet”.");
@@ -257,7 +281,11 @@ export default function OpretOpgave({ rediger = null }) {
       try {
         const felter = {
           udbyder_type: udbyder,
-          cvr: udbyder === "b2b" ? cvr.replace(/\s/g, "") : null,
+          // Privatperson sender aldrig CVR. Forening sender det kun hvis der staar noget.
+          cvr: udbyder === "privat" ? null : (cvr.replace(/\s/g, "") || null),
+          forening_rolle: udbyder === "forening" ? foreningRolle : null,
+          forening_rolle_fritekst:
+            udbyder === "forening" && foreningRolle === "andet" ? foreningRolleFri.trim() : null,
           beskrivelse,
           fag_keys: valgteFag.filter((k) => k !== ANDET),
           fag_andet: harAndet ? andetTekst : null,
@@ -538,6 +566,15 @@ export default function OpretOpgave({ rediger = null }) {
                           <input type="radio" name="udbyder" checked={udbyder === "b2b"} onChange={() => setUdbyder("b2b")} />
                           <span><b>Virksomhed</b><i>Jeg opretter på vegne af en virksomhed</i></span>
                         </label>
+                        {/* ⚠️ TREDJE MULIGHED (Jonas 28-08-2026). Foreninger faldt før
+                            ned mellem de to: de er ikke en privatperson, og
+                            "virksomhed" krævede et CVR mange af dem ikke har.
+                            Eksemplerne står der fordi ordet "forening" alene ikke
+                            fortæller en grundejerforening at det er dem. */}
+                        <label className={"st-omrk" + (udbyder === "forening" ? " on" : "")}>
+                          <input type="radio" name="udbyder" checked={udbyder === "forening"} onChange={() => setUdbyder("forening")} />
+                          <span><b>Forening</b><i>Grundejer-, ejer-, sportsforening mv.</i></span>
+                        </label>
                       </div>
                     );
                     // Ved redigering bærer <summary> spørgsmålet, så label'en ville
@@ -554,39 +591,55 @@ export default function OpretOpgave({ rediger = null }) {
                       <details className="oo-fold">
                         <summary>
                           Hvem opretter opgaven?
-                          <span className="oo-fold-vaerdi">{udbyder === "b2b" ? "Virksomhed" : "Privatperson"}</span>
+                          <span className="oo-fold-vaerdi">{udbyder === "b2b" ? "Virksomhed" : udbyder === "forening" ? "Forening" : "Privatperson"}</span>
                         </summary>
                         <div className="oo-fold-krop">{valg}</div>
                       </details>
                     );
                   })()}
 
-                  {/* CVR — folder sig ud ved B2B */}
-                  {udbyder === "b2b" && (
+                  {/* CVR — folder sig ud ved virksomhed (påkrævet) og forening (valgfrit) */}
+                  {(udbyder === "b2b" || udbyder === "forening") && (
                     <>
-                      <label className="st-lab" htmlFor="oo-cvr">CVR-nummer</label>
+                      <label className="st-lab" htmlFor="oo-cvr">
+                        CVR-nummer{udbyder === "forening" ? " (valgfrit)" : ""}
+                      </label>
+                      {/* ⚠️ VALGFRIT FOR FORENINGER, OG DET STÅR PÅ FELTET. Mange
+                          grundejer- og ejerforeninger har intet CVR overhovedet;
+                          krævede vi det, ville de enten falde fra eller skrive
+                          noget forkert ind. Skriver hun noget, valideres formatet. */}
+                      {udbyder === "forening" && (
+                        <p className="st-hj" style={{ margin: "0 0 8px" }}>
+                          Har foreningen ikke et CVR-nummer, så lad feltet stå tomt.
+                        </p>
+                      )}
                       <input id="oo-cvr" className="st-felt" type="text" inputMode="numeric" placeholder="fx 12345678"
                         value={cvr} onChange={(e) => setCvr(e.target.value)} />
                     </>
                   )}
 
-                  {/* 2. Hvad */}
-                  <label className="st-lab" htmlFor="oo-besk">Hvad skal du have lavet?</label>
-                  {/* ⚠️ "Du behøver ikke kende de tekniske detaljer" står der fordi
-                      den hyppigste grund til at en privatperson forlader sådan en
-                      formular er en fornemmelse af at hun ikke ved nok til at svare
-                      rigtigt. Virksomheden spørger selv ind bagefter. */}
-                  <p className="st-hj" style={{ margin: "0 0 8px" }}>
-                    Beskriv kort opgaven. Du behøver ikke kende de tekniske detaljer.
-                  </p>
-                  <textarea id="oo-besk" className="st-felt" rows={5}
-                    placeholder="Fx: Vi skal have skiftet ca. 120 m² tag på vores villa. Det gamle tag skal fjernes, og vi vil gerne have arbejdet udført inden for 3 måneder."
-                    value={beskrivelse}
-                    onChange={(e) => { setBeskrivelse(e.target.value); trin("B2C_FormStart"); }}
-                    onBlur={() => { if (beskrivelse.trim().length >= 15) trin("B2C_DescriptionCompleted"); }} />
+                  {/* ⚠️ ROLLEN ER METADATA, IKKE MATCH-INPUT. Matchet er fag +
+                      geografi og røres ikke. Den findes fordi en formand og et
+                      menigt medlem ikke er det samme, når nogen skal sige ja til
+                      et tilbud — og fordi virksomheden gerne vil vide hvem hun
+                      taler med, inden hun ringer. */}
+                  {udbyder === "forening" && (
+                    <>
+                      <label className="st-lab" htmlFor="oo-rolle">Din rolle i foreningen</label>
+                      <select id="oo-rolle" className="st-felt" value={foreningRolle}
+                        onChange={(e) => setForeningRolle(e.target.value)}>
+                        <option value="">Vælg …</option>
+                        {FORENING_ROLLER.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                      </select>
+                      {foreningRolle === "andet" && (
+                        <input className="st-felt" style={{ marginTop: 10 }} type="text"
+                          placeholder="Skriv din rolle…" maxLength={120}
+                          value={foreningRolleFri} onChange={(e) => setForeningRolleFri(e.target.value)} />
+                      )}
+                    </>
+                  )}
 
-                  {/* 3. Opgaveart */}
-                  {/* 3. Opgaveart */}
+                  {/* 2. Opgaveart */}
                   {/* ⚠️ 22 CHIPS ER VÆK. De fyldte over en halv mobilskærm og skubbede
                       resten af formularen ned under folden — på en side hvor hele
                       pointen er at hun når til bunden. Søgefeltet viser højst 6
@@ -610,6 +663,30 @@ export default function OpretOpgave({ rediger = null }) {
                       placeholder="Beskriv opgavearten selv…"
                       value={andetTekst} onChange={(e) => setAndetTekst(e.target.value)} />
                   )}
+
+                  {/* 3. Hvad */}
+                  <label className="st-lab" htmlFor="oo-besk">Hvad skal du have lavet?</label>
+                  {/* ⚠️ "Du behøver ikke kende de tekniske detaljer" står der fordi
+                      den hyppigste grund til at en privatperson forlader sådan en
+                      formular er en fornemmelse af at hun ikke ved nok til at svare
+                      rigtigt. Virksomheden spørger selv ind bagefter.
+
+                      ⚠️ HJÆLPETEKSTEN ER EN LINJE, IKKE EN PLACEHOLDER. En
+                      placeholder forsvinder i det øjeblik kunden begynder at
+                      skrive — altså præcis når hun har brug for at vide hvad vi
+                      spørger om. Den tilpasser sig faget, og DET er grunden til
+                      at faget nu står før beskrivelsen. Se lib/fagHjaelpetekst.js. */}
+                  <p className="st-hj" style={{ margin: "0 0 8px" }}>
+                    Du behøver ikke kende de tekniske detaljer.
+                  </p>
+                  <p className="st-hj" style={{ margin: "0 0 8px", fontWeight: 600 }}>
+                    {fagHjaelpetekst(valgteFag.filter((k) => k !== ANDET))}
+                  </p>
+                  <textarea id="oo-besk" className="st-felt" rows={5}
+                    placeholder="Fx: Vi skal have skiftet ca. 120 m² tag på vores villa. Det gamle tag skal fjernes, og vi vil gerne have arbejdet udført inden for 3 måneder."
+                    value={beskrivelse}
+                    onChange={(e) => { setBeskrivelse(e.target.value); trin("B2C_FormStart"); }}
+                    onBlur={() => { if (beskrivelse.trim().length >= 15) trin("B2C_DescriptionCompleted"); }} />
 
                   {/* 4. Hvor / hvornår */}
                   {/* ⚠️ LANDSDELEN ER IKKE ET FELT LÆNGERE (Jonas 24-08-2026). Den er
