@@ -1,6 +1,7 @@
 "use client";
 
 import { Component } from "react";
+import { rapporterFejl } from "../lib/fejlrapport";
 
 // ============================================================================
 // KORT-VÆRN — én error boundary pr. kort, så et brud har en radius på ét kort.
@@ -37,6 +38,10 @@ export default class KortVaern extends Component {
     // automatisk op på det her, når DSN'en er sat; uden den er console.error
     // stadig det bedste vi har.
     try {
+      // ⚠️ VIDERE TIL ALARMERINGEN. Et vaern der bare skjuler fejlen, er
+      // vaerre end ingen: saa ser siden hel ud, mens kortene forsvinder ét
+      // for ét, og ingen opdager det.
+      rapporterFejl(fejl, { rute: this.props.navn || "kort", kilde: "klient" });
       this.props.onFejl?.(fejl, info);
     } catch { /* et vaern der selv kaster, hjaelper ingen */ }
     console.error(`[kort-vaern] ${this.props.navn || "ukendt kort"} fejlede:`, fejl?.message || fejl);

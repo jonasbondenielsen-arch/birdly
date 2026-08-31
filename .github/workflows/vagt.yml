@@ -1,0 +1,65 @@
+name: Vagt
+
+# ============================================================================
+# TO JOBS MED HVER SIT FORMÅL.
+#
+#   lint    Fanger fejlen FØR den bliver deployet. Kører på hver push og hver PR.
+#   smoke   Fanger fejlen EFTER den er live. Kører også hver time.
+#
+# ⚠️ TIME-KØRSLEN ER DEN VIGTIGSTE. Samleside-500'en lå død i 5 dage, ikke fordi
+# den var svær at finde, men fordi ingenting kiggede. En test der kun kører ved
+# push, ville have opdaget den ved næste push — altså tilfældigt.
+#
+# ⚠️ SMOKE KØRER MOD PRODUKTION, ikke mod en byggeversion. Det er dér kunden er,
+# og det er dér tingene faktisk gik i stykker. Den kører på en fast testfixtur
+# (migration 0111) med opdigtet kontaktinfo, så CI-loggen aldrig indeholder
+# rigtig kundedata.
+# ============================================================================
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    # Hver time. UTC.
+    - cron: "17 * * * *"
+  workflow_dispatch:
+
+jobs:
+  lint:
+    name: Lint (blokerer merge)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      # ⚠️ DEN HER LINJE ER HELE GATEN. `no-undef` som error betyder at en
+      # funktion brugt uden import faar jobbet til at fejle - praecis den fejl
+      # der gav 12 kunder en doed samleside i 5 dage.
+      - run: npx eslint .
+
+  smoke:
+    name: Smoke (kundevendte ruter)
+    runs-on: ubuntu-latest
+    # PR'er fra forks har ikke adgang til secrets; saa ville jobbet fejle paa
+    # noget der intet har med aendringen at goere.
+    if: github.event_name != 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # ⚠️ VENTER PAA VERCEL. Ved en push til main er deployet ikke faerdigt naar
+      # jobbet starter; uden ventetiden ville testen maale den GAMLE version og
+      # melde alt vel om en fejl der lige er sendt af sted.
+      - name: Vent på deploy
+        if: github.event_name == 'push'
+        run: sleep 90
+      - name: Kør smoke-tests
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+        run: node scripts/smoke.mjs
