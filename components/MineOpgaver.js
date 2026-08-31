@@ -14,6 +14,7 @@ import { fetchMyTasks, previewCriteria, saveMyCriteria, undoMyCriteria, dismissT
 // en privat opgave med et omfang - saa kaster serveren en ReferenceError, og hun
 // faar en 500 paa hele samlesiden, ogsaa paa de offentlige udbud der intet fejler.
 import { omfangTekst } from "../lib/omfang";
+import KortVaern from "./KortVaern";
 
 // Samlesiden "Mine opgaver" (Spor 3b) — den side samle-SMS'en og -mailen peger på.
 // Ingen login: kundens eget list_token er nøglen, og siden er LEVENDE (viser altid
@@ -455,7 +456,12 @@ export default function MineOpgaver({ token, data, intern = null }) {
         ))}
       </div>
 
-      {visteOpgaver.length === 0 ? (
+      {/* ⚠️ BEGGE LISTER SKAL VAERE TOMME, foer der staar "ingen match".
+          Betingelsen saa kun paa de OFFENTLIGE udbud, mens de private opgaver
+          kun blev tegnet i else-grenen. En kunde med en privat opgave og nul
+          udbud fik derfor "Ingen match endnu" - og saa aldrig den opgave hun
+          havde faaet SMS om. Fundet af smoke-testen 31-08-2026. */}
+      {visteOpgaver.length === 0 && privateOpgaver.length === 0 ? (
         /* ⚠️ TOM LISTE ER FØRSTE INDTRYK FOR EN NY KUNDE (05-08-2026). Velkomst-SMS'ens
            0-match-variant sender hende hertil, så teksten skal svare på det hun lige har
            læst: at vi er i gang, hvor ofte vi kigger, og hvordan hun får besked. Den
@@ -476,11 +482,19 @@ export default function MineOpgaver({ token, data, intern = null }) {
               i morgen. Lå de private nederst i en liste på fyrre kort, ville
               pladserne være væk inden kunden scrollede ned — og så ville funktionen
               være værdiløs for hende. */}
+          {/* ⚠️ HVERT KORT HAR SIT EGET VAERN. Foer 31-08-2026 kunne ét brudt
+              kort give 500 paa hele siden - ogsaa de offentlige udbud, der intet
+              fejlede. Vaernet ligger om HVERT kort og ikke om listen, saa radius
+              er ét kort og ikke hele overblikket. */}
           {privateOpgaver.map((p) => (
-            <PrivatOpgaveKort key={p.opgave_id} p={p} intern={intern} />
+            <KortVaern key={p.opgave_id} navn={`privat-opgave ${p.opgave_id}`}>
+              <PrivatOpgaveKort p={p} intern={intern} />
+            </KortVaern>
           ))}
           {visteOpgaver.map((o) => (
-            <OpgaveKort key={o.match_id} o={o} intern={intern} onFjern={() => haandterFjern(o.match_id, o.title)} />
+            <KortVaern key={o.match_id} navn={`udbud ${o.match_id}`}>
+              <OpgaveKort o={o} intern={intern} onFjern={() => haandterFjern(o.match_id, o.title)} />
+            </KortVaern>
           ))}
         </div>
       )}

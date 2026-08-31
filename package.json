@@ -4,9 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "eslint . && next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "eslint .",
+    "build:kun": "next build"
   },
   "dependencies": {
     "next": "latest",
@@ -14,5 +15,12 @@
     "react-dom": "latest",
     "react-markdown": "^10.1.0",
     "remark-gfm": "^4.0.1"
+  },
+  "devDependencies": {
+    "@next/eslint-plugin-next": "^16.3.3",
+    "eslint": "^9.39.5",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.11.0"
   }
 }
