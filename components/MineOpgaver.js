@@ -9,6 +9,11 @@ import { Logo } from "./Logo";
 // live før Jonas har godkendt den som juridisk tekst. Mekanikken bagved (flag, kald,
 // logning) er færdig og virker; det er kun visningen der venter.
 import { fetchMyTasks, previewCriteria, saveMyCriteria, undoMyCriteria, dismissTask, sendDismissReason, markerSomRelevant, afvisNaerMatch, saetSmsBesked, saetPrivateOpgaver } from "../lib/share";
+// ⚠️ MANGLEDE, OG DET VAELTEDE HELE SIDEN. PrivatOpgaveKort kaldte omfangTekst uden
+// at den var importeret (siden 408893c). Fejlen er latent indtil kunden faktisk HAR
+// en privat opgave med et omfang - saa kaster serveren en ReferenceError, og hun
+// faar en 500 paa hele samlesiden, ogsaa paa de offentlige udbud der intet fejler.
+import { omfangTekst } from "../lib/omfang";
 
 // Samlesiden "Mine opgaver" (Spor 3b) — den side samle-SMS'en og -mailen peger på.
 // Ingen login: kundens eget list_token er nøglen, og siden er LEVENDE (viser altid
