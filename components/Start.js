@@ -155,11 +155,12 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
   // en del af handelsbetingelserne. Begge skal være sat, før man kan fortsætte.
   const [abonnement, setAbonnement] = useState(false);
   // År er forvalgt og anbefalet (spar ~17 %) — men BEGGE skal kunne vælges frit.
-  // ⚠️ MÅNED ER DEFAULT (Jonas 03-09-2026, ændret fra "yearly"). Det er et
-  // KOMMERCIELT valg, ikke et layout-valg: den plan der står valgt, er den de
-  // fleste ender med, og den sendes med ved oprettelsen på trin 4. Skal årsplanen
-  // tilbage som forvalg, er det den her linje.
-  const [interval, setInterval_] = useState("monthly");
+  // ⚠️ ÅRSPLANEN ER DEFAULT, og det er et KOMMERCIELT valg (Jonas 03-09-2026).
+  // Den plan der står valgt, er den de fleste ender med, og den følger med ved
+  // oprettelsen på trin 4. Året er det bedste tilbud — betal for 10 måneder, få
+  // 12 — så det er dét, forvalget skal pege på. Mockup'ens "Måned som default"
+  // var derfor en visuel detalje, ikke en beslutning.
+  const [interval, setInterval_] = useState("yearly");
   // Hvilket interval der lige nu hentes en ny session til (null = ingen). Bærer
   // knappens "Skifter…"-tilstand, så et klik der tager tid ser levende ud.
   const [skifter, setSkifter] = useState(null);
