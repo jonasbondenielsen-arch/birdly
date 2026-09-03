@@ -64,9 +64,7 @@ function loadReepay() {
     }
     const s = document.createElement("script");
     s.id = "reepay-checkout-js";
-    // ⚠️ Frisbiis egen adresse. Samme SDK som checkout.reepay.com, men det er
-    // den, deres dokumentation for EmbeddedSubscription peger paa.
-    s.src = "https://checkout.frisbii.com/checkout.js";
+    s.src = "https://checkout.reepay.com/checkout.js";
     s.async = true;
     s.onload = () => resolve(window.Reepay);
     s.onerror = () => reject(new Error("Betalingsvinduet kunne ikke indlæses."));
@@ -169,12 +167,6 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
   // fortrudt valg lande til sidst og binde betalingen til den forkerte plan.
   const skiftNr = useRef(0);
   const [sessionId, setSessionId] = useState(null);
-  // ⚠️ BETALINGEN AABNES FOERST PAA KLIK, ikke naar trin 5 tegnes. Knappen er
-  // spaerret bag de to samtykke-flueben, og monterede vi checkouten automatisk,
-  // ville kunden kunne betale uden at have sat dem. Samtykket er en spaerre, ikke
-  // pynt (Clearhaus-krav) - se fluebenene nederst i trin 5.
-  const [betalingAaben, setBetalingAaben] = useState(false);
-  const rpRef = useRef(null);
   const [oprettetId, setOprettetId] = useState(null);
   const [udenProeve, setUdenProeve] = useState(false);
   const [faerdig, setFaerdig] = useState(betaling === "ok");
@@ -589,69 +581,16 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
     try {
       window.localStorage.setItem(STASH, JSON.stringify({ id: oprettetId, udenProeve, fag: fagValgt, interval }));
     } catch { /* privat browsing — StartTrial springes over, hellere end en dublet */ }
-    // ⚠️ INDLEJRET, IKKE REDIRECT (03-09-2026). Foer aabnede
-    // Reepay.WindowSubscription et nyt vindue og forlod birdly.dk helt; kunden
-    // kom tilbage via accept_url. Nu bliver hun paa siden, og checkouten tegnes
-    // i vores egen container.
-    //
-    // ⚠️ STASH BEHOLDES. Redirect-stien er ikke doed: 3DS/MitID kan sende
-    // browseren ud og tilbage, og saa er det accept_url der lander. Fjernes
-    // stashet, mister vi StartTrial-pixlen praecis for de kunder der blev sendt
-    // gennem en bankgodkendelse.
-    setBetalingAaben(true);
-  }
-
-  // ⚠️ MONTERES I EN EFFEKT, ikke i klikhandleren. Containeren skal findes i DOM'en
-  // foer Reepay kan tegne i den, og den tegnes foerst naar betalingAaben er sat.
-  useEffect(() => {
-    if (!betalingAaben || !sessionId) return;
-    let doed = false;
+    // ⚠️ RULLET TILBAGE TIL REDIRECT (03-09-2026). Den indlejrede checkout
+    // blev proevet live og oprettede abonnementer UDEN kort: fem abonnementer stod i
+    // "pending" med nul gemte betalingsmetoder, og kunden fik "betalingen kunne ikke
+    // gennemfoeres" efter en godkendt MitID. WindowSubscription er den variant der
+    // beviseligt gemmer kortet og aktiverer abonnementet. Roeres ikke igen, foer det
+    // modsatte er vist i test-mode.
     loadReepay()
-      .then((Reepay) => {
-        if (doed) return;
-        // showReceipt:false -> VORES egen kvitteringsskaerm vises, ikke Reepays.
-        const rp = new Reepay.EmbeddedSubscription(sessionId, {
-          html_element: "rp_container",
-          showReceipt: false,
-        });
-        rpRef.current = rp;
-
-        rp.addEventHandler(Reepay.Event.Accept, () => {
-          // ⚠️ WEBHOOKEN ER STADIG DEN AUTORITATIVE AKTIVERING. Det her er kun
-          // skaermbilledet: Accept betyder "Reepay sagde ja til kortet", ikke at
-          // abonnementet er aktiveret hos os. Den skelnen er hele grunden til at
-          // frisbii-webhook findes.
-          setFaerdig(true);
-          setBetalingAaben(false);
-          try {
-            if (oprettetId && !udenProeve) {
-              sporEnGang(`starttrial_${oprettetId}`, "StartTrial", {
-                content_name: "Birdly 14 dages prøve",
-                content_category: Array.isArray(fagValgt) && fagValgt.length ? fagValgt.join(",") : interval || "",
-                currency: "DKK",
-                value: 0,
-              });
-            }
-          } catch { /* pixlen maa aldrig kunne vaelte kvitteringen */ }
-        });
-
-        rp.addEventHandler(Reepay.Event.Error, () => {
-          setFejl("Betalingen kunne ikke gennemføres. Prøv igen, eller skriv til hello@birdly.dk.");
-          setBetalingAaben(false);
-        });
-        // Lukker kunden vinduet, er intet sket - hun skal bare kunne prøve igen.
-        rp.addEventHandler(Reepay.Event.Close, () => setBetalingAaben(false));
-      })
-      .catch((e) => { if (!doed) { setFejl(e.message); setBetalingAaben(false); } });
-
-    return () => {
-      doed = true;
-      // ⚠️ RYD OP. Uden destroy() bliver en gammel checkout haengende, naar kunden
-      // skifter plan og en NY session oprettes - og saa betaler hun for den forkerte.
-      try { rpRef.current?.destroy?.(); } catch { /* ingen instans at rydde */ }
-      rpRef.current = null;
-    };
-  }, [betalingAaben, sessionId, oprettetId, udenProeve, fagValgt, interval]);
+      .then((Reepay) => { new Reepay.WindowSubscription(sessionId); })
+      .catch((e) => setFejl(e.message));
+  }
 
   // ⚠️ priceText er et OBJEKT, ikke en funktion — og det er den eneste kilde til
   // beløbet. Hardkod aldrig en pris her; det var netop derfor tre steder stod med
@@ -1108,12 +1047,10 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
                 vises afhænger af enhed, browser og hvad der er slået til på
                 kontoen — Apple Pay findes fx kun på Apple-enheder. Byggede vi
                 vores egne knapper, ville vi tilbyde noget kunden ikke kan bruge. */}
-            {!betalingAaben && (
-              <p className="ck-betalingshint">
-                Kort, Apple&nbsp;Pay, Google&nbsp;Pay og MobilePay — betalingsvinduet
-                åbnes, når du trykker nedenfor.
-              </p>
-            )}
+            <p className="ck-betalingshint">
+              Kort, Apple&nbsp;Pay, Google&nbsp;Pay og MobilePay — du sendes til
+              Reepays sikre betalingsside, når du trykker nedenfor.
+            </p>
 
             {/* ⚠️ SAMME STATE SOM TRIN 4, ikke en ny afkrydsning. `betingelser` og
                 `abonnement` er de samme variabler, så fluebenene står afkrydsede
@@ -1130,21 +1067,10 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
               <span>Jeg accepterer <a href="/abonnementsbetingelser" target="_blank" rel="noreferrer">abonnementsbetingelserne</a> — herunder at abonnementet fornyes automatisk, og at mit betalingskort gemmes hos vores betalingsudbyder, indtil jeg siger op.</span>
             </label>
 
-            {/* ⚠️ KNAPPEN FORSVINDER, NÅR CHECKOUTEN ER ÅBEN. To betalingsindgange
-                på samme skærm ville lade kunden oprette en session mere oveni den
-                der allerede er monteret. */}
-            {!betalingAaben && (
-              <button className="ck-cta" onClick={aabnBetaling} disabled={!sessionId || arbejder}>
-                {skifter ? "Skifter plan…" : arbejder ? "Et øjeblik…"
-                  : udenProeve ? "Gå til betaling" : `Start ${TRIAL_DAYS} dages gratis prøve`}
-              </button>
-            )}
-
-            {betalingAaben && (
-              <div className="ck-betalingsboks">
-                <div id="rp_container" />
-              </div>
-            )}
+            <button className="ck-cta" onClick={aabnBetaling} disabled={!sessionId || arbejder}>
+              {skifter ? "Skifter plan…" : arbejder ? "Et øjeblik…"
+                : udenProeve ? "Gå til betaling" : `Start ${TRIAL_DAYS} dages gratis prøve`}
+            </button>
 
             {!udenProeve && (
               <div className="ck-reassure">
