@@ -64,7 +64,9 @@ function loadReepay() {
     }
     const s = document.createElement("script");
     s.id = "reepay-checkout-js";
-    s.src = "https://checkout.reepay.com/checkout.js";
+    // ⚠️ Frisbiis egen adresse. Samme SDK som checkout.reepay.com, men det er
+    // den, deres dokumentation for EmbeddedSubscription peger paa.
+    s.src = "https://checkout.frisbii.com/checkout.js";
     s.async = true;
     s.onload = () => resolve(window.Reepay);
     s.onerror = () => reject(new Error("Betalingsvinduet kunne ikke indlæses."));
@@ -162,6 +164,12 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
   // fortrudt valg lande til sidst og binde betalingen til den forkerte plan.
   const skiftNr = useRef(0);
   const [sessionId, setSessionId] = useState(null);
+  // ⚠️ BETALINGEN AABNES FOERST PAA KLIK, ikke naar trin 5 tegnes. Knappen er
+  // spaerret bag de to samtykke-flueben, og monterede vi checkouten automatisk,
+  // ville kunden kunne betale uden at have sat dem. Samtykket er en spaerre, ikke
+  // pynt (Clearhaus-krav) - se fluebenene nederst i trin 5.
+  const [betalingAaben, setBetalingAaben] = useState(false);
+  const rpRef = useRef(null);
   const [oprettetId, setOprettetId] = useState(null);
   const [udenProeve, setUdenProeve] = useState(false);
   const [faerdig, setFaerdig] = useState(betaling === "ok");
@@ -576,10 +584,69 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
     try {
       window.localStorage.setItem(STASH, JSON.stringify({ id: oprettetId, udenProeve, fag: fagValgt, interval }));
     } catch { /* privat browsing — StartTrial springes over, hellere end en dublet */ }
-    loadReepay()
-      .then((Reepay) => { new Reepay.WindowSubscription(sessionId); })
-      .catch((e) => setFejl(e.message));
+    // ⚠️ INDLEJRET, IKKE REDIRECT (03-09-2026). Foer aabnede
+    // Reepay.WindowSubscription et nyt vindue og forlod birdly.dk helt; kunden
+    // kom tilbage via accept_url. Nu bliver hun paa siden, og checkouten tegnes
+    // i vores egen container.
+    //
+    // ⚠️ STASH BEHOLDES. Redirect-stien er ikke doed: 3DS/MitID kan sende
+    // browseren ud og tilbage, og saa er det accept_url der lander. Fjernes
+    // stashet, mister vi StartTrial-pixlen praecis for de kunder der blev sendt
+    // gennem en bankgodkendelse.
+    setBetalingAaben(true);
   }
+
+  // ⚠️ MONTERES I EN EFFEKT, ikke i klikhandleren. Containeren skal findes i DOM'en
+  // foer Reepay kan tegne i den, og den tegnes foerst naar betalingAaben er sat.
+  useEffect(() => {
+    if (!betalingAaben || !sessionId) return;
+    let doed = false;
+    loadReepay()
+      .then((Reepay) => {
+        if (doed) return;
+        // showReceipt:false -> VORES egen kvitteringsskaerm vises, ikke Reepays.
+        const rp = new Reepay.EmbeddedSubscription(sessionId, {
+          html_element: "rp_container",
+          showReceipt: false,
+        });
+        rpRef.current = rp;
+
+        rp.addEventHandler(Reepay.Event.Accept, () => {
+          // ⚠️ WEBHOOKEN ER STADIG DEN AUTORITATIVE AKTIVERING. Det her er kun
+          // skaermbilledet: Accept betyder "Reepay sagde ja til kortet", ikke at
+          // abonnementet er aktiveret hos os. Den skelnen er hele grunden til at
+          // frisbii-webhook findes.
+          setFaerdig(true);
+          setBetalingAaben(false);
+          try {
+            if (oprettetId && !udenProeve) {
+              sporEnGang(`starttrial_${oprettetId}`, "StartTrial", {
+                content_name: "Birdly 14 dages prøve",
+                content_category: Array.isArray(fagValgt) && fagValgt.length ? fagValgt.join(",") : interval || "",
+                currency: "DKK",
+                value: 0,
+              });
+            }
+          } catch { /* pixlen maa aldrig kunne vaelte kvitteringen */ }
+        });
+
+        rp.addEventHandler(Reepay.Event.Error, () => {
+          setFejl("Betalingen kunne ikke gennemføres. Prøv igen, eller skriv til hello@birdly.dk.");
+          setBetalingAaben(false);
+        });
+        // Lukker kunden vinduet, er intet sket - hun skal bare kunne prøve igen.
+        rp.addEventHandler(Reepay.Event.Close, () => setBetalingAaben(false));
+      })
+      .catch((e) => { if (!doed) { setFejl(e.message); setBetalingAaben(false); } });
+
+    return () => {
+      doed = true;
+      // ⚠️ RYD OP. Uden destroy() bliver en gammel checkout haengende, naar kunden
+      // skifter plan og en NY session oprettes - og saa betaler hun for den forkerte.
+      try { rpRef.current?.destroy?.(); } catch { /* ingen instans at rydde */ }
+      rpRef.current = null;
+    };
+  }, [betalingAaben, sessionId, oprettetId, udenProeve, fagValgt, interval]);
 
   // ⚠️ priceText er et OBJEKT, ikke en funktion — og det er den eneste kilde til
   // beløbet. Hardkod aldrig en pris her; det var netop derfor tre steder stod med
@@ -1102,9 +1169,25 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
             <span>Jeg accepterer <a href="/abonnementsbetingelser" target="_blank" rel="noreferrer">abonnementsbetingelserne</a> — herunder at abonnementet fornyes automatisk, og at mit betalingskort gemmes hos vores betalingsudbyder, indtil jeg siger op.</span>
           </label>
 
-          <button className="btn btn-teal st-bred" onClick={aabnBetaling} disabled={!sessionId || arbejder}>
-            {skifter ? "Skifter plan…" : arbejder ? "Et øjeblik…" : "Start min gratis prøve"}
-          </button>
+          {/* ⚠️ KNAPPEN FORSVINDER, NAAR CHECKOUTEN ER AABEN. To betalingsindgange
+              paa samme skaerm ville lade kunden oprette en session mere oveni den
+              der allerede er monteret. */}
+          {!betalingAaben && (
+            <button className="btn btn-teal st-bred" onClick={aabnBetaling} disabled={!sessionId || arbejder}>
+              {skifter ? "Skifter plan…" : arbejder ? "Et øjeblik…" : "Start min gratis prøve"}
+            </button>
+          )}
+
+          {/* ⚠️ FRISBIIS EGEN CONTAINER. Maalene er dem deres dokumentation
+              foreskriver; er hoejden for lav, klipper 3DS-trinnet. Kortdata
+              indtastes inde i Frisbiis felter - de roerer aldrig vores side. */}
+          {betalingAaben && (
+            <div
+              id="rp_container"
+              style={{ width: "100%", maxWidth: 500, height: 730, margin: "0 auto" }}
+            />
+          )}
+
           <p className="st-mini">0,00 kr. trækkes i dag. Du kan sige op når som helst i prøveperioden.</p>
         </div>
       )}
