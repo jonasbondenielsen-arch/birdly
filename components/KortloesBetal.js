@@ -49,7 +49,11 @@ function loadReepay() {
 }
 
 export default function KortloesBetal({ code }) {
-  const [interval, setInterval_] = useState("monthly");
+  // ⚠️ AARSPLANEN ER FORVALGT — SAMME SOM /start (03-09-2026). Den er det bedste
+  // tilbud, og siden her er migrationslinket: en kunde der allerede har valgt aar i
+  // fortsaet-flowet (fx Jensen Entreprise, 24-08) skal moede sit eget valg, ikke et
+  // maanedsabonnement hun skal huske at skifte. Hun kan stadig vaelge maaned.
+  const [interval, setInterval_] = useState("yearly");
   const [sessionId, setSessionId] = useState(null);
   const [fejl, setFejl] = useState("");
   const [henter, setHenter] = useState(true);
