@@ -1220,9 +1220,23 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
 
             {/* ⚠️ MATCHGARANTIEN ER ET EKSISTERENDE LØFTE, ikke en ny påstand — den
                 står på forsiden og i FAQ'en, og stod også i det gamle trin 5. */}
+            {/* ⚠️ GARANTIEN HAR BETINGELSER, OG DE SKAL VÆRE ÉT KLIK VÆK.
+                Løftet stod før helt ubetinget her, mens handelsbetingelserne
+                §3.3-3.6 sætter rammer: 60 dage, dine egne kriterier, og ikke ved
+                et snævert beløbsfilter eller en meget nichepræget virksomhed.
+                Et ubetinget markedsføringsløfte side om side med en betinget
+                aftaletekst er ikke bare uryddeligt — det er noget kunden kan
+                holde os op på. Derfor står forbeholdet kort, og linket fører til
+                den fulde ordlyd. */}
             <div className="ck-card ck-garanti">
               <h3><span className="ck-ic">✅</span> Matchgaranti</h3>
-              <p>Får du ingen match, betaler du ikke en krone.</p>
+              <p>Får du ingen match inden for 60 dage, betaler du ikke en krone.</p>
+              <p className="ck-garanti-fin">
+                Gælder opgaver inden for de kriterier, du selv vælger.{" "}
+                <a href="/handelsbetingelser#matchgaranti" target="_blank" rel="noreferrer">
+                  Se betingelserne
+                </a>
+              </p>
             </div>
           </aside>
         </div>

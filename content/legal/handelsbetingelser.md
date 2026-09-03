@@ -39,6 +39,14 @@
 
 3.2 Kort fortalt: Birdly koster **499 kr./md.** eller **4.990 kr./år** ekskl. moms, du får 14 dages gratis prøveperiode, og abonnementet fornyes automatisk, indtil du siger op.
 
+3.3 **Matchgaranti — finder vi ingen opgave, betaler du ikke.** Finder vi ingen opgave, der passer til din virksomhed, refunderer vi din betaling for perioden. Garantien dækker både offentlige udbud og private opgaver.
+
+3.4 **Sådan opgøres garantien.** Garantien er opfyldt, når vi inden for **60 dage** fra din tilmelding har sendt dig mindst én opgave, der ligger inden for de kriterier, du selv har valgt — fag, geografi og opgavestørrelse. Har vi ikke det, skriver du til support@birdly.dk, og vi refunderer det, du har betalt for perioden.
+
+3.5 **Garantien forudsætter, at du ikke har afgrænset opgavestørrelsen snævert.** Har du begrænset dine opgaver til under 2,5 mio. kr. — i praksis valget "Op til 1 mio. kr." — gælder garantien ikke. Du er velkommen til at sætte filteret så snævert, du vil; vi kan bare ikke garantere, at der findes opgaver i det udsnit. Du kan til enhver tid ændre dine kriterier på din opgaveside.
+
+3.6 **Garantien gælder ikke meget nicheprægede virksomheder.** Er din virksomhed så specialiseret, eller er dine arbejdsgange af en så særlig karakter, at opgaver af den type reelt ikke udbydes på normale vilkår i Danmark, gælder garantien ikke. Vi finder de opgaver, der findes — vi kan ikke skabe dem. Er du i tvivl om, hvorvidt dit område er dækket, så skriv til os på support@birdly.dk, inden du tilmelder dig, så siger vi det ærligt.
+
 ## 4. Betaling og betalingsmetoder
 4.1 **Du kan betale med Visa og Mastercard.** Betalingerne håndteres af vores betalingsudbyder Frisbii med Clearhaus som indløser.
 

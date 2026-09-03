@@ -293,3 +293,8 @@ select.st-felt{appearance:none;background-image:url("data:image/svg+xml;utf8,<sv
    kolonner i 520px braekker plan-kortene midt i beloebet (maalt paa skaerm). */
 .st-wrap.st-wrap-bred{max-width:1120px;padding-left:24px;padding-right:24px}
 @media (max-width:900px){ .st-wrap.st-wrap-bred{padding-left:16px;padding-right:16px} }
+
+/* Forbeholdet paa garanti-kortet. Lyst nok til at vaere laesbart paa den teal
+   baggrund, smaat nok til ikke at konkurrere med selve loeftet. */
+.ck-garanti-fin{font-size:12px;color:#cdf1ea !important;margin-top:8px}
+.ck-garanti-fin a{color:#fff;text-decoration:underline}
