@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Logo } from "./Logo";
 import { fetchCatalog, submitSignup, createSubscriptionSession } from "../lib/catalog";
 import { hentKandidater, visResultat } from "../lib/kandidater";
-import { planForInterval, priceText, TRIAL_DAYS } from "../lib/pakke";
+import { PLAN, planForInterval, priceText, TRIAL_DAYS } from "../lib/pakke";
 import { sporEnGang } from "../lib/pixel";
 // ⚠️ forside.css importeres IKKE. Den er nested under `.birdly-home`, så dens
 // klasser virker alligevel ikke her — og importen ville kun sende hele forsidens
@@ -155,7 +155,11 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
   // en del af handelsbetingelserne. Begge skal være sat, før man kan fortsætte.
   const [abonnement, setAbonnement] = useState(false);
   // År er forvalgt og anbefalet (spar ~17 %) — men BEGGE skal kunne vælges frit.
-  const [interval, setInterval_] = useState("yearly");
+  // ⚠️ MÅNED ER DEFAULT (Jonas 03-09-2026, ændret fra "yearly"). Det er et
+  // KOMMERCIELT valg, ikke et layout-valg: den plan der står valgt, er den de
+  // fleste ender med, og den sendes med ved oprettelsen på trin 4. Skal årsplanen
+  // tilbage som forvalg, er det den her linje.
+  const [interval, setInterval_] = useState("monthly");
   // Hvilket interval der lige nu hentes en ny session til (null = ingen). Bærer
   // knappens "Skifter…"-tilstand, så et klik der tager tid ser levende ud.
   const [skifter, setSkifter] = useState(null);
@@ -671,7 +675,11 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
   }
 
   return (
-    <main className="st-wrap">
+    /* ⚠️ TRIN 5 SPRÆNGER RAMMEN. .st-wrap er 520px, som passer til de smalle
+       trin 1-4 — men to kolonner klemt ned i 520px brækker plan-kortene midt i
+       beløbet (målt på skærm 03-09-2026). Modifikatoren giver kun trin 5 den
+       fulde bredde; de øvrige trin er urørte. */
+    <main className={"st-wrap" + (trin === 5 && !kortloes ? " st-wrap-bred" : "")}>
       <div className="st-top"><Logo height={30} /></div>
 
       <div className="st-bar" aria-label={`Trin ${trin} af ${ANTAL_TRIN}`}>
@@ -1030,165 +1038,192 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
       )}
 
       {trin === 5 && !kortloes && (
-        <div className="st-kort">
-          <h1>0,00 kr. i dag.</h1>
-          <p className="st-hj">14 dages gratis prøve. Ingen binding.</p>
+        /* ══════════════════════════════════════════════════════════════════════
+           CHECKOUT I TO KOLONNER (03-09-2026). Venstre = handlingen, højre =
+           konteksten. På mobil stables de, og de to lange infobokse foldes
+           sammen — se .ck-acc i start.css.
 
-          {/* ⚠️ PRISEN SKAL STÅ PÅ BEGGE KNAPPER. "0,00 kr. i dag" er hovedbudskabet,
-              men det svarer ikke på hvad det koster BAGEFTER — og det er dét man
-              vælger imellem. Stod beløbet kun under den valgte, skulle kunden klikke
-              for at få prisen at vide på den anden.
+           ⚠️ TEKSTERNE ER UÆNDREDE. Ordlyden om sælger, ydelse, betaling,
+           fornyelse og opsigelse skal stemme ORDRET med
+           /checkout-forhaandsvisning, som Clearhaus har fået forelagt. Kun
+           layoutet er nyt; ændrer du en formulering her, skal den anden side
+           følge med.
 
-              ⚠️ Tallene kommer fra priceText, aldrig skrevet i hånden. Præcis den
-              hardkodning var grunden til at tre steder stod med den gamle pris efter
-              en ændring (CLAUDE.md, "Pris — REGLERNE"). */}
-          <div className="st-plan">
-            {[
-              ["yearly", "År", priceText.yearly, priceText.saveShort],
-              ["monthly", "Måned", priceText.monthly, "ingen binding"],
-            ].map(([k, l, beloeb, note]) => (
-              <button
-                key={k}
-                type="button"
-                className={"st-planknap" + (interval === k ? " on" : "")}
-                onClick={() => skiftInterval(k)}
-                aria-pressed={interval === k}
-              >
-                {/* ⚠️ ALDRIG disabled. Låsen var netop fejlen: knapperne stod
-                    `disabled={arbejder}`, og da `arbejder` hang fast, var planvalget
-                    dødt. Et skift der tager tid får en tekst — ikke en lås. */}
-                <b>{l}</b>
-                <span>{beloeb}</span>
-                <i>{skifter === k ? "skifter…" : note}</i>
-              </button>
-            ))}
-          </div>
+           ⚠️ INGEN "DINE OPLYSNINGER"-FELTER. Mockup'en viser mail og telefon
+           som inputs, men på trin 5 ER tilmeldingen allerede sendt (trin 4
+           opretter kunden). Redigerbare felter her ville se ud som om de kunne
+           ændre noget — og de kunne ikke.
+           ══════════════════════════════════════════════════════════════════════ */
+        <div className="ck-wrap">
 
-          {/* Den løbende pris, bundet til valget. Skifter kunden plan, skifter denne
-              med — så det der står her ALTID er det hun bliver trukket. */}
-          <p className="st-derefter">
-            <b>Derefter {pris}.</b>
-            <span>
-              Første træk om {TRIAL_DAYS} dage · ekskl. moms
-              {interval === "yearly" ? ` · ${priceText.saveShort}` : " · ingen binding"}
-            </span>
-          </p>
-
-          {/* ══════════════════════════════════════════════════════════════════
-              CLEARHAUS-OPLYSNINGERNE. Kortindehaveren skal kunne se HVEM hun betaler,
-              HVAD hun får, HVORNÅR der trækkes, HVOR OFTE, og HVORDAN hun kommer ud —
-              dér hvor hun træffer beslutningen.
-
-              ⚠️ ORDLYDEN SKAL STEMME ORDRET MED /checkout-forhaandsvisning, som
-              Clearhaus har fået forelagt. Ændrer du den ene, skal du ændre den anden.
-
-              ⚠️ ALLE TAL KOMMER FRA priceText/TRIAL_DAYS. Hardkod aldrig et beløb —
-              det var netop dét der efterlod tre steder med den gamle pris.
-              ══════════════════════════════════════════════════════════════════ */}
-
-          {/* 1 — SÆLGER. Stod før kun i footeren. */}
-          <div className="st-saelger">
-            <div className="st-saelger-navn">Birdly.dk</div>
-            <div className="st-saelger-info">CVR 35764283 · Fjordvej 4, 4300 Holbæk, Danmark</div>
-            <div className="st-saelger-info">support@birdly.dk</div>
-          </div>
-
-          {/* 2 — HVAD HUN KØBER. Resten af funnelen viser hendes EGNE valg; dette
-              siger hvad ydelsen er. */}
-          <div className="st-ydelse">
-            <b>Hvad abonnementet giver adgang til</b>
-            <p>
-              Birdly overvåger danske offentlige udbud og sender dig besked, når der er en
-              opgave, der passer til dit fag, dit område og din opgavestørrelse. Du får
-              beskeder på SMS og e-mail, adgang til din personlige opgaveliste med alle dine
-              matches, og en bud-skabelon til de opgaver, du vil byde på.
+          {/* ─────────────────────────── VENSTRE: handlingen ─────────────────── */}
+          <section className="ck-panel ck-action">
+            <h1>Færdiggør din tilmelding</h1>
+            <p className="ck-sub">
+              {udenProeve
+                ? <>Abonnementet starter i dag · <b>{pris} ekskl. moms</b></>
+                : <>{TRIAL_DAYS} dages gratis prøve · du betaler <b>0 kr. i dag</b></>}
             </p>
-            <p className="st-ydelse-sub">Digital abonnementstjeneste. Leveres straks ved oprettelse.</p>
-          </div>
 
-          {/* 3, 6 og 7 — STARTDATO + VARIGHED, FREKVENS, OPSIGELSE.
-              ⚠️ Pris OG frekvens følger den valgte plan. Skifter hun til månedlig,
-              skifter både beløbet og "hver måned" med — ellers ville teksten love
-              noget andet end knappen ovenfor. */}
-          <div className="st-abon">
-            <b>Sådan fungerer betalingen</b>
-            {udenProeve ? (
-              <p>
-                Abonnementet starter <b>i dag</b> og fornyes automatisk til <b>{pris} ekskl. moms</b>{" "}
-                {interval === "yearly" ? "hvert år" : "hver måned"}, <b>indtil du opsiger</b>. Du kan
-                til enhver tid opsige med virkning fra næste betalingsperiode.
-              </p>
-            ) : (
-              <p>
-                Abonnementet starter <b>i dag</b> med <b>{TRIAL_DAYS} dages gratis prøveperiode</b>.
-                Du betaler <b>0 kr. i dag</b>. 3 dage før prøveperioden udløber, sender vi dig en
-                påmindelse. Herefter fortsætter medlemskabet automatisk til <b>{pris} ekskl. moms</b>{" "}
-                og fornyes løbende {interval === "yearly" ? "hvert år" : "hver måned"},{" "}
-                <b>indtil du opsiger</b>. Du kan til enhver tid opsige med virkning fra næste
-                betalingsperiode.
+            <span className="ck-label">Vælg abonnement</span>
+            {/* ⚠️ PRISEN STÅR PÅ BEGGE KORT. "0 kr. i dag" er hovedbudskabet, men
+                det svarer ikke på hvad det koster BAGEFTER — og det er dét man
+                vælger imellem.
+                ⚠️ Tallene kommer fra priceText, aldrig skrevet i hånden. Præcis den
+                hardkodning efterlod tre steder med den gamle pris (CLAUDE.md). */}
+            <div className="ck-plans">
+              {[
+                // ⚠️ BART BELØB HER, ikke priceText. priceText.monthly ER "499 kr./md."
+                // — sat sammen med enheden nedenfor blev der "499 kr./md. /md. ekskl.
+                // moms" på skærmen. Tallet kommer stadig fra pakke.js, aldrig fra hånden.
+                ["monthly", "Måned", `${PLAN.monthly.toLocaleString("da-DK")} kr.`, "/md. ekskl. moms", "ingen binding"],
+                ["yearly", "År", `${PLAN.yearly.toLocaleString("da-DK")} kr.`, "/år ekskl. moms", priceText.saveShort],
+              ].map(([k, l, beloeb, enhed, note]) => (
+                <button
+                  key={k}
+                  type="button"
+                  className={"ck-plan" + (interval === k ? " on" : "")}
+                  onClick={() => skiftInterval(k)}
+                  aria-pressed={interval === k}
+                >
+                  {/* ⚠️ ALDRIG disabled. Låsen var netop fejlen: knapperne stod
+                      `disabled={arbejder}`, og da `arbejder` hang fast, var
+                      planvalget dødt. Et skift der tager tid får en tekst. */}
+                  <span className="ck-p-top">
+                    <span className="ck-p-name">{l}</span>
+                    {interval === k && <span className="ck-tick">✓</span>}
+                  </span>
+                  <span className="ck-p-linje">
+                    <span className="ck-p-price">{beloeb}</span>{" "}
+                    <span className="ck-p-unit">{enhed}</span>
+                  </span>
+                  <span className="ck-p-note">{skifter === k ? "skifter…" : note}</span>
+                </button>
+              ))}
+            </div>
+
+            <span className="ck-label">Betaling</span>
+            {/* ⚠️ WALLETS OG KORTFELTER TEGNES AF REEPAY, ikke af os. Hvilke der
+                vises afhænger af enhed, browser og hvad der er slået til på
+                kontoen — Apple Pay findes fx kun på Apple-enheder. Byggede vi
+                vores egne knapper, ville vi tilbyde noget kunden ikke kan bruge. */}
+            {!betalingAaben && (
+              <p className="ck-betalingshint">
+                Kort, Apple&nbsp;Pay, Google&nbsp;Pay og MobilePay — betalingsvinduet
+                åbnes, når du trykker nedenfor.
               </p>
             )}
-            {/* ⚠️ FORTRYDELSESRET OG REFUSION STÅR I HVER SIT DOKUMENT — refusion i
-                abonnementsbetingelserne §4.4, fortrydelsesretten i
-                handelsbetingelserne §1.3. Derfor links til BEGGE.
-                "Ingen fortrydelsesret" står positivt: det er ikke en mangel, men et
-                faktum om aftaletypen (B2B). Kunden skal ikke tro hun har en ret hun
-                ikke har. */}
-            <p className="st-b2b">
-              Birdly sælges udelukkende til erhvervsdrivende. Da der er tale om et erhvervskøb,
-              gælder der ingen forbrugerfortrydelsesret. En abonnementsperiode, der allerede er
-              påbegyndt og betalt, refunderes ikke.
-            </p>
-            <div className="st-abon-links">
-              <a href="/abonnementsbetingelser" target="_blank" rel="noreferrer">Opsigelses- og refusionsvilkår</a>
-              <a href="/handelsbetingelser" target="_blank" rel="noreferrer">Handels- og leveringsbetingelser</a>
+
+            {/* ⚠️ SAMME STATE SOM TRIN 4, ikke en ny afkrydsning. `betingelser` og
+                `abonnement` er de samme variabler, så fluebenene står afkrydsede
+                når hun når hertil: INGEN ekstra friktion.
+                ⚠️ IKKE FLYTTET FRA TRIN 4 — GENTAGET. Trin 4 opretter kunden med
+                terms_accepted: true og starter prøveperioden; fjernede vi krydset
+                dér, ville vi registrere en accept hun ikke havde givet. */}
+            <label className="st-tjek">
+              <input type="checkbox" checked={betingelser} onChange={(e) => setBetingelser(e.target.checked)} />
+              <span>Jeg accepterer <a href="/handelsbetingelser" target="_blank" rel="noreferrer">handelsbetingelserne</a> og <a href="/privatlivspolitik" target="_blank" rel="noreferrer">privatlivspolitikken</a>.</span>
+            </label>
+            <label className="st-tjek">
+              <input type="checkbox" checked={abonnement} onChange={(e) => setAbonnement(e.target.checked)} />
+              <span>Jeg accepterer <a href="/abonnementsbetingelser" target="_blank" rel="noreferrer">abonnementsbetingelserne</a> — herunder at abonnementet fornyes automatisk, og at mit betalingskort gemmes hos vores betalingsudbyder, indtil jeg siger op.</span>
+            </label>
+
+            {/* ⚠️ KNAPPEN FORSVINDER, NÅR CHECKOUTEN ER ÅBEN. To betalingsindgange
+                på samme skærm ville lade kunden oprette en session mere oveni den
+                der allerede er monteret. */}
+            {!betalingAaben && (
+              <button className="ck-cta" onClick={aabnBetaling} disabled={!sessionId || arbejder}>
+                {skifter ? "Skifter plan…" : arbejder ? "Et øjeblik…"
+                  : udenProeve ? "Gå til betaling" : `Start ${TRIAL_DAYS} dages gratis prøve`}
+              </button>
+            )}
+
+            {betalingAaben && (
+              <div className="ck-betalingsboks">
+                <div id="rp_container" />
+              </div>
+            )}
+
+            {!udenProeve && (
+              <div className="ck-reassure">
+                <b>0 kr. trækkes i dag.</b> Første betaling sker efter prøveperioden —
+                vi minder dig 3 dage før.
+              </div>
+            )}
+
+            {/* 1 — SÆLGER (Clearhaus). Kortindehaveren skal kunne se HVEM hun betaler,
+                dér hvor beslutningen træffes. */}
+            <div className="ck-saelger">
+              <b>Birdly.dk</b>
+              CVR 35764283 · Fjordvej 4, 4300 Holbæk, Danmark<br />
+              support@birdly.dk
             </div>
-          </div>
+          </section>
 
-          <div className="st-garanti">
-            <b>Matchgaranti</b>
-            <p>Får du ingen match, betaler du ikke en krone.</p>
-          </div>
+          {/* ─────────────────────────── HØJRE: konteksten ───────────────────── */}
+          <aside className="ck-info">
 
-          {/* 4 — KORTINDEHAVERENS ACCEPT, VED PRISEN.
-              ⚠️ SAMME STATE SOM TRIN 4, ikke en ny afkrydsning. `betingelser` og
-              `abonnement` er de samme variabler, så fluebenene står afkrydsede når hun
-              når hertil: INGEN ekstra friktion for en kunde der allerede har accepteret.
+            {/* 2 — HVAD HUN KØBER. */}
+            <details className="ck-card ck-acc">
+              <summary><span className="ck-ic">📋</span> Hvad abonnementet giver adgang til <span className="ck-chev">▾</span></summary>
+              <div className="ck-acc-body">
+                <p>
+                  Birdly overvåger danske offentlige udbud og sender dig besked, når der er en
+                  opgave, der passer til dit fag, dit område og din opgavestørrelse. Du får
+                  beskeder på SMS og e-mail, adgang til din personlige opgaveliste med alle dine
+                  matches, og en bud-skabelon til de opgaver, du vil byde på.
+                </p>
+                <p className="ck-fin">Digital abonnementstjeneste. Leveres straks ved oprettelse.</p>
+              </div>
+            </details>
 
-              ⚠️ IKKE FLYTTET FRA TRIN 4 — GENTAGET, og det er ikke et valg om smag.
-              Trin 4 opretter kunden med terms_accepted: true og starter prøveperioden
-              (create_signup, migration 0010). Fjernede vi krydset dér, ville vi
-              registrere en accept hun ikke havde givet, og lade prøven køre uden den.
-              Her handler det om betalingen — samme samtykke, to steder det er relevant. */}
-          <label className="st-tjek">
-            <input type="checkbox" checked={betingelser} onChange={(e) => setBetingelser(e.target.checked)} />
-            <span>Jeg accepterer <a href="/handelsbetingelser" target="_blank" rel="noreferrer">handelsbetingelserne</a> og <a href="/privatlivspolitik" target="_blank" rel="noreferrer">privatlivspolitikken</a>.</span>
-          </label>
-          <label className="st-tjek">
-            <input type="checkbox" checked={abonnement} onChange={(e) => setAbonnement(e.target.checked)} />
-            <span>Jeg accepterer <a href="/abonnementsbetingelser" target="_blank" rel="noreferrer">abonnementsbetingelserne</a> — herunder at abonnementet fornyes automatisk, og at mit betalingskort gemmes hos vores betalingsudbyder, indtil jeg siger op.</span>
-          </label>
+            {/* 3, 6 og 7 — STARTDATO + VARIGHED, FREKVENS, OPSIGELSE.
+                ⚠️ Pris OG frekvens følger den valgte plan. Skifter hun til månedlig,
+                skifter både beløbet og "hver måned" med — ellers ville teksten love
+                noget andet end knappen ved siden af. */}
+            <details className="ck-card ck-acc">
+              <summary><span className="ck-ic">💳</span> Sådan fungerer betalingen <span className="ck-chev">▾</span></summary>
+              <div className="ck-acc-body">
+                {udenProeve ? (
+                  <p>
+                    Abonnementet starter <b>i dag</b> og fornyes automatisk til <b>{pris} ekskl. moms</b>{" "}
+                    {interval === "yearly" ? "hvert år" : "hver måned"}, <b>indtil du opsiger</b>. Du kan
+                    til enhver tid opsige med virkning fra næste betalingsperiode.
+                  </p>
+                ) : (
+                  <p>
+                    Abonnementet starter <b>i dag</b> med <b>{TRIAL_DAYS} dages gratis prøveperiode</b>.
+                    Du betaler <b>0 kr. i dag</b>. 3 dage før prøveperioden udløber, sender vi dig en
+                    påmindelse. Herefter fortsætter medlemskabet automatisk til <b>{pris} ekskl. moms</b>{" "}
+                    og fornyes løbende {interval === "yearly" ? "hvert år" : "hver måned"},{" "}
+                    <b>indtil du opsiger</b>. Du kan til enhver tid opsige med virkning fra næste
+                    betalingsperiode.
+                  </p>
+                )}
+                {/* ⚠️ FORTRYDELSESRET OG REFUSION STÅR I HVER SIT DOKUMENT — refusion i
+                    abonnementsbetingelserne §4.4, fortrydelsesretten i handelsbetingelserne
+                    §1.3. Derfor links til BEGGE. "Ingen fortrydelsesret" står positivt: det
+                    er ikke en mangel, men et faktum om aftaletypen (B2B). */}
+                <p className="ck-fin">
+                  Birdly sælges udelukkende til erhvervsdrivende. Da der er tale om et erhvervskøb,
+                  gælder der ingen forbrugerfortrydelsesret. En abonnementsperiode, der allerede er
+                  påbegyndt og betalt, refunderes ikke.
+                </p>
+                <div className="ck-links">
+                  <a href="/abonnementsbetingelser" target="_blank" rel="noreferrer">Opsigelses- og refusionsvilkår</a>
+                  <a href="/handelsbetingelser" target="_blank" rel="noreferrer">Handels- og leveringsbetingelser</a>
+                </div>
+              </div>
+            </details>
 
-          {/* ⚠️ KNAPPEN FORSVINDER, NAAR CHECKOUTEN ER AABEN. To betalingsindgange
-              paa samme skaerm ville lade kunden oprette en session mere oveni den
-              der allerede er monteret. */}
-          {!betalingAaben && (
-            <button className="btn btn-teal st-bred" onClick={aabnBetaling} disabled={!sessionId || arbejder}>
-              {skifter ? "Skifter plan…" : arbejder ? "Et øjeblik…" : "Start min gratis prøve"}
-            </button>
-          )}
-
-          {/* ⚠️ FRISBIIS EGEN CONTAINER. Maalene er dem deres dokumentation
-              foreskriver; er hoejden for lav, klipper 3DS-trinnet. Kortdata
-              indtastes inde i Frisbiis felter - de roerer aldrig vores side. */}
-          {betalingAaben && (
-            <div
-              id="rp_container"
-              style={{ width: "100%", maxWidth: 500, height: 730, margin: "0 auto" }}
-            />
-          )}
-
-          <p className="st-mini">0,00 kr. trækkes i dag. Du kan sige op når som helst i prøveperioden.</p>
+            {/* ⚠️ MATCHGARANTIEN ER ET EKSISTERENDE LØFTE, ikke en ny påstand — den
+                står på forsiden og i FAQ'en, og stod også i det gamle trin 5. */}
+            <div className="ck-card ck-garanti">
+              <h3><span className="ck-ic">✅</span> Matchgaranti</h3>
+              <p>Får du ingen match, betaler du ikke en krone.</p>
+            </div>
+          </aside>
         </div>
       )}
 
