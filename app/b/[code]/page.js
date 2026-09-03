@@ -1,71 +1,34 @@
-import Link from "next/link";
-import { Logo } from "../../../components/Logo";
+import KortloesBetal from "../../../components/KortloesBetal";
 
 // /b/{list_short_code} — betalingslink for KORTLØSE kunder (05-08-2026).
 //
-// ⚠️ SPÆRRET 13-08-2026. Siden åbnede Frisbiis checkout via
-// create-subscription-session, som kører på FRISBII_TEST_PRIVATE_KEY — altså
-// test-miljøet, fordi indløseraftalen hos Clearhaus endnu ikke er godkendt.
+// ⚠️ GENÅBNET 03-09-2026. Ruten var spærret siden 13-08, fordi
+// create-subscription-session dengang kørte mod Frisbiis TEST-miljø: en rigtig
+// kunde ville enten få kortet afvist eller — værre — gennemføre en testbetaling
+// og blive flippet til status='aktiv' uden at der var flyttet en krone.
 //
-// For en RIGTIG kunde havde det to udfald, og begge var uacceptable:
-//   1. Kortet afvises af test-gatewayen → kunden tror Birdly er i stykker.
-//   2. Værre: checkout gennemføres som testbetaling → frisbii-webhookens
-//      invoice_settled flipper hende til status='aktiv'. Hun tror hun betaler, admin
-//      viser hende som betalende, hun tælles med i MRR — og der er aldrig flyttet en
-//      krone. Det forurener præcis de tal en køber due-diligencer.
+// Begge årsager er væk: live-nøgle, live-webhook og live plan-handles er sat, og
+// kæden er bevist ende til ende (sub-0007 og sub-0009 aktiverede med kort gemt).
 //
-// Betaling håndteres derfor 100 % MANUELT indtil videre: Jonas kontakter kunden og
-// sender faktura eller betalingslink selv. Ingen kortløs besked indeholder længere
-// et link hertil (se lib/notify/kortloesTemplates.js i birdly-admin), men adressen
-// kan stadig ligge i en gammel mail — derfor spærres selve ruten, ikke kun linket.
+// ⚠️ DER TRÆKKES IKKE PENGE NÅR HUN GENNEMFØRER. create-subscription-session
+// sætter no_trial=true SAMMEN MED start_date = kundens egen trial_ends_at, så
+// første faktura planlægges til den dato hun allerede havde. Ingen ny prøve,
+// ingen forlængelse, intet træk nu. Fjernes start_date dér, begynder denne side
+// at trække penge med det samme — og migrations-mailen lover det modsatte.
 //
-// ⚠️ SÅDAN ÅBNES DEN IGEN, når Clearhaus er godkendt OG live-nøglerne er sat:
-// gendan `import KortloesBetal` og `return <KortloesBetal code={code} />`. Komponenten
-// og Edge Function'en er urørte og virker. Skift ALDRIG kun denne side tilbage uden
-// samtidig at flytte create-subscription-session fra test- til live-nøgle.
+// ⚠️ SAMME CHECKOUT SOM /start. KortloesBetal bruger WindowSubscription (redirect).
+// Den indlejrede variant blev prøvet live 03-09 og oprettede abonnementer UDEN
+// kort; den må ikke genindføres her uden at være bevist i test-mode først.
 //
-// ⚠️ NOINDEX bevaret. Adressen er en kundes personlige link, præcis som
-// /mine-opgaver/ og /udbud/.
+// ⚠️ NOINDEX. Adressen er en kundes personlige link, præcis som /mine-opgaver/
+// og /udbud/. Den må aldrig i et søgeresultat.
 export const metadata = {
-  title: "Betaling åbner snart | Birdly",
+  title: "Fortsæt med Birdly",
+  description: "Tilføj betaling og fortsæt med at få opgaver, der passer til jer.",
   robots: { index: false, follow: false },
 };
 
-const NAVY = "#1B2733";
-const MUTED = "#6B7785";
-const TEAL = "#1E9E8A";
-
 export default async function Page({ params }) {
-  // Koden læses, men bruges bevidst ikke til et opslag: siden må ikke røbe om et
-  // link er gyldigt, og der er alligevel intet at gøre med svaret.
-  await params;
-
-  return (
-    <main style={{ maxWidth: 620, margin: "0 auto", padding: "24px 18px 64px", fontFamily: "-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" }}>
-      <div style={{ display: "flex", justifyContent: "center", margin: "12px 0 22px" }}>
-        <Link href="/" aria-label="Birdly forside"><Logo /></Link>
-      </div>
-      <div style={{ background: "#fff", border: "1px solid #E6EAEF", borderRadius: 16, padding: "22px 24px", boxShadow: "0 1px 3px rgba(0,0,0,.04)" }}>
-        <h1 style={{ fontSize: 23, lineHeight: 1.3, margin: "0 0 12px", color: NAVY }}>
-          Betaling åbner snart
-        </h1>
-        <p style={{ margin: "0 0 14px", color: MUTED, fontSize: 15.5, lineHeight: 1.6 }}>
-          Vi er ved at lægge sidste hånd på vores betalingsløsning, så du kan ikke
-          tilmelde betaling her endnu.
-        </p>
-        <p style={{ margin: "0 0 14px", color: MUTED, fontSize: 15.5, lineHeight: 1.6 }}>
-          Du skal ikke gøre noget. Vil du gerne fortsætte med Birdly, tager vi
-          personligt fat i dig med det praktiske.
-        </p>
-        <p style={{ margin: "0 0 20px", color: MUTED, fontSize: 15.5, lineHeight: 1.6 }}>
-          Har du spørgsmål, er du altid velkommen til at skrive til os på{" "}
-          <a href="mailto:support@birdly.dk" style={{ color: TEAL, fontWeight: 700, textDecoration: "none" }}>support@birdly.dk</a>.
-          Vi svarer hurtigt.
-        </p>
-        <Link href="/" style={{ display: "inline-block", background: TEAL, color: "#fff", border: "none", borderRadius: 10, padding: "11px 18px", fontSize: 15, fontWeight: 700, textDecoration: "none" }}>
-          Til birdly.dk
-        </Link>
-      </div>
-    </main>
-  );
+  const { code } = await params;
+  return <KortloesBetal code={code} />;
 }
