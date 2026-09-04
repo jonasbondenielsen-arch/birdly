@@ -377,8 +377,16 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
         // en it-virksomhed ville sende hende videre med et kriterium der aldrig
         // matcher hendes arbejde.
         if (foerste && fagValgt.length === 0) setFagValgt([foerste]);
+      } else if (r?.reason === "not_found") {
+        // ⚠️ SIG DET HER, IKKE FØRST PÅ TRIN 4. Serveren afviser et CVR der ikke
+        // findes (gate 1 i signup), og gør vi ikke kunden opmærksom nu, udfylder hun
+        // fire trin til ingen verden nytte. Beskeden er bevidst konkret: "vi kunne
+        // ikke finde firmaet" lyder som vores problem, og så retter ingen tallet.
+        setOpslagFejl("Der findes ingen virksomhed med det CVR-nummer. Tjek tallet en ekstra gang.");
       } else {
-        setOpslagFejl("Vi kunne ikke finde firmaet. Du kan fortsætte alligevel.");
+        // Opslaget fejlede — det er VORES problem, ikke kundens, og serveren lader
+        // hende igennem. Så må teksten heller ikke antyde at hun har tastet forkert.
+        setOpslagFejl("Vi kunne ikke slå CVR op lige nu. Du kan fortsætte alligevel.");
       }
     } catch {
       setOpslagFejl("Vi kunne ikke slå CVR op lige nu. Du kan fortsætte alligevel.");
