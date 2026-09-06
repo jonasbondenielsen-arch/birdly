@@ -102,16 +102,15 @@ export function Vaerdi({ funnelHref, fag = null, valgt = null }) {
         </div>
 
         <div className="sg-vaerdi">
+          {/* ═══════════════ VENSTRE — EKSEMPLET ═══════════════
+              ⚠️ BADGET HEDDER KUN "EKSEMPEL". Det bar før hele labelen
+              ("EKSEMPEL · FAST ERHVERVSRENGØRING"), og et 320px badge ved siden
+              af et 90px badge læses som skævt, selv når de er pixel-identisk
+              placeret. Navnet står nu som kortets første linje, hvor det hører
+              hjemme. Begge badges er nu korte og sammenlignelige. */}
           <div className="sg-vaerdi-boks">
-            {/* ⚠️ MÆRKATET ER IKKE PYNT. Uden det læses beløbet som noget vi har
-                målt eller lover. Det er et realistisk eksempel, ikke data.
-                ⚠️ BEGGE MÆRKATER BRUGER SAMME KLASSE (.sg-badge). De sad før på
-                hver sin regel, og "FAKTISK PRIS" landede et par pixel højere end
-                "EKSEMPEL". Kun farverne må afvige — se .sg-badge i salg.css. */}
-            <span className="sg-badge">{a.badge}</span>
-            {/* Navnet står kun her når badget IKKE allerede bærer det — ellers
-                ville kortet sige "Fast erhvervsrengøring" to gange. */}
-            {a.scenarie.length === 0 && <div className="sg-vaerdi-navn">{a.navn}</div>}
+            <span className="sg-badge">Eksempel</span>
+            <div className="sg-vaerdi-navn">{a.navn}</div>
             {/* Scenariet gør tallet konkret nok til at kunden kan holde det op
                 mod sin egen hverdag. Det står kun på husets standard-eksempel —
                 har hun selv valgt et interval, ville det være vores antagelse
@@ -137,10 +136,18 @@ export function Vaerdi({ funnelHref, fag = null, valgt = null }) {
 
           <div className="sg-vaerdi-vs" aria-hidden="true">mod</div>
 
-          {/* ⚠️ DET MØRKE KORT BAR FØR KUN ÉT TAL og så tomt ud ved siden af
-              venstre kort med scenarie og to beløb. Nu står månedsprisen og
-              selve sammenligningen HER, hvor prisen er — det er dér pointen
-              lander, ikke i en løs linje under kortene. */}
+          {/* ═══════════════ HØJRE — BIRDLY ═══════════════
+              ⚠️ HELE SAMMENLIGNINGEN BOR HER. Kortet bar før kun prisen og så
+              tomt ud ved siden af eksemplet; forholdstallet stod som en løs
+              linje under kortene, hvor det blev læst som en fodnote. Nu er
+              pointen inde i kortet, hvor prisen er — man skal kunne forstå
+              sektionen uden at læse noget under kortene.
+
+              ⚠️ SAMMENLIGNING, IKKE AFKAST. "svarer til ca. 24× Birdlys
+              årspris" beskriver forholdet mellem en kontraktværdi og en
+              abonnementspris. "24× ROI", "24× afkast" eller "Birdly giver 24×"
+              ville sige noget om penge der kommer retur — og det er præcis den
+              påstand vi ikke må fremsætte. Se lib/vaerdiAnker.js. */}
           <div className="sg-vaerdi-boks sg-pris-side">
             <span className="sg-badge sg-badge-lys">Birdly</span>
             <div className="sg-vaerdi-navn">Birdly et helt år</div>
@@ -148,30 +155,26 @@ export function Vaerdi({ funnelHref, fag = null, valgt = null }) {
             <div className="sg-vaerdi-aar">ekskl. moms</div>
             <div className="sg-pris-md">ca. {prMaaned} kr./md.</div>
 
-            {/* ⚠️ SAMMENLIGNING, IKKE AFKAST. "svarer til ca. 24× Birdlys
-                årspris" beskriver forholdet mellem en kontraktværdi og en
-                abonnementspris. "Birdly giver 24×" ville sige noget om penge
-                der kommer retur, og dét må vi ikke — se lib/vaerdiAnker.js. */}
-            {a.forhold && (
-              <p className="sg-pris-payoff">
-                {a.loebende
-                  ? <>Én fast aftale i denne størrelse svarer til <b>{a.forhold.tekst}</b> Birdlys årspris.</>
-                  : <>Et helt års Birdly svarer til <b>{a.andel}</b> af værdien på en opgave i den størrelse.</>}
-              </p>
+            {(a.forhold || a.andel) && (
+              <div className="sg-pris-sammenlign">
+                {a.loebende ? (
+                  <>
+                    <span className="sg-sml-over">Én fast aftale i denne størrelse svarer til</span>
+                    <span className="sg-sml-tal">{a.forhold.tekst}</span>
+                    <span className="sg-sml-under">Birdlys årspris</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="sg-sml-over">Et helt års Birdly svarer til</span>
+                    <span className="sg-sml-tal">{a.andel}</span>
+                    <span className="sg-sml-under">af værdien på en opgave i den størrelse</span>
+                  </>
+                )}
+              </div>
             )}
           </div>
         </div>
 
-        {/* ⚠️ FORHOLDSTALLET STÅR NU INDE I DET MØRKE KORT, ikke også her.
-            Det stod begge steder, og den samme sætning to gange med tyve pixels
-            mellemrum læses som en fejl — ikke som en pointe der bliver
-            understreget. */}
-
-        {/* ⚠️ BEGGE FORBEHOLD ER OBLIGATORISKE OG STÅR LIGE UNDER TALLET.
-            `kilde` siger at beløbet er et eksempel og ikke en måling; `forbehold`
-            siger at vi ikke garanterer en vundet opgave. Uden dem læses
-            forholdet som et løfte om udbytte. Flyt dem aldrig ned under knappen,
-            og gør dem aldrig mindre end her. */}
         {/* ⚠️ KUN DE TO FORBEHOLD HER. Den betingede afslutning ("Vinder I bare
             én relevant opgave…") stod også her, men sammenligningen bor nu inde
             i det mørke kort — og så sagde de to linjer stort set det samme med

@@ -820,18 +820,42 @@
   margin-top: 6px; font-size: 15px; font-weight: 700; color: var(--sky-200);
   font-family: 'Plus Jakarta Sans', sans-serif;
 }
-.sg-pris-payoff {
-  margin-top: 20px; padding-top: 18px; border-top: 1px solid rgba(255,255,255,.14);
-  font-size: 15.5px; line-height: 1.5; color: #cfe0ee;
+/* ⚠️ SAMMENLIGNINGEN ER TRE LINJER, IKKE ÉN SÆTNING. Den stod før som en
+   almindelig linje med tallet i fed, og så var den bare mere brødtekst i et
+   kort der i forvejen var tyndt. Nu bærer tallet sin egen linje mellem en
+   optakt og en efterskrift — man ser "ca. 24×" før man læser noget.
+   ⚠️ TALLET MÅ IKKE VÆRE STØRRE END PRISEN. 4.990 kr. er kortets hovedtal;
+   bliver 24× lige så stort, konkurrerer de to om det samme blik. */
+.sg-pris-sammenlign {
+  margin-top: 22px; padding-top: 20px;
+  border-top: 1px solid rgba(255,255,255,.16);
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
 }
-.sg-pris-payoff b { color: var(--sky); font-weight: 800; font-size: 1.12em; }
+/* 26ch tvang "…denne størrelse / svarer til" til at brække midt i sætningen.
+   34ch giver den plads til én linje på desktop og wrapper stadig pænt på mobil. */
+.sg-sml-over { font-size: 13.5px; line-height: 1.45; color: #a9c0d4; max-width: 34ch; }
+.sg-sml-tal {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: clamp(28px, 3vw, 34px); font-weight: 800;
+  color: var(--sky); letter-spacing: -.03em; line-height: 1.1; margin: 4px 0 2px;
+}
+.sg-sml-under { font-size: 14.5px; font-weight: 700; color: #dce9f4; }
 
-/* Kortene skal have samme højde på desktop; forskellen i indhold udlignes med
-   luft frem for ved at gøre det ene synligt højere. */
-.sg-vaerdi-boks { display: flex; flex-direction: column; justify-content: center; }
+/* ⚠️ flex-start, IKKE center. Med `center` centrerede hvert kort sit eget
+   indhold uafhængigt af naboen, og da det mørke kort har flere linjer, begyndte
+   venstre korts første linje ~35 px lavere end højres. Badges var pixel-justeret,
+   men indholdet under dem var det ikke — og det er dét man ser.
+   Med flex-start starter begge kort ved den samme padding-top, og griddets
+   `stretch` giver dem stadig samme højde. */
+.sg-vaerdi-boks { display: flex; flex-direction: column; justify-content: flex-start; }
+/* Sammenligningen skubbes ned i bunden af det mørke kort, så skillelinjen står
+   samme sted uanset hvor mange linjer der er over den. */
+.sg-pris-sammenlign { margin-top: auto; }
 
 @media (max-width: 560px) {
   .sg-chips { gap: 6px; margin-top: 18px; }
   .sg-chips li { font-size: 12px; padding: 5px 11px; }
-  .sg-pris-payoff { font-size: 14.5px; margin-top: 16px; padding-top: 14px; }
+  .sg-pris-sammenlign { margin-top: 18px; padding-top: 16px; }
+  .sg-sml-tal { font-size: 26px; }
+  .sg-sml-over { font-size: 13px; }
 }
