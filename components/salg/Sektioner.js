@@ -62,17 +62,43 @@ export function GarantiFin({ klasse = "sg-fin" }) {
 
 // ------------------------------------------------------------ 1 · RESULTAT
 
-export function Hero({ funnelHref, overskrift, under, eyebrow = "OPGAVER TIL DANSKE VIRKSOMHEDER" }) {
+// ⚠️ GENKENDELSES-CHIPS, IKKE NAVIGATION. De er ikke links, og de skal ikke
+// klikkes på. Deres eneste job er at en rengørings- eller serviceejer på under
+// tre sekunder ser ord fra sin egen hverdag og tænker "det her er til
+// virksomheder som min" — før hun overhovedet har læst underteksten.
+//
+// ⚠️ ALLE FEM ER TING BIRDLY FAKTISK MATCHER PÅ. De er ikke pyntede kategorier:
+// de ligger under rengørings- og service-fagene i kataloget. Skriver vi et
+// område her som motoren ikke dækker, er chippen et løfte vi ikke kan holde.
+const HERO_CHIPS = ["Rengøring", "Vinduespolering", "Trappevask", "Ejendomsservice", "Erhvervsrengøring"];
+
+export function Hero({
+  funnelHref,
+  overskrift,
+  under,
+  eyebrow = "For rengørings- & servicevirksomheder",
+  chips = HERO_CHIPS,
+}) {
   return (
     <section className="sg-hero">
       <div className="sg-wrap sg-herogrid">
         <div>
           <span className="sg-pill">{eyebrow}</span>
-          {/* ⚠️ H1 BÆRER RESULTATET, IKKE SØGEORDET. Søgeordene ("offentlige
-              opgaver", "SMS") står i title, description og i underteksten lige
-              herunder — så salgs-copy'en ikke koster placeringer. */}
+          {/* ⚠️ H1 LEDER PÅ MÅLGRUPPEN, IKKE PÅ SØGEORDET (06-09-2026).
+              Birdly dækker stadig 20 fag, men den kommercielle prioritet er
+              rengøring og service, og en generisk overskrift tvang netop den
+              målgruppe til selv at oversætte "relevante opgaver" til deres egen
+              hverdag. Søgeordene ("offentlige og private opgaver", "SMS") står
+              stadig i title, description og i underteksten lige herunder.
+              ⚠️ SE NOTEN I RAPPORTEN: på roden (/) er det her et bevidst valg om
+              at snævre H1 ind på en side der også rangerer på brede termer.
+              Skal det rulles tilbage, er det ÉN prop: `overskrift`. */}
           <h1>
-            {overskrift || <>Få flere relevante opgaver.</>}
+            {/* ⚠️ HÅRD MELLEMRUM EFTER BINDESTREGEN. Uden den brækkede linjen
+                efter "rengørings-", og en bindestreg i slutningen af en linje
+                læses som et delt ord — ikke som den korrekte danske
+                sammentrækning "rengørings- og serviceopgaver". */}
+            {overskrift || <>Få flere rengørings-&nbsp;og serviceopgaver.</>}
             <span className="sg-em">Uden selv at lede.</span>
           </h1>
           {/* ⚠️ ÉN SÆTNING, OG DER MÅ IKKE KOMME MERE. Hero'en skal forstås på
@@ -80,12 +106,23 @@ export function Hero({ funnelHref, overskrift, under, eyebrow = "OPGAVER TIL DAN
           <p className="sg-lead">
             {under || (
               <>
-                Birdly finder de offentlige og private opgaver, der passer til jeres
-                virksomhed — og sender dem direkte på SMS og mail.
+                Birdly finder offentlige og private opgaver inden for rengøring og service,
+                der passer til jeres virksomhed — og sender nye match direkte på SMS og mail.
               </>
             )}
           </p>
+
+          {chips?.length > 0 && (
+            <ul className="sg-chips" aria-label="Eksempler på opgavetyper">
+              {chips.map((c) => <li key={c}>{c}</li>)}
+            </ul>
+          )}
+
           <div className="sg-cta-row">
+            {/* ⚠️ CTA'EN BLIVER "FIND OPGAVER NU" — også på en rengørings-hero.
+                Birdly dækker 20 fag, og huset har ÉN primær CTA. En
+                fag-specifik knap ville splitte det genkendelige klik op i lige
+                så mange varianter som vi har fag. */}
             <Cta href={funnelHref} placering="hero" stor />
             <CtaSekundaer href="/sadan-virker-det" placering="hero-sekundaer" />
           </div>

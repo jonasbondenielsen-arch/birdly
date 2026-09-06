@@ -76,12 +76,55 @@ export default function Salgsside({ tal, funnelHref, fag = null }) {
   const b = fag ? getBrancheByFagKey(String(fag)) : null;
   // Ukendt fag ⇒ rengøring, som er den nuværende primære målgruppe.
   const fagNoegle = b ? b.fagKey : "rengoring";
-  const overskrift = b ? <>Få flere opgaver til {b.nounPlural}.</> : null;
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // OVERSKRIFTEN FØLGER ANNONCEN, IKKE OMVENDT.
+  //
+  //   ingen ?fag=        → "Få flere rengørings- og serviceopgaver."
+  //   ?fag=rengoring     → "Få flere rengøringsopgaver."
+  //   ?fag=service       → "Få flere serviceopgaver."
+  //   ?fag=<andet fag>   → "Få flere opgaver til <fagets folk>."
+  //
+  // ⚠️ HVORFOR RENGØRING OG SERVICE HAR HVER SIN. Den generiske overskrift
+  // nævner dem begge, og en rengøringsejer der kommer fra en annonce om
+  // rengøring skal ikke selv skulle plukke sit eget ord ud af en opremsning.
+  // De øvrige 18 fag falder tilbage på nounPlural, som læser naturligt for
+  // dem alle ("til tømrere", "til vognmænd").
+  //
+  // ⚠️ INGEN CLOAKING. Samme side, samme pris, samme produkt, samme
+  // betingelser — kun overskriften, det forvalgte fag og regne-eksemplet
+  // skifter. Er faget ukendt, står den generiske version.
+  // ══════════════════════════════════════════════════════════════════════════
+  const SAERLIGE = {
+    rengoring: {
+      h1: <>Få flere rengøringsopgaver.</>,
+      under: "Birdly finder offentlige og private rengøringsopgaver, der passer til jeres virksomhed — og sender nye match direkte på SMS og mail.",
+      chips: ["Erhvervsrengøring", "Vinduespolering", "Trappevask", "Fast rengøring"],
+      eyebrow: "For rengøringsvirksomheder",
+    },
+    service: {
+      h1: <>Få flere serviceopgaver.</>,
+      under: "Birdly finder offentlige og private serviceopgaver, der passer til jeres virksomhed — og sender nye match direkte på SMS og mail.",
+      chips: ["Ejendomsservice", "Vedligehold", "Serviceaftaler", "Drift og tilsyn"],
+      eyebrow: "For servicevirksomheder",
+    },
+  };
+  const saerlig = b ? SAERLIGE[b.fagKey] : null;
+
+  const overskrift = saerlig ? saerlig.h1 : b ? <>Få flere opgaver til {b.nounPlural}.</> : null;
   // ⚠️ nounPlural, IKKE `arbejde`. Feltet `arbejde` er sat sammen til brødtekst
   // ("tømrer- og snedkerarbejde") og bliver kluntet i en kort sætning.
-  const under = b
-    ? `Birdly finder offentlige og private opgaver til ${b.nounPlural} — og sender dem direkte på SMS og mail.`
-    : null;
+  const under = saerlig
+    ? saerlig.under
+    : b
+      ? `Birdly finder offentlige og private opgaver til ${b.nounPlural} — og sender dem direkte på SMS og mail.`
+      : null;
+  const eyebrow = saerlig ? saerlig.eyebrow : b ? `For ${b.nounPlural}` : undefined;
+  // ⚠️ CHIPS KUN HVOR DE ER SANDE. De fem standard-chips er rengørings- og
+  // serviceområder; på en tømrer- eller VVS-hero ville de være ord fra en anden
+  // branche, og så gør de det modsatte af at skabe genkendelse. Derfor: eget sæt
+  // til rengøring og service, ingen chips til de øvrige fag.
+  const chips = saerlig ? saerlig.chips : b ? [] : undefined;
 
   return (
     // Provideren deler det valgte fag mellem bevis-fanerne (7) og
@@ -90,7 +133,7 @@ export default function Salgsside({ tal, funnelHref, fag = null }) {
       <div className="sg">
         <SalgHeader funnelHref={funnelHref} />
 
-        <Hero funnelHref={funnelHref} overskrift={overskrift} under={under} />
+        <Hero funnelHref={funnelHref} overskrift={overskrift} under={under} eyebrow={eyebrow} chips={chips} />
         <BevisBjaelke tal={tal} />
         <RisikoFjernet funnelHref={funnelHref} />
         <Problemet />

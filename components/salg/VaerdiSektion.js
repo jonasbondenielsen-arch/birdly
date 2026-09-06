@@ -3,8 +3,8 @@
 import { useEffect, useRef } from "react";
 import Cta from "./Cta";
 import { Flueben } from "./Ikoner";
-import { priceText } from "../../lib/pakke";
-import { byggAnker, BETINGET_LINJE } from "../../lib/vaerdiAnker";
+import { PLAN, priceText } from "../../lib/pakke";
+import { byggAnker } from "../../lib/vaerdiAnker";
 import { useFag } from "./FagKontekst";
 import { sporFunnel } from "../../lib/ctaSporing";
 
@@ -49,6 +49,9 @@ export function Vaerdi({ funnelHref, fag = null, valgt = null }) {
   const { fag: fraKontekst } = useFag("rengoring");
   const brugtFag = fag || fraKontekst;
   const a = byggAnker(brugtFag, valgt);
+  // ⚠️ REGNET, IKKE SKREVET: 4.990 / 12 = 415,83 → "ca. 416 kr./md.". Et
+  // håndskrevet tal ville stå forkert dagen efter en prisændring.
+  const prMaaned = Math.round(PLAN.yearly / 12).toLocaleString("da-DK");
 
   // ⚠️ INTERN HÆNDELSE, ingen Meta. Fortæller om ankeret faktisk blev SET —
   // det er sidens stærkeste argument, og vi skal kunne se om folk når ned til det.
@@ -91,7 +94,7 @@ export function Vaerdi({ funnelHref, fag = null, valgt = null }) {
         <div className="sg-midt">
           <span className="sg-kick">Regnestykket</span>
           <h2 className="sg-big">
-            {a.loebende ? "Hvad er én god fast kunde værd?" : "Hvad er én god opgave værd?"}
+            {a.loebende ? "Hvad er én fast kunde værd?" : "Hvad er én opgave værd?"}
           </h2>
           <p className="sg-lead">
             Birdly koster {priceText.yearlyBare} ekskl. moms for et helt år.
@@ -121,7 +124,10 @@ export function Vaerdi({ funnelHref, fag = null, valgt = null }) {
             {a.loebende ? (
               <>
                 <div className="sg-tal">{a.maaned}</div>
-                <div className="sg-vaerdi-lig">=</div>
+                {/* ⚠️ LIGHEDSTEGNET ER DÆMPET MED VILJE. Hierarkiet er
+                    månedsbeløb → årsbeløb; et stort "=" imellem stjal
+                    opmærksomhed fra begge tal. */}
+                <div className="sg-vaerdi-lig" aria-hidden="true">=</div>
                 <div className="sg-vaerdi-aar">{a.aar}</div>
               </>
             ) : (
@@ -131,35 +137,49 @@ export function Vaerdi({ funnelHref, fag = null, valgt = null }) {
 
           <div className="sg-vaerdi-vs" aria-hidden="true">mod</div>
 
+          {/* ⚠️ DET MØRKE KORT BAR FØR KUN ÉT TAL og så tomt ud ved siden af
+              venstre kort med scenarie og to beløb. Nu står månedsprisen og
+              selve sammenligningen HER, hvor prisen er — det er dér pointen
+              lander, ikke i en løs linje under kortene. */}
           <div className="sg-vaerdi-boks sg-pris-side">
-            <span className="sg-badge sg-badge-lys">Faktisk pris</span>
+            <span className="sg-badge sg-badge-lys">Birdly</span>
             <div className="sg-vaerdi-navn">Birdly et helt år</div>
             <div className="sg-tal">{priceText.yearlyBare}</div>
             <div className="sg-vaerdi-aar">ekskl. moms</div>
+            <div className="sg-pris-md">ca. {prMaaned} kr./md.</div>
+
+            {/* ⚠️ SAMMENLIGNING, IKKE AFKAST. "svarer til ca. 24× Birdlys
+                årspris" beskriver forholdet mellem en kontraktværdi og en
+                abonnementspris. "Birdly giver 24×" ville sige noget om penge
+                der kommer retur, og dét må vi ikke — se lib/vaerdiAnker.js. */}
+            {a.forhold && (
+              <p className="sg-pris-payoff">
+                {a.loebende
+                  ? <>Én fast aftale i denne størrelse svarer til <b>{a.forhold.tekst}</b> Birdlys årspris.</>
+                  : <>Et helt års Birdly svarer til <b>{a.andel}</b> af værdien på en opgave i den størrelse.</>}
+              </p>
+            )}
           </div>
         </div>
 
-        {/* ⚠️ FORHOLDSTALLET BESKRIVER TO BELØB, IKKE ET UDBYTTE. "En aftale i
-            den størrelse har en årlig værdi på ca. 24× Birdlys årspris" siger
-            noget om størrelsen på en kontrakt sammenlignet med en
-            abonnementspris. "Birdly giver 24× igen" ville sige noget om penge
-            der kommer retur, og dét må vi ikke. */}
-        {a.forhold && (
-          <p className="sg-anker">
-            {a.loebende
-              ? <>En aftale i den størrelse har en årlig værdi på <b>{a.forhold.tekst}</b> Birdlys årspris.</>
-              : <>Et helt års Birdly svarer til <b>{a.andel}</b> af værdien på en opgave i den størrelse.</>}
-          </p>
-        )}
+        {/* ⚠️ FORHOLDSTALLET STÅR NU INDE I DET MØRKE KORT, ikke også her.
+            Det stod begge steder, og den samme sætning to gange med tyve pixels
+            mellemrum læses som en fejl — ikke som en pointe der bliver
+            understreget. */}
 
         {/* ⚠️ BEGGE FORBEHOLD ER OBLIGATORISKE OG STÅR LIGE UNDER TALLET.
             `kilde` siger at beløbet er et eksempel og ikke en måling; `forbehold`
             siger at vi ikke garanterer en vundet opgave. Uden dem læses
             forholdet som et løfte om udbytte. Flyt dem aldrig ned under knappen,
             og gør dem aldrig mindre end her. */}
+        {/* ⚠️ KUN DE TO FORBEHOLD HER. Den betingede afslutning ("Vinder I bare
+            én relevant opgave…") stod også her, men sammenligningen bor nu inde
+            i det mørke kort — og så sagde de to linjer stort set det samme med
+            tyve pixels mellemrum. Forbeholdene bliver: `kilde` siger at beløbet
+            er et eksempel, `forbehold` at vi ikke garanterer en vundet opgave.
+            Begge er obligatoriske. */}
         {a.kilde && <p className="sg-forbehold">{a.kilde}</p>}
         <p className="sg-forbehold">{a.forbehold}</p>
-        <p className="sg-afslut" style={{ marginTop: 10 }}>{BETINGET_LINJE}</p>
 
         <div className="sg-cta-row" style={{ justifyContent: "center" }}>
           <Cta href={funnelHref} placering="vaerdi" />

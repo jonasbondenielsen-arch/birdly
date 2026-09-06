@@ -786,3 +786,52 @@
   .sg-badge { font-size: 10px; height: 24px; padding: 0 11px; top: -12px; }
   .sg-scenarie li { font-size: 12.5px; }
 }
+
+/* ============================================================================
+   HERO-CHIPS — genkendelse, ikke navigation.
+
+   ⚠️ DE ER IKKE LINKS. Ingen hover-løft, ingen pil, ingen understregning: intet
+   der inviterer til et klik der ikke findes. Deres eneste job er at en
+   rengørings- eller serviceejer ser ord fra sin egen hverdag inden for de
+   første tre sekunder.
+   ============================================================================ */
+.sg-chips {
+  list-style: none; display: flex; flex-wrap: wrap; gap: 8px;
+  margin-top: 22px;
+}
+.sg-chips li {
+  font-size: 13px; font-weight: 600; color: var(--navy-soft);
+  background: #fff; border: 1px solid var(--line);
+  border-radius: 999px; padding: 6px 13px; white-space: nowrap;
+}
+
+/* ------------------------------------------------- værdi-kortenes balance
+   ⚠️ ENS STARTPUNKT I BEGGE KORT. Badget ligger uden for kortet, så indholdet
+   skal have plads til det — ellers begynder venstre korts første linje højere
+   end højres. Samme padding-top på begge, sat ét sted. */
+.sg-vaerdi-boks { padding-top: 30px; }
+
+/* Lighedstegnet er en overgang, ikke et budskab. */
+.sg-vaerdi-lig { font-size: 15px; font-weight: 600; color: var(--navy-soft); margin: 10px 0 4px; }
+
+/* Det mørke kort bar før kun ét tal og så tomt ud ved siden af venstre kort.
+   Månedsprisen og selve sammenligningen bor nu her. */
+.sg-pris-md {
+  margin-top: 6px; font-size: 15px; font-weight: 700; color: var(--sky-200);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+.sg-pris-payoff {
+  margin-top: 20px; padding-top: 18px; border-top: 1px solid rgba(255,255,255,.14);
+  font-size: 15.5px; line-height: 1.5; color: #cfe0ee;
+}
+.sg-pris-payoff b { color: var(--sky); font-weight: 800; font-size: 1.12em; }
+
+/* Kortene skal have samme højde på desktop; forskellen i indhold udlignes med
+   luft frem for ved at gøre det ene synligt højere. */
+.sg-vaerdi-boks { display: flex; flex-direction: column; justify-content: center; }
+
+@media (max-width: 560px) {
+  .sg-chips { gap: 6px; margin-top: 18px; }
+  .sg-chips li { font-size: 12px; padding: 5px 11px; }
+  .sg-pris-payoff { font-size: 14.5px; margin-top: 16px; padding-top: 14px; }
+}
