@@ -365,5 +365,10 @@
   .sg-navcta-2 { padding: 10px 12px; font-size: 13.5px; }
   .sg .sg-slut { padding: 62px 0; }
   .sg-fagpanel { padding: 26px 20px; min-height: 210px; }
+  /* Garanti-overskriften er husets længste sætning ("Får du ingen match inden
+     for 60 dage, betaler du ikke en krone."). Ved 26px fylder den fem linjer på
+     en 390px-skærm og skubber flueben og knap under folden. */
+  .sg-risiko-kort h2 { font-size: 23px; }
+  .sg-anker { font-size: 16.5px; }
   .sg-flow-pil { transform: rotate(90deg); }
 }

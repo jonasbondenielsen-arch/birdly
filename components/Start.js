@@ -6,6 +6,19 @@ import { fetchCatalog, submitSignup, createSubscriptionSession } from "../lib/ca
 import { hentKandidater, visResultat } from "../lib/kandidater";
 import { PLAN, planForInterval, priceText, TRIAL_DAYS } from "../lib/pakke";
 import { sporEnGang } from "../lib/pixel";
+// ⚠️ ATTRIBUTIONEN SENDES MED SIGNUP (06-09-2026, godkendt af Jonas).
+// fangAttribution() har hele tiden kørt i <Maaling> på hver eneste side og lagt
+// UTM'erne i sessionStorage — men KUN /opret-opgave (B2C) læste dem igen. Den
+// betalende B2B-kunde blev derfor oprettet uden en eneste kampagne-oplysning, og
+// spørgsmålet "hvilken annonce købte den her kunde" kunne ikke besvares i basen.
+//
+// ⚠️ REN TILFØJELSE. signup-funktionen har ALLEREDE taget imod feltet siden den
+// blev skrevet (renseAttribution + ATTRIBUTION_NOEGLER i birdly-admin): den
+// hvidlister nøglerne, klipper værdierne til 200 tegn og gemmer intet hvis
+// objektet er tomt. Der er hverken rørt en gate, en pris eller en hændelse — kun
+// et felt der lå ubrugt i den anden ende, som nu bliver udfyldt.
+import { hentAttribution } from "../lib/attribution";
+import { GARANTI, GARANTI_LINK, VAERDI_ANKER } from "../lib/salgTekst";
 // ⚠️ forside.css importeres IKKE. Den er nested under `.birdly-home`, så dens
 // klasser virker alligevel ikke her — og importen ville kun sende hele forsidens
 // CSS med i bundlen uden at gøre noget. start.css bærer det vi bruger.
@@ -277,12 +290,26 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
     new URLSearchParams(window.location.search).get("vis") === "betaling";
   const kortloes = katalog?.kortloes_onboarding === true && !tvingBetaling;
 
+  // ⚠️ MESSAGE-MATCH. Kommer kunden fra en rengørings-annonce (?fag=rengoring),
+  // skal funnelen sige "rengøring" med det samme — ellers bruger hun det første
+  // sekund på at afgøre om hun er landet det rigtige sted.
+  //
+  // ⚠️ LABELEN KOMMER FRA KATALOGET, ikke fra adressen. Vi skriver ALDRIG en
+  // rå ?fag=-værdi ud på skærmen: så kunne hvem som helst sætte vores overskrift
+  // ved at hænge en streng på URL'en. Findes nøglen ikke i kataloget, står den
+  // generiske tekst — samme regel som forvalget selv (se effekten ovenfor).
+  //
+  // ⚠️ lib/branche.js importeres BEVIDST IKKE her. Den bærer alle 20 fags FAQ,
+  // eksempler og brødtekst og ville lægge sig i funnelens klient-bundle for ét
+  // ords skyld. Kataloget er allerede hentet.
   const fagListe = katalog?.fag || [];
   const fagByKey = useMemo(
     () => Object.fromEntries(fagListe.map((f) => [f.key, f])),
     [fagListe]
   );
   const valgtFag = fagByKey[fagValgt[0]] || null;
+  const forvalgtLabel =
+    startFag && fagByKey[startFag] ? fagByKey[startFag].label_da : null;
 
   // ⚠️ "hele_dk" filtreres FRA listen. Den er sin egen række i region_nuts_map, så
   // returnerer kataloget den, ville den stå to gange — én som afkrydsning og én som
@@ -382,7 +409,11 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
         // findes (gate 1 i signup), og gør vi ikke kunden opmærksom nu, udfylder hun
         // fire trin til ingen verden nytte. Beskeden er bevidst konkret: "vi kunne
         // ikke finde firmaet" lyder som vores problem, og så retter ingen tallet.
-        setOpslagFejl("Der findes ingen virksomhed med det CVR-nummer. Tjek tallet en ekstra gang.");
+        // ⚠️ VENLIG, KONKRET OG IKKE SPÆRRENDE. Feltet er stadig åbent, og hun kan
+        // rette og prøve igen med det samme — det er signup der afviser, ikke
+        // denne tekst. "Vi kunne ikke finde firmaet" ville lyde som vores problem,
+        // og så retter ingen tallet.
+        setOpslagFejl("Vi kan ikke finde et firma med det CVR-nummer. Prøv at tjekke tallet en ekstra gang — så er I videre om et øjeblik.");
       } else {
         // Opslaget fejlede — det er VORES problem, ikke kundens, og serveren lader
         // hende igennem. Så må teksten heller ikke antyde at hun har tastet forkert.
@@ -448,6 +479,9 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
           terms_accepted: true,
           cvr_branchekode: branchekode,
           package: planForInterval(interval),
+          // Tomt objekt for organisk trafik — serveren gemmer da ingenting, så
+          // en kunde uden kampagne ser præcis ud som før.
+          attribution: hentAttribution(),
           // Markerer kunden i signup_data. Serveren gemmer den kun når den er sat,
           // og det eneste den kan udløse er en varslingsmail og en lukning ved
           // prøveudløb — aldrig adgang, aldrig penge, aldrig en gratis periode.
@@ -617,6 +651,18 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
           <div className="st-ic">✓</div>
           <h1>Jeres profil er klar.</h1>
           <p>Vi holder øje fra nu af. I får en SMS og en mail, så snart der er en opgave der passer til jer.</p>
+          {/* ⚠️ HVAD DER SKER MED PENGENE — SAGT HØJT, MEN UDEN EN DATO.
+              Den nye kunde har lige registreret et kort og skal kunne se sort på
+              hvidt at der ikke er trukket noget. Vi skriver derimod ALDRIG en
+              konkret trækdato her: kvitteringen betyder "Reepay sagde ja til
+              kortet", ikke "abonnementet kører" — det afgør webhooken. En dato
+              regnet i browseren ville være et gæt, og et gæt om en betaling er
+              det værste sted at gætte. */}
+          <p className="st-kvit-fin">
+            Du har betalt <b>0 kr. i dag</b>. Første betaling sker efter de {TRIAL_DAYS} gratis
+            dage, og vi minder dig 3 dage før. Vil du ikke fortsætte, siger du op inden — så
+            trækkes der ingenting.
+          </p>
         </div>
       </main>
     );
@@ -629,6 +675,26 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
        fulde bredde; de øvrige trin er urørte. */
     <main className={"st-wrap" + (trin === 5 && !kortloes ? " st-wrap-bred" : "")}>
       <div className="st-top"><Logo height={30} /></div>
+
+      {/* ⚠️ LØFTET SKAL STÅ FØR SPØRGSMÅLENE, ikke først ved kortet. En funnel der
+          beder om CVR som det første, uden at gentage hvad man er i gang med, taber
+          folk på trin 1 — de har lige forladt en side der lovede 14 dage gratis, og
+          her stod pludselig kun et tomt felt. Striben er ren tekst, står på hvert
+          trin op til betalingen, og gentager præcis det samme som forsiden og
+          checkouten siger. Ingen nedtælling, ingen knaphed.
+          ⚠️ IKKE PÅ TRIN 5: dér står det samme i checkoutens egen underoverskrift,
+          og to steder ville se ud som to forskellige tilbud. */}
+      {trin < 5 && (
+        <p className="st-loefte">
+          {forvalgtLabel
+            /* ⚠️ "opgaver inden for X", IKKE "X-opgaver". Katalogets labels er
+               sammensatte ("Tømrer/snedker", "VVS & blikkenslager", "Service &
+               vedligehold"), og en bindestreg bagpå gav "vvs & blikkenslager-opgaver".
+               Den her form læser naturligt for alle 20 fag uden en eneste særregel. */
+            ? <>Vi finder opgaver inden for <b>{forvalgtLabel.toLowerCase()}</b> til jer · {TRIAL_DAYS} dage gratis · 0 kr. i dag</>
+            : <>{TRIAL_DAYS} dage gratis · 0 kr. i dag · ingen binding</>}
+        </p>
+      )}
 
       <div className="st-bar" aria-label={`Trin ${trin} af ${ANTAL_TRIN}`}>
         <i style={{ width: `${(trin / ANTAL_TRIN) * 100}%` }} />
@@ -644,7 +710,14 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
       {trin === 1 && (
         <div className="st-kort">
           <h1>Hvad er jeres CVR-nummer?</h1>
-          <p className="st-hj">Så henter vi resten selv.</p>
+          {/* ⚠️ SIG HVORFOR VI SPØRGER. "Så henter vi resten selv" forklarede hvad
+              vi gør, ikke hvad hun får ud af det. Et CVR-felt som allerførste
+              spørgsmål føles som en kreditvurdering; grunden gør det til
+              opsætning. Selve opslaget og gaten bag er urørt. */}
+          <p className="st-hj">
+            Vi slår jeres virksomhed op, så vi kun sender opgaver, der er relevante for
+            jer. Det tager under to minutter at sætte op.
+          </p>
           <label className="st-lab" htmlFor="cvr">CVR-nummer</label>
           <input
             id="cvr" className="st-felt" inputMode="numeric" autoComplete="off" maxLength={11}
@@ -656,7 +729,9 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
           {slaarOp && <p className="st-hj">Slår op…</p>}
           {firma && (
             <div className="st-hit">
-              ✓ <b>{firma}</b>
+              {/* "Fundet:" frem for et bart flueben — bekræftelsen skal læses som
+                  en hilsen, ikke som en valideringsmarkering. */}
+              ✓ Fundet: <b>{firma}</b>
               {/* ⚠️ KUN når CVR-opslaget FAKTISK gættede. Linjen hang før på valgtFag,
                   altså på ethvert valgt fag — også et der kom fra ?fag= i adressen.
                   Resultatet var at funnelen påstod "ser ud til at være Entreprenør"
@@ -682,7 +757,7 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
       {trin === 2 && (
         <div className="st-kort">
           <h1>Hvad laver I, og hvor?</h1>
-          <p className="st-hj">Det er det, vi holder øje efter.</p>
+          <p className="st-hj">Det er det, vi holder øje efter. I kan altid ændre det bagefter.</p>
 
           {/* ⚠️ FLERE BRANCHER SKAL VÆRE SYNLIGT MULIGT. Dropdownen alene fik det til
               at ligne et enten-eller; en entreprenør der også laver kloak kunne ikke
@@ -783,6 +858,19 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
         <div className="st-kort">
           <h1>Hvad laver I helt præcis?</h1>
           <p className="st-hj">Kryds det fra I ikke laver. Så slipper I for beskeder om det.</p>
+          {/* ⚠️ ÆGTE TAL, IKKE ET SALGSLØFTE. omraader.length er antallet af
+              arbejdsområder fagets kodesæt faktisk indeholder, og regionResume er
+              kundens eget valg fra trin 2 — begge læses af state, ingen af dem er
+              gættet. Linjen bekræfter at der SKER noget mellem to spørgsmål; den
+              lover ikke at der findes opgaver. Det tal kommer på næste trin, og
+              det kommer fra matchmotoren. */}
+          {omraader.length > 0 && (
+            <p className="st-fremdrift">
+              Birdly holder øje med <b>{omraader.length}</b>{" "}
+              {omraader.length === 1 ? "type opgave" : "typer opgaver"} i{" "}
+              <b>{regionResume || "jeres område"}</b>.
+            </p>
+          )}
 
           {/* ⚠️ BREDDE ØVERST OG ALDRIG FOLDET. Det er den beslutning der flytter
               mest: med "alle" lægges fagets brede kode på, og den alene rammer 79
@@ -907,6 +995,16 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
                 </>
               )}
 
+              {/* ⚠️ ANGSTEN FJERNES FØR FELTERNE, ikke efter. Her beder vi om navn,
+                  mail og mobilnummer — det er første gang kunden afgiver noget
+                  personligt, og det er dér tvivlen "koster det her noget nu?"
+                  opstår. Sætningen står derfor OVER felterne. Den lover intet nyt:
+                  0 kr. i dag og ingen binding er præcis det checkouten siger to
+                  klik senere. */}
+              <p className="st-tryghed">
+                {TRIAL_DAYS} dage gratis · <b>0 kr. i dag</b> · ingen binding · opsig gratis inden
+              </p>
+
               <label className="st-lab" htmlFor="navn">Navn</label>
               <input id="navn" className="st-felt" value={navn} onChange={(e) => setNavn(e.target.value)} autoComplete="name" />
 
@@ -1024,8 +1122,15 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
                 // ⚠️ BART BELØB HER, ikke priceText. priceText.monthly ER "499 kr./md."
                 // — sat sammen med enheden nedenfor blev der "499 kr./md. /md. ekskl.
                 // moms" på skærmen. Tallet kommer stadig fra pakke.js, aldrig fra hånden.
+                // ⚠️ NOTEN PÅ ÅRSKORTET SIGER NU HVAD BESPARELSEN ER, ikke bare at
+                // den findes. "spar ~17 %" er en procent man skal regne på; "betal
+                // for 10 mdr. — få 12" er det samme tal som en sætning man kan
+                // forstå på et halvt sekund. Det er bogstaveligt sandt: 4.990 ÷ 499
+                // er præcis 10. Månedsprisen ved årsbetaling regnes af PLAN, aldrig
+                // skrevet i hånden.
                 ["monthly", "Måned", `${PLAN.monthly.toLocaleString("da-DK")} kr.`, "/md. ekskl. moms", "ingen binding"],
-                ["yearly", "År", `${PLAN.yearly.toLocaleString("da-DK")} kr.`, "/år ekskl. moms", priceText.saveShort],
+                ["yearly", "År", `${PLAN.yearly.toLocaleString("da-DK")} kr.`, "/år ekskl. moms",
+                  `betal for 10 mdr. — få 12 · ca. ${Math.round(PLAN.yearly / 12).toLocaleString("da-DK")} kr./md.`],
               ].map(([k, l, beloeb, enhed, note]) => (
                 <button
                   key={k}
@@ -1082,8 +1187,13 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
 
             {!udenProeve && (
               <div className="ck-reassure">
+                {/* ⚠️ FØRSTE TO SÆTNINGER ER UÆNDREDE. De skal stemme med
+                    /checkout-forhaandsvisning, som Clearhaus har fået forelagt.
+                    Kun den sidste er ny, og den påstår intet nyt: at man kan
+                    opsige inden prøven udløber uden at betale, følger direkte af
+                    "0 kr. i dag" og af abonnementsbetingelserne. */}
                 <b>0 kr. trækkes i dag.</b> Første betaling sker efter prøveperioden —
-                vi minder dig 3 dage før.
+                vi minder dig 3 dage før. Du kan sige op gratis inden.
               </div>
             )}
 
@@ -1162,13 +1272,29 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
                 aftaletekst er ikke bare uryddeligt — det er noget kunden kan
                 holde os op på. Derfor står forbeholdet kort, og linket fører til
                 den fulde ordlyd. */}
+            {/* ⚠️ VÆRDI-ANKERET ER BETINGET OG STÅR ALENE. "kan betale … mange
+                gange hjem" — aldrig "du tjener pengene hjem", aldrig et beløb,
+                aldrig et løfte om at vinde. Sætningen kommer fra lib/salgTekst.js,
+                samme kilde som forsiden og priskortene, så den ikke kan blive
+                skærpet ét sted uden at nogen opdager det. */}
+            <div className="ck-card ck-anker">
+              <p>{VAERDI_ANKER}</p>
+            </div>
+
+            {/* ⚠️ GARANTIEN LÆSES NU FRA lib/salgTekst.js. Teksten er ORDRET den
+                samme som før — det var netop DENNE formulering (60 dage + "inden
+                for de kriterier du selv vælger" + link til §3.3) der blev valgt
+                som husets ene rigtige, og resten af sitet er rettet ind efter
+                den. At den nu kommer fra en konstant betyder at en fremtidig
+                ændring rammer alle steder på én gang, i stedet for at efterlade
+                checkouten med den gamle. */}
             <div className="ck-card ck-garanti">
-              <h3><span className="ck-ic">✅</span> Matchgaranti</h3>
-              <p>Får du ingen match inden for 60 dage, betaler du ikke en krone.</p>
+              <h3><span className="ck-ic">✅</span> {GARANTI.kort}</h3>
+              <p>{GARANTI.overskrift}</p>
               <p className="ck-garanti-fin">
-                Gælder opgaver inden for de kriterier, du selv vælger.{" "}
-                <a href="/handelsbetingelser#matchgaranti" target="_blank" rel="noreferrer">
-                  Se betingelserne
+                {GARANTI.forbehold}{" "}
+                <a href={GARANTI_LINK} target="_blank" rel="noreferrer">
+                  {GARANTI.linkTekst}
                 </a>
               </p>
             </div>

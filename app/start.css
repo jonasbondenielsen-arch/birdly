@@ -298,3 +298,56 @@ select.st-felt{appearance:none;background-image:url("data:image/svg+xml;utf8,<sv
    baggrund, smaat nok til ikke at konkurrere med selve loeftet. */
 .ck-garanti-fin{font-size:12px;color:#cdf1ea !important;margin-top:8px}
 .ck-garanti-fin a{color:#fff;text-decoration:underline}
+
+/* ============================================================================
+   FUNNELENS SALGS-COPY (06-09-2026) — fire nye tekstelementer, ingen nyt layout.
+
+   ⚠️ INGEN NYE FARVER OG INGEN NY GEOMETRI. Alt herunder bruger de tokens der
+   allerede står i globals.css og de samme radier og afstande som resten af
+   start.css. Trin-strukturen, kortene, knapperne og betalingsvinduet er
+   uberørte — det her er tekst der har fået et sted at stå.
+   ============================================================================ */
+
+/* Løfte-striben over progress-baren (trin 1-4). Dæmpet med vilje: den skal
+   berolige i øjenkrogen, ikke konkurrere med trinnets overskrift. */
+.st-loefte{
+  margin:0 0 12px;font-size:13px;line-height:1.5;color:var(--navy-soft);
+  background:var(--sky-soft);border:1px solid var(--sky-200);border-radius:999px;
+  padding:8px 14px;text-align:center
+}
+.st-loefte b{color:var(--navy);font-weight:700}
+
+/* "Birdly holder øje med X typer opgaver i Y" — bekræftelsen af fremdrift på
+   trin 3. Teal venstrekant, så den læses som et svar fra systemet og ikke som
+   endnu en hjælpetekst. */
+.st-fremdrift{
+  margin-top:14px;padding:11px 14px;border-left:3px solid var(--teal);
+  background:var(--grey);border-radius:0 12px 12px 0;
+  font-size:14.5px;line-height:1.5;color:var(--navy)
+}
+.st-fremdrift b{font-weight:700}
+
+/* Trygheds-linjen over kontaktfelterne på trin 4. */
+.st-tryghed{
+  margin:4px 0 18px;font-size:13.5px;line-height:1.5;color:var(--navy-soft);
+  text-align:center
+}
+.st-tryghed b{color:var(--navy);font-weight:700}
+
+/* Betalings-afsnittet på kvitteringen. Mindre end brødteksten over den — den
+   skal kunne findes, ikke være det første øjet lander på efter "profil er klar". */
+.st-kvit-fin{
+  margin-top:16px;padding-top:16px;border-top:1px solid var(--line);
+  font-size:13.5px;line-height:1.6;color:var(--navy-soft)
+}
+.st-kvit-fin b{color:var(--navy);font-weight:700}
+
+/* Værdi-ankeret i checkoutens højre kolonne. Bevidst det roligste kort i
+   spalten: garantien lige under skal stadig være det der springer i øjnene. */
+.ck-anker{background:#f7f9fc}
+.ck-anker p{font-style:italic;color:#42576b}
+
+@media (max-width:560px){
+  .st-loefte{font-size:12.5px;padding:7px 12px}
+  .st-fremdrift{font-size:13.5px}
+}

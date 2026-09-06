@@ -326,7 +326,9 @@ export function Vaerdi({ funnelHref }) {
         <div className="sg-midt">
           <span className="sg-kick">Regnestykket</span>
           <h2 className="sg-big">Hvad er én god opgave værd for jer?</h2>
-          <p className="sg-lead">Birdly koster {priceText.yearlyLong} ekskl. moms for et helt år.</p>
+          {/* ⚠️ yearlyBare, ikke yearlyLong: "4.990 kr. om året … for et helt år"
+              sagde det samme to gange i én sætning. */}
+          <p className="sg-lead">Birdly koster {priceText.yearlyBare} ekskl. moms for et helt år.</p>
         </div>
 
         <div className="sg-vaerdi">
@@ -337,7 +339,7 @@ export function Vaerdi({ funnelHref }) {
           <div className="sg-vaerdi-vs" aria-hidden="true">mod</div>
           <div className="sg-vaerdi-boks sg-pris-side">
             {/* Beløbet fra pakke.js, aldrig skrevet i hånden. */}
-            <div className="sg-tal">{priceText.yearly}</div>
+            <div className="sg-tal">{priceText.yearlyBare}</div>
             <small>ekskl. moms — for hele året</small>
           </div>
         </div>

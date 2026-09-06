@@ -14,7 +14,7 @@ import OpgaveTaeller from "./OpgaveTaeller";
 import SalgHeader from "./salg/SalgHeader";
 import FagBevis from "./salg/FagBevis";
 import {
-  Hero, BevisBjaelke, RisikoFjernet, Problemet, Motoren, SmsDemo,
+  Hero, BevisBjaelke, RisikoFjernet, Problemet, Motoren,
   Vaerdi, Kundebevis, IkkePortal, Priser, SlutCta, EfterspoergselsLink,
 } from "./salg/Sektioner";
 import "../app/forside.css";
@@ -245,7 +245,12 @@ export default function Forside({ opgaveTal, funnelHref = "/kom-i-gang" }) {
       <Problemet />
       <Motoren funnelHref={funnelHref} />
       <FagBevis funnelHref={funnelHref} seneste={opgaveTal?.seneste || []} />
-      <SmsDemo />
+      {/* ⚠️ <SmsDemo /> STÅR IKKE HER, OG DET ER MED VILJE. Roden har allerede
+          "Beskeden du får — Kort og godt" nede i SEO-laget, med præcis de samme
+          fire punkter (resumé, frist, link, bud-skabelon) og et mail-kort ved
+          siden af. To sektioner der siger det samme med de samme fire linjer på
+          én side er dårlig læsning og unødig intern dublet. Salgssiden og
+          /sadan-virker-det HAR den — de har ikke SEO-halen. */}
       <Vaerdi funnelHref={funnelHref} />
       <Kundebevis />
       <IkkePortal />
