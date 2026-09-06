@@ -19,9 +19,13 @@
 .st-wrap .btn-ghost{background:#fff;color:var(--navy);padding:15px 24px;border:1.5px solid var(--line)}
 .st-wrap .btn:disabled{opacity:.6;cursor:default;box-shadow:none}
 .st-wrap{max-width:520px;margin:0 auto;padding:22px 18px 72px}
-.st-top{display:flex;justify-content:center;margin-bottom:22px}
+/* ⚠️ ERSTATTET NEDERST I FILEN. Logoet stod centreret alene; nu er der også
+   en vej tilbage til salgssiden. Se .st-top i funnel-afsnittet. */
 
-/* fremdrift — den er hele grunden til at flowet føles kort */
+/* ⚠️ .st-bar og .st-trin ER IKKE LÆNGERE I BRUG (06-09-2026). Fremdriften
+   vises nu som fire navngivne etaper — se .st-etaper nederst i filen. Reglerne
+   bliver stående, fordi de er billige og gør en tilbagerulning til ét trin.
+   fremdrift — den er hele grunden til at flowet føles kort */
 .st-bar{height:4px;background:var(--line);border-radius:999px;overflow:hidden}
 .st-bar i{display:block;height:100%;background:var(--teal);transition:width .35s ease}
 .st-trin{margin:9px 0 18px;font-size:13px;font-weight:700;color:var(--navy-soft);letter-spacing:.02em}
@@ -350,4 +354,236 @@ select.st-felt{appearance:none;background-image:url("data:image/svg+xml;utf8,<sv
 @media (max-width:560px){
   .st-loefte{font-size:12.5px;padding:7px 12px}
   .st-fremdrift{font-size:13.5px}
+}
+
+/* ============================================================================
+   FUNNELENS NYE SKÆRME (06-09-2026)
+
+   ⚠️ INGEN NYE FARVER. Alt herunder bruger tokens fra globals.css:
+   --navy #0D1B2A · --navy-soft #5A6678 · --sky #2EB7FF · --sky-soft #EAF6FF
+   · --sky-200 #BFE6FF · --teal #00B3A6 · --grey #F2F4F7 · --line #E4E9F0.
+
+   ⚠️ SAMME DESIGNSYSTEM SOM FORSIDEN, IKKE SAMME SIDESTRUKTUR. Kort, knapper,
+   radier og typografi er husets — men funnelen har ét spørgsmål ad gangen,
+   ingen menu og ingen sektioner i bredden. Genbrug aldrig en forsidesektion her.
+   ============================================================================ */
+
+/* ---------------------------------------------------------------- topbjælke
+   Logo til venstre, én vej ud til højre. Se noten ved FunnelTop i Start.js. */
+.st-top{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px}
+.st-tilbage-link{font-size:13.5px;color:var(--navy-soft);text-decoration:none;white-space:nowrap}
+.st-tilbage-link:hover{color:var(--navy);text-decoration:underline}
+
+/* ------------------------------------------------------------- fire etaper
+   ⚠️ ERSTATTER "Trin 1 af 5 · CVR". Et tælleværk fortæller kunden hvor lang
+   formularen er; en etape fortæller hende hvad hun er i gang med. */
+.st-etaper{display:flex;align-items:center;gap:6px;list-style:none;margin:0 0 22px;padding:0}
+.st-etaper li{flex:1 1 0;display:flex;align-items:center;gap:8px;min-width:0}
+.st-etape-prik{
+  flex:0 0 22px;width:22px;height:22px;border-radius:50%;
+  display:inline-flex;align-items:center;justify-content:center;
+  font-family:'Plus Jakarta Sans',sans-serif;font-size:11.5px;font-weight:800;
+  background:var(--line);color:var(--navy-soft)
+}
+.st-etape-navn{font-size:12.5px;font-weight:600;color:var(--navy-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.st-etaper li.nu .st-etape-prik{background:var(--teal);color:#fff}
+.st-etaper li.nu .st-etape-navn{color:var(--navy);font-weight:700}
+.st-etaper li.gjort .st-etape-prik{background:var(--sky-soft);color:var(--teal);border:1px solid var(--sky-200)}
+
+/* --------------------------------------------------------- skærm 1: firma */
+.st-firmakort{
+  margin-top:16px;background:var(--sky-soft);border:1px solid var(--sky-200);
+  border-radius:12px;padding:16px 18px;display:grid;gap:4px
+}
+.st-firmakort b{font-family:'Plus Jakarta Sans',sans-serif;font-size:17px;color:var(--navy)}
+.st-firmakort span{font-size:14px;color:var(--navy-soft);line-height:1.45}
+.st-firmakort-tom{background:var(--grey);border-color:var(--line)}
+
+.st-under-knap{margin-top:12px;text-align:center;font-size:13px;color:var(--navy-soft)}
+
+/* ------------------------------------------- skærm 2 og 5: store valgkort
+   ⚠️ STORE TRYKFLADER. Meta-trafikken er mobil, og et valgkort man rammer ved
+   siden af koster et skridt i en funnel hvor hvert skridt tæller. */
+.st-valgkort{display:grid;gap:10px;margin-top:18px}
+.st-valgkort-2{grid-template-columns:1fr 1fr}
+.st-valgkort-item{
+  text-align:left;background:#fff;border:1.5px solid var(--line);border-radius:14px;
+  padding:16px 18px;cursor:pointer;display:grid;gap:4px;
+  transition:border-color .15s,background .15s
+}
+.st-valgkort-item b{font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;font-weight:700;color:var(--navy)}
+.st-valgkort-item i{font-style:normal;font-size:13.5px;color:var(--navy-soft);line-height:1.45}
+.st-valgkort-item:hover{border-color:var(--sky-200)}
+.st-valgkort-item.on{border-color:var(--teal);background:#f3fcfb}
+.st-valgkort-item:focus-visible{outline:3px solid var(--sky-200);outline-offset:2px}
+
+/* Kontekstsvaret efter et valg — én sætning, aldrig et afsnit. */
+.st-svar{
+  margin-top:14px;padding:13px 16px;border-left:3px solid var(--teal);
+  background:var(--grey);border-radius:0 12px 12px 0;
+  font-size:14.5px;line-height:1.5;color:var(--navy)
+}
+
+/* Oplysningsboksen om offentlige + private opgaver. Se noten i Start.js: det er
+   oplysningspligt, ikke et valg. */
+.st-info{margin-top:20px;background:var(--sky-soft);border:1px solid var(--sky-200);border-radius:12px;padding:14px 16px}
+.st-info b{display:block;font-family:'Plus Jakarta Sans',sans-serif;font-size:14.5px;color:var(--navy);margin-bottom:5px}
+.st-info p{font-size:13.5px;line-height:1.55;color:var(--navy-soft)}
+
+/* §3.5-advarslen ved et snævert beløbsloft. Koral, fordi den er en undtagelse
+   kunden skal se — ikke en fejl. */
+.st-advarsel{
+  margin-top:14px;padding:12px 15px;border-radius:12px;
+  background:#fff5f5;border:1px solid rgba(255,107,107,.35);
+  font-size:13.5px;line-height:1.55;color:var(--navy)
+}
+.st-advarsel a{color:var(--coral);font-weight:600;text-decoration:underline}
+
+/* ------------------------------------------------------------ skærm 6: scan */
+.st-scan{text-align:center;padding-top:40px;padding-bottom:40px}
+.st-scan-ring{
+  width:52px;height:52px;margin:0 auto 20px;border-radius:50%;
+  border:3px solid var(--sky-soft);border-top-color:var(--teal);
+  animation:stSnur .9s linear infinite
+}
+@keyframes stSnur{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.st-scan-ring{animation:none;border-top-color:var(--sky-200)}}
+.st-scan-liste{list-style:none;margin:22px auto 0;display:grid;gap:9px;max-width:320px;text-align:left}
+.st-scan-liste li{display:flex;gap:10px;font-size:15px;color:var(--navy)}
+.st-scan-liste span{color:var(--teal);font-weight:800}
+
+/* -------------------------------------------------------- skærm 6: resultat */
+.st-kontekst{
+  margin-top:8px;font-size:14px;font-weight:700;color:var(--teal);
+  text-transform:uppercase;letter-spacing:.06em
+}
+.st-bevis-tekst{margin-top:20px;font-size:15.5px;line-height:1.6;color:var(--navy-soft)}
+
+/* ⚠️ ÆGTE OPGAVER. Kortene kommer fra samme kandidatsæt som tallet — se
+   components/salg/OpgaveKort.js. Der er ingen pladsholdere. */
+.st-opgaver{display:grid;gap:12px;margin-top:20px}
+.st-opgaver .sg-opgave{box-shadow:none}
+
+/* ------------------------------------------------- skærm 7: værdi-ankeret */
+.st-anker{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:stretch;margin-top:20px}
+.st-anker-boks{
+  position:relative;background:#fff;border:1px solid var(--line);border-radius:14px;
+  padding:24px 16px 18px;text-align:center
+}
+.st-anker-navn{font-size:13px;font-weight:700;color:var(--navy-soft);font-family:'Plus Jakarta Sans',sans-serif;margin-bottom:8px}
+.st-anker-tal{font-family:'Plus Jakarta Sans',sans-serif;font-size:clamp(22px,6vw,30px);font-weight:800;color:var(--teal);letter-spacing:-.03em;line-height:1.1}
+.st-anker-lig{font-size:16px;font-weight:700;color:var(--navy-soft);margin:6px 0 2px}
+.st-anker-aar{font-size:15px;font-weight:700;color:var(--navy)}
+.st-anker-vs{display:flex;align-items:center;font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:14px;color:var(--navy-soft)}
+.st-anker-pris{background:var(--navy);border-color:var(--navy)}
+.st-anker-pris .st-anker-tal,.st-anker-pris .st-anker-aar{color:#fff}
+.st-anker-pris .st-anker-navn{color:var(--sky-200)}
+
+/* ⚠️ "EKSEMPEL"-MÆRKATET SKAL KUNNE LÆSES UDEN AT MAN LEDER. Det er det der
+   skiller et regneeksempel fra en påstand om hvad kunden får. */
+.st-maerkat{
+  position:absolute;top:-10px;left:50%;transform:translateX(-50%);
+  background:var(--sky-soft);color:var(--navy);border:1px solid var(--sky-200);
+  font-size:10px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;
+  padding:3px 10px;border-radius:999px;font-family:'Plus Jakarta Sans',sans-serif;white-space:nowrap
+}
+.st-maerkat-lys{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.3);color:#fff}
+
+.st-anker-linje{margin-top:18px;font-size:17px;line-height:1.5;color:var(--navy);text-align:center}
+.st-anker-linje b{font-weight:800;color:var(--teal)}
+
+/* ⚠️ FORBEHOLDET ER OBLIGATORISK OG STÅR LIGE UNDER TALLET. Uden det læses
+   forholdet som et løfte om udbytte. Se lib/vaerdiAnker.js. */
+.st-forbehold{margin-top:10px;font-size:13.5px;line-height:1.55;color:var(--navy-soft);text-align:center}
+
+/* ------------------------------------------------- skærm 7: opsummeringen */
+.st-opsum{margin-top:26px;background:var(--grey);border-radius:14px;padding:18px 20px}
+.st-opsum h2{font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:800;color:var(--navy);margin-bottom:12px}
+.st-opsum dl{display:grid;gap:8px}
+.st-opsum dl > div{display:flex;justify-content:space-between;gap:14px;font-size:14px}
+.st-opsum dt{color:var(--navy-soft)}
+.st-opsum dd{font-weight:700;color:var(--navy);text-align:right}
+.st-opsum-fin{margin-top:12px;font-size:13.5px;color:var(--navy-soft)}
+
+/* ---------------------------------------------------- skærm 7: risikoboksen */
+.st-risiko{margin-top:20px;background:var(--navy);border-radius:14px;padding:22px 20px;color:#fff;text-align:center}
+.st-risiko-kick{font-size:11.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--sky)}
+.st-risiko-tal{font-family:'Plus Jakarta Sans',sans-serif;font-size:34px;font-weight:800;letter-spacing:-.03em;margin:6px 0 14px}
+.st-risiko ul{list-style:none;display:grid;gap:7px;text-align:left;max-width:250px;margin:0 auto}
+.st-risiko li{display:flex;gap:9px;font-size:14.5px;color:#dbe7f2}
+.st-risiko li span{color:var(--teal);font-weight:800}
+.st-risiko-fin{margin-top:14px;font-size:12px;line-height:1.55;color:#9fb6cc}
+.st-risiko-fin a{color:#fff;text-decoration:underline}
+
+/* ------------------------------------------------------- skærm 8: planvalg
+   ⚠️ ÅRET ER HOVEDTILBUDDET, MÅNEDEN ER STADIG SYNLIG. Ingen mørke mønstre:
+   månedsvalget er en almindelig knap med prisen skrevet på. */
+.st-plan-hero{
+  position:relative;margin-top:20px;background:#fff;border:2px solid var(--teal);
+  border-radius:16px;padding:26px 22px 22px;box-shadow:var(--shadow)
+}
+.st-plan-badge{
+  position:absolute;top:-11px;left:50%;transform:translateX(-50%);
+  background:var(--teal);color:#fff;font-size:11px;font-weight:800;letter-spacing:.09em;
+  text-transform:uppercase;padding:5px 13px;border-radius:999px;
+  font-family:'Plus Jakarta Sans',sans-serif;white-space:nowrap
+}
+.st-plan-navn{font-size:14px;font-weight:700;color:var(--navy-soft);font-family:'Plus Jakarta Sans',sans-serif}
+.st-plan-pris{font-family:'Plus Jakarta Sans',sans-serif;font-size:36px;font-weight:800;color:var(--navy);letter-spacing:-.03em;line-height:1.1;margin-top:4px}
+.st-plan-under{font-size:14px;color:var(--navy-soft);margin-top:2px}
+.st-plan-spar{margin-top:12px;font-size:14.5px;font-weight:700;color:var(--teal);line-height:1.45}
+.st-plan-liste{list-style:none;display:grid;gap:8px;margin-top:16px}
+.st-plan-liste li{display:flex;gap:9px;font-size:14.5px;color:var(--navy)}
+.st-plan-liste li span{color:var(--teal);font-weight:800}
+
+.st-maanedsvalg{margin-top:16px;text-align:center}
+.st-maanedsvalg span{display:block;font-size:14px;color:var(--navy-soft);margin-bottom:8px}
+.st-maanedsknap{
+  width:100%;background:#fff;border:1.5px solid var(--line);border-radius:12px;
+  padding:13px 16px;font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;
+  font-weight:700;color:var(--navy);cursor:pointer;transition:border-color .15s
+}
+.st-maanedsknap:hover{border-color:var(--sky-200)}
+.st-maanedsknap.on{border-color:var(--teal);background:#f3fcfb;color:var(--teal)}
+
+/* ---------------------------------------------------- skærm 9: aktivering */
+.st-aktiv-sms{
+  margin:20px auto 0;max-width:280px;background:var(--sky-soft);
+  border:1px solid var(--sky-200);border-radius:14px;padding:14px 16px;text-align:left
+}
+.st-aktiv-sms-hd{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:15px;color:var(--navy);margin-bottom:6px}
+.st-aktiv-sms-krop{font-size:13.5px;line-height:1.55;color:var(--navy)}
+.st-aktiv-lnk{color:var(--sky);font-weight:600}
+.st-aktiv-sms-fin{margin-top:8px;font-size:11px;color:var(--navy-soft)}
+
+/* ============================================================================
+   BREDDE OG SKALA
+
+   ⚠️ 520px ER FOR SMALT TIL SKÆRM 6-8. Resultatkortene, værdi-ankeret og
+   opsummeringen har tre kolonner og bliver klemt. De tre skærme får derfor mere
+   plads, mens spørgsmålsskærmene bliver ved med at være smalle — en formular
+   der er 900px bred læses dårligere, ikke bedre.
+   ============================================================================ */
+.st-wrap-mellem{max-width:720px}
+
+@media(min-width:1500px){
+  /* På en stor skærm må kortet gerne fylde lidt mere, så funnelen ikke ligner
+     en mobilside midt i et hvidt lærred. Ikke mere end det: en formular med
+     meget lange linjer er sværere at udfylde. */
+  .st-wrap{max-width:580px}
+  .st-wrap-mellem{max-width:820px}
+  .st-kort h1{font-size:28px}
+}
+
+@media(max-width:560px){
+  .st-etape-navn{font-size:11px}
+  .st-etaper{gap:4px}
+  .st-valgkort-2{grid-template-columns:1fr}
+  /* Ankeret stables: beløb, "mod", beløb. */
+  .st-anker{grid-template-columns:1fr;gap:10px}
+  .st-anker-vs{justify-content:center}
+  .st-anker-linje{font-size:16px}
+  .st-opsum dl > div{font-size:13.5px}
+  .st-plan-pris{font-size:32px}
+  .st-risiko-tal{font-size:30px}
 }

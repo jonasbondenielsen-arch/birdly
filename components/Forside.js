@@ -241,19 +241,20 @@ export default function Forside({ opgaveTal, funnelHref = "/kom-i-gang" }) {
 
       <Hero funnelHref={funnelHref} />
       <BevisBjaelke tal={opgaveTal} />
-      <RisikoFjernet funnelHref={funnelHref} />
       <Problemet />
+      {/* Beviset før motoren: se noten i components/salg/Salgsside.js. */}
+      <FagBevis funnelHref={funnelHref} />
       <Motoren funnelHref={funnelHref} />
-      <FagBevis funnelHref={funnelHref} seneste={opgaveTal?.seneste || []} />
       {/* ⚠️ <SmsDemo /> STÅR IKKE HER, OG DET ER MED VILJE. Roden har allerede
           "Beskeden du får — Kort og godt" nede i SEO-laget, med præcis de samme
           fire punkter (resumé, frist, link, bud-skabelon) og et mail-kort ved
           siden af. To sektioner der siger det samme med de samme fire linjer på
           én side er dårlig læsning og unødig intern dublet. Salgssiden og
           /sadan-virker-det HAR den — de har ikke SEO-halen. */}
-      <Vaerdi funnelHref={funnelHref} />
+      <Vaerdi funnelHref={funnelHref} fag="rengoring" />
       <Kundebevis />
       <IkkePortal />
+      <RisikoFjernet funnelHref={funnelHref} />
 
       {/* Pris-streameren hører til ved prisen og har sin CSS nested i
           .birdly-home — derfor står den her og ikke inde i <Priser>, som også

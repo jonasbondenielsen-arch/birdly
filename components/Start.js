@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Logo } from "./Logo";
 import { fetchCatalog, submitSignup, createSubscriptionSession } from "../lib/catalog";
 import { hentKandidater, visResultat } from "../lib/kandidater";
-import { PLAN, planForInterval, priceText, TRIAL_DAYS } from "../lib/pakke";
+import { PLAN, YEARLY_SAVING, planForInterval, priceText, TRIAL_DAYS } from "../lib/pakke";
 import { sporEnGang } from "../lib/pixel";
 // ⚠️ ATTRIBUTIONEN SENDES MED SIGNUP (06-09-2026, godkendt af Jonas).
 // fangAttribution() har hele tiden kørt i <Maaling> på hver eneste side og lagt
@@ -18,7 +18,14 @@ import { sporEnGang } from "../lib/pixel";
 // objektet er tomt. Der er hverken rørt en gate, en pris eller en hændelse — kun
 // et felt der lå ubrugt i den anden ende, som nu bliver udfyldt.
 import { hentAttribution } from "../lib/attribution";
+// ⚠️ VAERDI_ANKER er den GENERISKE sætning og bruges kun ét sted i funnelen:
+// checkoutens højre kolonne. Skærm 7's anker er PERSONLIGT og regnes af kundens
+// eget valg — se lib/vaerdiAnker.js. Byt dem aldrig om: den generiske sætning på
+// skærm 7 ville smide den personalisering væk, der er hele pointen med skærmen.
 import { GARANTI, GARANTI_LINK, VAERDI_ANKER } from "../lib/salgTekst";
+import { sporFunnel } from "../lib/ctaSporing";
+import { erLoebende, MAANEDSVAERDI, PROJEKTVAERDI, byggAnker, FORBEHOLD, BETINGET_LINJE } from "../lib/vaerdiAnker";
+import OpgaveKort from "./salg/OpgaveKort";
 // ⚠️ forside.css importeres IKKE. Den er nested under `.birdly-home`, så dens
 // klasser virker alligevel ikke her — og importen ville kun sende hele forsidens
 // CSS med i bundlen uden at gøre noget. start.css bærer det vi bruger.
@@ -58,8 +65,30 @@ import "../app/start.css";
 // Det er sit eget trin frem for at proppes ind i trin 2: et fag som entreprenør har
 // 10 underområder, og de + fag + område + beløb på én mobilskærm er ikke ét
 // spørgsmål ad gangen længere.
-const TRIN = ["CVR", "Fag og område", "Arbejdsområder", "Resultat", "Betaling"];
-const ANTAL_TRIN = TRIN.length;
+// ============================================================================
+// FIRE SYNLIGE ETAPER — ni interne skærme.
+//
+// ⚠️ "TRIN 1 AF 5 · CVR" ER VÆK, OG DET ER IKKE KOSMETIK. Et tælleværk fortæller
+// kunden hvor lang formularen er; en etape fortæller hende hvad hun er i gang
+// med. Det første får en funnel til at ligne en blanket fra det offentlige, det
+// andet får den til at ligne en opsætning hun er ved at gøre færdig.
+//
+// ⚠️ INTERNE SKÆRME VISES ALDRIG SOM TAL. Der er ni, og kunden skal ikke vide
+// det. Tilføjes eller fjernes en skærm, ændres kun ETAPE-tabellen herunder.
+const ETAPER = ["Virksomhed", "Opgaver", "Dine match", "Start Birdly"];
+
+// Skærm → etape (1-indekseret skærm, 0-indekseret etape).
+//   1 CVR + bekræftelse                      → Virksomhed
+//   2 Hvordan finder I opgaver i dag         → Opgaver
+//   3 Fag + arbejdsområder                   → Opgaver
+//   4 Område                                 → Opgaver
+//   5 Værdi-spørgsmål (fag-afhængigt)        → Opgaver
+//   6 Birdly Scan + resultat                 → Dine match
+//   7 Værdi-anker + opsummering + risiko     → Dine match
+//   8 Plan + kontakt + samtykker             → Start Birdly
+//   9 Betaling (kortvindue)                  → Start Birdly
+const SKAERM_ETAPE = { 1: 0, 2: 1, 3: 1, 4: 1, 5: 1, 6: 2, 7: 2, 8: 3, 9: 3 };
+const SIDSTE_SKAERM = 9;
 
 // Samme SDK-indlæsning som /tilmeld. ⚠️ Bevidst duplikeret frem for at refaktorere
 // den live betalingssti midt i en ny funnel: Tilmeld.js er den eneste kanal der
@@ -84,6 +113,76 @@ function loadReepay() {
     document.head.appendChild(s);
   });
 }
+
+// ============================================================================
+// FUNNELENS TOPBJÆLKE — logo og én vej ud. Intet andet.
+//
+// ⚠️ INGEN HOVEDMENU HERINDE. Brancher, Priser, Viden og Hvorfor Birdly hører
+// til på salgssiden, hvor de skaber lyst. I funnelen er hvert menupunkt en
+// udgang: kunden er midt i at konfigurere sin overvågning, og et klik på
+// "Priser" sender hende ud af flowet for at læse noget hun får at se om to
+// skærme alligevel.
+//
+// ⚠️ MEN HUN ER IKKE FANGET. "Tilbage til Birdly.dk" står der, browserens
+// tilbage-knap virker som altid, og der er ingen dialog der forsøger at holde
+// på hende. Færre udgange, ikke låste døre.
+// ============================================================================
+function FunnelTop() {
+  return (
+    <div className="st-top">
+      <Logo height={30} />
+      <a className="st-tilbage-link" href="/kom-i-gang">Tilbage til Birdly.dk</a>
+    </div>
+  );
+}
+
+// De fire svar på "hvordan finder I opgaver i dag".
+//
+// ⚠️ SVARENE TALER IKKE NOGEN NED. "Vi bruger allerede en anden tjeneste" mødes
+// med at Birdly ikke behøver erstatte den — det er sandt, og det er stærkere end
+// at angribe en konkurrent, som kunden måske selv har valgt med omhu.
+const METODER = [
+  {
+    key: "selv",
+    titel: "Vi søger selv",
+    under: "Fx på udbudsportaler, websites og andre kilder.",
+    svar: "Så kender I arbejdet. Birdly kan holde øje og sortere de irrelevante muligheder fra.",
+  },
+  {
+    key: "netvaerk",
+    titel: "Netværk og eksisterende kunder",
+    under: "Det meste arbejde kommer gennem relationer.",
+    svar: "Netværk er stærkt — men viser kun de muligheder, der når frem til jer.",
+  },
+  {
+    key: "anden",
+    titel: "Vi bruger allerede en anden tjeneste",
+    under: null,
+    svar: "Birdly behøver ikke erstatte det, I allerede bruger. Forskellen er, at relevante match kommer direkte til jer.",
+  },
+  {
+    key: "ingen",
+    titel: "Vi leder ikke aktivt efter nye opgaver",
+    under: null,
+    svar: "Så kan Birdly holde øje uden at ændre jeres hverdag.",
+  },
+];
+
+// ⚠️ PROJEKTFAGENES BELØB ER DE EKSISTERENDE max_amount-VÆRDIER. De tre tal
+// (1 mio., 5 mio., 20 mio.) er præcis dem funnelen altid har sendt til
+// match-reglen; kun etiketterne er skrevet om til intervaller, så de læses som
+// et valg frem for som et loft. Ændrer du et tal her, ændrer du kundens
+// matchkriterium — ikke en tekst.
+//
+// `garantiUndtaget` markerer de valg hvor handelsbetingelsernes §3.5 sætter
+// matchgarantien ud af kraft (loft under 2,5 mio. kr.). Kunden skal advares på
+// skærmen, ikke den dag hun beder om refusion.
+const PROJEKT_VALG = [
+  { key: "u100", label: "Under 100.000 kr.", maks: 1000000, garantiUndtaget: true },
+  { key: "100-500", label: "100.000–500.000 kr.", maks: 1000000, garantiUndtaget: true },
+  { key: "500-2m", label: "500.000–2 mio. kr.", maks: 5000000, garantiUndtaget: false },
+  { key: "2m+", label: "2 mio. kr. og op", maks: null, garantiUndtaget: false },
+];
 
 const cifre = (s) => String(s || "").replace(/\D/g, "");
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -114,10 +213,33 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
   const [fejl, setFejl] = useState("");
   const [arbejder, setArbejder] = useState(false);
 
-  // Trin 1
+  // Skærm 1 — virksomhed
   const [cvr, setCvr] = useState("");
   const [firma, setFirma] = useState("");
   const [branchekode, setBranchekode] = useState(null);
+  // ⚠️ ADRESSE OG BRANCHETEKST BRUGES KUN TIL BEKRÆFTELSEN ("Er det jer?").
+  // De sendes IKKE med i signup — payloaden er uændret. De kommer fra samme
+  // /api/cvr-svar som firmanavnet, og de er der udelukkende for at kunden kan
+  // genkende sin egen virksomhed frem for at skulle stole på et navn alene.
+  const [adresse, setAdresse] = useState(null);
+  const [branchetekst, setBranchetekst] = useState(null);
+  // Har kunden bekræftet "Ja, det er os"? Skærm 1 har to tilstande.
+  const [bekraeftet, setBekraeftet] = useState(false);
+
+  // Skærm 2 — hvordan finder I opgaver i dag. ⚠️ DIAGNOSE, IKKE ET KRITERIUM.
+  // Svaret bruges til ÉN kontekstsætning på skærmen og til opsummeringen. Det
+  // sendes ikke til signup og påvirker ikke matchning med et komma.
+  const [metode, setMetode] = useState(null);
+
+  // Skærm 5 — værdi-spørgsmålet. ⚠️ ANKER, IKKE FILTER for løbende fag.
+  // For projektfag ER det kundens max_amount (se `maks`); for rengøring og
+  // service er månedsværdien udelukkende det tal vi regner sammenligningen på.
+  // Blandes de to sammen, filtrerer vi kundens opgaver efter et beløb hun troede
+  // var en illustration.
+  const [vaerdiValg, setVaerdiValg] = useState(null);
+
+  // Skærm 6 — selve scanningen. Kort overgang, så resultatet ikke bare "popper".
+  const [scanner, setScanner] = useState(false);
   const [slaarOp, setSlaarOp] = useState(false);
   const [opslagFejl, setOpslagFejl] = useState("");
 
@@ -208,6 +330,11 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
   const STASH = "birdly_px_paavej";
 
   useEffect(() => { fetchCatalog().then(setKatalog).catch(() => setKatalog({ fag: [], regions: [] })); }, []);
+
+  // ⚠️ ÉN GANG PR. INDLÆSNING, og kun internt. Se lib/ctaSporing.js: den her
+  // hændelse rører ikke Meta, og den må ikke gøre det — PageView fyres allerede
+  // af pixlen bag samtykket, og en dublet ville forurene optimeringen.
+  useEffect(() => { sporFunnel("FunnelStarted", { fag: startFag || null }); }, [startFag]);
 
   // ⚠️ STARTTRIAL VED RETUR FRA FRISBII. Kører kun når kunden faktisk kommer
   // tilbage på ?betaling=ok — altså efter en gennemført betaling. Ikke ved
@@ -302,7 +429,23 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
   // ⚠️ lib/branche.js importeres BEVIDST IKKE her. Den bærer alle 20 fags FAQ,
   // eksempler og brødtekst og ville lægge sig i funnelens klient-bundle for ét
   // ords skyld. Kataloget er allerede hentet.
-  const fagListe = katalog?.fag || [];
+  // ⚠️ useMemo, IKKE `katalog?.fag || []` DIREKTE — OG DET ER EN FEJLRETTELSE,
+  // IKKE PYNT (fundet 06-09-2026, fejlen er ældre end denne omskrivning).
+  //
+  // `|| []` skabte et NYT array ved hver eneste render så længe kataloget endnu
+  // ikke var hentet. Kæden derfra:
+  //   nyt fagListe → nyt fagByKey → nyt omraader → effekten nedenfor kører →
+  //   setOmraadeValg({}) med et nyt objekt → ny render → forfra.
+  // Resultatet var "Maximum update depth exceeded" i konsollen ved hver
+  // indlæsning af /start, og en løkke der kørte til fetchCatalog svarede.
+  //
+  // Den var usynlig for kunden — funnelen så rigtig ud — men den brændte CPU på
+  // hver eneste besøgendes telefon i det sekund hvor førstehåndsindtrykket
+  // dannes, og den skjulte enhver anden advarsel i konsollen bag sig.
+  //
+  // Med en memo er referencen stabil så længe `katalog` er den samme, også når
+  // den er null. Så kører effekten én gang pr. faktisk ændring, som den skal.
+  const fagListe = useMemo(() => katalog?.fag || [], [katalog]);
   const fagByKey = useMemo(
     () => Object.fromEntries(fagListe.map((f) => [f.key, f])),
     [fagListe]
@@ -389,6 +532,10 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
       if (r?.name) {
         setFirma(r.name);
         setBranchekode(r.branchekode || null);
+        // Kun til visning på bekræftelsen. Felterne kommer fra samme svar og
+        // gemmes ikke nogen steder.
+        setAdresse([r.address, [r.zipcode, r.city].filter(Boolean).join(" ")].filter(Boolean).join(", ") || null);
+        setBranchetekst(r.industridesc || null);
         // Branchekoden gætter faget, så trin 2 bliver en bekræftelse frem for et valg.
         // Gætter den forkert, retter kunden det selv — derfor er det kun et forvalg.
         // ⚠️ branchekode_fag giver en LISTE af fag-nøgler, ikke én. Vi tager den
@@ -428,20 +575,52 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
   // ⚠️ Tallet regnes på den FULDE effektive liste — kundens afkrydsede områder OG
   // hendes bredde-valg. Regnede vi før hun havde valgt, ville trin 4 vise et tal
   // der ikke svarer til det hun får.
+  // ---- BIRDLY SCAN: skærm 5 → 6 ----
+  //
+  // ⚠️ SAMME KALD SOM FØR, samme kriterier, samme Edge Function. Det eneste nye
+  // er `med_eksempler`, som beder om op til tre AF DE SAMME opgaver tallet er
+  // regnet på — og en kort overgang, så resultatet ikke bare popper op.
+  //
+  // ⚠️ OVERGANGEN ER 1,1 SEKUND OG DEN LYVER IKKE. Der står hvad vi rent faktisk
+  // slår op på (fag, område, størrelse). Ingen "scanner 4 millioner databaser",
+  // ingen falsk AI-animation — kaldet tager reelt et øjeblik, og det er dét
+  // øjeblik der vises.
   async function tilResultat() {
     setFejl("");
     if (!fagValgt.length) return setFejl("Vælg mindst én branche.");
     if (!fagKoder.length) return setFejl("Vælg mindst ét arbejdsområde — det er dem, vi holder øje med.");
-    setHenter(true); setTrin(4);
-    const k = await hentKandidater({
-      fag_keys: fagValgt,
-      cpv_selections: fagKoder,
-      bredde,
-      region_keys: regionKeys,
-      min_amount: null,
-      max_amount: maks ? Number(maks) : null,
+    sporFunnel("PreferencesCompleted", { fag: fagValgt.join(","), omraade: regionKeys.join(",") });
+
+    setHenter(true);
+    setScanner(true);
+    setTrin(6);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+
+    const [k] = await Promise.all([
+      hentKandidater({
+        fag_keys: fagValgt,
+        cpv_selections: fagKoder,
+        bredde,
+        region_keys: regionKeys,
+        min_amount: null,
+        max_amount: maks ? Number(maks) : null,
+        med_eksempler: true,
+      }),
+      // Kører PARALLELT med opslaget, ikke oveni. Svarer serveren på 900 ms, har
+      // kunden set overgangen i 1,1 s i alt — ikke 2. Vi lægger aldrig ventetid
+      // til for effektens skyld.
+      new Promise((r) => setTimeout(r, 1100)),
+    ]);
+
+    setKandidater(k);
+    setHenter(false);
+    setScanner(false);
+
+    const tilstand = visResultat(k);
+    sporFunnel("BirdlyScanCompleted", { antal: k?.i_omraade || 0, tilstand });
+    sporFunnel(tilstand === "intet" || !(k?.i_omraade > 0) ? "BirdlyScanZeroMatches" : "BirdlyScanHasMatches", {
+      antal: k?.i_omraade || 0,
     });
-    setKandidater(k); setHenter(false);
   }
 
   // ---- Trin 4 → 5: opret kunden + betalingssession ----
@@ -514,7 +693,7 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
         //
         // Står efter submitSignup, så et fejlet kald aldrig kan udløse den.
         if (!udenProeveNu) sporEnGang(`starttrial_${id}`, "StartTrial", pixelParams());
-        setTrin(5);
+        setTrin(9);
         window.scrollTo({ top: 0, behavior: "smooth" });
         return;
       }
@@ -530,7 +709,8 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
         uden_proeve: udenProeveNu,
       });
       setSessionId(session_id);
-      setTrin(5);
+      sporFunnel("CheckoutStarted", { interval });
+      setTrin(9);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (e) {
       // Værnene i signup svarer med almindeligt dansk — vis det ordret frem for at
@@ -634,6 +814,49 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
       .catch((e) => setFejl(e.message));
   }
 
+  // ══════════════════════════════════════════════════════════════════════════
+  // AFLEDTE VÆRDIER TIL SKÆRMENE. Alt herunder er REGNET af state — ingen af
+  // dem er gemt, og ingen af dem kan komme i utakt med det kunden har valgt.
+  // ══════════════════════════════════════════════════════════════════════════
+
+  // Skærm → etape. Ukendt skærm falder til første etape frem for at kaste.
+  const etape = SKAERM_ETAPE[trin] ?? 0;
+
+  // Er kundens FØRSTE fag et løbende-aftale-fag (rengøring, service …)? Det
+  // afgør hvilket værdi-spørgsmål hun får, og hvilket regnestykke ankeret laver.
+  // ⚠️ Første fag, ikke "et af dem": en virksomhed der laver både rengøring og
+  // entreprenørarbejde skal have ÉT spørgsmål, ikke to modstridende.
+  const loebendeFag = erLoebende(fagValgt[0]);
+
+  // Valgmulighederne på skærm 5. For løbende fag er de rene ankre (ingen maks);
+  // for projektfag bærer de kundens faktiske max_amount.
+  const vaerdiListe = loebendeFag
+    ? MAANEDSVAERDI.map((v) => ({ ...v, maks: null, garantiUndtaget: false }))
+    : PROJEKT_VALG;
+  const vaerdiLabel = vaerdiListe.find((v) => v.key === vaerdiValg)?.label || null;
+
+  // Ankeret regnes af kundens EGET valg. Uden et valg falder byggAnker tilbage
+  // på standard-eksemplet — se lib/vaerdiAnker.js.
+  const anker = byggAnker(fagValgt[0] || "rengoring", vaerdiValg);
+
+  const prMaaned = Math.round(PLAN.yearly / 12).toLocaleString("da-DK");
+
+  // Fagnavne som tekst. Læses af kataloget, aldrig af den rå ?fag=-værdi.
+  const fagResume = fagValgt.length
+    ? fagValgt.map((k) => fagByKey[k]?.label_da || k).join(", ")
+    : null;
+
+  // "Rengøring · Sjælland · 5.000–10.000 kr." — kundens egne valg, sat sammen.
+  // Tomme led udelades, så linjen aldrig ender med en løs prik.
+  const kontekstLinje = [fagResume, regionResume, vaerdiLabel].filter(Boolean).join(" · ");
+
+  // ⚠️ HAR VI ET MATCH? visResultat() er den eneste dommer — den skelner mellem
+  // "der er noget i området", "der er kun noget på landsplan" og "vi ved det
+  // ikke". Et rå `i_omraade > 0` ville vise et resultat selv når opslaget
+  // fejlede og alle tal er nul.
+  const harMatch = !!kandidater && visResultat(kandidater) === "lokalt" && kandidater.i_omraade > 0;
+  const eksempler = kandidater?.eksempler || [];
+
   // ⚠️ priceText er et OBJEKT, ikke en funktion — og det er den eneste kilde til
   // beløbet. Hardkod aldrig en pris her; det var netop derfor tre steder stod med
   // den gamle pris efter en ændring (se CLAUDE.md, "Pris — REGLERNE").
@@ -643,21 +866,59 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
   // frem for at lade hende stå på trin 1 og undre sig.
   const annulleret = betaling === "annulleret";
 
+  // ══════════════════════════════════════════════════════════════════════════
+  // AKTIVERING — den sidste skærm, og den første gang produktet gør noget.
+  //
+  // ⚠️ IKKE "TAK FOR DIN TILMELDING". Det er en kvittering for en handel; her
+  // skal kunden se at TJENESTEN er begyndt. Forskellen er hele forskellen på et
+  // køb der føles afsluttet og et produkt der føles i gang.
+  //
+  // ⚠️ KVITTERINGEN ER IKKE AKTIVERINGEN, TEKNISK SET. accept_url betyder
+  // "Reepay sagde ja til kortet", ikke "abonnementet kører" — det afgør
+  // webhooken. Derfor lover vi kun at vi holder øje, og vi skriver ALDRIG en
+  // konkret trækdato regnet i browseren.
+  //
+  // ⚠️ FIRMANAVNET KAN VÆRE VÆK. Kunden har været forbi checkout.reepay.com, så
+  // al state er nulstillet ved returen. Er `firma` tom, står den generiske
+  // sætning — vi finder ALDRIG på et navn.
+  //
+  // ⚠️ INGEN "VI HAR ALLEREDE FUNDET 3 MULIGHEDER" HER. Kandidat-tallet levede i
+  // hukommelsen før betalingen og er væk efter returen fra Reepay. At vise et
+  // tal her ville kræve et nyt opslag på kriterier vi ikke længere har — og et
+  // gæt om hvor mange match kunden har, er præcis den slags påstand der ikke må
+  // stå på siden. Kunden får sine match på SMS og mail, som lovet.
+  // ══════════════════════════════════════════════════════════════════════════
   if (faerdig) {
     return (
       <main className="st-wrap">
-        <div className="st-top"><Logo height={30} /></div>
+        <FunnelTop />
         <div className="st-kort st-kvit">
           <div className="st-ic">✓</div>
-          <h1>Jeres profil er klar.</h1>
-          <p>Vi holder øje fra nu af. I får en SMS og en mail, så snart der er en opgave der passer til jer.</p>
-          {/* ⚠️ HVAD DER SKER MED PENGENE — SAGT HØJT, MEN UDEN EN DATO.
-              Den nye kunde har lige registreret et kort og skal kunne se sort på
-              hvidt at der ikke er trukket noget. Vi skriver derimod ALDRIG en
-              konkret trækdato her: kvitteringen betyder "Reepay sagde ja til
-              kortet", ikke "abonnementet kører" — det afgør webhooken. En dato
-              regnet i browseren ville være et gæt, og et gæt om en betaling er
-              det værste sted at gætte. */}
+          <h1>Birdly er i gang.</h1>
+          <p>
+            {firma
+              ? <>Vi holder nu øje med relevante opgaver for <b>{firma}</b>.</>
+              : <>Vi holder øje fra nu af.</>}
+          </p>
+
+          {/* Det næste kunden kommer til at se, vist én gang her så hun ved hvad
+              hun skal kigge efter. ⚠️ MÆRKET SOM EKSEMPEL — det er ikke et match. */}
+          <div className="st-aktiv-sms">
+            <div className="st-aktiv-sms-hd">Nyt Birdly-match</div>
+            <div className="st-aktiv-sms-krop">
+              Rengøring · Roskilde<br />
+              Fast rengøringsaftale<br />
+              Frist 18/09<br />
+              <span className="st-aktiv-lnk">Se opgaven →</span>
+            </div>
+            <div className="st-aktiv-sms-fin">Eksempel på en besked</div>
+          </div>
+
+          <p className="st-hj">
+            Fremover får I nye relevante match direkte på SMS og mail. I skal ikke
+            logge ind eller søge efter noget.
+          </p>
+
           <p className="st-kvit-fin">
             Du har betalt <b>0 kr. i dag</b>. Første betaling sker efter de {TRIAL_DAYS} gratis
             dage, og vi minder dig 3 dage før. Vil du ikke fortsætte, siger du op inden — så
@@ -668,101 +929,164 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
     );
   }
 
+  // ══════════════════════════════════════════════════════════════════════════
+  // FUNNELEN — ni skærme, fire synlige etaper.
+  //
+  // ⚠️ DEN MÅ IKKE LIGNE FORSIDEN. Forsiden skaber lyst og har navigation,
+  // sektioner og bevis i bredden. Funnelen lukker: ét spørgsmål ad gangen, ingen
+  // menu, ingen udgange ud over browserens egen. Samme designsystem — samme
+  // tokens, samme knapper, samme typografi — men ikke samme sidestruktur.
+  // Genbrug derfor ALDRIG en hel forsidesektion herinde.
+  //
+  // ⚠️ BACKEND-KONTRAKTEN ER UÆNDRET. Rækkefølgen submitSignup →
+  // createSubscriptionSession → Reepay er den samme, samtykkerne gater stadig,
+  // CVR-gaten og afventer_kort ligger stadig server-side. Det her er
+  // udelukkende rækkefølge, copy og personalisering.
+  // ══════════════════════════════════════════════════════════════════════════
   return (
-    /* ⚠️ TRIN 5 SPRÆNGER RAMMEN. .st-wrap er 520px, som passer til de smalle
-       trin 1-4 — men to kolonner klemt ned i 520px brækker plan-kortene midt i
-       beløbet (målt på skærm 03-09-2026). Modifikatoren giver kun trin 5 den
-       fulde bredde; de øvrige trin er urørte. */
-    <main className={"st-wrap" + (trin === 5 && !kortloes ? " st-wrap-bred" : "")}>
-      <div className="st-top"><Logo height={30} /></div>
+    <main className={"st-wrap" + (trin === 9 && !kortloes ? " st-wrap-bred" : "") + (trin >= 6 && trin <= 8 ? " st-wrap-mellem" : "")}>
+      <FunnelTop />
 
-      {/* ⚠️ LØFTET SKAL STÅ FØR SPØRGSMÅLENE, ikke først ved kortet. En funnel der
-          beder om CVR som det første, uden at gentage hvad man er i gang med, taber
-          folk på trin 1 — de har lige forladt en side der lovede 14 dage gratis, og
-          her stod pludselig kun et tomt felt. Striben er ren tekst, står på hvert
-          trin op til betalingen, og gentager præcis det samme som forsiden og
-          checkouten siger. Ingen nedtælling, ingen knaphed.
-          ⚠️ IKKE PÅ TRIN 5: dér står det samme i checkoutens egen underoverskrift,
-          og to steder ville se ud som to forskellige tilbud. */}
-      {trin < 5 && (
-        <p className="st-loefte">
-          {forvalgtLabel
-            /* ⚠️ "opgaver inden for X", IKKE "X-opgaver". Katalogets labels er
-               sammensatte ("Tømrer/snedker", "VVS & blikkenslager", "Service &
-               vedligehold"), og en bindestreg bagpå gav "vvs & blikkenslager-opgaver".
-               Den her form læser naturligt for alle 20 fag uden en eneste særregel. */
-            ? <>Vi finder opgaver inden for <b>{forvalgtLabel.toLowerCase()}</b> til jer · {TRIAL_DAYS} dage gratis · 0 kr. i dag</>
-            : <>{TRIAL_DAYS} dage gratis · 0 kr. i dag · ingen binding</>}
-        </p>
-      )}
-
-      <div className="st-bar" aria-label={`Trin ${trin} af ${ANTAL_TRIN}`}>
-        <i style={{ width: `${(trin / ANTAL_TRIN) * 100}%` }} />
-      </div>
-      <p className="st-trin">Trin {trin} af {ANTAL_TRIN} · {TRIN[trin - 1]}</p>
+      {/* FIRE ETAPER, ingen "trin 3 af 9" — se noten ved ETAPER. */}
+      <ol className="st-etaper" aria-label={"Etape " + (etape + 1) + " af " + ETAPER.length + ": " + ETAPER[etape]}>
+        {ETAPER.map((e, i) => (
+          <li key={e} className={i < etape ? "gjort" : i === etape ? "nu" : ""}>
+            <span className="st-etape-prik" aria-hidden="true">{i < etape ? "✓" : i + 1}</span>
+            <span className="st-etape-navn">{e}</span>
+          </li>
+        ))}
+      </ol>
 
       {annulleret && !fejl && (
         <div className="st-fejl">Betalingen blev afbrudt — der er ikke trukket noget. Du kan prøve igen når du vil.</div>
       )}
       {fejl && <div className="st-fejl">{fejl}</div>}
 
-      {/* ---------------- TRIN 1 — CVR ---------------- */}
-      {trin === 1 && (
+      {/* ═══════════════ SKÆRM 1 — VIRKSOMHEDEN ═══════════════
+          To tilstande: indtast CVR, derefter "Er det jer?".
+          ⚠️ CVR-GATEN ER SERVER-SIDE OG URØRT. /api/cvr advarer venligt her, men
+          det er signup der afviser et CVR der ikke findes. Feltet spærrer aldrig
+          kunden — hun skal kunne rette og prøve igen. */}
+      {trin === 1 && !bekraeftet && (
         <div className="st-kort">
-          <h1>Hvad er jeres CVR-nummer?</h1>
-          {/* ⚠️ SIG HVORFOR VI SPØRGER. "Så henter vi resten selv" forklarede hvad
-              vi gør, ikke hvad hun får ud af det. Et CVR-felt som allerførste
-              spørgsmål føles som en kreditvurdering; grunden gør det til
-              opsætning. Selve opslaget og gaten bag er urørt. */}
+          <h1>Lad os finde relevante opgaver til jer.</h1>
+          {/* ⚠️ MESSAGE-MATCH. Kommer kunden fra en rengørings-annonce
+              (?fag=rengoring), skal funnelen sige rengøring med det samme —
+              ellers bruger hun det første sekund på at afgøre om hun er landet
+              det rigtige sted. Labelen læses af KATALOGET, aldrig af den rå
+              ?fag=-værdi: en tilfældig streng i adressen må ikke kunne skrive
+              vores overskrift. */}
           <p className="st-hj">
-            Vi slår jeres virksomhed op, så vi kun sender opgaver, der er relevante for
-            jer. Det tager under to minutter at sætte op.
+            {forvalgtLabel
+              ? <>Vi leder efter opgaver inden for <b>{forvalgtLabel.toLowerCase()}</b>. Start med jeres CVR-nummer, så gør Birdly resten klar.</>
+              : <>Start med jeres CVR-nummer. Så finder Birdly virksomheden og gør jeres søgning klar.</>}
           </p>
           <label className="st-lab" htmlFor="cvr">CVR-nummer</label>
           <input
             id="cvr" className="st-felt" inputMode="numeric" autoComplete="off" maxLength={11}
             value={cvr}
-            onChange={(e) => { setCvr(e.target.value); setFirma(""); setOpslagFejl(""); }}
+            onChange={(e) => { setCvr(e.target.value); setFirma(""); setAdresse(null); setBranchetekst(null); setBekraeftet(false); setOpslagFejl(""); }}
             onBlur={(e) => slaaOp(e.target.value)}
             placeholder="12345678"
           />
           {slaarOp && <p className="st-hj">Slår op…</p>}
-          {firma && (
-            <div className="st-hit">
-              {/* "Fundet:" frem for et bart flueben — bekræftelsen skal læses som
-                  en hilsen, ikke som en valideringsmarkering. */}
-              ✓ Fundet: <b>{firma}</b>
-              {/* ⚠️ KUN når CVR-opslaget FAKTISK gættede. Linjen hang før på valgtFag,
-                  altså på ethvert valgt fag — også et der kom fra ?fag= i adressen.
-                  Resultatet var at funnelen påstod "ser ud til at være Entreprenør"
-                  om en it-virksomhed, fordi linket havde forvalgt entreprenør.
-                  Et forkert forvalg er værre end intet: kunden tror det passer og
-                  fortsætter med forkert fag. */}
-              {gaetFag && fagByKey[gaetFag] && (
-                <><br /><span>Ser ud til at være <b>{fagByKey[gaetFag].label_da}</b></span></>
-              )}
-              {branchekode && !gaetFag && (
-                <><br /><span className="st-neutral">Vi kunne ikke se hvilket fag I hører til — vælg det selv på næste trin.</span></>
-              )}
-            </div>
-          )}
           {opslagFejl && <p className="st-hj">{opslagFejl}</p>}
-          <button className="btn btn-teal st-bred" onClick={() => { if (cifre(cvr).length !== 8) return setFejl("Skriv et CVR-nummer på 8 cifre."); setFejl(""); setTrin(2); }}>
-            Fortsæt →
+
+          <button
+            className="btn btn-teal st-bred"
+            onClick={async () => {
+              if (cifre(cvr).length !== 8) return setFejl("Skriv et CVR-nummer på 8 cifre.");
+              setFejl("");
+              if (!firma) await slaaOp(cvr);
+              setBekraeftet(true);
+              sporFunnel("BusinessIdentified");
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }}
+          >
+            Find min virksomhed →
           </button>
+          <p className="st-under-knap">Ca. 2 minutter · 0 kr. i dag · {TRIAL_DAYS} dage gratis</p>
         </div>
       )}
 
-      {/* ---------------- TRIN 2 — FAG + OMRÅDE ---------------- */}
+      {trin === 1 && bekraeftet && (
+        <div className="st-kort">
+          <h1>Er det jer?</h1>
+          {firma ? (
+            <div className="st-firmakort">
+              <b>{firma}</b>
+              {branchetekst && <span>{branchetekst}</span>}
+              {adresse && <span>{adresse}</span>}
+              <span>CVR {cifre(cvr)}</span>
+            </div>
+          ) : (
+            /* Opslaget fejlede eller fandt intet. ⚠️ VI LADER HENDE FORTSÆTTE —
+               det er signup der afgør, ikke denne skærm. Se noten i slaaOp. */
+            <div className="st-firmakort st-firmakort-tom">
+              <b>CVR {cifre(cvr)}</b>
+              <span>Vi kunne ikke hente virksomhedens navn lige nu. I kan fortsætte alligevel.</span>
+            </div>
+          )}
+          {gaetFag && fagByKey[gaetFag] && (
+            <p className="st-hj">Ser ud til at være <b>{fagByKey[gaetFag].label_da}</b>. I retter det på næste skridt.</p>
+          )}
+          <button className="btn btn-teal st-bred" onClick={() => { setTrin(2); window.scrollTo({ top: 0, behavior: "smooth" }); }}>
+            Ja, fortsæt →
+          </button>
+          <button className="st-tilbage" onClick={() => setBekraeftet(false)}>Nej, søg igen</button>
+        </div>
+      )}
+
+      {/* ═══════════════ SKÆRM 2 — HVORDAN FINDER I OPGAVER I DAG ═══════════════
+          ⚠️ DIAGNOSE, IKKE ET KRITERIUM. Svaret sendes ikke til signup og påvirker
+          ikke matchning med et komma. Det gør to ting: det får kunden til at sætte
+          ord på sin egen situation, og det lader os svare på præcis den situation
+          med én sætning.
+          ⚠️ INGEN ANGREB PÅ KONKURRENTER. Svaret til "vi bruger allerede en anden
+          tjeneste" siger at Birdly ikke behøver erstatte den. Det er både sandt og
+          stærkere end at tale nogen ned. */}
       {trin === 2 && (
         <div className="st-kort">
-          <h1>Hvad laver I, og hvor?</h1>
-          <p className="st-hj">Det er det, vi holder øje efter. I kan altid ændre det bagefter.</p>
+          <h1>Hvordan finder I typisk nye opgaver i dag?</h1>
+          <p className="st-hj">Så kan Birdly vise, hvor vi faktisk kan gøre en forskel.</p>
 
-          {/* ⚠️ FLERE BRANCHER SKAL VÆRE SYNLIGT MULIGT. Dropdownen alene fik det til
-              at ligne et enten-eller; en entreprenør der også laver kloak kunne ikke
-              se at han måtte tage begge. Chips viser hvad der er valgt, og vælgeren
-              hedder "Tilføj" så det er tydeligt at man kan lægge flere til. */}
+          <div className="st-valgkort">
+            {METODER.map((m) => (
+              <button
+                key={m.key}
+                type="button"
+                className={"st-valgkort-item" + (metode === m.key ? " on" : "")}
+                aria-pressed={metode === m.key}
+                onClick={() => { setMetode(m.key); sporFunnel("CurrentMethodSelected", { metode: m.key }); }}
+              >
+                <b>{m.titel}</b>
+                {m.under && <i>{m.under}</i>}
+              </button>
+            ))}
+          </div>
+
+          {metode && <p className="st-svar">{METODER.find((m) => m.key === metode)?.svar}</p>}
+
+          <button
+            className="btn btn-teal st-bred"
+            disabled={!metode}
+            onClick={() => { setTrin(3); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+          >
+            Fortsæt →
+          </button>
+          <button className="st-tilbage" onClick={() => setTrin(1)}>← Tilbage</button>
+        </div>
+      )}
+
+      {/* ═══════════════ SKÆRM 3 — HVILKE OPGAVER ═══════════════
+          Fag + arbejdsområder + bredde. ⚠️ DET ER DE ÆGTE MATCHKRITERIER:
+          fag_keys og cpv_selections går til match-reglen. Datakilden er
+          katalogets fag.smal — ingen opfundne kategorier. */}
+      {trin === 3 && (
+        <div className="st-kort">
+          <h1>Hvilke opgaver vil I gerne have flere af?</h1>
+          <p className="st-hj">Vælg ét eller flere fag. I kan altid ændre det bagefter.</p>
+
           <span className="st-lab">Jeres brancher</span>
           {fagValgt.length > 0 && (
             <div className="st-chips">
@@ -771,7 +1095,7 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
                   {fagByKey[k]?.label_da || k}
                   <button
                     type="button"
-                    aria-label={`Fjern ${fagByKey[k]?.label_da || k}`}
+                    aria-label={"Fjern " + (fagByKey[k]?.label_da || k)}
                     onClick={() => setFagValgt((s) => s.filter((x) => x !== k))}
                   >×</button>
                 </span>
@@ -797,12 +1121,93 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
             <p className="st-hj">Vi holder øje med opgaver i alle {fagValgt.length} brancher.</p>
           )}
 
-          {/* ⚠️ MULTIVALG. En <select> kunne kun bære ét område, men de fleste dækker
-              flere landsdele. Afkrydsning frem for dropdown, samme mønster som
-              /tilmeld — og samme værdier, så de to funneler ikke kan drive fra
-              hinanden. Alle valgte sendes videre; det er regionKeys der går til
-              både preview og signup. */}
-          <span className="st-lab">Hvor vil I have opgaver?</span>
+          {/* ⚠️ BREDDE ØVERST OG ALDRIG FOLDET. Det er den beslutning der flytter
+              mest: med "alle" lægges fagets brede kode på, og den alene rammer 79
+              opgaver for entreprenør — uanset hvor få områder der er krydset af.
+              Målt: kun betonarbejder + "alle" giver 79, + "kun fag" giver 2. */}
+          {fagValgt.length > 0 && (
+            <div className="st-bredde">
+              <span className="st-lab" style={{ margin: "0 0 8px" }}>Hvor bredt vil I fange opgaver?</span>
+              <label className={"st-radio" + (bredde === "alle" ? " on" : "")}>
+                <input type="radio" name="bredde" checked={bredde === "alle"} onChange={() => setBredde("alle")} />
+                <span><b>Maksimér antallet af opgaver <em>anbefalet</em></b><i>Også de brede entrepriseudbud i jeres fag. Flere match, lidt mere bredt.</i></span>
+              </label>
+              <label className={"st-radio" + (bredde === "fag" ? " on" : "")}>
+                <input type="radio" name="bredde" checked={bredde === "fag"} onChange={() => setBredde("fag")} />
+                <span><b>Kun fagentrepriser</b><i>Færre, men kun de præcise områder I har valgt.</i></span>
+              </label>
+            </div>
+          )}
+
+          {omraader.length > 0 ? (
+            <div className="st-fold">
+              <button
+                type="button"
+                className={"st-foldknap" + (antalValgt === 0 ? " tom" : "")}
+                onClick={() => setAabenOmr((v) => !v)}
+                aria-expanded={aabenOmr}
+              >
+                <span>{omrResume}</span>
+                <i>{aabenOmr ? "skjul" : "ret"}</i>
+              </button>
+
+              {/* ⚠️ FOLDNING ÆNDRER KUN SYNLIGHED. Afkrydsningerne bor i
+                  omraadeValg på komponenten, ikke i disse felter — foldes listen
+                  væk, står de valgte områder uændret, og fagKoder (og dermed den
+                  effektive CPV-liste) er den samme som hvis listen var åben. */}
+              {aabenOmr && (
+                <>
+                  <div className="st-omrhoved">
+                    <span className="st-lab" style={{ margin: 0 }}>Dine arbejdsområder</span>
+                    <button type="button" className="st-alle" onClick={() => saetAlle(!alleValgt)}>
+                      {alleValgt ? "Fjern alle" : "Tag alle " + (valgtFag?.label_da || "områder") + " med"}
+                    </button>
+                  </div>
+                  <div className="st-omr">
+                    {omraader.map((a) => (
+                      <label key={a.cpv} className={"st-omrk" + (omraadeValg[a.cpv] ? " on" : "")}>
+                        <input
+                          type="checkbox"
+                          checked={!!omraadeValg[a.cpv]}
+                          onChange={() => setOmraadeValg((s) => ({ ...s, [a.cpv]: !s[a.cpv] }))}
+                        />
+                        <span>
+                          <b>{a.kunde_titel || a.name_da}</b>
+                          {a.name_da && a.kunde_titel && a.name_da !== a.kunde_titel && <i>{a.name_da}</i>}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          ) : fagValgt.length > 0 ? (
+            <p className="st-hj">Dit fag har ingen underområder — I matches på fagets brede koder.</p>
+          ) : null}
+
+          <button
+            className="btn btn-teal st-bred"
+            onClick={() => {
+              if (!fagValgt.length) return setFejl("Vælg mindst én branche.");
+              setFejl(""); setTrin(4); window.scrollTo({ top: 0, behavior: "smooth" });
+            }}
+          >
+            Fortsæt →
+          </button>
+          <button className="st-tilbage" onClick={() => setTrin(2)}>← Tilbage</button>
+        </div>
+      )}
+
+      {/* ═══════════════ SKÆRM 4 — OMRÅDE ═══════════════
+          ⚠️ SAMME GEOGRAFI SOM PRODUKTET HAR. Landsdelene kommer fra kataloget
+          (region_nuts_map), og "hele_dk" er sin EGEN nøgle — ikke en optælling af
+          de fem. Der er ikke opfundet hverken kommuner eller radius: findes det
+          ikke i matchningen, spørger vi ikke om det. */}
+      {trin === 4 && (
+        <div className="st-kort">
+          <h1>Hvor vil I have opgaver?</h1>
+          <p className="st-hj">Vælg hele landet eller de landsdele, I dækker.</p>
+
           <div className="st-omr">
             <label className={"st-omrk" + (heleDk ? " on" : "")}>
               <input
@@ -827,244 +1232,366 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
             <p className="st-hj">Vi holder øje i alle {valgteRegioner.length} landsdele: {regionResume}.</p>
           )}
 
-          <label className="st-lab" htmlFor="maks">Største opgave I vil se <span className="st-valgfri">(valgfrit)</span></label>
-          <select id="maks" className="st-felt" value={maks} onChange={(e) => setMaks(e.target.value)}>
-            <option value="">Alle beløb</option>
-            <option value="1000000">Op til 1 mio. kr.</option>
-            <option value="5000000">Op til 5 mio. kr.</option>
-            <option value="20000000">Op til 20 mio. kr.</option>
-          </select>
+          {/* ═══ OFFENTLIGE OG PRIVATE OPGAVER ═══
+              ⚠️ DET ER OPLYSNING, IKKE ET VALG — OG DET ER MED VILJE.
+              wants_private_opgaver står på `true` som standard i basen
+              (birdly-admin, migration 0090), og signup tager IKKE imod feltet:
+              fravalget sker bagefter under "Rediger" på kundens opgaveside.
+              En vælger her ville derfor være en knap der ikke gør noget — værre
+              end ingen knap, fordi kunden tror hun har taget stilling.
+              ⚠️ ORDLYDEN ER JONAS' OG STÅR ORDRET. Den er oplysningspligten der
+              holder opt-out-modellen lovlig; skriv den ikke om. */}
+          <div className="st-info">
+            <b>I får både offentlige og private opgaver</b>
+            <p>
+              Din overvågning inkluderer både offentlige udbud og private opgaver i dit
+              fag og område. Du kan til enhver tid fravælge private opgaver under
+              &ldquo;Rediger&rdquo; på din opgaveside.
+            </p>
+          </div>
 
           <button
             className="btn btn-teal st-bred"
             onClick={() => {
-              if (!fagValgt.length) return setFejl("Vælg mindst én branche.");
-              // Samme værn som signup ("Vælg mindst én region", 400) — men her, hvor
-              // hun kan nå at rette det, frem for som en fejl efter kontaktoplysningerne.
               if (!regionKeys.length) return setFejl("Vælg mindst én landsdel — eller hele Danmark.");
-              setFejl(""); setTrin(3);
+              setFejl(""); setTrin(5); window.scrollTo({ top: 0, behavior: "smooth" });
             }}
           >
             Fortsæt →
           </button>
-          <button className="st-tilbage" onClick={() => setTrin(1)}>← Tilbage</button>
+          <button className="st-tilbage" onClick={() => setTrin(3)}>← Tilbage</button>
         </div>
       )}
 
-      {/* ---------------- TRIN 3 — ARBEJDSOMRÅDER + BREDDE ---------------- */}
-      {/* Samme to valg som /tilmeld, samme datakilde (katalogets fag.smal) og samme
-          mapping til CPV. Det er dem der bliver til søgekriteriet — ikke pynt. */}
-      {trin === 3 && (
+      {/* ═══════════════ SKÆRM 5 — VÆRDI ═══════════════
+          ⚠️ TO FORSKELLIGE SPØRGSMÅL, OG DE GØR IKKE DET SAMME:
+            · PROJEKTFAG (tømrer, VVS, entreprenør …): svaret ER kundens
+              max_amount og går til match-reglen. Det filtrerer.
+            · LØBENDE FAG (rengøring, service …): svaret er UDELUKKENDE ankeret
+              vi regner sammenligningen på. Det sendes ikke til signup og
+              filtrerer intet — en månedlig aftaleværdi er ikke det samme som en
+              udbudssum, og at bruge den som beløbsfilter ville skære opgaver væk
+              på et tal kunden troede var en illustration.
+          Se lib/vaerdiAnker.js. Blandes de to sammen, filtrerer vi forkert. */}
+      {trin === 5 && (
         <div className="st-kort">
-          <h1>Hvad laver I helt præcis?</h1>
-          <p className="st-hj">Kryds det fra I ikke laver. Så slipper I for beskeder om det.</p>
-          {/* ⚠️ ÆGTE TAL, IKKE ET SALGSLØFTE. omraader.length er antallet af
-              arbejdsområder fagets kodesæt faktisk indeholder, og regionResume er
-              kundens eget valg fra trin 2 — begge læses af state, ingen af dem er
-              gættet. Linjen bekræfter at der SKER noget mellem to spørgsmål; den
-              lover ikke at der findes opgaver. Det tal kommer på næste trin, og
-              det kommer fra matchmotoren. */}
-          {omraader.length > 0 && (
-            <p className="st-fremdrift">
-              Birdly holder øje med <b>{omraader.length}</b>{" "}
-              {omraader.length === 1 ? "type opgave" : "typer opgaver"} i{" "}
-              <b>{regionResume || "jeres område"}</b>.
+          {loebendeFag ? (
+            <>
+              <h1>Hvad er en god fast kunde værd for jer pr. måned?</h1>
+              <p className="st-hj">Det bruger vi kun til at vise jer regnestykket bagefter.</p>
+            </>
+          ) : (
+            <>
+              <h1>Hvilken størrelse opgaver er interessante?</h1>
+              <p className="st-hj">Så sorterer Birdly de opgaver fra, der er for store eller for små.</p>
+            </>
+          )}
+
+          <div className="st-valgkort st-valgkort-2">
+            {vaerdiListe.map((v) => (
+              <button
+                key={v.key}
+                type="button"
+                className={"st-valgkort-item" + (vaerdiValg === v.key ? " on" : "")}
+                aria-pressed={vaerdiValg === v.key}
+                onClick={() => {
+                  setVaerdiValg(v.key);
+                  // ⚠️ KUN PROJEKTFAG SÆTTER max_amount. Se noten ovenfor.
+                  if (!loebendeFag) setMaks(v.maks == null ? "" : String(v.maks));
+                }}
+              >
+                <b>{v.label}</b>
+              </button>
+            ))}
+          </div>
+
+          {/* ⚠️ §3.5-ADVARSLEN. Handelsbetingelserne undtager matchgarantien hvis
+              kunden afgrænser opgavestørrelsen til under 2,5 mio. kr. Vælger hun
+              et snævert loft, skal hun kunne se det HER — ikke opdage det den dag
+              hun beder om refusion. */}
+          {!loebendeFag && vaerdiValg && vaerdiListe.find((v) => v.key === vaerdiValg)?.garantiUndtaget && (
+            <p className="st-advarsel">
+              Bemærk: vælger I et loft under 2,5 mio. kr., gælder matchgarantien ikke.
+              I kan stadig bruge Birdly på helt normale vilkår.{" "}
+              <a href={GARANTI_LINK} target="_blank" rel="noreferrer">Se betingelserne</a>
             </p>
           )}
 
-          {/* ⚠️ BREDDE ØVERST OG ALDRIG FOLDET. Det er den beslutning der flytter
-              mest: med "alle" lægges fagets brede kode på, og den alene rammer 79
-              opgaver for entreprenør — uanset hvor få områder der er krydset af.
-              Målt: kun betonarbejder + "alle" giver 79, + "kun fag" giver 2. */}
-          <div className="st-bredde">
-            <span className="st-lab" style={{ margin: "0 0 8px" }}>Hvor bredt vil I fange opgaver?</span>
-            <label className={"st-radio" + (bredde === "alle" ? " on" : "")}>
-              <input type="radio" name="bredde" checked={bredde === "alle"} onChange={() => setBredde("alle")} />
-              {/* ⚠️ KUN LABELEN ER ÆNDRET (03-08-2026). Værdien er stadig
-                  bredde="alle", forvalget er uændret, og CPV-logikken bag er ikke
-                  rørt — den bor i birdly_effective_cpv_for. Teksten beskriver nu
-                  hvad valget GØR for kunden frem for hvad det hedder teknisk. */}
-              <span><b>Maksimér antallet af opgaver <em>anbefalet</em></b><i>Også de brede entrepriseudbud i jeres fag. Flere match, lidt mere bredt.</i></span>
-            </label>
-            <label className={"st-radio" + (bredde === "fag" ? " on" : "")}>
-              <input type="radio" name="bredde" checked={bredde === "fag"} onChange={() => setBredde("fag")} />
-              <span><b>Kun fagentrepriser</b><i>Færre, men kun de præcise områder I har valgt.</i></span>
-            </label>
-          </div>
+          <button
+            className="btn btn-teal st-bred"
+            disabled={!vaerdiValg}
+            onClick={tilResultat}
+          >
+            Find mine opgaver →
+          </button>
+          <button className="st-tilbage" onClick={() => setTrin(4)}>← Tilbage</button>
+        </div>
+      )}
 
-          {omraader.length > 0 ? (
-            <div className="st-fold">
-              {/* Resumé-linjen. Teksten kommer fra omrResume, som læser den ægte
-                  state — den kan ikke komme til at sige "alle valgt" om noget andet. */}
-              <button
-                type="button"
-                className={"st-foldknap" + (antalValgt === 0 ? " tom" : "")}
-                onClick={() => setAabenOmr((v) => !v)}
-                aria-expanded={aabenOmr}
-              >
-                <span>{omrResume}</span>
-                <i>{aabenOmr ? "skjul" : "ret"}</i>
+      {/* ═══════════════ SKÆRM 6 — BIRDLY SCAN ═══════════════
+          ⚠️ OVERGANGEN LYVER IKKE. Der står præcis hvad vi slår op på, og de tre
+          flueben er kundens EGNE valg. Ingen "scanner 4 millioner databaser",
+          ingen AI-animation. Opslaget tager reelt et øjeblik, og det er dét
+          øjeblik der vises — se noten ved tilResultat(). */}
+      {trin === 6 && (scanner || henter) && (
+        <div className="st-kort st-scan">
+          <div className="st-scan-ring" aria-hidden="true" />
+          <h1>Birdly leder efter opgaver, der matcher jer…</h1>
+          <ul className="st-scan-liste">
+            <li><span>✓</span> Fag: {fagResume || "valgt"}</li>
+            <li><span>✓</span> Område: {regionResume || "valgt"}</li>
+            <li><span>✓</span> Størrelse: {vaerdiLabel || "valgt"}</li>
+          </ul>
+        </div>
+      )}
+
+      {trin === 6 && !scanner && !henter && (
+        <div className="st-kort st-resultat">
+          {harMatch ? (
+            <>
+              <h1>Vi fandt opgaver, der passer til jer.</h1>
+              <p className="st-kontekst">{kontekstLinje}</p>
+
+              {/* ⚠️ TALLET ER MATCHMOTORENS EGET. kandidater.i_omraade kommer fra
+                  preview-kandidater, som kalder birdly_match_candidates_for —
+                  altså selve match-reglen. Det er samme tal kunden bagefter
+                  matches på, ikke et estimat. */}
+              <div className="st-res">
+                <b>{kandidater.i_omraade}</b>
+                <span>
+                  {kandidater.i_omraade === 1 ? "aktiv mulighed matcher" : "aktive muligheder matcher"} jeres valg
+                </span>
+              </div>
+
+              {/* ⚠️ ÆGTE OPGAVER, ELLER INGEN KORT. Kortene kommer fra det SAMME
+                  kandidatsæt som tallet — ikke fra en anden forespørgsel, og
+                  aldrig fra et andet fag eller en anden landsdel. Mangler
+                  eksemplerne (den additive udgave af preview-kandidater er ikke
+                  rullet ud endnu), viser vi tallet uden kort. Vi fylder ALDRIG
+                  hullet med noget irrelevant. */}
+              {eksempler.length > 0 && (
+                <div className="st-opgaver">
+                  {eksempler.map((n, i) => (
+                    <OpgaveKort key={i} opgave={n} omraade={regionResume} />
+                  ))}
+                </div>
+              )}
+
+              <p className="st-bevis-tekst">
+                Det er den slags opgaver, Birdly kan holde øje med for jer. I skal ikke
+                selv finde dem — når en ny mulighed matcher, får I den direkte på SMS og mail.
+              </p>
+
+              <button className="btn btn-teal st-bred" onClick={() => { sporFunnel("ValueAnchorViewed"); setTrin(7); window.scrollTo({ top: 0, behavior: "smooth" }); }}>
+                Ja — hold øje for mig →
               </button>
+            </>
+          ) : (
+            /* ⚠️ NUL ER ET LOVLIGT SVAR, OG VI PYNTER IKKE PÅ DET. Et nichefag i
+               en stille uge har legitimt 0. Vi opfinder ingen kort, og vi viser
+               ALDRIG landstallet som om det lå i kundens område — men vi nævner
+               det som dét det er, hvis der er noget. */
+            <>
+              <h1>Der er ingen aktive opgaver, der matcher præcis lige nu.</h1>
+              <p className="st-hj">
+                Det er netop derfor Birdly holder øje. Når en relevant mulighed dukker op,
+                får I besked på SMS og mail.
+              </p>
+              {kandidater?.paa_landsplan > 0 && (
+                <p className="st-hj">
+                  Der er <b>{kandidater.paa_landsplan}</b> i jeres fag på landsplan — prøv
+                  eventuelt at udvide området.
+                </p>
+              )}
+              <button className="btn btn-teal st-bred" onClick={() => { sporFunnel("ValueAnchorViewed"); setTrin(7); window.scrollTo({ top: 0, behavior: "smooth" }); }}>
+                Start overvågning →
+              </button>
+              <button className="btn btn-ghost st-bred" onClick={() => setTrin(4)}>Udvid mine kriterier</button>
+            </>
+          )}
+          <button className="st-tilbage" onClick={() => setTrin(5)}>← Tilbage</button>
+        </div>
+      )}
 
-              {/* ⚠️ FOLDNING ÆNDRER KUN SYNLIGHED. Afkrydsningerne bor i omraadeValg
-                  på komponenten, ikke i disse felter — foldes listen væk, står de
-                  valgte områder uændret, og fagKoder (og dermed den effektive
-                  CPV-liste) er den samme som hvis listen var åben. */}
-              {aabenOmr && (
+      {/* ═══════════════ SKÆRM 7 — VÆRDI, OPSUMMERING OG RISIKO ═══════════════
+          ⚠️ SAMMENLIGNING, IKKE AFKAST. Vi stiller to beløb op mod hinanden og
+          skriver rent ud at vi ikke garanterer en vundet opgave. Reglen og alle
+          tal bor i lib/vaerdiAnker.js — læs noten dér før du ændrer en sætning.
+          Der må ALDRIG stå "Birdly giver X× igen" eller "du tjener pengene hjem". */}
+      {trin === 7 && (
+        <div className="st-kort">
+          <h1>{anker.loebende ? "Hvad er én fast aftale værd?" : "Hvad er én opgave værd?"}</h1>
+
+          <div className="st-anker">
+            <div className="st-anker-boks">
+              <span className="st-maerkat">Eksempel</span>
+              {anker.loebende ? (
                 <>
-                  <div className="st-omrhoved">
-                    <span className="st-lab" style={{ margin: 0 }}>Dine arbejdsområder</span>
-                    <button type="button" className="st-alle" onClick={() => saetAlle(!alleValgt)}>
-                      {alleValgt ? "Fjern alle" : `Tag alle ${valgtFag?.label_da || "områder"} med`}
-                    </button>
-                  </div>
-                  <div className="st-omr">
-                    {omraader.map((a) => (
-                      <label key={a.cpv} className={"st-omrk" + (omraadeValg[a.cpv] ? " on" : "")}>
-                        <input
-                          type="checkbox"
-                          checked={!!omraadeValg[a.cpv]}
-                          onChange={() => setOmraadeValg((s) => ({ ...s, [a.cpv]: !s[a.cpv] }))}
-                        />
-                        {/* ⚠️ Undertitlen vises KUN når den siger noget nyt. For flere
-                            områder er kunde_titel og name_da identiske
-                            ("Byggemodning"), og så stod ordet to gange under hinanden. */}
-                        <span>
-                          <b>{a.kunde_titel || a.name_da}</b>
-                          {a.name_da && a.kunde_titel && a.name_da !== a.kunde_titel && <i>{a.name_da}</i>}
-                        </span>
-                      </label>
-                    ))}
-                  </div>
+                  <div className="st-anker-navn">En aftale på</div>
+                  <div className="st-anker-tal">{anker.maaned}</div>
+                  <div className="st-anker-lig">=</div>
+                  <div className="st-anker-aar">{anker.aar}</div>
+                </>
+              ) : (
+                <>
+                  <div className="st-anker-navn">En opgave til</div>
+                  <div className="st-anker-tal">{anker.opgave}</div>
                 </>
               )}
             </div>
-          ) : (
-            <p className="st-hj">Dit fag har ingen underområder — I matches på fagets brede koder.</p>
+            <div className="st-anker-vs" aria-hidden="true">mod</div>
+            <div className="st-anker-boks st-anker-pris">
+              <span className="st-maerkat st-maerkat-lys">Faktisk pris</span>
+              <div className="st-anker-navn">Birdly et helt år</div>
+              <div className="st-anker-tal">{priceText.yearlyBare}</div>
+              <div className="st-anker-aar">ekskl. moms</div>
+            </div>
+          </div>
+
+          {anker.forhold && (
+            <p className="st-anker-linje">
+              {anker.loebende
+                ? <>En vundet aftale i den størrelse svarer til <b>{anker.forhold.tekst}</b> Birdlys årspris.</>
+                : <>Et helt års Birdly svarer til <b>{anker.andel}</b> af værdien på en opgave i den størrelse.</>}
+            </p>
           )}
 
-          {/* Nul-dæknings-værnet gælder uændret: tilResultat() blokerer på tom liste,
-              også når den er foldet. Foldning kan ikke snige en tom søgning forbi. */}
-          <button className="btn btn-teal st-bred" onClick={tilResultat}>Fortsæt →</button>
-          <button className="st-tilbage" onClick={() => setTrin(2)}>← Tilbage</button>
+          {/* ⚠️ FORBEHOLDET ER OBLIGATORISK OG STÅR LIGE UNDER TALLET. Uden det
+              læses forholdet som et løfte om udbytte. Flyt det aldrig ned under
+              knappen, og gør det aldrig mindre end her. */}
+          <p className="st-forbehold">{FORBEHOLD}</p>
+          <p className="st-hj">{BETINGET_LINJE}</p>
+
+          {/* ═══ DET HAR I FORTALT OS ═══ */}
+          <div className="st-opsum">
+            <h2>Det har I fortalt os</h2>
+            <dl>
+              {firma && <div><dt>Virksomhed</dt><dd>{firma}</dd></div>}
+              {metode && <div><dt>Finder opgaver i dag</dt><dd>{METODER.find((m) => m.key === metode)?.titel}</dd></div>}
+              {fagResume && <div><dt>Leder efter</dt><dd>{fagResume}</dd></div>}
+              {regionResume && <div><dt>Område</dt><dd>{regionResume}</dd></div>}
+              {vaerdiLabel && <div><dt>{loebendeFag ? "Værdi pr. måned" : "Opgavestørrelse"}</dt><dd>{vaerdiLabel}</dd></div>}
+              <div><dt>Opgavetyper</dt><dd>Offentlige + private</dd></div>
+              {harMatch && <div><dt>Aktive match</dt><dd>{kandidater.i_omraade}</dd></div>}
+            </dl>
+            <p className="st-opsum-fin">Birdly holder øje med det her automatisk.</p>
+          </div>
+
+          {/* ═══ RISIKOEN ═══ */}
+          <div className="st-risiko">
+            <span className="st-risiko-kick">Prøv det først</span>
+            <div className="st-risiko-tal">0 kr. i dag</div>
+            <ul>
+              <li><span>✓</span> {TRIAL_DAYS} dage gratis</li>
+              <li><span>✓</span> Ingen binding</li>
+              <li><span>✓</span> Ingen portal</li>
+              <li><span>✓</span> {GARANTI.kort}</li>
+            </ul>
+            <p className="st-risiko-fin">
+              {GARANTI.praecis} {GARANTI.forbehold}{" "}
+              <a href={GARANTI_LINK} target="_blank" rel="noreferrer">{GARANTI.linkTekst}</a>
+            </p>
+          </div>
+
+          <button className="btn btn-teal st-bred" onClick={() => { setTrin(8); window.scrollTo({ top: 0, behavior: "smooth" }); }}>
+            Vælg plan →
+          </button>
+          <button className="st-tilbage" onClick={() => setTrin(6)}>← Tilbage</button>
         </div>
       )}
 
-      {/* ---------------- TRIN 4 — ÆGTE TAL + KONTAKT ---------------- */}
-      {trin === 4 && (
+      {/* ═══════════════ SKÆRM 8 — PLAN, KONTAKT OG SAMTYKKER ═══════════════
+          ⚠️ HER LIGGER SIGNUP-KALDET, OG RÆKKEFØLGEN ER URØRLIG:
+          submitSignup → createSubscriptionSession → kortvindue. Knappen kalder
+          det EKSISTERENDE tilBetaling(), som har alle værn: dublet-CVR/telefon,
+          nul-dækning, betal-straks ved opbrugt prøve, og de to samtykker.
+          Byg aldrig en genvej udenom.
+          ⚠️ SAMTYKKERNE ER PÅKRÆVEDE HER. Trin 4 opretter kunden med
+          terms_accepted: true — fjernes krydset her, registrerer vi en accept
+          hun ikke har givet. */}
+      {trin === 8 && (
         <div className="st-kort">
-          {henter ? (
-            <><h1>Vi kigger efter…</h1><p className="st-hj">Et øjeblik.</p></>
-          ) : (
-            <>
-              {visResultat(kandidater) === "lokalt" && (
-                <>
-                  {/* ⚠️ TALLET I OVERSKRIFTEN ER MATCHMOTORENS EGET (03-08-2026).
-                      kandidater.i_omraade kommer fra preview-kandidater, som kalder
-                      selve match-reglen — det er samme tal som i boksen nedenunder,
-                      ikke et andet. Grenen her renderer KUN når visResultat() siger
-                      "lokalt", altså når tallet er > 0, så overskriften kan ikke
-                      komme til at love noget ved 0. Den ærlige 0-tekst står uændret
-                      i "landsplan"- og "intet"-grenene længere nede. */}
-                  <h1>Vi fandt allerede {kandidater.i_omraade} {kandidater.i_omraade === 1 ? "opgave" : "opgaver"} til jer.</h1>
-                  <div className="st-res">
-                    <b>{kandidater.i_omraade}</b>
-                    <span>som passer til jeres virksomhed</span>
-                  </div>
-                </>
-              )}
+          <h1>Lad Birdly holde øje for jer.</h1>
 
-              {/* ⚠️ 0 I OMRÅDET. Landstallet står som landstal og udgiver sig ALDRIG
-                  for at være i kundens område — og hun får en handling, ikke en trøst. */}
-              {visResultat(kandidater) === "landsplan" && (
-                <>
-                  <h1>Vi holder øje for jer.</h1>
-                  <div className="st-res st-nul">
-                    <b>Ingen match i dit område lige nu</b>
-                    <span>— men <b>{kandidater.paa_landsplan}</b> i dit fag på landsplan.</span>
-                  </div>
-                  <p className="st-hj">Prøv at udvide jeres område, eller lad os holde øje — så får I besked, så snart der kommer en.</p>
-                  <button className="btn btn-ghost st-bred" onClick={() => setTrin(2)}>Udvid område</button>
-                </>
-              )}
+          <div className="st-plan-hero">
+            <span className="st-plan-badge">Bedst værdi</span>
+            <div className="st-plan-navn">Årligt abonnement</div>
+            <div className="st-plan-pris">{priceText.yearly}</div>
+            <div className="st-plan-under">ekskl. moms · ca. {prMaaned} kr./md.</div>
+            <div className="st-plan-spar">
+              Betal for 10 måneder — få 12. Spar {YEARLY_SAVING.amount.toLocaleString("da-DK")} kr.
+            </div>
+            <ul className="st-plan-liste">
+              <li><span>✓</span> {TRIAL_DAYS} dage gratis</li>
+              <li><span>✓</span> Offentlige + private opgaver</li>
+              <li><span>✓</span> SMS + mail ved match</li>
+              <li><span>✓</span> Jeres egne kriterier</li>
+              <li><span>✓</span> {GARANTI.kort}</li>
+              <li><span>✓</span> Ingen binding</li>
+            </ul>
+          </div>
 
-              {visResultat(kandidater) === "intet" && (
-                <>
-                  <h1>Vi holder øje for jer.</h1>
-                  <p className="st-hj">Der er ikke en opgave i jeres fag lige nu. Så snart der kommer en, får I besked på SMS og mail. I skal ikke gøre noget.</p>
-                </>
-              )}
+          {/* ⚠️ MÅNEDEN SKJULES ALDRIG. Året er anbefalingen, men en kunde der vil
+              betale månedligt skal kunne se det uden at lede. Ingen mørke mønstre. */}
+          <div className="st-maanedsvalg">
+            <span>Foretrækker I månedlig betaling?</span>
+            <button
+              type="button"
+              className={"st-maanedsknap" + (interval === "monthly" ? " on" : "")}
+              aria-pressed={interval === "monthly"}
+              onClick={() => { setInterval_(interval === "monthly" ? "yearly" : "monthly"); sporFunnel("PlanSelected", { interval: interval === "monthly" ? "yearly" : "monthly" }); }}
+            >
+              {interval === "monthly"
+                ? "Månedsbetaling valgt — " + priceText.monthly
+                : "Vælg månedsbetaling — " + priceText.monthly}
+            </button>
+          </div>
 
-              {/* ⚠️ ANGSTEN FJERNES FØR FELTERNE, ikke efter. Her beder vi om navn,
-                  mail og mobilnummer — det er første gang kunden afgiver noget
-                  personligt, og det er dér tvivlen "koster det her noget nu?"
-                  opstår. Sætningen står derfor OVER felterne. Den lover intet nyt:
-                  0 kr. i dag og ingen binding er præcis det checkouten siger to
-                  klik senere. */}
-              <p className="st-tryghed">
-                {TRIAL_DAYS} dage gratis · <b>0 kr. i dag</b> · ingen binding · opsig gratis inden
-              </p>
+          <span className="st-lab" style={{ marginTop: 26 }}>Hvor skal beskederne sendes hen?</span>
 
-              <label className="st-lab" htmlFor="navn">Navn</label>
-              <input id="navn" className="st-felt" value={navn} onChange={(e) => setNavn(e.target.value)} autoComplete="name" />
+          <label className="st-lab" htmlFor="navn">Navn</label>
+          <input id="navn" className="st-felt" value={navn} onChange={(e) => setNavn(e.target.value)} autoComplete="name" />
 
-              <label className="st-lab" htmlFor="mail">E-mail</label>
-              <input id="mail" className="st-felt" type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" />
+          <label className="st-lab" htmlFor="mail">E-mail</label>
+          <input id="mail" className="st-felt" type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" />
 
-              <label className="st-lab" htmlFor="tlf">Mobilnummer <span className="st-valgfri">(det er her beskeden lander)</span></label>
-              <input id="tlf" className="st-felt" inputMode="tel" value={tlf} onChange={(e) => setTlf(e.target.value)} autoComplete="tel" placeholder="12 34 56 78" />
+          <label className="st-lab" htmlFor="tlf">Mobilnummer <span className="st-valgfri">(det er her beskeden lander)</span></label>
+          <input id="tlf" className="st-felt" inputMode="tel" value={tlf} onChange={(e) => setTlf(e.target.value)} autoComplete="tel" placeholder="12 34 56 78" />
 
-              {/* ⚠️ OPLYSNINGSPLIGT, IKKE ET SAMTYKKE — og derfor bevidst IKKE et
-                  flueben. Nye kunder får wants_private_opgaver = true som standard
-                  (migration 0090). Opt-out-modellen holder kun, hvis kunden ER blevet
-                  oplyst; annonceringen 24-08-2026 lukkede hullet for de eksisterende
-                  kunder, og denne linje lukker det for alle fremtidige.
+          {/* ⚠️ OPLYSNINGSPLIGT, IKKE ET SAMTYKKE — og derfor bevidst IKKE et
+              flueben. Nye kunder får wants_private_opgaver = true som standard
+              (migration 0090). Opt-out-modellen holder kun hvis kunden ER blevet
+              oplyst. Et flueben her ville gøre det til et tilvalg igen og vende
+              hele modellen tilbage til opt-in.
+              ⚠️ ORDLYDEN ER JONAS' OG ER INDSAT ORDRET. Skriv den ikke om. */}
+          <p className="st-hj" style={{ marginTop: 18 }}>
+            Din overvågning inkluderer både offentlige udbud og private opgaver i dit
+            fag og område. Du kan til enhver tid fravælge private opgaver under
+            &ldquo;Rediger&rdquo; på din opgaveside.
+          </p>
 
-                  ⚠️ ET FLUEBEN HER VILLE GØRE DET TIL ET TILVALG IGEN og dermed vende
-                  hele modellen tilbage til opt-in. Hun skal informeres, ikke spørges.
+          {/* ⚠️ TO SEPARATE SAMTYKKER (Clearhaus-krav). Handelsbetingelser og
+              abonnementsbetingelser skal accepteres hver for sig. Begge er
+              PÅKRÆVEDE og gater knappen nedenfor. */}
+          <label className="st-tjek">
+            <input type="checkbox" checked={betingelser} onChange={(e) => setBetingelser(e.target.checked)} />
+            <span>Jeg accepterer <a href="/handelsbetingelser" target="_blank" rel="noreferrer">handelsbetingelserne</a> og <a href="/privatlivspolitik" target="_blank" rel="noreferrer">privatlivspolitikken</a>.</span>
+          </label>
 
-                  ⚠️ DEN STÅR OVER SAMTYKKERNE, ikke under knappen. Oplysningen skal
-                  være læst inden hun accepterer — ikke findes bagefter.
+          <label className="st-tjek">
+            <input type="checkbox" checked={abonnement} onChange={(e) => setAbonnement(e.target.checked)} />
+            <span>Jeg accepterer <a href="/abonnementsbetingelser" target="_blank" rel="noreferrer">abonnementsbetingelserne</a> — herunder at abonnementet fornyes automatisk, og at mit betalingskort gemmes hos vores betalingsudbyder, indtil jeg siger op.</span>
+          </label>
 
-                  ⚠️ ORDLYDEN ER JONAS' OG ER INDSAT ORDRET. Skriv den ikke om. Den
-                  peger på "Rediger" på opgavesiden, og dét sted skal blive ved med at
-                  hedde det — se noten i MineOpgaver.js. */}
-              <p className="st-hj" style={{ marginTop: 18 }}>
-                Din overvågning inkluderer både offentlige udbud og private opgaver i dit
-                fag og område. Du kan til enhver tid fravælge private opgaver under
-                &ldquo;Rediger&rdquo; på din opgaveside.
-              </p>
-
-              {/* ⚠️ TO SEPARATE SAMTYKKER (Clearhaus-krav). Handelsbetingelser og
-                  abonnementsbetingelser skal accepteres hver for sig, så det er
-                  tydeligt hvad kunden siger ja til. Begge er PÅKRÆVEDE og gater
-                  knappen nedenfor. Samme .st-tjek-klasse som før — den nye er en
-                  spejling af den eksisterende, ikke en ny stil. */}
-              <label className="st-tjek">
-                <input type="checkbox" checked={betingelser} onChange={(e) => setBetingelser(e.target.checked)} />
-                <span>Jeg accepterer <a href="/handelsbetingelser" target="_blank" rel="noreferrer">handelsbetingelserne</a> og <a href="/privatlivspolitik" target="_blank" rel="noreferrer">privatlivspolitikken</a>.</span>
-              </label>
-
-              <label className="st-tjek">
-                <input type="checkbox" checked={abonnement} onChange={(e) => setAbonnement(e.target.checked)} />
-                <span>Jeg accepterer <a href="/abonnementsbetingelser" target="_blank" rel="noreferrer">abonnementsbetingelserne</a> — herunder at abonnementet fornyes automatisk, og at mit betalingskort gemmes hos vores betalingsudbyder, indtil jeg siger op.</span>
-              </label>
-
-              <button className="btn btn-teal st-bred" onClick={tilBetaling} disabled={arbejder}>
-                {arbejder ? "Et øjeblik…" : "Fortsæt →"}
-              </button>
-              <button className="st-tilbage" onClick={() => setTrin(3)}>← Tilbage</button>
-            </>
-          )}
+          <button className="btn btn-teal st-bred" onClick={tilBetaling} disabled={arbejder}>
+            {arbejder ? "Et øjeblik…" : "Start min overvågning →"}
+          </button>
+          <p className="st-under-knap">0 kr. trækkes i dag · {TRIAL_DAYS} dage gratis · opsig gratis inden</p>
+          <button className="st-tilbage" onClick={() => setTrin(7)}>← Tilbage</button>
         </div>
       )}
 
-      {/* ---------------- TRIN 5 — BETALING ---------------- */}
-      {/* ⚠️ KORTLØS BEKRÆFTELSE. Erstatter HELE betalingstrinnet — der er ingen
-          plan-vælger, ingen pris og ingen knap til Reepay, fordi der ikke skal
-          betales noget. Notebox'en er den samme besked som velkomstmailens, så
-          kunden får den både på skærmen og på skrift. */}
-      {trin === 5 && kortloes && (
+      {trin === 9 && kortloes && (
         <div className="st-kort st-kvit">
           <div className="st-ic">✓</div>
           <h1>Velkommen til Birdly!</h1>
@@ -1083,7 +1610,7 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
         </div>
       )}
 
-      {trin === 5 && !kortloes && (
+      {trin === 9 && !kortloes && (
         /* ══════════════════════════════════════════════════════════════════════
            CHECKOUT I TO KOLONNER (03-09-2026). Venstre = handlingen, højre =
            konteksten. På mobil stables de, og de to lange infobokse foldes
@@ -1301,6 +1828,8 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
           </aside>
         </div>
       )}
+
+
 
     </main>
   );

@@ -149,9 +149,17 @@
 .sg .sg-bevis { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: #fff; padding: 30px 0; }
 .sg-bevis-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; align-items: center; }
 .sg-bevis-celle { text-align: center; }
-.sg-tal { font-size: 32px; font-weight: 800; color: var(--teal); letter-spacing: -.03em; line-height: 1.1; }
+.sg-tal { font-size: 30px; font-weight: 800; color: var(--teal); letter-spacing: -.03em; line-height: 1.1; }
 .sg-bevis-celle small { display: block; font-size: 13.5px; color: var(--navy-soft); margin-top: 5px; line-height: 1.4; }
-.sg-bevis-h { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .09em; color: var(--navy-soft); text-align: center; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; gap: 9px; }
+/* ⚠️ OVERSKRIFTEN ER DET FØRSTE ØJET SKAL FANGE, ikke tallene. Bjælken beviser
+   at motoren kører — den er ikke et analytics-panel. Derfor navy, større og
+   tydeligere end før, mens tallene er blevet en anelse mindre. */
+.sg-bevis-h {
+  font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: .11em;
+  color: var(--navy); text-align: center; margin-bottom: 22px;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+}
+.sg-bevis-opd { text-align: center; font-size: 12.5px; color: var(--navy-soft); margin-top: 16px; }
 .sg-prik { width: 9px; height: 9px; border-radius: 50%; background: var(--teal); flex: 0 0 9px; animation: sgPuls 2.4s ease-in-out infinite; }
 @keyframes sgPuls { 0%,100% { box-shadow: 0 0 0 0 rgba(0,179,166,.45); transform: scale(1); } 50% { box-shadow: 0 0 0 6px rgba(0,179,166,0); transform: scale(1.12); } }
 @media (prefers-reduced-motion: reduce) { .sg-prik { animation: none; box-shadow: 0 0 0 3px rgba(0,179,166,.16); } }
@@ -220,18 +228,34 @@
 .sg-fagsvar-under { font-size: 17.5px; color: var(--navy-soft); margin-top: 8px; }
 .sg-fagsvar-under b { color: var(--navy); font-weight: 700; }
 
-/* De tre ægte titler. ⚠️ KUN titel — ingen frist, intet beløb, ingen køber,
-   intet id. Det er en bevidst paywall-grænse (30-07-2026, bekræftet 06-09-2026):
-   tallet og titlerne beviser at der sker noget, detaljerne er det kunden betaler
-   for. Tilføjer du et felt her, forærer du produktet væk. */
-.sg-titler { list-style: none; margin-top: 26px; display: grid; gap: 9px; text-align: left; }
-.sg-titler li {
-  background: var(--grey); border-radius: 12px; padding: 13px 16px;
-  font-size: 15px; color: var(--navy); line-height: 1.45;
-  display: flex; align-items: flex-start; gap: 11px;
+/* Resultatlinjen over kortene — ægte tal fra matchmotoren. */
+.sg-fagsvar-linje {
+  text-align: center; font-size: clamp(17px, 1.5vw, 20px); line-height: 1.5;
+  color: var(--navy); margin-bottom: 24px;
 }
-.sg-titler .sg-mrk { font-size: 10.5px; font-weight: 800; letter-spacing: .07em; color: var(--teal); background: #fff; border-radius: 6px; padding: 3px 7px; flex: 0 0 auto; margin-top: 1px; }
-.sg-laast { text-align: center; font-size: 13.5px; color: var(--navy-soft); margin-top: 18px; }
+.sg-fagsvar-linje b { font-weight: 800; color: var(--teal); font-size: 1.25em; }
+
+/* ⚠️ ÆGTE OPGAVER, ELLER INGEN KORT. Hvert felt kommer fra matchmotoren; mangler
+   et felt på den konkrete opgave, udgår linjen. Se components/salg/OpgaveKort.js. */
+.sg-opgaver { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; text-align: left; }
+.sg-opgave {
+  background: #fff; border: 1px solid var(--line); border-radius: 14px;
+  padding: 20px 20px 18px; display: flex; flex-direction: column;
+}
+.sg-opgave-badge {
+  align-self: flex-start; font-size: 10.5px; font-weight: 800; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--teal); background: var(--sky-soft);
+  border-radius: 6px; padding: 4px 9px; margin-bottom: 12px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+.sg-opgave-titel { font-size: 16.5px; line-height: 1.35; margin-bottom: 6px; }
+.sg-opgave-koeber { font-size: 14.5px; color: var(--navy-soft); margin-bottom: 14px; }
+.sg-opgave-meta { margin-top: auto; display: grid; gap: 7px; }
+.sg-opgave-meta > div { display: flex; justify-content: space-between; gap: 12px; font-size: 13.5px; }
+.sg-opgave-meta dt { color: var(--navy-soft); }
+.sg-opgave-meta dd { font-weight: 700; color: var(--navy); text-align: right; }
+
+.sg-laast { text-align: center; font-size: 13.5px; color: var(--navy-soft); margin-top: 20px; }
 
 /* ---------------------------------------------------------- 7 · sms-demo */
 .sg-demogrid { display: grid; grid-template-columns: .9fr 1.1fr; gap: 56px; align-items: center; }
@@ -240,16 +264,42 @@
 .sg-punkter svg { flex: 0 0 20px; margin-top: 3px; }
 
 /* ------------------------------------------------------------- 8 · værdi */
-.sg-vaerdi { display: grid; grid-template-columns: 1fr auto 1fr; gap: 30px; align-items: center; margin-top: 44px; }
-.sg-vaerdi-boks { background: #fff; border: 1px solid var(--line); border-radius: var(--r); padding: 38px 26px; text-align: center; box-shadow: var(--shadow); }
-.sg-vaerdi-boks .sg-tal { font-size: clamp(38px, 5vw, 58px); }
-.sg-vaerdi-boks small { display: block; font-size: 15px; color: var(--navy-soft); margin-top: 8px; }
-.sg-vaerdi-vs { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 17px; color: var(--navy-soft); }
-/* Prisboksen er navy, så øjet lander på beløbet — ikke en ny farve, bare den
-   kontrast tokens allerede giver. */
+/* ---------------------------------------------------- 6 · økonomisk værdi
+   To beløb ved siden af hinanden. ⚠️ Sammenligningen er hele sektionen — derfor
+   er begge bokse lige store, og "mod" står imellem dem som en vægtskål, ikke som
+   en pil der peger på en gevinst. */
+.sg-vaerdi { display: grid; grid-template-columns: 1fr auto 1fr; gap: 26px; align-items: stretch; margin-top: 40px; }
+.sg-vaerdi-boks {
+  background: #fff; border: 1px solid var(--line); border-radius: var(--r);
+  padding: 32px 26px 30px; text-align: center; box-shadow: var(--shadow); position: relative;
+}
+.sg-vaerdi-boks .sg-tal { font-size: clamp(34px, 4.4vw, 52px); }
+.sg-vaerdi-navn { font-size: 15px; font-weight: 700; color: var(--navy-soft); font-family: 'Plus Jakarta Sans', sans-serif; margin-bottom: 12px; }
+.sg-vaerdi-lig { font-size: 20px; font-weight: 700; color: var(--navy-soft); margin: 8px 0 4px; }
+.sg-vaerdi-aar { font-size: 17px; font-weight: 700; color: var(--navy); }
+.sg-vaerdi-vs { display: flex; align-items: center; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 17px; color: var(--navy-soft); }
 .sg-vaerdi-boks.sg-pris-side { background: var(--navy); border-color: var(--navy); }
-.sg-vaerdi-boks.sg-pris-side .sg-tal { color: #fff; }
-.sg-vaerdi-boks.sg-pris-side small { color: var(--sky-200); }
+.sg-vaerdi-boks.sg-pris-side .sg-tal,
+.sg-vaerdi-boks.sg-pris-side .sg-vaerdi-aar { color: #fff; }
+.sg-vaerdi-boks.sg-pris-side .sg-vaerdi-navn { color: var(--sky-200); }
+
+/* ⚠️ "EKSEMPEL"-MÆRKATET SKAL VÆRE LÆSBART UDEN AT MAN LEDER. Det er det der
+   skiller et realistisk regneeksempel fra en påstand om hvad kunden får. Derfor
+   sidder det på selve kortet, ikke som en fodnote under sektionen. */
+.sg-maerkat {
+  position: absolute; top: -11px; left: 50%; transform: translateX(-50%);
+  background: var(--sky-soft); color: var(--navy); border: 1px solid var(--sky-200);
+  font-size: 11px; font-weight: 800; letter-spacing: .09em; text-transform: uppercase;
+  padding: 4px 12px; border-radius: 999px; font-family: 'Plus Jakarta Sans', sans-serif;
+}
+.sg-maerkat-lys { background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.3); color: #fff; }
+
+/* Forbeholdet under forholdstallet. Dæmpet, men aldrig lille nok til at blive
+   overset — uden det læses tallet som et løfte om udbytte. */
+.sg-forbehold {
+  max-width: 62ch; margin: 12px auto 0; text-align: center;
+  font-size: 14.5px; line-height: 1.55; color: var(--navy-soft);
+}
 
 /* -------------------------------------------------------- 10 · ikke portal */
 .sg-vs { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-top: 40px; }
@@ -265,7 +315,22 @@
 .sg-vs-liste svg { flex: 0 0 18px; margin-top: 3px; }
 
 /* ------------------------------------------------------------ 11 · priser */
+/* ⚠️ ÉT HOVEDTILBUD, IKKE TO LIGE KORT. To ligeværdige priskort bad kunden
+   vælge mellem noget hun ikke kunne se forskel på. Året står nu alene og bredt,
+   måneden som en tydelig linje under — synlig, men ikke tilbuddet. */
+.sg-tilbud { max-width: 620px; margin: 40px auto 0; }
 .sg-planer { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-top: 40px; max-width: 820px; margin-left: auto; margin-right: auto; }
+.sg-maaned {
+  display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap;
+  margin-top: 18px; padding: 18px 22px; background: #fff;
+  border: 1px solid var(--line); border-radius: 14px;
+}
+.sg-maaned b { display: block; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 15.5px; color: var(--navy); }
+.sg-maaned span { display: block; font-size: 14px; color: var(--navy-soft); margin-top: 3px; }
+.sg-plan-fin { font-size: 13.5px; color: var(--navy-soft); text-align: center; margin-top: 14px; line-height: 1.5; }
+.sg-garantiboks { max-width: 620px; margin: 26px auto 0; text-align: center; }
+.sg-garantiboks p { font-size: 16px; color: var(--navy); }
+.sg-fin-midt { text-align: center; }
 .sg-plan { background: #fff; border: 1.5px solid var(--line); border-radius: var(--r); padding: 32px 28px; display: flex; flex-direction: column; position: relative; }
 /* År fremhæves — men måned skjules ALDRIG. Begge skal kunne vælges frit. */
 .sg-plan-frem { border-color: var(--teal); box-shadow: var(--shadow); }
@@ -298,6 +363,12 @@
 .sg .sg-faq summary::-webkit-details-marker { display: none; }
 .sg-faq summary .sg-pm { color: var(--sky); font-size: 22px; font-weight: 700; flex: 0 0 auto; line-height: 1; }
 .sg .sg-faq details[open] summary .sg-pm { transform: rotate(45deg); }
+.sg-faq-mere {
+  display: block; margin: 16px auto 0; background: none; border: 0; cursor: pointer;
+  font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 15px;
+  color: var(--sky); text-decoration: underline; padding: 8px 12px;
+}
+.sg-faq-mere:hover { color: var(--teal); }
 .sg .sg-faq-svar { padding: 0 22px 20px; font-size: 15.5px; line-height: 1.65; color: var(--navy-soft); }
 
 /* --------------------------------------------------------- 12 · slut-cta */
@@ -326,6 +397,29 @@
    forklaring, CTA, trust og et glimt af telefonen. Derfor skrumper hero-padding
    først, og telefonen bliver mindre frem for at ryge ned under en tom skærm.
    ============================================================================ */
+/* ============================================================================
+   STOR SKÆRM — indholdet skal fylde, ikke svømme.
+
+   ⚠️ PROBLEMET DER LØSES: ved 1920px stod en 1180px spalte midt i et enormt
+   hvidt lærred, og siden lignede en mobilside der var blevet tabt på en
+   skærm. Løsningen er IKKE at gøre alt kæmpestort — det er at give
+   indholdsbredden og typografien lov til at vokse en smule, og samtidig
+   stramme den lodrette luft, så en sektion ikke fylder en hel skærm.
+   ============================================================================ */
+@media (min-width: 1500px) {
+  .sg-wrap { max-width: 1320px; }
+  .sg .sg-sek { padding: 92px 0; }
+  .sg-hero h1 { font-size: 62px; }
+  .sg-hero .sg-lead { font-size: 21px; max-width: 42ch; }
+  .sg-big { font-size: 50px; }
+  .sg-lead { font-size: 19.5px; }
+  .sg-tal { font-size: 34px; }
+  .sg-telefon { width: 330px; }
+  .sg-kort p, .sg-trin-kort p { font-size: 16.5px; }
+  .sg-opgave-titel { font-size: 17.5px; }
+  .sg-tilbud { max-width: 680px; }
+}
+
 @media (max-width: 1024px) {
   .sg .sg-sek { padding: 68px 0; }
   .sg-herogrid { grid-template-columns: 1fr; gap: 40px; }
@@ -335,8 +429,13 @@
   .sg-vaerdi { grid-template-columns: 1fr; gap: 18px; }
   .sg-vaerdi-vs { text-align: center; }
 }
+@media (max-width: 1024px) {
+  /* Tre opgavekort ved siden af hinanden bliver for smalle før 1024px —
+     titlerne på offentlige udbud er lange. */
+  .sg-opgaver { grid-template-columns: 1fr 1fr; }
+}
 @media (max-width: 860px) {
-  .sg-tre, .sg-trin, .sg-vs, .sg-planer { grid-template-columns: 1fr; }
+  .sg-tre, .sg-trin, .sg-vs, .sg-planer, .sg-opgaver { grid-template-columns: 1fr; }
   .sg-bevis-grid { grid-template-columns: 1fr 1fr; gap: 26px 18px; }
   .sg-fire { grid-template-columns: 1fr 1fr; }
   .sg-risiko-kort { padding: 34px 24px; }
@@ -371,4 +470,11 @@
   .sg-risiko-kort h2 { font-size: 23px; }
   .sg-anker { font-size: 16.5px; }
   .sg-flow-pil { transform: rotate(90deg); }
+  /* Værdi-sammenligningen stables: beløb, "mod", beløb. */
+  .sg-vaerdi { grid-template-columns: 1fr; gap: 14px; }
+  .sg-vaerdi-boks { padding: 26px 20px 22px; }
+  .sg-maaned { flex-direction: column; align-items: stretch; text-align: center; gap: 12px; }
+  .sg-maaned .sg-btn { width: 100%; }
+  .sg-opgave-titel { font-size: 16px; }
+  .sg-fagsvar-linje { font-size: 16.5px; }
 }

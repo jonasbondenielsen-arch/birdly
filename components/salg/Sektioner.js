@@ -1,30 +1,31 @@
 import Link from "next/link";
 import Cta, { CtaSekundaer } from "./Cta";
 import SmsTelefon from "./SmsTelefon";
+import FaqListe from "./FaqListe";
 import { Flueben, Kryds, Oeje, Bunke, Ur } from "./Ikoner";
 import { daTal, fmtOpdateret } from "../../lib/opgaveTal";
 import { PLAN, priceText, YEARLY_SAVING, TRIAL_DAYS } from "../../lib/pakke";
-import { GARANTI, GARANTI_LINK, TRUST, VAERDI_ANKER, VAERDI_UNDER, EJER_LINJE } from "../../lib/salgTekst";
-import { FAQ_SALG } from "../../lib/faq";
+import { GARANTI, GARANTI_LINK, TRUST, VAERDI_ANKER, EJER_LINJE } from "../../lib/salgTekst";
+import { byggAnker, BETINGET_LINJE } from "../../lib/vaerdiAnker";
 
 // ============================================================================
 // DE 13 SEKTIONER. Rækkefølgen bor i den side der bruger dem — her bor kun
 // indholdet, så /kom-i-gang, forsiden og de tre støttesider kan sætte dem
 // sammen forskelligt uden at copy'en kan komme til at drive fra hinanden.
 //
-// ARKITEKTUREN (Hyros' konverterings-logik, ikke deres udseende):
-//   RESULTAT → RISIKO FJERNET → MOTOR → BEVIS → RESULTAT IGEN
-// og undervejs, gentagne gange: hvad kunden vil have → hvorfor hun måske ikke
-// får det → hvorfor Birdly løser det → bevis → hvorfor prisen er lille → CTA.
+// ARKITEKTUREN:
+//   RESULTAT → PROBLEM → BEVIS → MOTOR → ØKONOMISK VÆRDI → RISIKO → TILBUD → CTA
 //
 // ⚠️ SÆLG RESULTATET, IKKE SOFTWAREN. Ingen sektion herunder må lede med
-// udbudsovervågning, CPV-koder, AI, API'er, databaser eller dashboards. Kunden
-// vil have flere relevante opgaver uden selv at lede; alt andet er vores
-// arbejde, ikke hendes gevinst.
+// udbudsovervågning, CPV-koder, AI, API'er, databaser eller dashboards.
 //
-// ⚠️ ALLE BELØB KOMMER FRA lib/pakke.js OG AL GARANTI-TEKST FRA lib/salgTekst.js.
-// Hardkod aldrig et tal eller en garanti-sætning her — det var netop spredningen
-// der lod tre steder stå med den gamle pris og to steder med hver sin garanti.
+// ⚠️ ALLE BELØB KOMMER FRA lib/pakke.js, AL GARANTI-TEKST FRA lib/salgTekst.js
+// OG ALLE FORHOLDSTAL FRA lib/vaerdiAnker.js. Hardkod aldrig et tal eller en
+// garanti-sætning her.
+//
+// ⚠️ BIRDLY GARANTERER ALDRIG EN VUNDET OPGAVE. Værdi-sektionen sammenligner en
+// kontraktværdi med en abonnementspris — den lover ikke et afkast. Læs reglen i
+// lib/vaerdiAnker.js før du rører én sætning dér.
 // ============================================================================
 
 // ---------------------------------------------------------------- hjælpere
@@ -42,16 +43,18 @@ function TrustRaekke({ mork = false }) {
 }
 
 /**
- * Garantien med sit forbehold. ⚠️ DE TO HØRER SAMMEN OG MÅ IKKE SKILLES AD.
- * Løftet uden forbeholdet er mere generøst end handelsbetingelserne §3.3-3.6,
- * og et markedsføringsløfte der rækker længere end aftalen er noget kunden kan
- * holde os op på. Derfor er de i samme komponent frem for to strenge man kan
- * komme til at bruge hver for sig.
+ * Garantiens præcise mekanik med link til den fulde ordlyd.
+ *
+ * ⚠️ DEN SKAL FØLGE MED HVER GANG GARANTI-OVERSKRIFTEN VISES. Overskriften siger
+ * "14 dage gratis. Ingen relevante match? Så betaler du ikke." — uden den her
+ * linje står der ikke nogen steder at garantien løber 60 dage og handler om
+ * REFUSION, ikke om en fire gange længere prøveperiode. Se noten i
+ * lib/salgTekst.js: det er den letteste og dyreste fejl at lave her.
  */
 export function GarantiFin({ klasse = "sg-fin" }) {
   return (
     <p className={klasse}>
-      {GARANTI.forbehold}{" "}
+      {GARANTI.praecis} {GARANTI.forbehold}{" "}
       <a href={GARANTI_LINK} target="_blank" rel="noreferrer">{GARANTI.linkTekst}</a>
     </p>
   );
@@ -67,17 +70,18 @@ export function Hero({ funnelHref, overskrift, under, eyebrow = "OPGAVER TIL DAN
           <span className="sg-pill">{eyebrow}</span>
           {/* ⚠️ H1 BÆRER RESULTATET, IKKE SØGEORDET. Søgeordene ("offentlige
               opgaver", "SMS") står i title, description og i underteksten lige
-              herunder — så salgs-copy'en ikke koster placeringer. Anden linje er
-              løftets følelsesmæssige halvdel og skal bære visuelt. */}
+              herunder — så salgs-copy'en ikke koster placeringer. */}
           <h1>
             {overskrift || <>Få flere relevante opgaver.</>}
             <span className="sg-em">Uden selv at lede.</span>
           </h1>
+          {/* ⚠️ ÉN SÆTNING, OG DER MÅ IKKE KOMME MERE. Hero'en skal forstås på
+              under fem sekunder; hver ekstra linje her koster af den tid. */}
           <p className="sg-lead">
             {under || (
               <>
-                Birdly finder offentlige og private opgaver, der passer til din virksomhed —
-                og sender nye match direkte på SMS og mail.
+                Birdly finder de offentlige og private opgaver, der passer til jeres
+                virksomhed — og sender dem direkte på SMS og mail.
               </>
             )}
           </p>
@@ -99,12 +103,12 @@ export function Hero({ funnelHref, overskrift, under, eyebrow = "OPGAVER TIL DAN
 
 /**
  * Bevis lige efter løftet. ⚠️ HVERT TAL ER ÆGTE OG KOMMER FRA get-opgave-tal.
- * Mangler et felt, renderes cellen ikke — vi hardkoder ALDRIG et live-agtigt tal,
- * og et gæt på forsiden er værre end en celle mindre. Er der slet ingen data,
- * renderer hele bjælken sig væk frem for at stå tom.
+ * Mangler et felt, renderes cellen ikke; er der ingen data, renderer hele
+ * bjælken sig væk. Vi hardkoder ALDRIG et live-agtigt tal.
  *
- * "2× opdatering dagligt" er den ene faste celle: den beskriver ingest-kadencen,
- * ikke en måling, og den står allerede på /kom-i-gang i dag.
+ * ⚠️ DEN MÅ IKKE KONKURRERE MED HERO'EN. Overskriften "BIRDLY ARBEJDER ALLEREDE"
+ * er det første øjet skal fange — tallene er dokumentationen bagefter, ikke
+ * sidens hovedbudskab. Derfor er de mindre end H1 og bjælken er lav.
  */
 export function BevisBjaelke({ tal }) {
   const bydbare = typeof tal?.bydbare === "number" ? tal.bydbare : null;
@@ -142,52 +146,17 @@ export function BevisBjaelke({ tal }) {
           <div className="sg-bevis-celle">
             <div className="sg-tal">2×</div>
             {/* ⚠️ Tidspunktet er hentetidspunktet fra sidste gennemførte kørsel —
-                ALDRIG new Date(). En klokke der viser "nu" beviser ingenting om
-                hvornår vi sidst hentede; den ville stå og lyve friskhed. */}
-            <small>opdatering dagligt{opdateret ? <><br />Sidst opdateret {opdateret}</> : null}</small>
+                ALDRIG new Date(). En klokke der viser "nu" beviser ingenting. */}
+            <small>opdatering dagligt</small>
           </div>
         </div>
+        {opdateret && <p className="sg-bevis-opd">Sidst opdateret {opdateret}</p>}
       </div>
     </section>
   );
 }
 
-// ---------------------------------------------------- 3 · RISIKO FJERNET
-
-export function RisikoFjernet({ funnelHref }) {
-  return (
-    <section className="sg-sek sg-blaa" id="risiko">
-      <div className="sg-wrap">
-        <div className="sg-risiko-kort">
-          <span className="sg-kick">Prøv det uden risiko</span>
-          {/* ⚠️ BETINGET ORDLYD, FRA lib/salgTekst.js. Her stod tidligere "Ingen
-              relevante match? Så betaler du ikke." — ubetinget, mens
-              handelsbetingelserne §3.3-3.6 sætter tre rammer. Garantien skal stå
-              HER, i fuldt lys, ikke gemt nede i FAQ'en. */}
-          <h2>{GARANTI.overskrift}</h2>
-          <p className="sg-lead" style={{ margin: "16px auto 0" }}>
-            Prøv Birdly gratis i {TRIAL_DAYS} dage. Du betaler 0 kr. i dag, og du kan sige
-            op når som helst.
-          </p>
-          <GarantiFin />
-
-          <div className="sg-fire">
-            <div className="sg-fire-item"><Flueben size={18} /> {TRIAL_DAYS} dage gratis</div>
-            <div className="sg-fire-item"><Flueben size={18} /> Ingen binding</div>
-            <div className="sg-fire-item"><Flueben size={18} /> Ingen portal</div>
-            <div className="sg-fire-item"><Flueben size={18} /> Opsætning på få minutter</div>
-          </div>
-
-          <div className="sg-cta-row" style={{ justifyContent: "center" }}>
-            <Cta href={funnelHref} placering="risiko" />
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// ------------------------------------------------------------ 4 · PROBLEMET
+// ------------------------------------------------------------ 3 · PROBLEMET
 
 export function Problemet() {
   return (
@@ -196,42 +165,39 @@ export function Problemet() {
         <div className="sg-midt">
           <span className="sg-kick">Problemet</span>
           <h2 className="sg-big">Opgaverne er der.<br />Problemet er at finde de rigtige.</h2>
-          <p className="sg-lead">
-            Offentlige og private opgaver dukker op løbende. De ligger forskellige steder,
-            og langt det meste er ikke relevant for jer.
-          </p>
         </div>
 
-        {/* ⚠️ INGEN SKRÆMMEKAMPAGNE. Tre nøgterne konstateringer om en hverdag
-            kunden kender — ikke "du går glip af millioner". Overdrivelsen ville
-            koste netop den troværdighed resten af siden bygger på. */}
+        {/* ⚠️ ÉN LINJE PR. KORT. Sektionen skal kunne læses på fem sekunder på en
+            telefon; den lange version stod i vejen for beviset længere nede.
+            Ingen skræmmekampagne — tre nøgterne konstateringer om en hverdag
+            kunden kender. */}
         <div className="sg-tre">
           <div className="sg-kort">
             <div className="sg-kort-ic"><Oeje /></div>
             <h3>Du skal selv holde øje</h3>
-            <p>Portaler, søgninger og nye opslag. Det kræver, at nogen sætter sig ned og kigger — hver dag.</p>
+            <p>Nye opslag kommer løbende — mens I passer jeres virksomhed.</p>
           </div>
           <div className="sg-kort">
             <div className="sg-kort-ic"><Bunke /></div>
-            <h3>Det meste passer ikke</h3>
-            <p>Tid brugt på at læse opgaver, I aldrig ville tage — forkert fag, forkert sted eller forkert størrelse.</p>
+            <h3>Det meste er ikke relevant</h3>
+            <p>Forkert fag, område eller opgavestørrelse.</p>
           </div>
           <div className="sg-kort">
             <div className="sg-kort-ic"><Ur /></div>
-            <h3>Den gode opgave kan blive overset</h3>
-            <p>Den dukker op midt i en travl uge, mens I passer kunder og projekter. Og så er fristen løbet.</p>
+            <h3>Den rigtige kan blive overset</h3>
+            <p>En relevant mulighed kan dukke op, mens fokus er et helt andet sted.</p>
           </div>
         </div>
 
         <p className="sg-afslut">
-          Birdly gør det modsatte: I fortæller os, hvad I vil have. Vi holder øje. I får besked.
+          Birdly vender det om: I fortæller os, hvad I vil have. Vi holder øje. I får besked.
         </p>
       </div>
     </section>
   );
 }
 
-// -------------------------------------------------------------- 5 · MOTOREN
+// -------------------------------------------------------------- 4 · MOTOREN
 
 export function Motoren({ funnelHref }) {
   return (
@@ -242,26 +208,24 @@ export function Motoren({ funnelHref }) {
           <h2 className="sg-big">Du fortæller os én gang, hvad I leder efter.<br />Birdly gør resten.</h2>
         </div>
 
-        {/* ⚠️ TRE TRIN, IKKE FIRE. Den gamle forside havde et fjerde ("Vi hjælper
-            dig i mål" om bud-skabelonen). Skabelonen er ægte og god, men den er en
-            BONUS efter købet — som fjerde trin i forklaringen af motoren gør den
-            produktet mere kompliceret at forstå, præcis dér hvor det skal virke
-            enkelt. Den bor nu i SMS-sektionen, hvor den hører til. */}
+        {/* ⚠️ TRE TRIN, IKKE FIRE, og ingen teknisk forklaring. Bud-skabelonen er
+            ægte og god, men som fjerde trin gør den produktet sværere at forstå
+            netop dér hvor det skal virke enkelt. Den bor i SMS-sektionen. */}
         <div className="sg-trin">
           <div className="sg-trin-kort">
             <div className="sg-trin-nr">01</div>
-            <h3>Fortæl hvad I laver</h3>
-            <p>Vælg fag, område og hvor store opgaver I vil høre om. Det tager få minutter.</p>
+            <h3>Fortæl hvad I vil have</h3>
+            <p>Vælg fag, område og størrelsen på de opgaver, I vil høre om.</p>
           </div>
           <div className="sg-trin-kort">
             <div className="sg-trin-nr">02</div>
             <h3>Birdly holder øje</h3>
-            <p>Vi finder relevante offentlige og private muligheder — og sorterer resten fra.</p>
+            <p>Vi finder relevante offentlige og private muligheder og sorterer resten fra.</p>
           </div>
           <div className="sg-trin-kort">
             <div className="sg-trin-nr">03</div>
             <h3>Få besked</h3>
-            <p>Direkte på SMS og mail, når der er noget, der passer til jer.</p>
+            <p>Når noget passer, får I det direkte på SMS og mail.</p>
           </div>
         </div>
 
@@ -283,7 +247,7 @@ export function Motoren({ funnelHref }) {
   );
 }
 
-// ------------------------------------------------------------ 7 · SMS-DEMO
+// ------------------------------------------------------------ 5 · SMS-DEMO
 
 export function SmsDemo() {
   return (
@@ -301,55 +265,106 @@ export function SmsDemo() {
         <div>
           <span className="sg-kick">Beskeden</span>
           <h2 className="sg-big">Det er ikke mere kompliceret end det her.</h2>
-          <ul className="sg-punkter">
-            <li><Flueben size={20} /> Tre linjers resumé af opgaven</li>
-            <li><Flueben size={20} /> Fristen, så I ved hvor hurtigt der skal handles</li>
-            <li><Flueben size={20} /> Link direkte til opgaven — intet login</li>
-            <li><Flueben size={20} /> Bud-skabelon, hvor den er relevant</li>
-          </ul>
           <p className="sg-lead">
-            Vi pakker det bøvlede væk. I får det, I skal bruge for at vurdere, om opgaven er
-            interessant — og ikke mere end det.
+            Birdly samler det vigtigste, så I hurtigt kan se, om opgaven er interessant.
           </p>
+          <ul className="sg-punkter">
+            <li><Flueben size={20} /> Kort resumé</li>
+            <li><Flueben size={20} /> Frist</li>
+            <li><Flueben size={20} /> Direkte link</li>
+            <li><Flueben size={20} /> Bud-skabelon hvor relevant</li>
+          </ul>
         </div>
       </div>
     </section>
   );
 }
 
-// --------------------------------------------------------------- 8 · VÆRDI
+// -------------------------------------------------- 6 · ØKONOMISK VÆRDI
 
-export function Vaerdi({ funnelHref }) {
+/**
+ * Sammenligningen mellem hvad en opgave kan være værd og hvad Birdly koster.
+ *
+ * ⚠️ DET ER EN SAMMENLIGNING, IKKE ET AFKAST. Vi siger aldrig at kunden tjener
+ * noget, får noget igen eller opnår et forhold — vi stiller to beløb ved siden
+ * af hinanden og skriver rent ud at vi ikke garanterer en vundet opgave.
+ * Reglen og alle tal bor i lib/vaerdiAnker.js; læs noten dér før du ændrer
+ * en formulering.
+ *
+ * ⚠️ BELØBENE ER MÆRKEDE EKSEMPLER. Vi har ingen data på hvad kundens opgaver
+ * er værd, og vi påstår det ikke. "Eksempel"-mærkatet står på selve kortet, ikke
+ * som småtryk nedenunder.
+ *
+ * ⚠️ ERSTATTER "365 DAGE vs. 4.990 KR." Det gamle anker sammenlignede en
+ * tidsperiode med en pris, og det svarer ikke på spørgsmålet kunden faktisk
+ * stiller: hvad kan det her være værd for MIG. Et beløb mod et beløb gør.
+ *
+ * @param {string} fag  fagnøgle — afgør om ankeret er en løbende aftale
+ *                      (rengøring/service) eller et enkeltprojekt.
+ */
+export function Vaerdi({ funnelHref, fag = "rengoring", valgt = null }) {
+  const a = byggAnker(fag, valgt);
+
   return (
     <section className="sg-sek sg-graa" id="vaerdi">
       <div className="sg-wrap">
         <div className="sg-midt">
           <span className="sg-kick">Regnestykket</span>
-          <h2 className="sg-big">Hvad er én god opgave værd for jer?</h2>
-          {/* ⚠️ yearlyBare, ikke yearlyLong: "4.990 kr. om året … for et helt år"
-              sagde det samme to gange i én sætning. */}
-          <p className="sg-lead">Birdly koster {priceText.yearlyBare} ekskl. moms for et helt år.</p>
+          <h2 className="sg-big">
+            {a.loebende ? "Hvad er én god fast kunde værd?" : "Hvad er én god opgave værd?"}
+          </h2>
+          <p className="sg-lead">
+            Birdly koster {priceText.yearlyBare} ekskl. moms for et helt år.
+          </p>
         </div>
 
         <div className="sg-vaerdi">
           <div className="sg-vaerdi-boks">
-            <div className="sg-tal">365 dage</div>
-            <small>holder Birdly øje for jer</small>
+            {/* ⚠️ MÆRKATET ER IKKE PYNT. Uden det læses beløbet som noget vi har
+                målt eller lover. Det er et realistisk eksempel, ikke data. */}
+            <span className="sg-maerkat">{a.maerkat}</span>
+            {a.loebende ? (
+              <>
+                <div className="sg-vaerdi-navn">Fast rengøringsaftale</div>
+                <div className="sg-tal">{a.maaned}</div>
+                <div className="sg-vaerdi-lig">=</div>
+                <div className="sg-vaerdi-aar">{a.aar}</div>
+              </>
+            ) : (
+              <>
+                <div className="sg-vaerdi-navn">Én relevant opgave</div>
+                <div className="sg-tal">{a.opgave}</div>
+              </>
+            )}
           </div>
+
           <div className="sg-vaerdi-vs" aria-hidden="true">mod</div>
+
           <div className="sg-vaerdi-boks sg-pris-side">
-            {/* Beløbet fra pakke.js, aldrig skrevet i hånden. */}
+            <span className="sg-maerkat sg-maerkat-lys">Faktisk pris</span>
+            <div className="sg-vaerdi-navn">Birdly — et helt år</div>
             <div className="sg-tal">{priceText.yearlyBare}</div>
-            <small>ekskl. moms — for hele året</small>
+            <div className="sg-vaerdi-aar">ekskl. moms</div>
           </div>
         </div>
 
-        {/* ⚠️ BETINGET. "Kan betale … mange gange hjem", aldrig "du tjener pengene
-            hjem". Vi lover ikke at kunden vinder en opgave, og vi sætter ikke tal
-            på en kontraktværdi. Sætningen bor i lib/salgTekst.js netop for at den
-            ikke kan blive skærpet ét sted uden at nogen opdager det. */}
-        <p className="sg-anker">{VAERDI_ANKER}</p>
-        <p className="sg-afslut" style={{ marginTop: 10 }}>Og I behøver ikke selv sidde og lede efter den.</p>
+        {/* ⚠️ FORHOLDSTALLET BESKRIVER TO BELØB, IKKE ET UDBYTTE. Formuleringen
+            "svarer til ca. 19× Birdlys årspris" siger noget om størrelsen på en
+            kontrakt sammenlignet med en abonnementspris. "Birdly giver 19× igen"
+            ville sige noget om penge der kommer retur, og dét må vi ikke. */}
+        {a.forhold && (
+          <p className="sg-anker">
+            {a.loebende
+              ? <>Én vundet aftale i den størrelse svarer til <b>{a.forhold.tekst}</b> Birdlys årspris.</>
+              : <>Et helt års Birdly svarer til <b>{a.andel}</b> af værdien på en opgave i den størrelse.</>}
+          </p>
+        )}
+
+        {/* ⚠️ FORBEHOLDET ER OBLIGATORISK OG STÅR LIGE UNDER TALLET. Det er dét
+            der gør sammenligningen sand frem for et løfte. Flyt det aldrig ned
+            under knappen, og gør det aldrig mindre end her. */}
+        <p className="sg-forbehold">{a.forbehold}</p>
+        <p className="sg-afslut" style={{ marginTop: 10 }}>{BETINGET_LINJE}</p>
 
         <div className="sg-cta-row" style={{ justifyContent: "center" }}>
           <Cta href={funnelHref} placering="vaerdi" />
@@ -359,22 +374,51 @@ export function Vaerdi({ funnelHref }) {
   );
 }
 
-// ----------------------------------------------------------- 9 · KUNDEBEVIS
+// ---------------------------------------------------- 7 · RISIKO FJERNET
+
+export function RisikoFjernet({ funnelHref }) {
+  return (
+    <section className="sg-sek sg-blaa" id="risiko">
+      <div className="sg-wrap">
+        <div className="sg-risiko-kort">
+          <span className="sg-kick">Prøv det uden risiko</span>
+          {/* ⚠️ OVERSKRIFTEN NÆVNER DE 14 DAGE, IKKE DE 60. Prøveperioden er 14
+              dage; matchgarantiens 60 dage handler om refusion og står i
+              <GarantiFin> lige nedenfor. Smelter de sammen, lover overskriften
+              en prøveperiode der er fire gange længere end den er. */}
+          <h2>{GARANTI.overskrift}</h2>
+          <p className="sg-lead" style={{ margin: "14px auto 0" }}>
+            Se først, hvad Birdly finder til jeres virksomhed. 0 kr. i dag.
+          </p>
+
+          <div className="sg-fire">
+            <div className="sg-fire-item"><Flueben size={18} /> {TRIAL_DAYS} dage gratis</div>
+            <div className="sg-fire-item"><Flueben size={18} /> Ingen binding</div>
+            <div className="sg-fire-item"><Flueben size={18} /> Ingen portal</div>
+            <div className="sg-fire-item"><Flueben size={18} /> Opsætning på få minutter</div>
+          </div>
+
+          <div className="sg-cta-row" style={{ justifyContent: "center" }}>
+            <Cta href={funnelHref} placering="risiko" />
+          </div>
+
+          <GarantiFin />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ----------------------------------------------------------- 8 · KUNDEBEVIS
 
 // ⚠️ SLÅET FRA, OG DET ER IKKE EN FORGLEMMELSE (bekræftet af Jonas 06-09-2026).
 // Der findes ingen ægte, godkendte udtalelser i huset endnu. Et pladsholder-citat
-// der ser ægte ud på en live side er både løgn over for kunden og i strid med
-// markedsføringsloven — og et opdigtet "1 match → kontrakt på XXX.XXX kr." er
-// den værste af slagsen, fordi den er præcis det bevis en køber leder efter.
+// på en live side er både løgn over for kunden og i strid med markedsføringsloven
+// — og et opdigtet "1 match → kontrakt på XXX.XXX kr." er den værste af slagsen,
+// fordi det er præcis det bevis en køber leder efter.
 //
 // Sæt VIS_KUNDEBEVIS til true FØRST når der ligger rigtige udtalelser med navn,
-// firma og skriftligt samtykke — og læg dem i KUNDEBEVIS. Er der kun to gode,
-// så vis to. Færre ægte punkter slår flere falske hver eneste gang.
-//
-// Indsamlingen kører allerede: FeedbackKort3 spørger om lov ("Birdly må dele min
-// anmeldelse") og gemmer svaret i feedback_svar i birdly-admin. Der findes bare
-// intet offentligt endpoint der henter de godkendte ud — det er en separat opgave
-// i det andet repo.
+// firma og skriftligt samtykke. Er der kun to gode, så vis to.
 const VIS_KUNDEBEVIS = false;
 const KUNDEBEVIS = []; // { citat, navn, firma }
 
@@ -402,7 +446,7 @@ export function Kundebevis() {
   );
 }
 
-// ------------------------------------------------------- 10 · IKKE EN PORTAL
+// ------------------------------------------------------- 9 · IKKE EN PORTAL
 
 export function IkkePortal() {
   return (
@@ -410,26 +454,27 @@ export function IkkePortal() {
       <div className="sg-wrap">
         <div className="sg-midt">
           <span className="sg-kick">Forskellen</span>
-          <h2 className="sg-big">Endnu en portal? Nej tak.</h2>
+          <h2 className="sg-big">Endnu en portal?<br />Nej tak.</h2>
         </div>
 
         <div className="sg-vs">
           <div className="sg-vs-kort sg-vs-gammel">
             <h3>En almindelig udbudstjeneste</h3>
             <ul className="sg-vs-liste">
-              <li><Kryds /> Log ind</li>
+              <li><Kryds /> Login</li>
               <li><Kryds /> Søg</li>
               <li><Kryds /> Sæt filtre op</li>
-              <li><Kryds /> Åbn opgaverne én for én</li>
-              <li><Kryds /> Læs og frasortér</li>
-              <li><Kryds /> Gentag i morgen</li>
+              <li><Kryds /> Åbn opgaver én efter én</li>
+              <li><Kryds /> Læs</li>
+              <li><Kryds /> Sortér</li>
+              <li><Kryds /> Gentag</li>
             </ul>
           </div>
           <div className="sg-vs-kort sg-vs-ny">
             <h3>Birdly</h3>
             <ul className="sg-vs-liste">
               <li><Flueben size={18} /> Vælg jeres kriterier én gang</li>
-              <li><Flueben size={18} /> Modtag relevante match på SMS og mail</li>
+              <li><Flueben size={18} /> Få relevante match direkte på SMS og mail</li>
             </ul>
             <p className="sg-fin" style={{ marginTop: 20 }}>{EJER_LINJE}</p>
           </div>
@@ -444,12 +489,11 @@ export function IkkePortal() {
   );
 }
 
-// -------------------------------------------------------------- 11 · PRISER
+// -------------------------------------------------------------- 10 · PRISER
 
 export function Priser({ funnelHref, medOverskrift = true }) {
-  // Kr./md. ved årsbetaling. ⚠️ REGNET, IKKE SKREVET: 4.990 / 12 = 415,83 →
-  // "ca. 416 kr./md.". Et håndskrevet tal her ville stå forkert dagen efter en
-  // prisændring, uden at nogen opdagede det.
+  // ⚠️ REGNET, IKKE SKREVET: 4.990 / 12 = 415,83 → "ca. 416 kr./md.". Et
+  // håndskrevet tal ville stå forkert dagen efter en prisændring.
   const prMaaned = Math.round(PLAN.yearly / 12).toLocaleString("da-DK");
 
   return (
@@ -462,65 +506,75 @@ export function Priser({ funnelHref, medOverskrift = true }) {
           </div>
         )}
 
-        <div className="sg-planer">
-          {/* ⚠️ MÅNED SKJULES ALDRIG. År fremhæves, fordi det er det bedste tilbud
-              og fordi funnelen har det som forvalg — men en kunde der vil betale
-              månedligt skal kunne se at hun må, uden at lede. Skjult månedspris
-              er den slags der bliver opdaget i checkouten og koster tilliden. */}
-          <div className="sg-plan">
-            <span className="sg-plan-navn">Måned</span>
-            <div className="sg-pris-beloeb">{priceText.monthly}</div>
-            <small>ekskl. moms</small>
-            <ul className="sg-plan-liste">
-              <li><Flueben size={17} /> {TRIAL_DAYS} dage gratis</li>
-              <li><Flueben size={17} /> Ingen binding</li>
-              <li><Flueben size={17} /> Alt indhold inkluderet</li>
-            </ul>
-            <Cta href={funnelHref} placering="priser-maaned" variant="ghost" bred />
-          </div>
+        {/* ══════════════════════════════════════════════════════════════════
+            ÅRSPLANEN ER HOVEDTILBUDDET, MÅNEDEN ER STADIG SYNLIG.
+            To ligeværdige kort lod kunden vælge mellem to ting hun ikke kunne
+            se forskel på; nu er året ét stort kort med hele argumentet, og
+            måneden en tydelig linje under. Skjult månedspris ville være den
+            slags der opdages i checkouten og koster tilliden — den er der,
+            den er bare ikke tilbuddet.
 
+            ⚠️ BADGET HEDDER "BEDST VÆRDI", IKKE "MEST VALGTE". "Mest valgte" er
+            en påstand om andre kunders adfærd, og vi har ikke tal der beviser
+            den. "Bedst værdi" følger objektivt af priserne: 4.990 mod 5.988.
+            ══════════════════════════════════════════════════════════════════ */}
+        <div className="sg-tilbud">
           <div className="sg-plan sg-plan-frem">
-            <span className="sg-plan-badge">Mest valgte</span>
-            <span className="sg-plan-navn">År</span>
+            <span className="sg-plan-badge">Bedst værdi</span>
+            <span className="sg-plan-navn">Årligt</span>
             <div className="sg-pris-beloeb">{priceText.yearly}</div>
-            <small>ekskl. moms</small>
+            <small>ekskl. moms · ca. {prMaaned} kr./md.</small>
+
             {/* "Betal for 10 måneder — få 12" er bogstaveligt sandt: 4.990 ÷ 499
                 er præcis 10. Besparelsen kommer fra YEARLY_SAVING. */}
             <div className="sg-plan-spar">
               Betal for 10 måneder — få 12. Spar {YEARLY_SAVING.amount.toLocaleString("da-DK")} kr.
             </div>
-            <div className="sg-plan-md">Det svarer til ca. {prMaaned} kr./md.</div>
+
             <ul className="sg-plan-liste">
               <li><Flueben size={17} /> {TRIAL_DAYS} dage gratis</li>
-              <li><Flueben size={17} /> Samme indhold som månedsplanen</li>
-              <li><Flueben size={17} /> Ét træk om året</li>
+              <li><Flueben size={17} /> Offentlige + private opgaver</li>
+              <li><Flueben size={17} /> SMS + mail ved match</li>
+              <li><Flueben size={17} /> Alle relevante kriterier</li>
+              <li><Flueben size={17} /> {GARANTI.kort}</li>
+              <li><Flueben size={17} /> Ingen binding</li>
             </ul>
-            <Cta href={funnelHref} placering="priser-aar" bred />
+
+            <Cta href={funnelHref} placering="priser-aar" bred stor>
+              Start {TRIAL_DAYS} dage gratis
+            </Cta>
+            <p className="sg-plan-fin">{VAERDI_ANKER}</p>
+          </div>
+
+          {/* Måneden: tydeligt tilgængelig, visuelt sekundær. */}
+          <div className="sg-maaned">
+            <div>
+              <b>Foretrækker I månedlig betaling?</b>
+              <span>{priceText.monthly} ekskl. moms · {TRIAL_DAYS} dage gratis · ingen binding</span>
+            </div>
+            <Cta href={funnelHref} placering="priser-maaned" variant="ghost">
+              Vælg månedsbetaling
+            </Cta>
           </div>
         </div>
 
-        <p className="sg-anker">{VAERDI_ANKER}</p>
-        <p className="sg-afslut" style={{ marginTop: 8 }}>{VAERDI_UNDER}</p>
-
-        <div style={{ maxWidth: 620, margin: "24px auto 0", textAlign: "center" }}>
-          <p style={{ fontSize: "16px", color: "var(--navy)", fontWeight: 600 }}>
-            {GARANTI.overskrift}
-          </p>
-          <GarantiFin />
+        <div className="sg-garantiboks">
+          <p><b>{GARANTI.overskrift}</b></p>
+          <GarantiFin klasse="sg-fin sg-fin-midt" />
         </div>
       </div>
     </section>
   );
 }
 
-// ------------------------------------------------------ 12 · RESULTAT IGEN
+// ------------------------------------------------------ 11 · RESULTAT IGEN
 
 export function SlutCta({ funnelHref }) {
   return (
     <section className="sg-navy sg-slut">
       <div className="sg-wrap">
         <h2>Den næste relevante opgave findes måske allerede.</h2>
-        <p>Birdly sørger for, at I ser den.</p>
+        <p>Lad Birdly holde øje for jer.</p>
         <div className="sg-cta-row" style={{ justifyContent: "center" }}>
           <Cta href={funnelHref} placering="slut" variant="hvid" stor />
         </div>
@@ -532,18 +586,17 @@ export function SlutCta({ funnelHref }) {
   );
 }
 
-// ------------------------------------------------------------------ 13 · FAQ
+// ------------------------------------------------------------------ 12 · FAQ
 
 /**
- * Konverterings-FAQ: indvendinger først, pris og betaling til sidst.
+ * Konverterings-FAQ: seks købsspørgsmål synlige, resten et klik væk.
  *
  * ⚠️ INGEN VIGTIG SALGSINFO GEMMES HER. Garantien, prisen og prøveperioden står
- * alle sammen i fuldt lys længere oppe; FAQ'en gentager dem for den der leder
- * efter detaljen, den bærer dem ikke. En køber der skal folde en boks ud for at
- * finde ud af hvad tjenesten koster, folder den ikke ud — hun lukker fanen.
+ * i fuldt lys længere oppe; FAQ'en gentager dem for den der leder efter detaljen.
  *
- * Svarene læses fra lib/faq.js, samme kilde som rodens tolv. Kopieret ville de to
- * sæt langsomt sige noget forskelligt om pris og opsigelse.
+ * ⚠️ RESTEN SLETTES IKKE — den foldes. Svarene er husets eneste sted med den
+ * fulde forklaring (hvor opgaverne kommer fra, bud-skabelonen, antal SMS'er), og
+ * de står i HTML'en uanset om detaljen er åben. De er stadig crawlbare.
  */
 export function SalgFaq({ funnelHref }) {
   return (
@@ -554,14 +607,7 @@ export function SalgFaq({ funnelHref }) {
           <h2 className="sg-big">Det, du tænker lige nu.</h2>
         </div>
 
-        <div className="sg-faq">
-          {FAQ_SALG.map((f) => (
-            <details key={f.sp}>
-              <summary>{f.sp}<span className="sg-pm" aria-hidden="true">+</span></summary>
-              <div className="sg-faq-svar">{f.svar}</div>
-            </details>
-          ))}
-        </div>
+        <FaqListe />
 
         {funnelHref && (
           <div className="sg-cta-row" style={{ justifyContent: "center" }}>
@@ -578,12 +624,10 @@ export function SalgFaq({ funnelHref }) {
 /**
  * "Har du en opgave?" — den ANDEN side af markedspladsen.
  *
- * ⚠️ ALDRIG INDE I B2B-FLOWET. Den stod før som et bånd midt på forsiden, mellem
- * løftet og problemet. To ting gik galt: en håndværker der klikkede, landede i en
- * formular hvor han skulle beskrive et arbejde han gerne ville UDFØRE, og en
- * husejer der klikkede på "Find opgaver nu" landede i et CVR-felt. Derfor bor
- * indgangen nu i headeren og her nederst — efter at B2B-flowet er færdigt — og
- * aldrig som en sektion der bryder salgsrækkefølgen.
+ * ⚠️ ALDRIG INDE I B2B-FLOWET. Den stod før som et bånd midt på forsiden. To
+ * ting gik galt: en håndværker der klikkede, landede i en formular hvor han
+ * skulle beskrive et arbejde han gerne ville UDFØRE, og en husejer der klikkede
+ * på "Find opgaver nu" landede i et CVR-felt.
  */
 export function EfterspoergselsLink() {
   return (
