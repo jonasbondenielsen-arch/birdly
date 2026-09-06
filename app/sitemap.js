@@ -34,6 +34,14 @@ export default function sitemap() {
     // blokken fjernes, er siden allerede annonceret og bliver fundet med det samme.
     "/opret-opgave",
     "/brancher",
+    // ⚠️ /priser ER MED, /hvorfor-birdly og /sadan-virker-det ER IKKE — og det
+    // er den samme afvejning som for /kom-i-gang. Prisen har sit EGET søgeord
+    // ("hvad koster udbudsovervågning"), som roden ikke dækker, og siden har sit
+    // eget indhold og sin egen canonical. De to andre støttesider siger derimod
+    // det samme som rodens egne afsnit; de er noindex, og en noindex-side uden
+    // eget søgeord hører ikke hjemme i et sitemap — den ville bruge crawl-budget
+    // på at vise noget vi selv har bedt Google om at lade være med at vise.
+    "/priser",
     "/udbud-for-alle",
     "/betingelser",
     "/handelsbetingelser",
@@ -61,6 +69,9 @@ export default function sitemap() {
     priority:
       p === "" ? 1
       : p === "/opret-opgave" ? 0.9
+      // Prissiden er en købs-side: høj hensigt, men den skal ikke stå over
+      // brancheshelfen, som bærer langt de fleste af husets indgange.
+      : p === "/priser" ? 0.8
       : p === "/viden" ? 0.7
       : p.startsWith("/viden/") ? 0.6
       : p.startsWith("/fag/") || p === "/brancher" ? 0.8

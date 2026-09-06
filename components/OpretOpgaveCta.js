@@ -7,7 +7,7 @@ import { OPRET_OPGAVE_I_NAV } from "../lib/opretOpgave";
 // synlig før den må være det.
 //
 // ⚠️ IKKE på /kom-i-gang. Salgssiden holdes fokuseret på tilmelding og har sit eget
-// CSS-system (ny.css, .ny-navcta) — en knap dertil ville hverken arve stilen eller
+// CSS-system (salg.css, .sg-navcta-2) — en knap dertil ville hverken arve stilen eller
 // tjene siden.
 //
 // Returnerer null når flaget er slukket, så headeren er bit for bit uændret indtil

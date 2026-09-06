@@ -63,12 +63,14 @@ export default function BrancherPage() {
       <header>
         <div className={"wrap bar" + (OPRET_OPGAVE_I_NAV ? " bar-2cta" : "")}>
           <Logo height={32} />
+          {/* Rigtige ruter frem for ankre tilbage på roden — og "Viden" med,
+              som på resten af huset. */}
           <nav className="menu">
-            <a href="/#hvorfor">Hvorfor Birdly</a>
-            <a href="/#hvordan">Hvordan virker det</a>
-            <a href="/#priser">Priser</a>
-            <a href="/#faq">FAQ</a>
+            <Link href="/sadan-virker-det">Sådan virker det</Link>
             <Link href="/brancher">Brancher</Link>
+            <Link href="/priser">Priser</Link>
+            <Link href="/hvorfor-birdly">Hvorfor Birdly</Link>
+            <Link href="/viden">Viden</Link>
           </nav>
           <div className="right">
             <Link href="/kom-i-gang" className="nav-cta">Find opgaver nu</Link>
@@ -80,11 +82,14 @@ export default function BrancherPage() {
       <section className="hero">
         <div className="wrap center" style={{ position: "relative", zIndex: 2 }}>
           <span className="pill">🐦 For dit fag</span>
+          {/* ⚠️ SPØRGSMÅLET FØRST. Hubben har ét job: få den besøgende til at
+              pege på sit fag. En overskrift der spørger, gør valget til den
+              næste handling; "Opgaver — for dit fag" beskrev bare siden. */}
           <h1>
-            Opgaver — for <span className="sky-em">dit fag</span>
+            Hvad laver <span className="sky-em">jeres virksomhed?</span>
           </h1>
           <p className="sub" style={{ marginLeft: "auto", marginRight: "auto" }}>
-            Vælg din branche og se, hvordan Birdly finder relevante opgaver til virksomheder som din.
+            Vælg jeres fag og se, hvilke typer opgaver Birdly kan finde til jer.
           </p>
         </div>
       </section>
@@ -142,6 +147,17 @@ export default function BrancherPage() {
               </div>
             );
           })}
+        </div>
+      </section>
+
+      {/* ⚠️ HUBBEN HAVDE INGEN CTA. En besøgende der ikke kunne finde sit fag i
+          listen, havde ingen vej videre — hun kunne kun gå tilbage. Båndet er
+          det samme som fag-siderne bruger, med husets ene primære CTA. */}
+      <section className="ctaband">
+        <div className="wrap">
+          <h2>Kan I ikke finde jeres fag?</h2>
+          <p>Fortæl os hvad I laver, så finder vi ud af, hvad vi kan holde øje med for jer.</p>
+          <Link href="/kom-i-gang" className="btn btn-teal">Find opgaver nu</Link>
         </div>
       </section>
 

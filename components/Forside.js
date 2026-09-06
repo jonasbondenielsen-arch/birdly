@@ -11,9 +11,18 @@ import { PLAN, YEARLY_SAVING, priceText } from "../lib/pakke";
 import LaunchBanner from "./LaunchBanner";
 import LaunchStreamer from "./LaunchStreamer";
 import OpgaveTaeller from "./OpgaveTaeller";
-import OpretOpgaveCta from "./OpretOpgaveCta";
-import { OPRET_OPGAVE_I_NAV } from "../lib/opretOpgave";
+import SalgHeader from "./salg/SalgHeader";
+import FagBevis from "./salg/FagBevis";
+import {
+  Hero, BevisBjaelke, RisikoFjernet, Problemet, Motoren, SmsDemo,
+  Vaerdi, Kundebevis, IkkePortal, Priser, SlutCta, EfterspoergselsLink,
+} from "./salg/Sektioner";
 import "../app/forside.css";
+// ⚠️ EFTER forside.css. De to filer deler ingen klassenavne, men rækkefølgen er
+// alligevel den mest læsbare: basen først, salgs-laget ovenpå. De vælgere der
+// FAKTISK kunne kollidere (section-padding, details/summary) er hævet til to
+// klasser i salg.css, så resultatet ikke afhænger af den her linjes placering.
+import "../app/salg.css";
 
 // Slider-chips → links til hver branchesides (/fag/[slug]). Udseende/animation uændret.
 const brands = [
@@ -110,7 +119,7 @@ function answerFor(text) {
   return "Hej! Jeg er Birdlys assistent 🕊️ — spørg løs, eller skriv til <b>support@birdly.dk</b>.";
 }
 
-export default function Forside({ opgaveTal = null }) {
+export default function Forside({ opgaveTal, funnelHref = "/kom-i-gang" }) {
   const [cancelOpen, setCancelOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [chatStarted, setChatStarted] = useState(false);
@@ -194,202 +203,67 @@ export default function Forside({ opgaveTal = null }) {
   }
 
   return (
-    <div className="birdly-home">
-      {/* Sticky stak: launch-banner (kun i launch-fasen) + header følges ad ned ved scroll. */}
-      <div className="topstack">
-        <LaunchBanner />
-        {/* HEADER */}
-        <header>
-          <div className={"wrap bar" + (OPRET_OPGAVE_I_NAV ? " bar-2cta" : "")}>
-            <Logo height={32} />
-            <nav className="menu">
-              <a href="#hvorfor">Hvorfor Birdly</a>
-              <a href="#hvordan">Hvordan virker det</a>
-              <a href="#priser">Priser</a>
-              <a href="#faq">FAQ</a>
-              <a href="#om">Om os</a>
-              <Link href="/udbud-for-alle">Opgaver er for alle</Link>
-              {/* Branchesiderne kunne før kun nås fra footeren — en besøgende på forsiden
-                  fandt dem aldrig. "Find dit fag" frem for "Brancher": det er dét den
-                  besøgende vil, ikke hvad siden hedder. */}
-              <Link href="/brancher">Find dit fag</Link>
-            </nav>
-            <div className="right">
-              <Link href="/kom-i-gang" className="nav-cta">Find opgaver nu</Link>
-              <OpretOpgaveCta />
-            </div>
-          </div>
-        </header>
-        {/* Tælleren ligger INDE i .topstack, så den følger headeren ned ved scroll og
-            arver stakkens z-index frem for at få sit eget lag. */}
-        <OpgaveTaeller tal={opgaveTal} />
-      </div>
+    /* ══════════════════════════════════════════════════════════════════════════
+       RODEN — SALGS-LAGET ØVERST, SEO-LAGET UNDER FOLDEN (06-09-2026).
 
-      {/* HERO */}
-      <section className="hero" style={{ padding: 0 }}>
-        <div className="wrap hero-grid">
-          <div>
-            <span className="pill">
-              <svg className="ic" viewBox="0 0 24 24" fill="none">
-                <path d="M5 7h14M5 12h14M5 17h9" stroke="#2EB7FF" strokeWidth="2.2" strokeLinecap="round" />
-              </svg>{" "}
-              Brevduen for opgaver til din virksomhed
-            </span>
-            <h1>Opgaver til din virksomhed.<br />Direkte på <span className="sky-em">SMS.</span></h1>
-            {/* ⚠️ KUN TEKSTEN. Samme <p className="sub"> som før — ingen ny klasse,
-                ingen ny margin. <br /> deler den i to linjer, fordi sætningerne siger
-                to forskellige ting: hvad du får, og hvad du slipper for.
+       ⚠️ TO LAG, ÉN SIDE. Øverst står præcis de samme sektioner som
+       /kom-i-gang bruger (components/salg/Sektioner.js) — samme løfte, samme
+       priser, samme garanti-ordlyd. Under dem ligger rodens SEO-lag: de tolv
+       FAQ-svar, forklaringssektionerne, fag-chippene og "om os". Det er DÉT
+       indhold der gør roden til husets stærkeste URL, og det står urørt.
 
-                ⚠️ "RELEVANTE OPGAVER" ER OK — "RELEVANTE VIRKSOMHEDER" ER IKKE.
-                Birdly matcher opgaver mod de kriterier kunden selv har valgt; vi
-                screener, vurderer eller anbefaler ingen virksomheder. Den skelnen
-                gælder hele B2B-fladen. */}
-            <p className="sub">
-              Birdly finder relevante offentlige og private opgaver, der passer til din virksomhed — og sender dig besked, når der er et match.
-              <br />
-              Ingen søgning. Ingen portal. Kun de opgaver, der passer til dig — direkte på SMS og mail.
-            </p>
-            <div className="checks">
-              <span>
-                <svg width="20" viewBox="0 0 20 20"><circle cx="10" cy="10" r="10" fill="#00B3A6" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#fff" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg>{" "}
-                Kun opgaver, der passer til dig
-              </span>
-              <span>
-                <svg width="20" viewBox="0 0 20 20"><circle cx="10" cy="10" r="10" fill="#00B3A6" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#fff" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg>{" "}
-                Direkte på SMS og mail
-              </span>
-            </div>
-            <div className="cta">
-              <div className="cta-primary">
-                <Link href="/kom-i-gang" className="btn btn-teal">Find opgaver nu</Link>
-                <span className="cta-note">Gratis de første 14 dage · ingen binding</span>
-              </div>
-              <a href="#hvordan" className="btn btn-ghost">Se hvordan det virker</a>
-            </div>
-          </div>
-          <div className="stage">
-            <div className="phone">
-              <div className="notch"></div>
-              <div className="screen">
-                <div className="stat"><span>9.41</span><span>•••• ⌃ ▮</span></div>
-                <div className="smscard">
-                  <div className="hd">
-                    <span className="ic"><svg width="15" viewBox="0 0 28 28" fill="none"><path d="M4 17C8 11 11 11 14 15" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" /><path d="M14 15C17 11 20 11 24 17" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" /></svg></span>
-                    <span className="nm">BIRDLY</span><span className="tm">nu</span>
-                  </div>
-                  <div className="t">Nyt opgavematch</div>
-                  <div className="row">Aarhus Kommune<br />Renovering af skoler<br />Frist: 14.08.2026<br /><span className="lnk">birdly.dk/m/abc123</span></div>
-                  <div className="stop">Svar STOP for at afmelde</div>
-                </div>
-                <div className="matchcard">
-                  <div className="top"><span className="tick"><svg width="12" viewBox="0 0 20 20"><path d="M5 10.5l3 3 7-8" stroke="#fff" strokeWidth="2.4" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg></span> Dit match</div>
-                  <h4>Renovering af skoler</h4>
-                  <div className="muni">Aarhus Kommune</div>
-                  <div className="li"><svg viewBox="0 0 16 16"><rect x="2" y="3" width="12" height="11" rx="2" fill="none" stroke="#FF6B6B" strokeWidth="1.6" /><path d="M2 6h12M6 1.5v3M10 1.5v3" stroke="#FF6B6B" strokeWidth="1.6" strokeLinecap="round" /></svg> Frist: 14.08.2026</div>
-                  <div className="li"><svg viewBox="0 0 16 16"><path d="M8 1v14M4 5l4-4 4 4" stroke="#00B3A6" strokeWidth="1.6" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg> Budget: 25–40 mio. kr.</div>
-                  <Link className="see" href="/kom-i-gang">Se opgaven →</Link>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+       ⚠️ HVORFOR .birdly-home STADIG OMSLUTTER DET HELE. Launch-baren og
+       pris-streameren har deres CSS nested inde i .birdly-home i forside.css.
+       Lå salgs-blokken udenfor, ville de to stå ustylede i launch-fasen. De
+       vælgere i forside.css der kunne ramme salgs-sektionerne (section-padding,
+       details, summary) er derfor overtrumfet i salg.css med to klasser — se
+       noten dér.
 
-      {/* SLIP FOR AT HOLDE ØJE — ny sektion, samme sektions- og tekst-stil som naboerne */}
-      <section>
-        <div className="wrap">
-          <div className="center reveal">
-            <h2 className="big">Slip for selv at lede efter opgaver.</h2>
-            <p className="lead">Birdly holder øje for dig. Når en relevant opgave dukker op, får du besked direkte på SMS og mail. Du bruger tiden på kunder og projekter — ikke på søgninger.</p>
-            <p className="owner-line reveal">Du fortæller os, hvad du vil have. Vi finder resten.</p>
-          </div>
-        </div>
-      </section>
+       ⚠️ HVAD DER ER FJERNET HERFRA OG HVORFOR:
+         · den gamle hero            → erstattet af <Hero>, som sælger resultatet
+         · "pain"-sektionen          → <Problemet> siger det samme, kortere
+         · "Fra besvær til besked"   → <Motoren>, tre trin i stedet for fire
+         · pris-sektionen            → <Priser> (samme beløb, ny ramme + garanti)
+         · B2C-båndet midt i flowet  → <EfterspoergselsLink> nederst + headeren
+       Intet af det er slettet indhold: hver sektion har en afløser der siger det
+       samme bedre. Det eneste der reelt er væk, er dubletterne.
+       ══════════════════════════════════════════════════════════════════════════ */
+    <div className="birdly-home sg">
+      {/* Launch-baren ligger øverst, som før. Renderer sig selv væk uden for
+          launch-fasen (NEXT_PUBLIC_LAUNCH_DEADLINE). */}
+      <LaunchBanner />
+      <SalgHeader funnelHref={funnelHref} />
 
-      {/* ---------- B2C-INDGANG ----------
-          ⚠️ FORSIDEN ER B2B. Alt andet her sælger udbudsovervågning til VIRKSOMHEDER.
-          Denne ene blok taler til en PRIVATPERSON, og de to må ikke kunne forveksles:
-          en håndværker der klikker her, tror han skal betale for at få opgaver, og en
-          husejer der klikker på "Kom i gang" havner i et CVR-felt.
-          Derfor er den visuelt adskilt og siger hvem den er til i første linje.
+      {/* ⚠️ OpgaveTaeller ER FJERNET HERFRA. Baren viste det samme tal som
+          <BevisBjaelke> nu viser, to skærmcentimeter fra hinanden — to steder
+          der siger "446 opgaver" læses som to forskellige tal. Komponenten er
+          urørt og bruges stadig på /brancher og fag-siderne. */}
 
-          ⚠️ "Er du privat?" FØRST, ikke "Opret opgave" først. Overskriften skal
-          afvise 9 ud af 10 læsere med det samme — det er en virksomhedsforside, og
-          langt de fleste her er virksomheder. En blok der ikke siger hvem den er til,
-          stjæler klik fra B2B-funnelen.
+      <Hero funnelHref={funnelHref} />
+      <BevisBjaelke tal={opgaveTal} />
+      <RisikoFjernet funnelHref={funnelHref} />
+      <Problemet />
+      <Motoren funnelHref={funnelHref} />
+      <FagBevis funnelHref={funnelHref} seneste={opgaveTal?.seneste || []} />
+      <SmsDemo />
+      <Vaerdi funnelHref={funnelHref} />
+      <Kundebevis />
+      <IkkePortal />
 
-          ⚠️ "100 % gratis" STÅR HER, fordi det er den eneste grund til at en
-          privatperson klikker videre fra en side der ellers viser 499 kr./md. Uden
-          det læses knappen som endnu et abonnement.
+      {/* Pris-streameren hører til ved prisen og har sin CSS nested i
+          .birdly-home — derfor står den her og ikke inde i <Priser>, som også
+          bruges på /kom-i-gang hvor .birdly-home ikke findes. */}
+      <LaunchStreamer />
+      <Priser funnelHref={funnelHref} />
+      <SlutCta funnelHref={funnelHref} />
 
-          ⚠️ SAMME FLAG SOM NAVIGATIONEN (OPRET_OPGAVE_I_NAV). Ét håndtag, så indgangen
-          ikke kan stå ét sted og mangle et andet — se lib/opretOpgave.js. */}
-      {OPRET_OPGAVE_I_NAV && (
-        <section className="b2c-band">
-          <div className="wrap">
-            <div className="b2c-kort reveal">
-              <div>
-                <div className="b2c-eyebrow">Er du privat?</div>
-                <h2>Har du en opgave, der skal laves?</h2>
-                <p>
-                  Beskriv den på 1 minut, så finder Birdly op til 3 virksomheder i dit
-                  område, der arbejder med den. Helt gratis, og du forpligter dig ikke
-                  til noget.
-                </p>
-              </div>
-              <Link href="/opret-opgave" className="b2c-knap">
-                Opret gratis <span aria-hidden="true">&rarr;</span>
-              </Link>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* PAIN / HVORFOR */}
-      <section className="pain" id="hvorfor">
-        <div className="wrap">
-          <div className="center reveal">
-            <span className="kick">Kender du det?</span>
-            <h2 className="big">Opgaverne er der.<br />De er bare svære at finde.</h2>
-            <p className="lead">Gode opgaver dukker op mange steder — nogle slås offentligt op, andre oprettes direkte af private kunder. Birdly samler dem og sender de relevante til dig.</p>
-          </div>
-          <div className="pain-grid">
-            <div className="pcard reveal">
-              <div className="ic"><svg width="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#FF6B6B" strokeWidth="2" /><path d="M12 7v5l3 2" stroke="#FF6B6B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg></div>
-              <h3>Du ser dem for sent</h3>
-              <p>Den gode opgave er allerede taget.</p>
-            </div>
-            <div className="pcard reveal">
-              <div className="ic"><svg width="22" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h10" stroke="#FF6B6B" strokeWidth="2" strokeLinecap="round" /></svg></div>
-              <h3>De ligger spredt</h3>
-              <p>Du skal lede flere steder.</p>
-            </div>
-            <div className="pcard reveal">
-              <div className="ic"><svg width="22" viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="#FF6B6B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /><path d="M14 2v6h6" stroke="#FF6B6B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /><path d="M16 13H8M16 17H8M10 9H8" stroke="#FF6B6B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg></div>
-              <h3>Du har andet at lave</h3>
-              <p>Din tid er bedre brugt på arbejdet.</p>
-            </div>
-          </div>
-          <p className="pain-bridge reveal">Du får beskeden om de rette opgaver — og en skabelon klar, hvis du vil byde. Resten bestemmer du selv.</p>
-        </div>
-      </section>
-
-      {/* HOW */}
-      <section id="hvordan">
-        <div className="wrap">
-          <div className="center reveal">
-            <span className="kick">Hvordan virker det</span>
-            <h2 className="big">Fra besvær til besked.</h2>
-            <p className="lead">Du gør det nemme. Vi gør resten. Du hører kun fra os, når der er et match.</p>
-          </div>
-          <div className="steps">
-            <div className="stp reveal"><div className="num">1</div><h3>Fortæl os hvad du laver</h3><p>Vælg branche, område og ønsket opgavestørrelse. Det tager få minutter.</p></div>
-            <div className="stp reveal"><div className="num">2</div><h3>Birdly holder øje</h3><p>Vi finder relevante offentlige og private opgaver. Du behøver ikke logge ind eller søge hver dag.</p></div>
-            <div className="stp reveal"><div className="num">3</div><h3>Få besked</h3><p>Når vi finder relevante opgaver, får du én samlet besked med dagens matches.</p></div>
-            <div className="stp reveal"><div className="num">4</div><h3>Vi hjælper dig i mål</h3><p>Skabelonen følger med i linket. Brug den eller lad være — men den sparer mange for timers arbejde.</p></div>
-          </div>
-        </div>
-      </section>
+      {/* ══════════════════════════════════════════════════════════════════════
+          HERUNDER: SEO-LAGET. Rodens eget indhold — det Google rangerer den på,
+          og det en organisk besøgende læser efter at have set salgsargumentet.
+          ⚠️ RØR DET IKKE UDEN GRUND. Fag-chippene er interne links til alle 20
+          brancheshelf-sider, og de tolv FAQ-svar fodrer FAQPage-schemaet i
+          app/page.js. Fjernes et af dem, falder både interne links og schema.
+          ══════════════════════════════════════════════════════════════════════ */}
 
       {/* MARQUEE */}
       <section className="marq-sec">
@@ -495,60 +369,11 @@ export default function Forside({ opgaveTal = null }) {
         </div>
       </section>
 
-      {/* PRICING */}
-      <section className="pricing" id="priser">
-        <div className="wrap">
-          <div className="center reveal">
-            <span className="pill-incl">ALT INKLUDERET</span>
-            <h2 className="big">Én pakke med det hele</h2>
-            <p className="lead">Samme pris, uanset om du dækker din egen region eller hele Danmark.</p>
-          </div>
-
-          <LaunchStreamer />
-
-          <div className="price-duo">
-            {/* Boks A — månedligt */}
-            <div className="pbox reveal">
-              <div className="plabel">MÅNEDLIGT</div>
-              <div className="pamt">{PLAN.monthly}<span>kr/md</span></div>
-              <div className="pnote">Ekskl. moms · ingen binding</div>
-              <div className="pfoot">
-                <Link href="/kom-i-gang" className="btn btn-teal pbtn">Find opgaver nu</Link>
-                <div className="cta-note">Gratis de første 14 dage · ingen binding</div>
-                <div className="psub">Opsig når som helst med 30 dages varsel.</div>
-              </div>
-            </div>
-
-            {/* Boks B — årligt (fremhævet) */}
-            <div className="pbox feat reveal">
-              <span className="psave">SPAR ~{YEARLY_SAVING.pct} %</span>
-              <div className="plabel">ÅRLIGT</div>
-              <div className="pamt">{PLAN.yearly.toLocaleString("da-DK")}<span>kr/år</span></div>
-              <div className="pnote">Betal for 10 måneder, få 12 · spar {YEARLY_SAVING.amount} kr · ekskl. moms</div>
-              <div className="pfoot">
-                <Link href="/kom-i-gang" className="btn btn-teal pbtn">Find opgaver nu</Link>
-                <div className="cta-note">Gratis de første 14 dage · ingen binding</div>
-                {/* TODO jura: "betales forud" er en blød, MIDLERTIDIG formulering. Den præcise
-                    ordlyd om 12-måneders binding på årsabonnement skal bekræftes af advokat før launch. */}
-                <div className="psub">Årsabonnement — betales forud.</div>
-              </div>
-            </div>
-          </div>
-
-          <div className="price-incl reveal">
-            <h3>Det får du — uanset hvad du vælger</h3>
-            <ul>
-              <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>Offentlige <b>og private</b> opgaver — i <b>din region eller hele Danmark</b>, samme pris</span></li>
-              <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>SMS + mail ved match — resumé, dato og link</span></li>
-              <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>Bud-skabelon inkluderet</span></li>
-              <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>Betal månedligt — eller spar ~{YEARLY_SAVING.pct} % på årsbetaling</span></li>
-              <li><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#E6FFFB" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#00B3A6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg><span>14 dage gratis · ingen binding · opsig når som helst</span></li>
-            </ul>
-          </div>
-
-          <p className="price-note">En enkelt opgave kan betale abonnementet mange gange hjem. De første 14 dage er gratis — opsiger du inden da, trækkes der intet. Alle priser er ekskl. moms.</p>
-        </div>
-      </section>
+      {/* ⚠️ DEN GAMLE PRIS-SEKTION ER FJERNET HER. Beløbene var de samme
+          (begge læste lib/pakke.js), men den stod med et UBETINGET
+          garanti-argument i "price-note" og gentog priserne en anden gang på
+          samme side. Prisen bor nu ét sted: <Priser> længere oppe, med den
+          betingede matchgaranti fra lib/salgTekst.js. */}
 
       {/* ABOUT */}
       <section className="about" id="om">
@@ -646,6 +471,8 @@ export default function Forside({ opgaveTal = null }) {
           </div>
         </div>
       </section>
+
+      <EfterspoergselsLink />
 
       <Footer />
 

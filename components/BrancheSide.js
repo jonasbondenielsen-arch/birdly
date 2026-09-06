@@ -8,6 +8,9 @@ import { OPRET_OPGAVE_I_NAV } from "../lib/opretOpgave";
 import { regionerForFag } from "../lib/regioner";
 import { daTal } from "../lib/opgaveTal";
 import "../app/forside.css";
+import "../app/salg.css";
+import { RisikoFjernet, Vaerdi } from "./salg/Sektioner";
+import { TRUST } from "../lib/salgTekst";
 // Guide-kortene genbruger /viden-stilen frem for en kopi.
 import { KLARE_GUIDES } from "../lib/viden";
 import "../app/viden/viden.css";
@@ -105,17 +108,27 @@ export default function BrancheSide({ data, region = null, opgaveTal = null }) {
   };
 
   return (
-    <div className="birdly-home har-sticky-cta">
+    /* ⚠️ `sg` LIGGER OVENPÅ .birdly-home, ikke i stedet for. Siden beholder hele
+       sit eksisterende design (header, .vals, .faq-list, .ctaband, sticky-CTA);
+       `sg` giver den kun adgang til de to delte salgs-sektioner nedenfor, så
+       fag-siderne siger præcis det samme om risiko og værdi som forsiden og
+       /kom-i-gang. To sæt formuleringer på 36 sider ville drive fra hinanden
+       inden for et halvt år. */
+    <div className="birdly-home har-sticky-cta sg">
       {/* HEADER — samme som forsiden */}
       <header>
         <div className={"wrap bar" + (OPRET_OPGAVE_I_NAV ? " bar-2cta" : "")}>
           <Logo height={32} />
+          {/* ⚠️ RIGTIGE RUTER, IKKE ANKRE PÅ RODEN. Punkterne pegede på /#priser
+              og /#hvorfor — altså tilbage til forsiden og ned til et afsnit. Nu
+              findes siderne selv, og "Viden" er kommet med: de ni guides lå i
+              sitemap'et uden et eneste link fra nogen menu. */}
           <nav className="menu">
-            <a href="/#hvorfor">Hvorfor Birdly</a>
-            <a href="/#hvordan">Hvordan virker det</a>
-            <a href="/#priser">Priser</a>
-            <a href="/#faq">FAQ</a>
+            <Link href="/sadan-virker-det">Sådan virker det</Link>
             <Link href="/brancher">Brancher</Link>
+            <Link href="/priser">Priser</Link>
+            <Link href="/hvorfor-birdly">Hvorfor Birdly</Link>
+            <Link href="/viden">Viden</Link>
           </nav>
           <div className="right">
             <Link href={funnel} className="nav-cta">Find opgaver nu</Link>
@@ -131,9 +144,15 @@ export default function BrancheSide({ data, region = null, opgaveTal = null }) {
       <section className="hero">
         <div className="wrap center" style={{ position: "relative", zIndex: 2 }}>
           <span className="pill">🐦 Gratis i 14 dage — ingen binding</span>
+          {/* ⚠️ RESULTAT FØRST — MEN SØGEORDET BLIVER STÅENDE. "opgaver til
+              tømrere i Nordjylland" er præcis den streng siden rangerer på, og den
+              står stadig i H1. Det eneste der er byttet om, er at sætningen nu
+              begynder med hvad kunden FÅR frem for med et substantiv. "Direkte
+              på SMS" er flyttet fra H1 til underteksten og title'en, hvor den
+              stadig tæller — den solgte ikke, den beskrev. */}
           <h1>
-            {harPrivate ? "Opgaver for " : "Relevante opgaver til "}{nounPlural}{sted}
-            <br />— direkte på <span className="sky-em">SMS</span>
+            Få flere opgaver til {nounPlural}{sted}.
+            <br /><span className="sky-em">Uden selv at lede.</span>
           </h1>
           <p className="sub" style={{ marginLeft: "auto", marginRight: "auto" }}>
             {/* Samme sætning, to sandheder: fag med private opgaver får dem nævnt,
@@ -153,8 +172,21 @@ export default function BrancheSide({ data, region = null, opgaveTal = null }) {
           <div className="cta" style={{ justifyContent: "center" }}>
             <Link href={funnel} className="btn btn-teal">Find opgaver nu</Link>
           </div>
+          {/* Trust-rækken fra lib/salgTekst.js — samme fire punkter som forsiden
+              og funnelen. ⚠️ "Matchgaranti" står som ét ord her; selve løftet med
+              sit forbehold står i <RisikoFjernet> lige nedenfor, aldrig som en
+              bar påstand i en punktliste. */}
+          <ul className="sg-trust" style={{ justifyContent: "center" }}>
+            {TRUST.map((t) => (
+              <li key={t}><Check /> {t}</li>
+            ))}
+          </ul>
         </div>
       </section>
+
+      {/* RISIKOEN FJERNES MED DET SAMME — samme sektion, samme betingede
+          garanti-ordlyd som på forsiden og /kom-i-gang. */}
+      <RisikoFjernet funnelHref={funnel} />
 
       {/* DET KORTE SVAR */}
       <section>
@@ -332,6 +364,10 @@ export default function BrancheSide({ data, region = null, opgaveTal = null }) {
         </section>
       )}
 
+      {/* VÆRDIEN, lige før den sidste CTA: 365 dage mod årsprisen, med det
+          betingede anker ("kan betale … mange gange hjem"). */}
+      <Vaerdi funnelHref={funnel} />
+
       {/* AFSLUTTENDE CTA */}
       <section className="ctaband">
         <div className="wrap">
@@ -345,8 +381,12 @@ export default function BrancheSide({ data, region = null, opgaveTal = null }) {
 
       {/* Sticky CTA sidst i træet, så den ligger over alt uden at kræve z-index-kamp
           med sektionerne. Plads i bunden gives af .har-sticky-cta i forside.css. */}
+      {/* ⚠️ `knap` SKAL SÆTTES. Uden den faldt StickyCta tilbage på sin default
+          "Kom i gang gratis" — så stod der ÉN ordlyd i headeren og en anden i
+          den sticky bjælke, på alle 36 fag-sider. Huset har én primær CTA. */}
       <StickyCta
         href={funnel}
+        knap="Find opgaver nu"
         tekst={region ? `Opgaver for ${nounPlural} ${region.praep} ${region.navn}` : `Opgaver for ${nounPlural} — direkte på SMS`}
       />
 
