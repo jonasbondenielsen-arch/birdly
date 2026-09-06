@@ -6,6 +6,8 @@ import { hentKandidater, visResultat } from "../../lib/kandidater";
 import { daTal } from "../../lib/opgaveTal";
 import OpgaveKort from "./OpgaveKort";
 import Cta from "./Cta";
+import { useFag } from "./FagKontekst";
+import { sporFunnel } from "../../lib/ctaSporing";
 
 // ============================================================================
 // "SE HVAD BIRDLY FINDER" — sidens vigtigste bevis.
@@ -46,9 +48,21 @@ const FAG = [
 
 const STANDARD = "rengoring";
 
-export default function FagBevis({ funnelHref }) {
+/**
+ * @param {string} [laastFag]  Låser sektionen til ét fag og skjuler fanerne.
+ *   ⚠️ BRUGES PÅ FAG-SIDERNE. En /fag/rengoring-side er allerede et svar på
+ *   "hvilket fag?", og faner dér ville invitere den besøgende til at forlade den
+ *   side hun lige er landet på — og til at se et bevis der ikke handler om
+ *   hende. På forsiden er fanerne omvendt hele pointen.
+ */
+export default function FagBevis({ funnelHref, laastFag = null }) {
   const [katalog, setKatalog] = useState(null);
-  const [valgt, setValgt] = useState(STANDARD);
+  // ⚠️ FAGET ER DELT MED VÆRDI-ANKERET længere nede på siden. Vælger den
+  // besøgende "VVS" her, skal regnestykket dernede også være en VVS-opgave —
+  // ellers ser en VVS'er sit eget fag i beviset og en rengøringsaftale som sit
+  // eksempel to sektioner senere. Se components/salg/FagKontekst.js.
+  const { fag: fraKontekst, setFag: setValgt } = useFag(STANDARD);
+  const valgt = laastFag || fraKontekst;
   const [svar, setSvar] = useState(null);
   const [henter, setHenter] = useState(true);
   // Løbenummer pr. opslag. Klikker man hurtigt gennem fire fag, kommer svarene
@@ -96,6 +110,14 @@ export default function FagBevis({ funnelHref }) {
       if (!levende || mit !== nr.current) return;
       setSvar(k);
       setHenter(false);
+      // ⚠️ INTERN HÆNDELSE, ingen Meta. Den fortæller om beviset faktisk viste
+      // noget for det valgte fag — altså om sektionen gjorde sit arbejde eller
+      // stod med en tom tilstand. Se lib/ctaSporing.js.
+      sporFunnel("OpportunityProofViewed", {
+        fag: valgt,
+        antal: k?.i_omraade || 0,
+        eksempler: (k?.eksempler || []).length,
+      });
     });
 
     return () => { levende = false; };
@@ -117,17 +139,19 @@ export default function FagBevis({ funnelHref }) {
         <div className="sg-midt">
           <span className="sg-kick">Se det selv</span>
           <h2 className="sg-big">Se hvad Birdly finder.</h2>
-          <p className="sg-lead">Vælg et fag og se aktuelle muligheder.</p>
+          <p className="sg-lead">
+            {laastFag ? "Aktuelle muligheder i jeres fag, lige nu." : "Vælg et fag og se aktuelle muligheder."}
+          </p>
         </div>
 
-        <div className="sg-fagvalg" role="group" aria-label="Vælg et fag">
+        <div className="sg-fagvalg" role="group" aria-label="Vælg et fag" hidden={!!laastFag}>
           {tilgaengelige.map((f) => (
             <button
               key={f.key}
               type="button"
               className={"sg-fagknap" + (valgt === f.key ? " on" : "")}
               aria-pressed={valgt === f.key}
-              onClick={() => setValgt(f.key)}
+              onClick={() => { setValgt(f.key); sporFunnel("VerticalSelected", { fag: f.key, kilde: "bevis" }); }}
             >
               {f.navn}
             </button>

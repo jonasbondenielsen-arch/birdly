@@ -1,9 +1,13 @@
 import Footer from "../Footer";
 import SalgHeader from "./SalgHeader";
 import FagBevis from "./FagBevis";
+import StickyCtaMobil from "./StickyCtaMobil";
+import { FagProvider } from "./FagKontekst";
+import { Vaerdi } from "./VaerdiSektion";
 import {
-  Hero, BevisBjaelke, RisikoFjernet, Problemet, Motoren, SmsDemo,
-  Vaerdi, Kundebevis, IkkePortal, Priser, SlutCta, SalgFaq, EfterspoergselsLink,
+  Hero, BevisBjaelke, RisikoFjernet, Problemet, ProblemPris, Loesningen,
+  Motoren, SmsDemo, FagVaelgerKort, Kundebevis, IkkePortal, Priser,
+  SlutCta, SalgFaq, EfterspoergselsLink,
 } from "./Sektioner";
 import { getBrancheByFagKey } from "../../lib/branche";
 import "../../app/salg.css";
@@ -13,37 +17,56 @@ import "../../app/salg.css";
 //
 //   annonce / husets CTA / de 36 fag-sider  →  DENNE side  →  /start  →  betaling
 //
-// ⚠️ DEN ER IKKE HUSETS FORSIDE. Roden (`/`) er SEO-siden og bærer alle tolv
-// FAQ-svar, FAQPage-schemaet og forklaringslaget. Denne er noindex og fri til at
-// blive optimeret rent på konvertering — men copy'en er DEN SAMME, fordi begge
-// sider bruger sektionerne i components/salg/Sektioner.js. To sæt tekst ville
-// betyde at en besøgende fra Google og en fra Facebook fik hvert sit løfte.
+// ⚠️ DEN ER IKKE HUSETS FORSIDE. Roden (`/`) er SEO-siden og bærer alle
+// FAQ-svarene, FAQPage-schemaet og forklaringslaget. Denne er noindex og fri til
+// at blive optimeret rent på konvertering — men copy'en er DEN SAMME, fordi
+// begge sider bruger sektionerne i components/salg/. To sæt tekst ville betyde
+// at en besøgende fra Google og en fra Facebook fik hvert sit løfte.
 //
-// RÆKKEFØLGEN (06-09-2026):
-//   RESULTAT → PROBLEM → BEVIS → MOTOR → ØKONOMISK VÆRDI → RISIKO → TILBUD → CTA
-//   1 hero · 2 bevis-bjælke · 3 problem · 4 fag-bevis · 5 motor · 6 sms
-//   7 værdi · 8 kundebevis (renderer sig væk) · 9 ikke-portal · 10 risiko
-//   11 priser · 12 slut-CTA · 13 FAQ
+// ══════════════════════════════════════════════════════════════════════════
+// RÆKKEFØLGEN — den psykologiske arkitektur, ikke en indholdsfortegnelse:
 //
-// ⚠️ RISIKOEN LIGGER LIGE FØR PRISEN, ikke øverst. Den er svaret på den
-// indvending der opstår i det øjeblik et beløb bliver nævnt — står den før
-// kunden overhovedet ved hvad tingen koster, besvarer den et spørgsmål hun
-// ikke har stillet endnu, og så fylder den bare.
+//   1  RESULTAT              hero
+//   2  LEVENDE BEVIS         bevis-bjælke (ægte tal)
+//   3  RISIKO FJERNET        14 dage gratis + matchgaranti
+//   4  PROBLEMET             tre nøgterne kort
+//   5  HVAD DET KAN KOSTE    mærket eksempel på en aftales årsværdi
+//   6  LØSNINGEN             "Birdly leder. I får besked."
+//   7  ÆGTE OPGAVE-BEVIS     fag-faner med rigtige tal og opgaver
+//   8  SÅDAN VIRKER DET      tre trin + én resultat-linje
+//   9  PRODUKT-BEVIS         SMS'en
+//  10  FAG-VÆLGER            hvert fag skal kunne se sig selv
+//  11  ØKONOMISK VÆRDI       sammenligningen, ved beslutningen
+//  12  FORSKELLEN            "Endnu en portal? Nej tak."
+//  13  PRISER                året som hovedtilbud
+//  14  RESULTAT IGEN         navy afslutning
+//  15  FAQ                   seks synlige
 //
-// ⚠️ CTA-KADENCEN ER BEVIDST. Knappen står efter hero, fag-bevis, motor, værdi,
-// risiko, priser, slut og FAQ — altid dér hvor et argument lige er landet.
-// IKKE en knap hver 100 px: en CTA uden et argument foran sig er støj, og støj
-// lærer øjet at springe knappen over.
-// ============================================================================
+// ⚠️ RISIKOEN LIGGER TIDLIGT (3), OG DET ER MED VILJE. Kold trafik fra Meta har
+// ikke besluttet sig for at læse videre; "14 dage gratis, 0 kr. i dag" fjerner
+// grunden til at lukke fanen, før argumentet overhovedet er begyndt. Den står
+// også ved prisen, hvor den besvarer en anden indvending.
+//
+// ⚠️ 5 OG 11 ER IKKE DEN SAMME SEKTION. 5 er en OMKOSTNING ("den opgave I ikke
+// ser") og nævner ikke prisen; 11 er SAMMENLIGNINGEN med abonnementet og står
+// dér hvor kunden er ved at tage stilling. Slås de sammen, mister man enten
+// problemets tyngde eller prisens kontekst.
+//
+// ⚠️ CTA-KADENCEN. Knappen står efter hero, risiko, løsning, bevis, motor,
+// værdi, priser, slut og FAQ — altid lige efter et argument er landet. IKKE en
+// knap hver 100 px: en CTA uden et argument foran sig er støj, og støj lærer
+// øjet at springe knappen over.
+// ══════════════════════════════════════════════════════════════════════════
 export default function Salgsside({ tal, funnelHref, fag = null }) {
   // ---------------------------------------------------------------------
   // MESSAGE-MATCH. Kommer en besøgende fra en rengørings-annonce
-  // (?fag=rengoring), skal overskriften tale om rengøring — ellers bruger hun
-  // det første sekund på at afgøre om hun er landet det rigtige sted.
+  // (?fag=rengoring), skal overskriften, beviset, SMS-eksemplet og regnestykket
+  // alle tale om rengøring — ellers bruger hun det første sekund på at oversætte
+  // en generisk side til sin egen situation.
   //
   // ⚠️ INGEN CLOAKING. Det er den SAMME side med den samme pris, det samme
-  // produkt og de samme betingelser; kun ét ord i overskriften og én linje
-  // undertekst skifter. Er faget ukendt, står den generiske version — vi
+  // produkt og de samme betingelser; kun overskriften, det forvalgte fag og
+  // regne-eksemplet skifter. Er faget ukendt, står den generiske version — vi
   // opfinder ALDRIG et fagnavn ud af en parameter, for så ville en tilfældig
   // streng i adressen kunne skrive vores overskrift.
   //
@@ -51,48 +74,43 @@ export default function Salgsside({ tal, funnelHref, fag = null }) {
   // fag-siderne fører videre (?fag=tomrer, ikke ?fag=toemrer).
   // ---------------------------------------------------------------------
   const b = fag ? getBrancheByFagKey(String(fag)) : null;
-  // ⚠️ KUN EN VALIDERET NØGLE. Er faget ukendt, falder værdi-ankeret tilbage på
-  // rengøring (den nuværende primære målgruppe) frem for at bruge en rå streng
-  // fra adresselinjen til at vælge regnestykke.
+  // Ukendt fag ⇒ rengøring, som er den nuværende primære målgruppe.
   const fagNoegle = b ? b.fagKey : "rengoring";
   const overskrift = b ? <>Få flere opgaver til {b.nounPlural}.</> : null;
   // ⚠️ nounPlural, IKKE `arbejde`. Feltet `arbejde` er sat sammen til brødtekst
-  // ("tømrer- og snedkerarbejde") og bliver kluntet i en kort sætning. nounPlural
-  // er skrevet til netop den her slags overskrift og læser naturligt for alle 20
-  // fag: "til tømrere", "til rengøringsfirmaer", "til vognmænd".
+  // ("tømrer- og snedkerarbejde") og bliver kluntet i en kort sætning.
   const under = b
-    ? `Birdly finder offentlige og private opgaver til ${b.nounPlural} — og sender nye match direkte på SMS og mail.`
+    ? `Birdly finder offentlige og private opgaver til ${b.nounPlural} — og sender dem direkte på SMS og mail.`
     : null;
 
   return (
-    <div className="sg">
-      <SalgHeader funnelHref={funnelHref} />
+    // Provideren deler det valgte fag mellem bevis-fanerne (7) og
+    // værdi-ankeret (11). Alt derimellem forbliver server-renderet.
+    <FagProvider start={fagNoegle}>
+      <div className="sg">
+        <SalgHeader funnelHref={funnelHref} />
 
-      <Hero funnelHref={funnelHref} overskrift={overskrift} under={under} />
-      <BevisBjaelke tal={tal} />
-      <Problemet />
-      {/* ⚠️ BEVISET LIGGER FØR MOTOREN. Rækkefølgen er RESULTAT → PROBLEM →
-          BEVIS → MOTOR → VÆRDI → RISIKO → TILBUD → CTA: den besøgende skal se AT
-          der findes opgaver til hendes fag, før hun får forklaret HVORDAN vi
-          finder dem. Omvendt rækkefølge beder hende tro på en mekanik hun endnu
-          ikke har nogen grund til at interessere sig for.
-          Klient-komponent: den kalder preview-kandidater. */}
-      <FagBevis funnelHref={funnelHref} />
-      <Motoren funnelHref={funnelHref} />
-      <SmsDemo />
-      {/* Værdi-ankeret bruger rengørings-eksemplet som standard — det er den
-          nuværende primære målgruppe. Kommer den besøgende fra en anden
-          fag-annonce, følger ankeret med. */}
-      <Vaerdi funnelHref={funnelHref} fag={fagNoegle} />
-      <Kundebevis />
-      <IkkePortal />
-      <RisikoFjernet funnelHref={funnelHref} />
-      <Priser funnelHref={funnelHref} />
-      <SlutCta funnelHref={funnelHref} />
-      <SalgFaq funnelHref={funnelHref} />
-      <EfterspoergselsLink />
+        <Hero funnelHref={funnelHref} overskrift={overskrift} under={under} />
+        <BevisBjaelke tal={tal} />
+        <RisikoFjernet funnelHref={funnelHref} />
+        <Problemet />
+        <ProblemPris fag={fagNoegle} />
+        <Loesningen funnelHref={funnelHref} />
+        <FagBevis funnelHref={funnelHref} />
+        <Motoren funnelHref={funnelHref} />
+        <SmsDemo fag={fagNoegle} />
+        <FagVaelgerKort />
+        <Vaerdi funnelHref={funnelHref} />
+        <Kundebevis />
+        <IkkePortal />
+        <Priser funnelHref={funnelHref} />
+        <SlutCta funnelHref={funnelHref} />
+        <SalgFaq funnelHref={funnelHref} />
+        <EfterspoergselsLink />
 
-      <Footer />
-    </div>
+        <Footer />
+        <StickyCtaMobil funnelHref={funnelHref} />
+      </div>
+    </FagProvider>
   );
 }

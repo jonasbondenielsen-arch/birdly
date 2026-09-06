@@ -13,9 +13,13 @@ import LaunchStreamer from "./LaunchStreamer";
 import OpgaveTaeller from "./OpgaveTaeller";
 import SalgHeader from "./salg/SalgHeader";
 import FagBevis from "./salg/FagBevis";
+import StickyCtaMobil from "./salg/StickyCtaMobil";
+import { FagProvider } from "./salg/FagKontekst";
+import { Vaerdi } from "./salg/VaerdiSektion";
 import {
-  Hero, BevisBjaelke, RisikoFjernet, Problemet, Motoren,
-  Vaerdi, Kundebevis, IkkePortal, Priser, SlutCta, EfterspoergselsLink,
+  Hero, BevisBjaelke, RisikoFjernet, Problemet, ProblemPris, Loesningen,
+  Motoren, SmsDemo, FagVaelgerKort, Kundebevis, IkkePortal, Priser,
+  SlutCta, EfterspoergselsLink,
 } from "./salg/Sektioner";
 import "../app/forside.css";
 // ⚠️ EFTER forside.css. De to filer deler ingen klassenavne, men rækkefølgen er
@@ -228,7 +232,7 @@ export default function Forside({ opgaveTal, funnelHref = "/kom-i-gang" }) {
        Intet af det er slettet indhold: hver sektion har en afløser der siger det
        samme bedre. Det eneste der reelt er væk, er dubletterne.
        ══════════════════════════════════════════════════════════════════════════ */
-    <div className="birdly-home sg">
+    <FagProvider start="rengoring"><div className="birdly-home sg">
       {/* Launch-baren ligger øverst, som før. Renderer sig selv væk uden for
           launch-fasen (NEXT_PUBLIC_LAUNCH_DEADLINE). */}
       <LaunchBanner />
@@ -239,22 +243,29 @@ export default function Forside({ opgaveTal, funnelHref = "/kom-i-gang" }) {
           der siger "446 opgaver" læses som to forskellige tal. Komponenten er
           urørt og bruges stadig på /brancher og fag-siderne. */}
 
+      {/* ⚠️ SAMME RÆKKEFØLGE SOM /kom-i-gang. Den psykologiske arkitektur er
+          dokumenteret ét sted — components/salg/Salgsside.js — og skal holdes i
+          takt her. To forskellige rækkefølger på det samme indhold ville betyde
+          at vi optimerede to sider og lærte af ingen af dem. */}
       <Hero funnelHref={funnelHref} />
       <BevisBjaelke tal={opgaveTal} />
+      <RisikoFjernet funnelHref={funnelHref} />
       <Problemet />
-      {/* Beviset før motoren: se noten i components/salg/Salgsside.js. */}
+      <ProblemPris fag="rengoring" />
+      <Loesningen funnelHref={funnelHref} />
       <FagBevis funnelHref={funnelHref} />
       <Motoren funnelHref={funnelHref} />
+      <SmsDemo fag="rengoring" />
+      <FagVaelgerKort />
       {/* ⚠️ <SmsDemo /> STÅR IKKE HER, OG DET ER MED VILJE. Roden har allerede
           "Beskeden du får — Kort og godt" nede i SEO-laget, med præcis de samme
           fire punkter (resumé, frist, link, bud-skabelon) og et mail-kort ved
           siden af. To sektioner der siger det samme med de samme fire linjer på
           én side er dårlig læsning og unødig intern dublet. Salgssiden og
           /sadan-virker-det HAR den — de har ikke SEO-halen. */}
-      <Vaerdi funnelHref={funnelHref} fag="rengoring" />
+      <Vaerdi funnelHref={funnelHref} />
       <Kundebevis />
       <IkkePortal />
-      <RisikoFjernet funnelHref={funnelHref} />
 
       {/* Pris-streameren hører til ved prisen og har sin CSS nested i
           .birdly-home — derfor står den her og ikke inde i <Priser>, som også
@@ -489,6 +500,8 @@ export default function Forside({ opgaveTal, funnelHref = "/kom-i-gang" }) {
         onClose={() => setCancelOpen(false)}
       />
 
+      <StickyCtaMobil funnelHref={funnelHref} />
+
       {/* CHAT SUPPORT WIDGET */}
       <button className="chat-launcher" id="chatLauncher" aria-label="Åbn support-chat" onClick={() => (chatOpen ? setChatOpen(false) : openChat())}>
         <span className="dot"></span>
@@ -524,6 +537,6 @@ export default function Forside({ opgaveTal, funnelHref = "/kom-i-gang" }) {
         </div>
         <div className="chat-note">Drevet af Birdly</div>
       </div>
-    </div>
+    </div></FagProvider>
   );
 }

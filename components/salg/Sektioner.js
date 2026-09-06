@@ -6,7 +6,7 @@ import { Flueben, Kryds, Oeje, Bunke, Ur } from "./Ikoner";
 import { daTal, fmtOpdateret } from "../../lib/opgaveTal";
 import { PLAN, priceText, YEARLY_SAVING, TRIAL_DAYS } from "../../lib/pakke";
 import { GARANTI, GARANTI_LINK, TRUST, VAERDI_ANKER, EJER_LINJE } from "../../lib/salgTekst";
-import { byggAnker, BETINGET_LINJE } from "../../lib/vaerdiAnker";
+import { byggAnker, BETINGET_LINJE, FORBEHOLD } from "../../lib/vaerdiAnker";
 
 // ============================================================================
 // DE 13 SEKTIONER. Rækkefølgen bor i den side der bruger dem — her bor kun
@@ -237,6 +237,11 @@ export function Motoren({ funnelHref }) {
           <span className="sg-flow-node">SMS til jer</span>
         </div>
 
+        {/* ⚠️ EN RESULTAT-LINJE, IKKE ET FJERDE TRIN. Tre trin forklarer
+            mekanikken; det her er hvad den giver kunden. Et fjerde trin ville
+            gøre produktet sværere at forstå netop dér hvor det skal virke enkelt. */}
+        <p className="sg-resultatlinje">Og så gør I kun noget, når opgaven er interessant.</p>
+
         <p className="sg-afslut">Ingen daglig søgning. Ingen portal. Ingen støj.</p>
 
         <div className="sg-cta-row" style={{ justifyContent: "center" }}>
@@ -249,16 +254,31 @@ export function Motoren({ funnelHref }) {
 
 // ------------------------------------------------------------ 5 · SMS-DEMO
 
-export function SmsDemo() {
+// ⚠️ SMS-EKSEMPLET FØLGER FAGET. En VVS'er der lige har set sit eget fag i
+// beviset og derefter får en rengøringsbesked som produkt-demo, læser det som at
+// vi ikke havde et eksempel til ham. Teksterne er OPDIGTEDE illustrationer —
+// mærket som eksempel i SmsTelefon — men de skal være opdigtede inden for
+// kundens eget fag.
+const SMS_EKSEMPEL = {
+  rengoring: { fag: "Fast rengøring", hvad: "Rengøring af administrationsbygninger", sted: "Roskilde Kommune" },
+  service: { fag: "Service", hvad: "Serviceaftale på tekniske anlæg", sted: "Roskilde Kommune" },
+  elektriker: { fag: "El-installation", hvad: "Tavler og belysning på skole", sted: "Roskilde Kommune" },
+  vvs: { fag: "VVS", hvad: "Udskiftning af varmeanlæg", sted: "Roskilde Kommune" },
+  tomrer: { fag: "Tømrer", hvad: "Tag og facade på daginstitution", sted: "Roskilde Kommune" },
+  entreprenor: { fag: "Entreprenør", hvad: "Byggemodning og kloakarbejde", sted: "Roskilde Kommune" },
+};
+
+export function SmsDemo({ fag = "rengoring" }) {
+  const e = SMS_EKSEMPEL[fag] || SMS_EKSEMPEL.rengoring;
   return (
     <section className="sg-sek">
       <div className="sg-wrap sg-demogrid">
         <div>
           <SmsTelefon
             titel="Nyt Birdly-match"
-            fag="Fast rengøring"
-            sted="Roskilde Kommune"
-            hvad="Rengøring af administrationsbygninger"
+            fag={e.fag}
+            sted={e.sted}
+            hvad={e.hvad}
             frist="18/09"
           />
         </div>
@@ -280,94 +300,144 @@ export function SmsDemo() {
   );
 }
 
-// -------------------------------------------------- 6 · ØKONOMISK VÆRDI
+// ------------------------------------------- 5 · HVAD PROBLEMET KAN KOSTE
 
 /**
- * Sammenligningen mellem hvad en opgave kan være værd og hvad Birdly koster.
+ * Prisen på det man ikke ser.
  *
- * ⚠️ DET ER EN SAMMENLIGNING, IKKE ET AFKAST. Vi siger aldrig at kunden tjener
- * noget, får noget igen eller opnår et forhold — vi stiller to beløb ved siden
- * af hinanden og skriver rent ud at vi ikke garanterer en vundet opgave.
- * Reglen og alle tal bor i lib/vaerdiAnker.js; læs noten dér før du ændrer
- * en formulering.
+ * ⚠️ DET ER EN OMKOSTNINGS-SEKTION, IKKE EN PRIS-SEKTION. Den kommer lige efter
+ * problemet og svarer på "og hvad så?". Selve sammenligningen med abonnementet
+ * hører til nede ved prisen (<Vaerdi>); står hele regnestykket begge steder,
+ * læses den anden som en gentagelse frem for som en afslutning.
  *
- * ⚠️ BELØBENE ER MÆRKEDE EKSEMPLER. Vi har ingen data på hvad kundens opgaver
- * er værd, og vi påstår det ikke. "Eksempel"-mærkatet står på selve kortet, ikke
- * som småtryk nedenunder.
+ * ⚠️ BELØBET ER ET MÆRKET EKSEMPEL. Vi har ingen data på hvad en dansk
+ * rengøringsaftale er værd, og vi påstår det ikke. "EKSEMPEL"-badget står på
+ * selve kortet — ikke som en fodnote man kan overse.
  *
- * ⚠️ ERSTATTER "365 DAGE vs. 4.990 KR." Det gamle anker sammenlignede en
- * tidsperiode med en pris, og det svarer ikke på spørgsmålet kunden faktisk
- * stiller: hvad kan det her være værd for MIG. Et beløb mod et beløb gør.
- *
- * @param {string} fag  fagnøgle — afgør om ankeret er en løbende aftale
- *                      (rengøring/service) eller et enkeltprojekt.
+ * ⚠️ INGEN TABT-OMSÆTNING-PÅSTAND. Der står ikke "I går glip af 96.000 kr." —
+ * det ville forudsætte at kunden ville have vundet opgaven. Der står at en
+ * opgave man ikke ser, ikke kan bydes på. Det er sandt uanset udfaldet.
  */
-export function Vaerdi({ funnelHref, fag = "rengoring", valgt = null }) {
-  const a = byggAnker(fag, valgt);
-
+export function ProblemPris({ fag = "rengoring" }) {
+  const a = byggAnker(fag);
   return (
-    <section className="sg-sek sg-graa" id="vaerdi">
+    <section className="sg-sek">
       <div className="sg-wrap">
         <div className="sg-midt">
-          <span className="sg-kick">Regnestykket</span>
-          <h2 className="sg-big">
-            {a.loebende ? "Hvad er én god fast kunde værd?" : "Hvad er én god opgave værd?"}
-          </h2>
+          <span className="sg-kick">Hvad det kan koste</span>
+          <h2 className="sg-big">Den opgave, I ikke ser,<br />kan I heller ikke byde på.</h2>
           <p className="sg-lead">
-            Birdly koster {priceText.yearlyBare} ekskl. moms for et helt år.
+            Muligheder ligger forskellige steder, og det meste er ikke relevant. Den ene der
+            var, kan nå at lukke, mens I passer jeres virksomhed.
           </p>
         </div>
 
-        <div className="sg-vaerdi">
-          <div className="sg-vaerdi-boks">
-            {/* ⚠️ MÆRKATET ER IKKE PYNT. Uden det læses beløbet som noget vi har
-                målt eller lover. Det er et realistisk eksempel, ikke data. */}
+        <div className="sg-koster">
+          <div className="sg-koster-kort">
             <span className="sg-maerkat">{a.maerkat}</span>
             {a.loebende ? (
               <>
-                <div className="sg-vaerdi-navn">Fast rengøringsaftale</div>
+                <div className="sg-vaerdi-navn">En fast aftale på</div>
                 <div className="sg-tal">{a.maaned}</div>
-                <div className="sg-vaerdi-lig">=</div>
-                <div className="sg-vaerdi-aar">{a.aar}</div>
+                <div className="sg-vaerdi-lig">har en årlig værdi på</div>
+                <div className="sg-koster-stor">{a.aar}</div>
               </>
             ) : (
               <>
-                <div className="sg-vaerdi-navn">Én relevant opgave</div>
-                <div className="sg-tal">{a.opgave}</div>
+                <div className="sg-vaerdi-navn">En relevant opgave til</div>
+                <div className="sg-koster-stor">{a.opgave}</div>
               </>
             )}
           </div>
-
-          <div className="sg-vaerdi-vs" aria-hidden="true">mod</div>
-
-          <div className="sg-vaerdi-boks sg-pris-side">
-            <span className="sg-maerkat sg-maerkat-lys">Faktisk pris</span>
-            <div className="sg-vaerdi-navn">Birdly — et helt år</div>
-            <div className="sg-tal">{priceText.yearlyBare}</div>
-            <div className="sg-vaerdi-aar">ekskl. moms</div>
-          </div>
         </div>
 
-        {/* ⚠️ FORHOLDSTALLET BESKRIVER TO BELØB, IKKE ET UDBYTTE. Formuleringen
-            "svarer til ca. 19× Birdlys årspris" siger noget om størrelsen på en
-            kontrakt sammenlignet med en abonnementspris. "Birdly giver 19× igen"
-            ville sige noget om penge der kommer retur, og dét må vi ikke. */}
-        {a.forhold && (
-          <p className="sg-anker">
-            {a.loebende
-              ? <>Én vundet aftale i den størrelse svarer til <b>{a.forhold.tekst}</b> Birdlys årspris.</>
-              : <>Et helt års Birdly svarer til <b>{a.andel}</b> af værdien på en opgave i den størrelse.</>}
-          </p>
-        )}
+        <p className="sg-forbehold">{FORBEHOLD}</p>
+      </div>
+    </section>
+  );
+}
 
-        {/* ⚠️ FORBEHOLDET ER OBLIGATORISK OG STÅR LIGE UNDER TALLET. Det er dét
-            der gør sammenligningen sand frem for et løfte. Flyt det aldrig ned
-            under knappen, og gør det aldrig mindre end her. */}
-        <p className="sg-forbehold">{a.forbehold}</p>
-        <p className="sg-afslut" style={{ marginTop: 10 }}>{BETINGET_LINJE}</p>
+// ------------------------------------------------------------ 6 · LØSNINGEN
+
+/**
+ * Svaret på problemet, sagt så kort som det kan siges.
+ *
+ * ⚠️ FIRE PUNKTER, INGEN FEATURES. Hvert punkt er noget KUNDEN vælger — fag,
+ * område, størrelse, type — ikke noget produktet indeholder. Det er forskellen
+ * på "her er hvad vi kan" og "her er hvad I bestemmer".
+ */
+export function Loesningen({ funnelHref }) {
+  return (
+    <section className="sg-sek sg-blaa">
+      <div className="sg-wrap sg-midt">
+        <span className="sg-kick">Løsningen</span>
+        <h2 className="sg-big">Birdly leder.<br /><span style={{ color: "var(--teal)" }}>I får besked.</span></h2>
+
+        <ul className="sg-fix">
+          <li><Flueben size={19} /> Jeres fag</li>
+          <li><Flueben size={19} /> Jeres område</li>
+          <li><Flueben size={19} /> Jeres ønskede opgavestørrelse</li>
+          <li><Flueben size={19} /> Private og offentlige muligheder</li>
+        </ul>
+
+        <p className="sg-lead">
+          Når noget passer, sender Birdly det direkte på SMS og mail.
+        </p>
+        <p className="sg-afslut">Mindre søgning. Flere relevante muligheder.</p>
 
         <div className="sg-cta-row" style={{ justifyContent: "center" }}>
-          <Cta href={funnelHref} placering="vaerdi" />
+          <Cta href={funnelHref} placering="loesning" />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// --------------------------------------------------------- 10 · FAG-VÆLGER
+
+/**
+ * "Hvad laver I?" — hvert fag skal kunne se sig selv.
+ *
+ * ⚠️ HVERT KORT BÆRER ET RESULTAT, IKKE ET FAGNAVN. "Rengøring & service" alene
+ * er en kategori; "Få flere faste og tilbagevendende opgaver" er en grund til at
+ * klikke. Det er forskellen på en indholdsfortegnelse og et salgsargument.
+ *
+ * ⚠️ KORTENE PEGER PÅ DE EKSISTERENDE /fag/-SIDER. Der er IKKE lavet nye
+ * /brancher/<fag>-ruter: de 20 fag-sider er indekserede, har hver sin canonical
+ * og bærer husets interne links. En parallel rute med samme indhold ville sætte
+ * to af vores egne sider op mod hinanden på de samme søgeord.
+ *
+ * ⚠️ INGEN TAL PÅ KORTENE. Et "Catering — 1 opgave" sælger værre end ingenting,
+ * og tallet svinger med ugen. Det personlige tal hører hjemme i bevis-sektionen
+ * og i funnelen, hvor det er knyttet til kundens egne kriterier.
+ */
+const FAG_KORT = [
+  { slug: "rengoring", navn: "Rengøring & service", resultat: "Få flere faste og tilbagevendende opgaver.", cta: "Se rengøringsopgaver" },
+  { slug: "elektriker", navn: "Elektriker", resultat: "Find relevante installations- og serviceopgaver.", cta: "Se elektrikeropgaver" },
+  { slug: "vvs", navn: "VVS", resultat: "Find varme-, sanitets- og ventilationsopgaver.", cta: "Se VVS-opgaver" },
+  { slug: "toemrer", navn: "Tømrer", resultat: "Find tag-, facade- og indretningsopgaver.", cta: "Se tømreropgaver" },
+  { slug: "entreprenor", navn: "Entreprenør", resultat: "Find anlægs-, jord- og betonopgaver.", cta: "Se entreprenøropgaver" },
+  { slug: null, navn: "Andre fag", resultat: "Birdly dækker 20 fag — fra maler og kloak til IT og catering.", cta: "Se alle fag" },
+];
+
+export function FagVaelgerKort() {
+  return (
+    <section className="sg-sek" id="brancher">
+      <div className="sg-wrap">
+        <div className="sg-midt">
+          <span className="sg-kick">Jeres fag</span>
+          <h2 className="sg-big">Hvad laver I?</h2>
+          <p className="sg-lead">Vælg jeres fag og se, hvilke typer opgaver Birdly kan finde til jer.</p>
+        </div>
+
+        <div className="sg-fagkort">
+          {FAG_KORT.map((f) => (
+            <Link key={f.navn} href={f.slug ? `/fag/${f.slug}` : "/brancher"} className="sg-fagkort-item">
+              <b>{f.navn}</b>
+              <span>{f.resultat}</span>
+              <i>{f.cta} →</i>
+            </Link>
+          ))}
         </div>
       </div>
     </section>

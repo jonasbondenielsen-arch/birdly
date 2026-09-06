@@ -9,7 +9,9 @@ import { regionerForFag } from "../lib/regioner";
 import { daTal } from "../lib/opgaveTal";
 import "../app/forside.css";
 import "../app/salg.css";
-import { RisikoFjernet, Vaerdi } from "./salg/Sektioner";
+import { RisikoFjernet, ProblemPris, Loesningen } from "./salg/Sektioner";
+import FagBevis from "./salg/FagBevis";
+import { Vaerdi } from "./salg/VaerdiSektion";
 import { TRUST } from "../lib/salgTekst";
 // Guide-kortene genbruger /viden-stilen frem for en kopi.
 import { KLARE_GUIDES } from "../lib/viden";
@@ -187,6 +189,18 @@ export default function BrancheSide({ data, region = null, opgaveTal = null }) {
       {/* RISIKOEN FJERNES MED DET SAMME — samme sektion, samme betingede
           garanti-ordlyd som på forsiden og /kom-i-gang. */}
       <RisikoFjernet funnelHref={funnel} />
+
+      {/* ⚠️ ÆGTE BEVIS I NETOP DETTE FAG, og det er hele forskellen på en
+          SEO-side og en konverteringsside. Tallet og opgaverne kommer fra
+          preview-kandidater med fagets egne koder — samme matchmotor kunden
+          bagefter matches på. Fanerne er skjult: siden ER allerede svaret på
+          "hvilket fag", og faner ville invitere hende væk fra den. */}
+      <FagBevis funnelHref={funnel} laastFag={fagKey} />
+
+      {/* Hvad problemet kan koste — regnet på DETTE fag, ikke på rengøring. */}
+      <ProblemPris fag={fagKey} />
+
+      <Loesningen funnelHref={funnel} />
 
       {/* DET KORTE SVAR */}
       <section>
@@ -366,7 +380,9 @@ export default function BrancheSide({ data, region = null, opgaveTal = null }) {
 
       {/* VÆRDIEN, lige før den sidste CTA: 365 dage mod årsprisen, med det
           betingede anker ("kan betale … mange gange hjem"). */}
-      <Vaerdi funnelHref={funnel} />
+      {/* ⚠️ SIDENS EGET FAG, ikke konteksten. En VVS-side skal regne på en
+          VVS-opgave; uden proppen ville den falde tilbage på rengøring. */}
+      <Vaerdi funnelHref={funnel} fag={fagKey} />
 
       {/* AFSLUTTENDE CTA */}
       <section className="ctaband">

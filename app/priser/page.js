@@ -1,6 +1,7 @@
 import Footer from "../../components/Footer";
 import SalgHeader from "../../components/salg/SalgHeader";
-import { Priser, RisikoFjernet, Vaerdi, SalgFaq, SlutCta, BevisBjaelke } from "../../components/salg/Sektioner";
+import { Priser, RisikoFjernet, SalgFaq, SlutCta, BevisBjaelke } from "../../components/salg/Sektioner";
+import { Vaerdi } from "../../components/salg/VaerdiSektion";
 import { hentOpgaveTal } from "../../lib/opgaveTal";
 import { medQuery } from "../../lib/funnelLink";
 import { abs } from "../../lib/site";

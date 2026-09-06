@@ -26,6 +26,7 @@ import { GARANTI, GARANTI_LINK, VAERDI_ANKER } from "../lib/salgTekst";
 import { sporFunnel } from "../lib/ctaSporing";
 import { erLoebende, MAANEDSVAERDI, PROJEKTVAERDI, byggAnker, FORBEHOLD, BETINGET_LINJE } from "../lib/vaerdiAnker";
 import OpgaveKort from "./salg/OpgaveKort";
+import { daTal } from "../lib/opgaveTal";
 // ⚠️ forside.css importeres IKKE. Den er nested under `.birdly-home`, så dens
 // klasser virker alligevel ikke her — og importen ville kun sende hele forsidens
 // CSS med i bundlen uden at gøre noget. start.css bærer det vi bruger.
@@ -238,6 +239,13 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
   // var en illustration.
   const [vaerdiValg, setVaerdiValg] = useState(null);
 
+  // Pre-funnelens bevis. ⚠️ SAMME KALD SOM RESTEN AF HUSET
+  // (preview-kandidater → birdly_match_candidates_for). Hentes én gang når
+  // kataloget er der, på det fag adressen peger på — eller rengøring, som er
+  // den nuværende primære målgruppe. Fejler det, står sektionen der slet ikke;
+  // vi viser ALDRIG en opgave fra et andet fag for at have noget at vise.
+  const [preBevis, setPreBevis] = useState(null);
+
   // Skærm 6 — selve scanningen. Kort overgang, så resultatet ikke bare "popper".
   const [scanner, setScanner] = useState(false);
   const [slaarOp, setSlaarOp] = useState(false);
@@ -335,6 +343,7 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
   // hændelse rører ikke Meta, og den må ikke gøre det — PageView fyres allerede
   // af pixlen bag samtykket, og en dublet ville forurene optimeringen.
   useEffect(() => { sporFunnel("FunnelStarted", { fag: startFag || null }); }, [startFag]);
+
 
   // ⚠️ STARTTRIAL VED RETUR FRA FRISBII. Kører kun når kunden faktisk kommer
   // tilbage på ?betaling=ok — altså efter en gennemført betaling. Ikke ved
@@ -819,6 +828,48 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
   // dem er gemt, og ingen af dem kan komme i utakt med det kunden har valgt.
   // ══════════════════════════════════════════════════════════════════════════
 
+  // ══════════════════════════════════════════════════════════════════════════
+  // PRE-FUNNELENS AFLEDTE VÆRDIER
+  // ══════════════════════════════════════════════════════════════════════════
+
+  // Faget pre-funnelen taler om: adressens ?fag= hvis det findes i kataloget,
+  // ellers rengøring. ⚠️ ALDRIG den rå parameter — den styrer både overskrift
+  // og regnestykke, og en tilfældig streng må ikke kunne skrive nogen af dem.
+  const preFag = startFag && fagByKey[startFag] ? startFag : "rengoring";
+  const preAnker = byggAnker(preFag, null);
+  const preFagOrd = forvalgtLabel ? forvalgtLabel.toLowerCase() + "sopgaver" : "opgaver";
+
+  // Trade-specifik overskrift. Læses af kataloget, som alt andet.
+  const preOverskrift = forvalgtLabel
+    ? <>Få flere opgaver inden for {forvalgtLabel.toLowerCase()}.</>
+    : <>Få flere relevante opgaver.</>;
+
+// ⚠️ HENTES ÉN GANG, OG KUN PÅ SKÆRM 1. Beviset hører til i pre-funnelen; er
+  // kunden kommet videre, er kaldet spildt båndbredde på en telefon. Fejler det,
+  // sættes intet, og sektionen renderer sig væk — se noten ved preBevis.
+  useEffect(() => {
+    if (!katalog || trin !== 1 || preBevis) return;
+    const f = fagByKey[preFag];
+    if (!f) return;
+    let levende = true;
+    const koder = (f.smal || []).map((a) => a.cpv).filter(Boolean);
+    hentKandidater({
+      fag_keys: [preFag],
+      cpv_selections: koder,
+      bredde: "alle",
+      region_keys: ["hele_dk"],
+      min_amount: null,
+      max_amount: null,
+      med_eksempler: true,
+    }).then((k) => {
+      if (!levende) return;
+      const antal = k?.i_omraade || 0;
+      setPreBevis({ antal, eksempler: k?.eksempler || [] });
+      if (antal > 0) sporFunnel("PrefunnelProofViewed", { fag: preFag, antal });
+    });
+    return () => { levende = false; };
+  }, [katalog, trin, preBevis, fagByKey, preFag]);
+
   // Skærm → etape. Ukendt skærm falder til første etape frem for at kaste.
   const etape = SKAERM_ETAPE[trin] ?? 0;
 
@@ -962,51 +1013,199 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
       )}
       {fejl && <div className="st-fejl">{fejl}</div>}
 
-      {/* ═══════════════ SKÆRM 1 — VIRKSOMHEDEN ═══════════════
-          To tilstande: indtast CVR, derefter "Er det jer?".
+      {/* ═══════════════ SKÆRM 1 — PRE-FUNNEL + VIRKSOMHEDEN ═══════════════
           ⚠️ CVR-GATEN ER SERVER-SIDE OG URØRT. /api/cvr advarer venligt her, men
           det er signup der afviser et CVR der ikke findes. Feltet spærrer aldrig
           kunden — hun skal kunne rette og prøve igen. */}
       {trin === 1 && !bekraeftet && (
-        <div className="st-kort">
-          <h1>Lad os finde relevante opgaver til jer.</h1>
-          {/* ⚠️ MESSAGE-MATCH. Kommer kunden fra en rengørings-annonce
-              (?fag=rengoring), skal funnelen sige rengøring med det samme —
-              ellers bruger hun det første sekund på at afgøre om hun er landet
-              det rigtige sted. Labelen læses af KATALOGET, aldrig af den rå
-              ?fag=-værdi: en tilfældig streng i adressen må ikke kunne skrive
-              vores overskrift. */}
-          <p className="st-hj">
-            {forvalgtLabel
-              ? <>Vi leder efter opgaver inden for <b>{forvalgtLabel.toLowerCase()}</b>. Start med jeres CVR-nummer, så gør Birdly resten klar.</>
-              : <>Start med jeres CVR-nummer. Så finder Birdly virksomheden og gør jeres søgning klar.</>}
-          </p>
-          <label className="st-lab" htmlFor="cvr">CVR-nummer</label>
-          <input
-            id="cvr" className="st-felt" inputMode="numeric" autoComplete="off" maxLength={11}
-            value={cvr}
-            onChange={(e) => { setCvr(e.target.value); setFirma(""); setAdresse(null); setBranchetekst(null); setBekraeftet(false); setOpslagFejl(""); }}
-            onBlur={(e) => slaaOp(e.target.value)}
-            placeholder="12345678"
-          />
-          {slaarOp && <p className="st-hj">Slår op…</p>}
-          {opslagFejl && <p className="st-hj">{opslagFejl}</p>}
+        <>
+      {/* ══════════════════════════════════════════════════════════════════════
+          PRE-FUNNEL — SALG TIL KOLD TRAFIK (skærm 1)
 
-          <button
-            className="btn btn-teal st-bred"
-            onClick={async () => {
-              if (cifre(cvr).length !== 8) return setFejl("Skriv et CVR-nummer på 8 cifre.");
-              setFejl("");
-              if (!firma) await slaaOp(cvr);
-              setBekraeftet(true);
-              sporFunnel("BusinessIdentified");
-              window.scrollTo({ top: 0, behavior: "smooth" });
-            }}
-          >
-            Find min virksomhed →
-          </button>
-          <p className="st-under-knap">Ca. 2 minutter · 0 kr. i dag · {TRIAL_DAYS} dage gratis</p>
+          ⚠️ HVORFOR DEN FINDES. Mange lander her direkte fra Meta uden nogensinde
+          at have set birdly.dk. De kender ikke produktet, prisen, garantien eller
+          os. Et bart CVR-felt beder dem om at identificere deres virksomhed for
+          en tjeneste de ikke ved hvad er — og det er dét, en funnel der "ligner
+          en tilmeldingsformular" koster.
+
+          ⚠️ CVR-FELTET STÅR ØVERST, IKKE NEDERST. Trafik der kommer fra
+          /kom-i-gang HAR set argumentet og skal ikke scrolle gennem det igen for
+          at komme i gang. Kold trafik scroller videre og finder bevis, regnestykke
+          og problem/løsning nedenunder — med en knap der fører tilbage til feltet.
+          Begge grupper får den korteste vej.
+
+          ⚠️ DEN LÅNER IKKE FORSIDENS SEKTIONER. Samme designsystem — samme
+          tokens, samme knapper — men funnelens eget, kompakte formsprog (st-).
+          Klistrede vi forsidens .sg-sektioner ind her, ville /start blive en
+          kopi af den side kunden lige har forladt, og det er præcis dét den ikke
+          må være.
+
+          ⚠️ 2-4 MOBILSKÆRME, IKKE 20. Vi kondenserer Hyros' arkitektur; vi
+          kopierer ikke deres længde.
+          ══════════════════════════════════════════════════════════════════════ */}
+
+      {/* ---- A1 · RESULTAT ---- */}
+      <div className="st-pre-hero">
+        <span className="st-pre-pill">Opgaver til danske virksomheder</span>
+        <h1>
+          {preOverskrift}
+          <span className="st-pre-em">Uden selv at lede.</span>
+        </h1>
+        <p className="st-pre-sub">
+          Birdly finder relevante private og offentlige opgaver og sender nye match
+          direkte på SMS og mail.
+        </p>
+        <ul className="st-pre-trust">
+          <li><span>✓</span> {TRIAL_DAYS} dage gratis</li>
+          <li><span>✓</span> 0 kr. i dag</li>
+          <li><span>✓</span> Ingen binding</li>
+          <li><span>✓</span> {GARANTI.kort}</li>
+        </ul>
+      </div>
+
+      {/* ---- A5 · CVR (står højt, se noten ovenfor) ---- */}
+      <div className="st-kort" id="cvr-kort">
+        <h2 className="st-pre-h2">Se hvad Birdly kan finde til jer.</h2>
+        <p className="st-hj">
+          {forvalgtLabel
+            ? <>Start med CVR-nummeret. Så finder vi virksomheden og tilpasser Birdly til <b>{forvalgtLabel.toLowerCase()}</b> og jeres område.</>
+            : <>Start med CVR-nummeret. Så finder vi virksomheden og tilpasser Birdly til jeres fag og område.</>}
+        </p>
+        <label className="st-lab" htmlFor="cvr">CVR-nummer</label>
+        <input
+          id="cvr" className="st-felt" inputMode="numeric" autoComplete="off" maxLength={11}
+          value={cvr}
+          onChange={(e) => { setCvr(e.target.value); setFirma(""); setAdresse(null); setBranchetekst(null); setBekraeftet(false); setOpslagFejl(""); }}
+          onBlur={(e) => slaaOp(e.target.value)}
+          placeholder="12345678"
+        />
+        {slaarOp && <p className="st-hj">Slår op…</p>}
+        {opslagFejl && <p className="st-hj">{opslagFejl}</p>}
+
+        <button
+          className="btn btn-teal st-bred"
+          onClick={async () => {
+            if (cifre(cvr).length !== 8) return setFejl("Skriv et CVR-nummer på 8 cifre.");
+            setFejl("");
+            sporFunnel("CVRStarted");
+            if (!firma) await slaaOp(cvr);
+            setBekraeftet(true);
+            sporFunnel("BusinessIdentified");
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }}
+        >
+          Find min virksomhed →
+        </button>
+        {/* ⚠️ SÆTNINGEN ER SAND, OG DET ER DERFOR DEN MÅ STÅ. Kortet bindes
+            først på skærm 9; alt før det er opsætning og et opslag. Ændrer den
+            rækkefølge sig nogensinde, skal linjen væk samme dag. */}
+        <p className="st-under-knap">
+          0 kr. i dag · {TRIAL_DAYS} dage gratis · I skal ikke registrere kort endnu
+        </p>
+      </div>
+
+      {/* ---- A2 · ÆGTE BEVIS ----
+          ⚠️ TALLET OG OPGAVERNE ER ÆGTE ELLER FRAVÆRENDE. Samme kald som
+          resten af huset (preview-kandidater → birdly_match_candidates_for).
+          Er der intet, står der intet — vi falder ALDRIG tilbage på en opgave
+          fra et andet fag for at have noget at vise. */}
+      {preBevis && preBevis.antal > 0 && (
+        <div className="st-pre-sek">
+          <span className="st-pre-kick">Birdly arbejder allerede</span>
+          <p className="st-pre-tal">
+            <b>{daTal(preBevis.antal)}</b> {preFagOrd} som Birdly holder øje med lige nu
+          </p>
+          {preBevis.eksempler.length > 0 && (
+            <div className="st-opgaver">
+              {preBevis.eksempler.slice(0, 3).map((n, i) => (
+                <OpgaveKort key={i} opgave={n} />
+              ))}
+            </div>
+          )}
+          <p className="st-pre-fin">
+            Det er den slags opgaver, Birdly kan holde øje med for jer.
+          </p>
         </div>
+      )}
+
+      {/* ---- A3 · ØKONOMISK VÆRDI ----
+          ⚠️ SAMMENLIGNING, IKKE AFKAST. To beløb ved siden af hinanden og et
+          forbehold der siger rent ud at vi ikke garanterer en vundet opgave.
+          Reglen bor i lib/vaerdiAnker.js — læs den før du ændrer en sætning. */}
+      <div className="st-pre-sek">
+        <span className="st-pre-kick">Regnestykket</span>
+        <h2 className="st-pre-h2">
+          {preAnker.loebende ? "Hvad er én fast kunde værd?" : "Hvad er én opgave værd?"}
+        </h2>
+
+        <div className="st-anker">
+          <div className="st-anker-boks">
+            <span className="st-maerkat">Eksempel</span>
+            {preAnker.loebende ? (
+              <>
+                <div className="st-anker-navn">En aftale på</div>
+                <div className="st-anker-tal">{preAnker.maaned}</div>
+                <div className="st-anker-lig">=</div>
+                <div className="st-anker-aar">{preAnker.aar}</div>
+              </>
+            ) : (
+              <>
+                <div className="st-anker-navn">En opgave til</div>
+                <div className="st-anker-tal">{preAnker.opgave}</div>
+              </>
+            )}
+          </div>
+          <div className="st-anker-vs" aria-hidden="true">mod</div>
+          <div className="st-anker-boks st-anker-pris">
+            <span className="st-maerkat st-maerkat-lys">Faktisk pris</span>
+            <div className="st-anker-navn">Birdly et helt år</div>
+            <div className="st-anker-tal">{priceText.yearlyBare}</div>
+            <div className="st-anker-aar">ekskl. moms</div>
+          </div>
+        </div>
+
+        {preAnker.forhold && (
+          <p className="st-anker-linje">
+            {preAnker.loebende
+              ? <>En aftale i den størrelse har en årlig værdi på <b>{preAnker.forhold.tekst}</b> Birdlys årspris.</>
+              : <>Et helt års Birdly svarer til <b>{preAnker.andel}</b> af værdien på en opgave i den størrelse.</>}
+          </p>
+        )}
+        <p className="st-forbehold">{FORBEHOLD}</p>
+      </div>
+
+      {/* ---- A4 · PROBLEM → LØSNING ---- */}
+      <div className="st-pre-sek">
+        <span className="st-pre-kick">Problemet</span>
+        <h2 className="st-pre-h2">Den opgave, I ikke ser,<br />kan I heller ikke byde på.</h2>
+        <p className="st-hj">
+          Muligheder ligger forskellige steder, og det meste er ikke relevant.
+        </p>
+
+        <div className="st-fix-boks">
+          <span className="st-pre-kick" style={{ color: "var(--teal)" }}>Løsningen</span>
+          <h3>Birdly leder. I får besked.</h3>
+          <ul>
+            <li><span>✓</span> Jeres fag</li>
+            <li><span>✓</span> Jeres område</li>
+            <li><span>✓</span> Jeres ønskede opgavestørrelse</li>
+            <li><span>✓</span> Private og offentlige muligheder</li>
+          </ul>
+          <p>→ direkte på SMS og mail</p>
+        </div>
+
+        <button
+          className="btn btn-teal st-bred"
+          onClick={() => {
+            const el = document.getElementById("cvr");
+            if (el) { el.scrollIntoView({ behavior: "smooth", block: "center" }); el.focus({ preventScroll: true }); }
+          }}
+        >
+          Find mine opgaver →
+        </button>
+        <p className="st-under-knap">0 kr. i dag · {TRIAL_DAYS} dage gratis</p>
+      </div>
+        </>
       )}
 
       {trin === 1 && bekraeftet && (

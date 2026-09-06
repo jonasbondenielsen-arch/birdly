@@ -587,3 +587,62 @@ select.st-felt{appearance:none;background-image:url("data:image/svg+xml;utf8,<sv
   .st-plan-pris{font-size:32px}
   .st-risiko-tal{font-size:30px}
 }
+
+/* ============================================================================
+   PRE-FUNNEL — salg til kold trafik på skærm 1 (06-09-2026)
+
+   ⚠️ FUNNELENS EGET FORMSPROG, IKKE FORSIDENS. Samme tokens og samme knapper,
+   men kompakt og i én smal spalte. Klistrede vi forsidens .sg-sektioner ind,
+   ville /start blive en kopi af den side kunden lige har forladt.
+
+   ⚠️ INGEN NYE FARVER. Alt bruger tokens fra globals.css.
+   ============================================================================ */
+
+.st-pre-hero{text-align:center;padding:8px 0 26px}
+.st-pre-pill{
+  display:inline-block;background:var(--sky-soft);border:1px solid var(--sky-200);
+  border-radius:999px;padding:6px 14px;font-size:11.5px;font-weight:800;
+  letter-spacing:.09em;text-transform:uppercase;color:var(--navy);margin-bottom:16px;
+  font-family:'Plus Jakarta Sans',sans-serif
+}
+.st-pre-hero h1{
+  font-family:'Plus Jakarta Sans',sans-serif;font-size:clamp(28px,7vw,40px);
+  font-weight:800;line-height:1.1;letter-spacing:-.025em;color:var(--navy)
+}
+.st-pre-em{display:block;color:var(--sky)}
+.st-pre-sub{margin-top:14px;font-size:16.5px;line-height:1.6;color:var(--navy-soft)}
+
+.st-pre-trust{list-style:none;display:flex;flex-wrap:wrap;justify-content:center;gap:8px 18px;margin-top:18px}
+.st-pre-trust li{display:inline-flex;align-items:center;gap:6px;font-size:13.5px;font-weight:600;color:var(--navy-soft)}
+.st-pre-trust span{color:var(--teal);font-weight:800}
+
+/* Sektionerne under CVR-kortet. Luft mellem, men ikke forsidens 84px — det
+   her skal være 2-4 mobilskærme i alt, ikke en landingsside. */
+.st-pre-sek{margin-top:34px;padding-top:30px;border-top:1px solid var(--line)}
+.st-pre-kick{
+  display:block;font-size:11.5px;font-weight:800;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--navy-soft);margin-bottom:10px;
+  font-family:'Plus Jakarta Sans',sans-serif
+}
+.st-pre-h2{
+  font-family:'Plus Jakarta Sans',sans-serif;font-size:clamp(21px,4.4vw,27px);
+  font-weight:800;line-height:1.2;letter-spacing:-.02em;color:var(--navy)
+}
+.st-pre-tal{margin-top:6px;font-size:17px;line-height:1.5;color:var(--navy)}
+.st-pre-tal b{font-family:'Plus Jakarta Sans',sans-serif;font-size:30px;font-weight:800;color:var(--teal);letter-spacing:-.03em}
+.st-pre-fin{margin-top:14px;font-size:14.5px;line-height:1.55;color:var(--navy-soft)}
+
+/* Løsnings-boksen. Navy, så den står som svaret på problemet lige over. */
+.st-fix-boks{margin-top:18px;background:var(--navy);border-radius:14px;padding:22px 20px;color:#fff}
+.st-fix-boks h3{font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;font-weight:800;color:#fff;margin-bottom:14px}
+.st-fix-boks ul{list-style:none;display:grid;gap:8px}
+.st-fix-boks li{display:flex;gap:10px;font-size:15px;color:#dbe7f2}
+.st-fix-boks li span{color:var(--teal);font-weight:800}
+.st-fix-boks p{margin-top:14px;font-size:14.5px;font-weight:700;color:var(--sky)}
+.st-fix-boks .st-pre-kick{margin-bottom:6px}
+
+@media(max-width:560px){
+  .st-pre-hero{padding-top:0}
+  .st-pre-sub{font-size:15.5px}
+  .st-pre-tal b{font-size:26px}
+}

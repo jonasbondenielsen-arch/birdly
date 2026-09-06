@@ -207,6 +207,12 @@
 
 /* ------------------------------------------------ 6 · personligt fag-bevis */
 .sg-fagvalg { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 26px; }
+/* ⚠️ `hidden` ALENE ER IKKE NOK. Attributten sætter kun display:none via
+   browserens standard-stylesheet, og en egen `display:flex` slår den. På
+   fag-siderne betød det at fanerne stod synlige selv om komponenten havde
+   skjult dem — en VVS-side inviterede altså den besøgende til at klikke væk
+   til rengøring. Reglen her er derfor ikke pynt; den er selve skjulningen. */
+.sg-fagvalg[hidden] { display: none; }
 .sg-fagknap {
   background: #fff; border: 1.5px solid var(--line); border-radius: 999px;
   padding: 11px 22px; font-size: 15px; font-weight: 600; color: var(--navy);
@@ -477,4 +483,131 @@
   .sg-maaned .sg-btn { width: 100%; }
   .sg-opgave-titel { font-size: 16px; }
   .sg-fagsvar-linje { font-size: 16.5px; }
+}
+
+/* ============================================================================
+   HYROS-LEDDENE (06-09-2026): omkostning, løsning, fag-vælger, sticky CTA.
+
+   ⚠️ INGEN NYE FARVER. Alt bruger tokens fra globals.css.
+   ============================================================================ */
+
+/* ------------------------------------------- 5 · hvad problemet kan koste
+   Ét kort, centreret, stort tal. Sektionen har ét job: gøre en abstrakt
+   "mistet mulighed" til et beløb man kan se. Derfor ingen kolonner. */
+.sg-koster { display: flex; justify-content: center; margin-top: 38px; }
+.sg-koster-kort {
+  position: relative; background: #fff; border: 1px solid var(--line);
+  border-radius: var(--r); padding: 34px 40px 30px; text-align: center;
+  box-shadow: var(--shadow); min-width: 320px; max-width: 460px;
+}
+.sg-koster-stor {
+  font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800;
+  font-size: clamp(36px, 5vw, 54px); color: var(--navy);
+  letter-spacing: -.03em; line-height: 1.05; margin-top: 6px;
+}
+.sg-koster-kort .sg-tal { font-size: clamp(26px, 3.2vw, 34px); }
+
+/* -------------------------------------------------------- 6 · løsningen
+   Fire punkter der alle er noget KUNDEN vælger — ikke fire features. */
+.sg-fix {
+  list-style: none; display: inline-grid; gap: 12px; margin: 28px auto 26px;
+  text-align: left;
+}
+.sg-fix li {
+  display: flex; align-items: center; gap: 12px;
+  font-size: 18px; font-weight: 600; color: var(--navy);
+}
+.sg-fix svg { flex: 0 0 19px; }
+
+/* Resultat-linjen efter de tre trin i motoren. Fremhævet, fordi det er
+   udbyttet — ikke endnu et skridt. */
+.sg-resultatlinje {
+  margin-top: 34px; text-align: center; font-size: clamp(18px, 2vw, 22px);
+  font-weight: 700; color: var(--navy); font-family: 'Plus Jakarta Sans', sans-serif;
+  max-width: 60ch; margin-left: auto; margin-right: auto;
+}
+
+/* ------------------------------------------------------- 10 · fag-vælger */
+.sg-fagkort { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 40px; }
+.sg-fagkort-item {
+  background: #fff; border: 1px solid var(--line); border-radius: var(--r);
+  padding: 26px 24px 22px; display: flex; flex-direction: column; gap: 8px;
+  box-shadow: var(--shadow); transition: border-color .15s, transform .15s;
+}
+.sg-fagkort-item:hover { border-color: var(--teal); transform: translateY(-2px); }
+.sg-fagkort-item b {
+  font-family: 'Plus Jakarta Sans', sans-serif; font-size: 18.5px;
+  font-weight: 700; color: var(--navy);
+}
+.sg-fagkort-item span { font-size: 15.5px; line-height: 1.55; color: var(--navy-soft); flex: 1; }
+.sg-fagkort-item i {
+  font-style: normal; font-size: 15px; font-weight: 700; color: var(--teal);
+  font-family: 'Plus Jakarta Sans', sans-serif; margin-top: 6px;
+}
+@media (prefers-reduced-motion: reduce) { .sg-fagkort-item:hover { transform: none; } }
+
+/* ============================================================================
+   STICKY CTA — MOBIL
+
+   ⚠️ KUN UNDER 860px. På desktop står header-knappen altid synlig; en fast
+   bjælke dér ville være den samme handling to gange på samme skærm.
+
+   ⚠️ z-index 70, UNDER samtykke-banneret (90) og under chat-knappen (200).
+   Bjælken løftes op over samtykke-banneret med den højde banneret SELV melder
+   ud som --samtykke-h — vi gætter ikke på den. Samme mekanik som .sticky-cta
+   i forside.css bruger.
+   ============================================================================ */
+.sg-sticky { display: none; }
+
+@media (max-width: 860px) {
+  .sg-sticky {
+    display: flex; align-items: center; gap: 12px;
+    position: fixed; left: 0; right: 0;
+    bottom: calc(var(--samtykke-h, 0px));
+    z-index: 70; padding: 10px 14px calc(10px + env(safe-area-inset-bottom, 0px));
+    background: rgba(255, 255, 255, .96); backdrop-filter: blur(10px);
+    border-top: 1px solid var(--line);
+    /* Skjult indtil hero'en er passeret. transform frem for display, så
+       overgangen kan animeres og knappen ikke hopper ind. */
+    transform: translateY(110%); opacity: 0;
+    transition: transform .22s ease, opacity .22s ease;
+    pointer-events: none;
+  }
+  .sg-sticky.vis { transform: none; opacity: 1; pointer-events: auto; }
+  .sg-sticky .sg-btn { flex: 1; padding: 14px 18px; }
+  .sg-sticky-pris {
+    flex: 0 0 auto; font-size: 14px; font-weight: 600; color: var(--navy-soft);
+    padding: 12px 6px; text-decoration: underline;
+  }
+  /* Plads i bunden, så sidste linje aldrig gemmer sig bag bjælken. */
+  body.har-sticky { padding-bottom: 74px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sg-sticky { transition: none; }
+}
+
+/* ------------------------------------------------------------ responsivt */
+@media (max-width: 1024px) {
+  .sg-fagkort { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 640px) {
+  .sg-fagkort { grid-template-columns: 1fr; }
+  .sg-koster-kort { min-width: 0; width: 100%; padding: 28px 20px 24px; }
+  .sg-fix li { font-size: 16.5px; }
+  .sg-resultatlinje { font-size: 17px; }
+}
+
+/* ============================================================================
+   1920px — indholdet må fylde, men linjelængden skal stadig kunne læses.
+
+   ⚠️ IKKE "GØR ALT STØRRE". En brødtekstlinje på 1300px er sværere at læse,
+   ikke lettere. Derfor vokser rammen og overskrifterne, mens `.sg-lead` holdes
+   i skak af sin max-width i ch.
+   ============================================================================ */
+@media (min-width: 1800px) {
+  .sg-wrap { max-width: 1420px; }
+  .sg-hero h1 { font-size: 66px; }
+  .sg-big { font-size: 54px; }
+  .sg-telefon { width: 350px; }
+  .sg-koster-stor { font-size: 60px; }
 }
