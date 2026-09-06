@@ -646,3 +646,33 @@ select.st-felt{appearance:none;background-image:url("data:image/svg+xml;utf8,<sv
   .st-pre-sub{font-size:15.5px}
   .st-pre-tal b{font-size:26px}
 }
+
+/* ============================================================================
+   DET DELTE BADGE I FUNNELEN — "EKSEMPEL" / "FAST ERHVERVSRENGØRING" og
+   "FAKTISK PRIS".
+
+   ⚠️ SAMME REGEL SOM PÅ FORSIDEN (.sg-badge i salg.css), og af samme grund: de
+   to mærkater sad på hver sin klasse og landede i hver sin højde. Her deler de
+   ALT der påvirker geometrien; kun farverne må afvige.
+
+   ⚠️ height OG line-height er begge sat. Uden fast højde afhænger badget af den
+   nedarvede linjehøjde, og den er ikke ens i et hvidt og et navy kort.
+   ============================================================================ */
+.st-badge{
+  position:absolute;top:-12px;left:50%;transform:translateX(-50%);z-index:2;
+  box-sizing:border-box;height:24px;
+  display:inline-flex;align-items:center;justify-content:center;
+  padding:0 12px;border-radius:999px;white-space:nowrap;
+  font-family:'Plus Jakarta Sans',sans-serif;font-size:10px;font-weight:800;
+  line-height:1;letter-spacing:.09em;text-transform:uppercase;
+  background:var(--sky-soft);border:1px solid var(--sky-200);color:var(--navy)
+}
+.st-badge-lys{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.34);color:#fff}
+
+/* Scenariet under badget i pre-funnelens anker. */
+.st-scenarie{list-style:none;margin:0 0 12px;display:grid;gap:2px}
+.st-scenarie li{font-size:12.5px;line-height:1.45;color:var(--navy-soft)}
+.st-anker-pris .st-scenarie li{color:var(--sky-200)}
+
+/* Kortet skal have plads til badget uden at teksten klemmes op i det. */
+.st-anker-boks{padding-top:26px}

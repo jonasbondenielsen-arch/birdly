@@ -1138,26 +1138,38 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
           {preAnker.loebende ? "Hvad er én fast kunde værd?" : "Hvad er én opgave værd?"}
         </h2>
 
+        {/* ⚠️ SAMME EKSEMPEL SOM FORSIDEN. Scenariet og beløbene kommer fra
+            STANDARD_RENGOERING i lib/vaerdiAnker.js — ét sted, alle sider. Et
+            tal der skifter mellem landingssiden og funnelen får kunden til at
+            holde op med at tro på begge. */}
         <div className="st-anker">
           <div className="st-anker-boks">
-            <span className="st-maerkat">Eksempel</span>
+            {/* ⚠️ KORT BADGE I FUNNELEN, IKKE FORSIDENS LANGE.
+                Ankerets kort er tre kolonner i en 520px-spalte, altså ~230px
+                brede. Den fulde label ("Eksempel · Fast erhvervsrengøring") er
+                ~244px og stak 14px ud over kortkanten — målt. Badget siger
+                derfor kun "Eksempel" her, og selve eksemplet står som en linje
+                inde i kortet. Samme oplysning, geometri der holder. */}
+            <span className="st-badge">Eksempel</span>
+            <div className="st-anker-navn">{preAnker.navn}</div>
+            {preAnker.scenarie.length > 0 && (
+              <ul className="st-scenarie">
+                {preAnker.scenarie.map((linje) => <li key={linje}>{linje}</li>)}
+              </ul>
+            )}
             {preAnker.loebende ? (
               <>
-                <div className="st-anker-navn">En aftale på</div>
                 <div className="st-anker-tal">{preAnker.maaned}</div>
                 <div className="st-anker-lig">=</div>
                 <div className="st-anker-aar">{preAnker.aar}</div>
               </>
             ) : (
-              <>
-                <div className="st-anker-navn">En opgave til</div>
-                <div className="st-anker-tal">{preAnker.opgave}</div>
-              </>
+              <div className="st-anker-tal">{preAnker.opgave}</div>
             )}
           </div>
           <div className="st-anker-vs" aria-hidden="true">mod</div>
           <div className="st-anker-boks st-anker-pris">
-            <span className="st-maerkat st-maerkat-lys">Faktisk pris</span>
+            <span className="st-badge st-badge-lys">Faktisk pris</span>
             <div className="st-anker-navn">Birdly et helt år</div>
             <div className="st-anker-tal">{priceText.yearlyBare}</div>
             <div className="st-anker-aar">ekskl. moms</div>
@@ -1171,6 +1183,7 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
               : <>Et helt års Birdly svarer til <b>{preAnker.andel}</b> af værdien på en opgave i den størrelse.</>}
           </p>
         )}
+        {preAnker.kilde && <p className="st-forbehold">{preAnker.kilde}</p>}
         <p className="st-forbehold">{FORBEHOLD}</p>
       </div>
 
@@ -1623,7 +1636,11 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
 
           <div className="st-anker">
             <div className="st-anker-boks">
-              <span className="st-maerkat">Eksempel</span>
+              {/* ⚠️ HER ER TALLET KUNDENS EGET, ikke husets standard-eksempel:
+                  hun har selv valgt intervallet på skærm 5. Derfor står der
+                  "Eksempel" og ikke scenariet med kontoret i København — vi ved
+                  intet om hendes lokaler. Se byggAnker i lib/vaerdiAnker.js. */}
+              <span className="st-badge">{anker.maerkat}</span>
               {anker.loebende ? (
                 <>
                   <div className="st-anker-navn">En aftale på</div>
@@ -1640,7 +1657,7 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
             </div>
             <div className="st-anker-vs" aria-hidden="true">mod</div>
             <div className="st-anker-boks st-anker-pris">
-              <span className="st-maerkat st-maerkat-lys">Faktisk pris</span>
+              <span className="st-badge st-badge-lys">Faktisk pris</span>
               <div className="st-anker-navn">Birdly et helt år</div>
               <div className="st-anker-tal">{priceText.yearlyBare}</div>
               <div className="st-anker-aar">ekskl. moms</div>
@@ -1650,7 +1667,7 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
           {anker.forhold && (
             <p className="st-anker-linje">
               {anker.loebende
-                ? <>En vundet aftale i den størrelse svarer til <b>{anker.forhold.tekst}</b> Birdlys årspris.</>
+                ? <>En aftale i den størrelse har en årlig værdi på <b>{anker.forhold.tekst}</b> Birdlys årspris.</>
                 : <>Et helt års Birdly svarer til <b>{anker.andel}</b> af værdien på en opgave i den størrelse.</>}
             </p>
           )}

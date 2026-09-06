@@ -101,48 +101,63 @@ export function Vaerdi({ funnelHref, fag = null, valgt = null }) {
         <div className="sg-vaerdi">
           <div className="sg-vaerdi-boks">
             {/* ⚠️ MÆRKATET ER IKKE PYNT. Uden det læses beløbet som noget vi har
-                målt eller lover. Det er et realistisk eksempel, ikke data. */}
-            <span className="sg-maerkat">{a.maerkat}</span>
+                målt eller lover. Det er et realistisk eksempel, ikke data.
+                ⚠️ BEGGE MÆRKATER BRUGER SAMME KLASSE (.sg-badge). De sad før på
+                hver sin regel, og "FAKTISK PRIS" landede et par pixel højere end
+                "EKSEMPEL". Kun farverne må afvige — se .sg-badge i salg.css. */}
+            <span className="sg-badge">{a.badge}</span>
+            {/* Navnet står kun her når badget IKKE allerede bærer det — ellers
+                ville kortet sige "Fast erhvervsrengøring" to gange. */}
+            {a.scenarie.length === 0 && <div className="sg-vaerdi-navn">{a.navn}</div>}
+            {/* Scenariet gør tallet konkret nok til at kunden kan holde det op
+                mod sin egen hverdag. Det står kun på husets standard-eksempel —
+                har hun selv valgt et interval, ville det være vores antagelse
+                om hendes forretning. */}
+            {a.scenarie.length > 0 && (
+              <ul className="sg-scenarie">
+                {a.scenarie.map((linje) => <li key={linje}>{linje}</li>)}
+              </ul>
+            )}
             {a.loebende ? (
               <>
-                <div className="sg-vaerdi-navn">Fast rengøringsaftale</div>
                 <div className="sg-tal">{a.maaned}</div>
                 <div className="sg-vaerdi-lig">=</div>
                 <div className="sg-vaerdi-aar">{a.aar}</div>
               </>
             ) : (
-              <>
-                <div className="sg-vaerdi-navn">Én relevant opgave</div>
-                <div className="sg-tal">{a.opgave}</div>
-              </>
+              <div className="sg-tal">{a.opgave}</div>
             )}
           </div>
 
           <div className="sg-vaerdi-vs" aria-hidden="true">mod</div>
 
           <div className="sg-vaerdi-boks sg-pris-side">
-            <span className="sg-maerkat sg-maerkat-lys">Faktisk pris</span>
-            <div className="sg-vaerdi-navn">Birdly — et helt år</div>
+            <span className="sg-badge sg-badge-lys">Faktisk pris</span>
+            <div className="sg-vaerdi-navn">Birdly et helt år</div>
             <div className="sg-tal">{priceText.yearlyBare}</div>
             <div className="sg-vaerdi-aar">ekskl. moms</div>
           </div>
         </div>
 
-        {/* ⚠️ FORHOLDSTALLET BESKRIVER TO BELØB, IKKE ET UDBYTTE. Formuleringen
-            "svarer til ca. 19× Birdlys årspris" siger noget om størrelsen på en
-            kontrakt sammenlignet med en abonnementspris. "Birdly giver 19× igen"
-            ville sige noget om penge der kommer retur, og dét må vi ikke. */}
+        {/* ⚠️ FORHOLDSTALLET BESKRIVER TO BELØB, IKKE ET UDBYTTE. "En aftale i
+            den størrelse har en årlig værdi på ca. 24× Birdlys årspris" siger
+            noget om størrelsen på en kontrakt sammenlignet med en
+            abonnementspris. "Birdly giver 24× igen" ville sige noget om penge
+            der kommer retur, og dét må vi ikke. */}
         {a.forhold && (
           <p className="sg-anker">
             {a.loebende
-              ? <>Én vundet aftale i den størrelse svarer til <b>{a.forhold.tekst}</b> Birdlys årspris.</>
+              ? <>En aftale i den størrelse har en årlig værdi på <b>{a.forhold.tekst}</b> Birdlys årspris.</>
               : <>Et helt års Birdly svarer til <b>{a.andel}</b> af værdien på en opgave i den størrelse.</>}
           </p>
         )}
 
-        {/* ⚠️ FORBEHOLDET ER OBLIGATORISK OG STÅR LIGE UNDER TALLET. Det er dét
-            der gør sammenligningen sand frem for et løfte. Flyt det aldrig ned
-            under knappen, og gør det aldrig mindre end her. */}
+        {/* ⚠️ BEGGE FORBEHOLD ER OBLIGATORISKE OG STÅR LIGE UNDER TALLET.
+            `kilde` siger at beløbet er et eksempel og ikke en måling; `forbehold`
+            siger at vi ikke garanterer en vundet opgave. Uden dem læses
+            forholdet som et løfte om udbytte. Flyt dem aldrig ned under knappen,
+            og gør dem aldrig mindre end her. */}
+        {a.kilde && <p className="sg-forbehold">{a.kilde}</p>}
         <p className="sg-forbehold">{a.forbehold}</p>
         <p className="sg-afslut" style={{ marginTop: 10 }}>{BETINGET_LINJE}</p>
 

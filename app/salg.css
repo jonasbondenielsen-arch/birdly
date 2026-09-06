@@ -611,3 +611,178 @@
   .sg-telefon { width: 350px; }
   .sg-koster-stor { font-size: 60px; }
 }
+
+/* ============================================================================
+   VISUEL STRAMNING (06-09-2026) — bevis, sammenligning, omkostning, badge.
+
+   ⚠️ INGEN NYE FARVER. Alt herunder er tokens fra globals.css:
+   --navy #0D1B2A · --navy-soft #5A6678 · --sky #2EB7FF · --sky-soft #EAF6FF
+   · --sky-200 #BFE6FF · --teal #00B3A6 · --grey #F2F4F7 · --line #E4E9F0.
+   Gradienterne er de samme farver med lav alpha — ikke nye kulører.
+   ============================================================================ */
+
+/* ---------------------------------------------------- 2 · BIRDLY ARBEJDER
+   ⚠️ SEKTIONEN SKAL KUNNE SES SOM EN SEKTION. Den lå som hvid på hvid mellem
+   hero og risiko, og tallene lignede en fodnote. Gradienten er meget svag —
+   sky-soft → hvid → et strejf teal — og gør ikke andet end at adskille. Bliver
+   den stærkere, ser siden amerikansk ud, og det skal Birdly ikke. */
+.sg .sg-bevis {
+  background: linear-gradient(160deg, var(--sky-soft) 0%, #fbfdff 46%, rgba(0,179,166,.07) 100%);
+  border-top: 1px solid var(--sky-200);
+  border-bottom: 1px solid var(--sky-200);
+  padding: 40px 0 34px;
+}
+
+/* Bevis-kort. Ens højde via `align-items: stretch` på griddet, så en celle med
+   to tekstlinjer ikke gør sit kort højere end naboens. */
+.sg-bevis-grid { align-items: stretch; }
+.sg-bevis-kort {
+  background: rgba(255,255,255,.82);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 22px 16px 18px;
+  text-align: center;
+  box-shadow: 0 1px 2px rgba(13,27,42,.03), 0 6px 18px rgba(13,27,42,.05);
+  display: flex; flex-direction: column; justify-content: center;
+}
+/* Tallet er beviset — det må gerne fylde. */
+.sg-bevis-kort .sg-tal { font-size: clamp(28px, 3vw, 38px); }
+.sg-bevis-kort small {
+  display: block; font-size: 13.5px; line-height: 1.4;
+  color: var(--navy-soft); margin-top: 6px;
+}
+.sg-bevis-opd { margin-top: 18px; }
+
+/* ------------------------------------------------- 12 · ENDNU EN PORTAL
+   ⚠️ FORSKELLEN SKAL KUNNE SES. Kortene så næsten ens ud, så sammenligningen
+   var noget man skulle regne ud. Nu er den gamle måde dæmpet og Birdly-kortet
+   løftet — men kun en anelse. Gør man forskellen for stor, ligner det en
+   stråmand, og så mister sektionen sin troværdighed. */
+.sg-vs { grid-template-columns: 1fr auto 1fr; align-items: stretch; }
+.sg-vs-under {
+  display: block; font-size: 13.5px; color: var(--navy-soft);
+  margin: -12px 0 16px;
+}
+.sg-vs-kort h3 { margin-bottom: 6px; }
+
+.sg-vs-gammel {
+  background: var(--grey);
+  border-color: #dfe4ec;
+  /* Let afmættet, så den læses som "det man plejer" frem for som et tilbud. */
+  filter: saturate(.85);
+}
+.sg-vs-gammel h3 { color: var(--navy-soft); }
+.sg-vs-gammel .sg-vs-liste li { color: var(--navy-soft); }
+
+.sg-vs-ny {
+  background: linear-gradient(165deg, #f4fdfc 0%, #fff 55%, var(--sky-soft) 100%);
+  border: 1.5px solid var(--teal);
+  box-shadow: 0 2px 6px rgba(0,179,166,.08), 0 18px 40px rgba(0,179,166,.12);
+}
+.sg-vs-ny h3 { color: var(--teal); }
+.sg-vs-ny .sg-vs-under { color: var(--teal-dk); }
+
+/* Den korte linje bærer sektionen; ejer-sætningen under er sekundær. */
+.sg-vs-payoff {
+  margin-top: 20px; font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 20px; font-weight: 800; color: var(--navy); letter-spacing: -.015em;
+}
+.sg-vs-ny .sg-fin { margin-top: 8px; }
+
+/* "vs." mellem kortene — kun desktop. På mobil stables kortene, og et led
+   imellem ville bare være en ekstra linje at scrolle forbi. */
+.sg-vs-imellem { display: flex; align-items: center; justify-content: center; }
+.sg-vs-imellem span {
+  font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 13px;
+  letter-spacing: .1em; text-transform: uppercase; color: var(--navy-soft);
+  background: #fff; border: 1px solid var(--line); border-radius: 999px;
+  width: 46px; height: 46px; display: inline-flex; align-items: center; justify-content: center;
+}
+
+/* -------------------------------------------- 5 · HVAD DET KAN KOSTE (navy)
+   ⚠️ SEKTIONEN BRYDER SIDENS RYTME MED VILJE. Den er sidens vigtigste
+   direkte-respons-moment og stod før som endnu en hvid sektion mellem to andre
+   hvide. Navy er husets egen farve; gløden er sky/teal med lav alpha. */
+.sg-koster-sek {
+  background:
+    radial-gradient(1100px 380px at 50% -10%, rgba(46,183,255,.16), transparent 70%),
+    radial-gradient(800px 340px at 50% 110%, rgba(0,179,166,.14), transparent 70%),
+    var(--navy);
+}
+.sg-lead-lys { color: #b9cbdb; }
+.sg-forbehold-lys { color: #8fa6bb; }
+.sg-koster-sek .sg-kick { color: var(--sky); }
+
+/* Kortet står lyst på navy — kontrasten ER argumentet. */
+.sg-koster-kort { border-color: rgba(255,255,255,.14); box-shadow: 0 24px 60px rgba(0,0,0,.28); }
+.sg-koster-kort .sg-vaerdi-lig { color: var(--navy-soft); margin-top: 10px; }
+
+/* ============================================================================
+   DET DELTE BADGE — "EKSEMPEL" og "FAKTISK PRIS"
+
+   ⚠️ ÉN REGEL, TO FARVER. De to mærkater sad før på hver sin klasse med hver
+   sit sæt værdier, og "FAKTISK PRIS" landede et par pixel højere end
+   "EKSEMPEL" på nabokortet. Nu deler de ALT der påvirker geometrien — top,
+   højde, linjehøjde, padding, radius, skriftstørrelse, box-sizing — og kun
+   baggrund, kant og tekstfarve må afvige.
+
+   ⚠️ `line-height` OG `height` ER BEGGE SAT MED VILJE. Uden en fast højde
+   afhænger badgets højde af den nedarvede linjehøjde, og den er ikke ens inde i
+   et navy-kort og et hvidt kort. Med begge dele kan de ikke skride fra hinanden.
+
+   ⚠️ KORTET SKAL VÆRE position: relative. Det er `.sg-vaerdi-boks` og
+   `.sg-koster-kort` allerede.
+   ============================================================================ */
+.sg-badge {
+  position: absolute;
+  top: -13px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  box-sizing: border-box;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 13px;
+  border-radius: 999px;
+  white-space: nowrap;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  /* Standard: lys, til kort på hvid/navy baggrund. */
+  background: var(--sky-soft);
+  border: 1px solid var(--sky-200);
+  color: var(--navy);
+}
+/* Eneste tilladte afvigelse: farverne, til badget på det navy priskort. */
+.sg-badge-lys {
+  background: rgba(255,255,255,.16);
+  border-color: rgba(255,255,255,.34);
+  color: #fff;
+}
+
+/* Scenariet under badget — to korte linjer, dæmpet. */
+.sg-scenarie { list-style: none; margin: 0 0 14px; display: grid; gap: 2px; }
+.sg-scenarie li { font-size: 13.5px; line-height: 1.45; color: var(--navy-soft); }
+.sg-vaerdi-boks .sg-vaerdi-navn { margin-bottom: 6px; }
+
+/* ------------------------------------------------------------ responsivt */
+@media (max-width: 860px) {
+  /* "vs." forsvinder, kortene stables — den gamle måde først, Birdly under. */
+  .sg-vs { grid-template-columns: 1fr; }
+  .sg-vs-imellem { display: none; }
+  .sg-bevis-grid { align-items: stretch; }
+}
+@media (max-width: 560px) {
+  .sg .sg-bevis { padding: 30px 0 26px; }
+  .sg-bevis-kort { padding: 18px 12px 15px; }
+  .sg-bevis-kort .sg-tal { font-size: 26px; }
+  .sg-bevis-kort small { font-size: 12.5px; }
+  .sg-vs-payoff { font-size: 18px; }
+  .sg-badge { font-size: 10px; height: 24px; padding: 0 11px; top: -12px; }
+  .sg-scenarie li { font-size: 12.5px; }
+}

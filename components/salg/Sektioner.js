@@ -124,32 +124,38 @@ export function BevisBjaelke({ tal }) {
         <div className="sg-bevis-h">
           <span className="sg-prik" aria-hidden="true" /> Birdly arbejder allerede
         </div>
+        {/* ⚠️ KORT, IKKE LØSE TAL. Tallene svævede før på hvid baggrund og lignede
+            en fodnote man kunne scrolle forbi. I hver sit kort på en dæmpet
+            gradient læses de som dokumentation — og det er dét de er.
+            ⚠️ HVERT TAL ER STADIG ÆGTE. Mangler et felt, renderes kortet ikke. */}
         <div className="sg-bevis-grid">
           {aabne != null && (
-            <div className="sg-bevis-celle">
+            <div className="sg-bevis-kort">
               <div className="sg-tal">{daTal(aabne)}</div>
-              <small>opgaver med åben frist lige nu</small>
+              <small>opgaver med åben frist</small>
             </div>
           )}
           {bydbare != null && (
-            <div className="sg-bevis-celle">
+            <div className="sg-bevis-kort">
               <div className="sg-tal">{daTal(bydbare)}</div>
               <small>opgaver vi holder øje med</small>
             </div>
           )}
           {nye != null && (
-            <div className="sg-bevis-celle">
+            <div className="sg-bevis-kort">
               <div className="sg-tal">{daTal(nye)}</div>
-              <small>nye de sidste 7 dage</small>
+              <small>nye de seneste 7 dage</small>
             </div>
           )}
-          <div className="sg-bevis-celle">
-            <div className="sg-tal">2×</div>
-            {/* ⚠️ Tidspunktet er hentetidspunktet fra sidste gennemførte kørsel —
-                ALDRIG new Date(). En klokke der viser "nu" beviser ingenting. */}
-            <small>opdatering dagligt</small>
+          <div className="sg-bevis-kort">
+            <div className="sg-tal">2× dagligt</div>
+            <small>opdaterer Birdly</small>
           </div>
         </div>
+        {/* ⚠️ Tidspunktet er hentetidspunktet fra sidste gennemførte ingest-kørsel
+            — ALDRIG new Date(). En klokke der viser "nu" beviser ingenting om
+            hvornår vi sidst hentede; den ville stå og lyve friskhed. Mangler det,
+            står linjen der slet ikke. */}
         {opdateret && <p className="sg-bevis-opd">Sidst opdateret {opdateret}</p>}
       </div>
     </section>
@@ -314,44 +320,56 @@ export function SmsDemo({ fag = "rengoring" }) {
  * rengøringsaftale er værd, og vi påstår det ikke. "EKSEMPEL"-badget står på
  * selve kortet — ikke som en fodnote man kan overse.
  *
- * ⚠️ INGEN TABT-OMSÆTNING-PÅSTAND. Der står ikke "I går glip af 96.000 kr." —
+ * ⚠️ INGEN TABT-OMSÆTNING-PÅSTAND. Der står ikke "I går glip af 120.000 kr." —
  * det ville forudsætte at kunden ville have vundet opgaven. Der står at en
  * opgave man ikke ser, ikke kan bydes på. Det er sandt uanset udfaldet.
  */
 export function ProblemPris({ fag = "rengoring" }) {
   const a = byggAnker(fag);
   return (
-    <section className="sg-sek">
+    /* ⚠️ NAVY, IKKE HVID. Sektionen er sidens vigtigste direkte-respons-moment,
+       og den stod før som endnu en hvid sektion mellem to andre hvide — nem at
+       scrolle forbi. Navy bryder rytmen og siger "her skal du stoppe op".
+       Farven er husets egen (--navy), ikke en ny. */
+    <section className="sg-sek sg-navy sg-koster-sek">
       <div className="sg-wrap">
         <div className="sg-midt">
           <span className="sg-kick">Hvad det kan koste</span>
           <h2 className="sg-big">Den opgave, I ikke ser,<br />kan I heller ikke byde på.</h2>
-          <p className="sg-lead">
-            Muligheder ligger forskellige steder, og det meste er ikke relevant. Den ene der
-            var, kan nå at lukke, mens I passer jeres virksomhed.
+          <p className="sg-lead sg-lead-lys">
+            {a.loebende
+              ? "Et fast rengøringsjob kan være mange gange mere værd end et helt års Birdly."
+              : "En enkelt relevant opgave kan være mange gange mere værd end et helt års Birdly."}
           </p>
         </div>
 
         <div className="sg-koster">
           <div className="sg-koster-kort">
-            <span className="sg-maerkat">{a.maerkat}</span>
+            {/* Samme delte badge som værdi-sektionen — se .sg-badge i salg.css. */}
+            <span className="sg-badge">{a.badge}</span>
+            {a.scenarie.length > 0 && (
+              <ul className="sg-scenarie">
+                {a.scenarie.map((linje) => <li key={linje}>{linje}</li>)}
+              </ul>
+            )}
             {a.loebende ? (
               <>
-                <div className="sg-vaerdi-navn">En fast aftale på</div>
                 <div className="sg-tal">{a.maaned}</div>
                 <div className="sg-vaerdi-lig">har en årlig værdi på</div>
                 <div className="sg-koster-stor">{a.aar}</div>
               </>
             ) : (
-              <>
-                <div className="sg-vaerdi-navn">En relevant opgave til</div>
-                <div className="sg-koster-stor">{a.opgave}</div>
-              </>
+              <div className="sg-koster-stor">{a.opgave}</div>
             )}
           </div>
         </div>
 
-        <p className="sg-forbehold">{FORBEHOLD}</p>
+        {/* ⚠️ INGEN TABT-OMSÆTNING-PÅSTAND. Der står ikke "I går glip af
+            120.000 kr." — det ville forudsætte at kunden ville have vundet
+            opgaven. Der står at en opgave man ikke ser, ikke kan bydes på. Det
+            er sandt uanset udfaldet. */}
+        {a.kilde && <p className="sg-forbehold sg-forbehold-lys">{a.kilde}</p>}
+        <p className="sg-forbehold sg-forbehold-lys">{FORBEHOLD}</p>
       </div>
     </section>
   );
@@ -527,9 +545,15 @@ export function IkkePortal() {
           <h2 className="sg-big">Endnu en portal?<br />Nej tak.</h2>
         </div>
 
+        {/* ⚠️ FORSKELLEN SKAL KUNNE SES, IKKE KUN LÆSES. De to kort så næsten ens
+            ud, og så var sammenligningen noget man skulle regne ud. Nu er den
+            gamle måde dæmpet og gråtonet, Birdly-kortet let løftet — men kun en
+            anelse. Gør man forskellen for stor, ligner det en stråmand, og så
+            mister hele sektionen troværdighed. */}
         <div className="sg-vs">
           <div className="sg-vs-kort sg-vs-gammel">
-            <h3>En almindelig udbudstjeneste</h3>
+            <h3>Den gamle måde</h3>
+            <span className="sg-vs-under">En almindelig udbudstjeneste</span>
             <ul className="sg-vs-liste">
               <li><Kryds /> Login</li>
               <li><Kryds /> Søg</li>
@@ -540,13 +564,23 @@ export function IkkePortal() {
               <li><Kryds /> Gentag</li>
             </ul>
           </div>
+
+          {/* Kun på desktop — på mobil stables kortene, og et "vs." midt imellem
+              ville bare være en ekstra linje at scrolle forbi. */}
+          <div className="sg-vs-imellem" aria-hidden="true"><span>vs.</span></div>
+
           <div className="sg-vs-kort sg-vs-ny">
             <h3>Birdly</h3>
+            <span className="sg-vs-under">Jeres kriterier, én gang</span>
             <ul className="sg-vs-liste">
               <li><Flueben size={18} /> Vælg jeres kriterier én gang</li>
+              <li><Flueben size={18} /> Birdly holder øje hver dag</li>
               <li><Flueben size={18} /> Få relevante match direkte på SMS og mail</li>
             </ul>
-            <p className="sg-fin" style={{ marginTop: 20 }}>{EJER_LINJE}</p>
+            {/* ⚠️ DEN KORTE LINJE BÆRER SEKTIONEN. Den lange ejer-sætning stod
+                før som konklusion og druknede pointen; nu er den sekundær. */}
+            <p className="sg-vs-payoff">I leder ikke. Birdly gør.</p>
+            <p className="sg-fin">{EJER_LINJE}</p>
           </div>
         </div>
 
