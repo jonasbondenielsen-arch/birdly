@@ -49,6 +49,12 @@
    uden for kortet. Én værdi, ét sted. */
 .va-kort {
   position: relative;
+  /* ⚠️ EKSPLICIT. Badget ligger 13px OVER kortets overkant, og et `overflow`
+     arvet eller tilføjet senere ville skære toppen af pillen. Det står her, så
+     ingen kommer til at lukke kortet med en baggrund eller gradient der
+     klipper. Ligger der en dag en gradient på kortet, skal den lægges på et
+     INDRE lag — ikke på denne wrapper. */
+  overflow: visible;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -99,9 +105,25 @@
   border: 1px solid var(--sky-200);
   color: var(--navy);
 }
+/* ⚠️ OPAK BAGGRUND — OG DET ER SELVE FEJLRETTELSEN (07-09-2026).
+   Badget havde `rgba(255,255,255,.16)`, altså 16 % hvid. Pillen STRADDLER
+   kortkanten: den nederste halvdel ligger på det navy kort, den øverste på
+   sektionens lyse baggrund. 16 % hvid over lysegrå er praktisk talt usynlig, og
+   derfor så badget klippet ud — det var det ikke, det var gennemsigtigt.
+
+   Der er ingen `overflow: hidden` nogen steder i kæden; clipping var aldrig
+   årsagen, og en overflow-rettelse ville ikke have ændret noget.
+
+   Løsningen er en OPAK baggrund, så hele pillen er synlig uanset hvad der ligger
+   bag den. Navy + teal kant: samme tokens som resten af huset, og kanten binder
+   badget til Birdly-kortet uden at gøre det til sidens kraftigste element.
+
+   ⚠️ BRUG ALDRIG EN GENNEMSIGTIG BAGGRUND HER IGEN. Et badge der ligger halvt
+   uden for sit kort, kan ikke være halvgennemsigtigt — så vil halvdelen af det
+   altid forsvinde ind i det der tilfældigvis ligger bagved. */
 .va-badge--lys {
-  background: rgba(255, 255, 255, .16);
-  border-color: rgba(255, 255, 255, .34);
+  background: var(--navy);
+  border-color: var(--teal);
   color: #fff;
 }
 
