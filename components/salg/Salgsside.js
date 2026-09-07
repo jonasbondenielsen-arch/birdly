@@ -5,7 +5,8 @@ import StickyCtaMobil from "./StickyCtaMobil";
 import { FagProvider } from "./FagKontekst";
 import { Vaerdi } from "./VaerdiSektion";
 import {
-  Hero, BevisBjaelke, RisikoFjernet, Problemet, ProblemPris, Loesningen,
+  Hero, BevisBjaelke, RisikoFjernet, RigtigeOpgaver, OffentligeOpgaver,
+  Overgang, Problemet, ProblemPris, Loesningen,
   Motoren, SmsDemo, FagVaelgerKort, Kundebevis, IkkePortal, Priser,
   SlutCta, SalgFaq, EfterspoergselsLink,
 } from "./Sektioner";
@@ -135,6 +136,10 @@ export default function Salgsside({ tal, funnelHref, fag = null }) {
 
         <Hero funnelHref={funnelHref} overskrift={overskrift} under={under} eyebrow={eyebrow} chips={chips} />
         <BevisBjaelke tal={tal} />
+        {/* ⚠️ DET ØKONOMISKE ARGUMENT LIGGER HØJT. Kold trafik scroller ikke ned
+            til en prissektion for at finde ud af hvad en opgave kan være værd. */}
+        <RigtigeOpgaver funnelHref={funnelHref} />
+        <OffentligeOpgaver funnelHref={funnelHref} />
         <RisikoFjernet funnelHref={funnelHref} />
         <Problemet />
         <ProblemPris fag={fagNoegle} />
@@ -146,6 +151,7 @@ export default function Salgsside({ tal, funnelHref, fag = null }) {
         <Vaerdi funnelHref={funnelHref} />
         <Kundebevis />
         <IkkePortal />
+        <Overgang funnelHref={funnelHref} />
         <Priser funnelHref={funnelHref} />
         <SlutCta funnelHref={funnelHref} />
         <SalgFaq funnelHref={funnelHref} />

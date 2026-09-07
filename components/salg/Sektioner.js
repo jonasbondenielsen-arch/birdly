@@ -5,7 +5,10 @@ import FaqListe from "./FaqListe";
 import { Flueben, Kryds, Oeje, Bunke, Ur } from "./Ikoner";
 import { daTal, fmtOpdateret } from "../../lib/opgaveTal";
 import { PLAN, priceText, YEARLY_SAVING, TRIAL_DAYS } from "../../lib/pakke";
-import { GARANTI, GARANTI_LINK, TRUST, VAERDI_ANKER, EJER_LINJE } from "../../lib/salgTekst";
+import {
+  GARANTI, GARANTI_LINK, TRUST, VAERDI_ANKER, EJER_LINJE,
+  VIND_EN, STOERRELSE_LINJE, OFFENTLIGE, SMS_LINJE, SMS_UNDER, IKKE_HOLDE_OEJE,
+} from "../../lib/salgTekst";
 import { byggAnker, BETINGET_LINJE, FORBEHOLD } from "../../lib/vaerdiAnker";
 
 // ============================================================================
@@ -106,8 +109,8 @@ export function Hero({
           <p className="sg-lead">
             {under || (
               <>
-                Birdly finder offentlige og private opgaver inden for rengøring og service,
-                der passer til jeres virksomhed — og sender nye match direkte på SMS og mail.
+                Birdly finder offentlige og private opgaver, der passer til jeres
+                virksomhed — og sender nye match direkte på SMS.
               </>
             )}
           </p>
@@ -327,9 +330,15 @@ export function SmsDemo({ fag = "rengoring" }) {
         </div>
         <div>
           <span className="sg-kick">Beskeden</span>
-          <h2 className="sg-big">Det er ikke mere kompliceret end det her.</h2>
+          <h2 className="sg-big">{SMS_LINJE}</h2>
           <p className="sg-lead">
-            Birdly samler det vigtigste, så I hurtigt kan se, om opgaven er interessant.
+            Birdly finder automatisk relevante offentlige og private opgaver til jeres
+            virksomhed. {SMS_UNDER}
+          </p>
+          {/* ⚠️ ÉN GANG PÅ HELE SIDEN. Sætningen er stærk netop fordi den er
+              sjælden; står den tre steder, bliver den en talemåde. */}
+          <p className="sg-afslut" style={{ textAlign: "left", margin: "18px 0 0", maxWidth: "34ch" }}>
+            {IKKE_HOLDE_OEJE}
           </p>
           <ul className="sg-punkter">
             <li><Flueben size={20} /> Kort resumé</li>
@@ -337,6 +346,127 @@ export function SmsDemo({ fag = "rengoring" }) {
             <li><Flueben size={20} /> Direkte link</li>
             <li><Flueben size={20} /> Bud-skabelon hvor relevant</li>
           </ul>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ------------------------------------------- 3 · DET ER RIGTIGE OPGAVER
+
+/**
+ * Det økonomiske argument, tidligt.
+ *
+ * ⚠️ DEN LIGGER HØJT MED VILJE. Kold trafik fra Meta har hverken tid eller
+ * grund til at scrolle til en prissektion. Størrelsesordenen på en opgave skal
+ * stå FØR mekanikken — ellers læser man en forklaring på noget man ikke har
+ * fået en grund til at interessere sig for.
+ *
+ * ⚠️ "KAN VÆRE", ALDRIG "ER". Vi ved ikke hvad den enkelte opgave er værd, og
+ * beholdningen svinger fra uge til uge. "Kan være" er sandt; "er" ville være en
+ * påstand om data vi ikke har.
+ *
+ * ⚠️ "I SKAL BARE VINDE ÉN" ER IKKE ET LØFTE. Den siger at der ikke skal MANGE
+ * vundne opgaver til, før årsprisen er lille i sammenligning. Den må aldrig
+ * omskrives til "I vinder én", og den må aldrig stå sammen med noget der
+ * antyder en garanti. Se lib/salgTekst.js.
+ */
+export function RigtigeOpgaver({ funnelHref }) {
+  return (
+    <section className="sg-sek sg-blaa" id="vaerd">
+      <div className="sg-wrap sg-midt">
+        <span className="sg-kick">Det er rigtige opgaver</span>
+        <h2 className="sg-big">{STOERRELSE_LINJE}</h2>
+        <p className="sg-lead">
+          Birdly finder relevante offentlige og private opgaver til jer. I vælger selv,
+          hvilke I vil byde på.
+        </p>
+
+        <div className="sg-vind">
+          <span className="sg-vind-over">{VIND_EN.over}</span>
+          <span className="sg-vind-under">
+            {VIND_EN.underDel1}<b>{VIND_EN.underDel2}</b>
+          </span>
+        </div>
+
+        <div className="sg-cta-row" style={{ justifyContent: "center" }}>
+          <Cta href={funnelHref} placering="vaerd" />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// -------------------------------------------- 4 · OFFENTLIGE OPGAVER
+
+/**
+ * Indvendingen: "det er kun for de store".
+ *
+ * ⚠️ SEKTIONEN FJERNER FRYGT, DEN SÆLGER IKKE. Derfor tre korte trin og ingen
+ * forklaring af udbudsret. Skriver vi mere, bekræfter vi netop den mistanke
+ * sektionen skal fjerne — at det er kompliceret.
+ *
+ * ⚠️ VI PÅSTÅR IKKE AT ALT ER NEMT. Der står at det ikke BEHØVER være bøvlet,
+ * og at opgaverne kommer i forskellige størrelser. Begge dele er sande. "Alle
+ * kan byde på alt" ville ikke være det.
+ */
+export function OffentligeOpgaver({ funnelHref }) {
+  return (
+    <section className="sg-sek">
+      <div className="sg-wrap sg-midt">
+        <span className="sg-kick">Offentlige opgaver</span>
+        <h2 className="sg-big">{OFFENTLIGE.overskrift}</h2>
+        <p className="sg-lead">{OFFENTLIGE.brod}</p>
+
+        <div className="sg-tretrin">
+          <div className="sg-tretrin-item">
+            <span className="sg-tretrin-nr">1</span>
+            <b>Birdly finder opgaven</b>
+          </div>
+          <span className="sg-tretrin-pil" aria-hidden="true">→</span>
+          <div className="sg-tretrin-item">
+            <span className="sg-tretrin-nr">2</span>
+            <b>I får den på SMS</b>
+          </div>
+          <span className="sg-tretrin-pil" aria-hidden="true">→</span>
+          <div className="sg-tretrin-item">
+            <span className="sg-tretrin-nr">3</span>
+            <b>I vælger, om I vil byde</b>
+          </div>
+        </div>
+
+        <p className="sg-afslut">
+          {OFFENTLIGE.rolle1} {OFFENTLIGE.rolle2}
+        </p>
+
+        <div className="sg-cta-row" style={{ justifyContent: "center" }}>
+          <Cta href={funnelHref} placering="offentlige" />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ------------------------------------------------------ 8 · OVERGANGEN
+
+/**
+ * Den mørke overgang midt på siden.
+ *
+ * ⚠️ DEN SIGER NOGET NYT, IKKE DET SAMME IGEN. Sektionen ovenfor handler om hvad
+ * en opgave kan være VÆRD; den her handler om at opgaverne allerede findes, og
+ * at det eneste der mangler, er at man ser dem. Det er den samme pointe set fra
+ * kundens side — ikke en gentagelse.
+ */
+export function Overgang({ funnelHref }) {
+  return (
+    <section className="sg-navy sg-overgang">
+      <div className="sg-wrap sg-midt">
+        <h2>De opgaver er der allerede.</h2>
+        <p className="sg-overgang-stor">
+          Spørgsmålet er bare, om I <b>ser dem</b> — og byder på dem.
+        </p>
+        <div className="sg-cta-row" style={{ justifyContent: "center" }}>
+          <Cta href={funnelHref} placering="overgang" variant="hvid" stor />
         </div>
       </div>
     </section>
@@ -592,10 +722,10 @@ export function IkkePortal() {
             <h3>Den gamle måde</h3>
             <span className="sg-vs-under">En almindelig udbudstjeneste</span>
             <ul className="sg-vs-liste">
-              <li><Kryds /> Login</li>
+              <li><Kryds /> Log ind</li>
               <li><Kryds /> Søg</li>
-              <li><Kryds /> Sæt filtre op</li>
-              <li><Kryds /> Åbn opgaver én efter én</li>
+              <li><Kryds /> Vælg filtre</li>
+              <li><Kryds /> Gennemgå opgaver</li>
               <li><Kryds /> Læs</li>
               <li><Kryds /> Sortér</li>
               <li><Kryds /> Gentag</li>
@@ -609,10 +739,14 @@ export function IkkePortal() {
           <div className="sg-vs-kort sg-vs-ny">
             <h3>Birdly</h3>
             <span className="sg-vs-under">Jeres kriterier, én gang</span>
+            {/* ⚠️ HANDLINGERNE ER BIRDLYS, IKKE KUNDENS. Venstre side er syv ting
+                kunden selv skal gøre; her gør Birdly tre af fire. Det er hele
+                sammenligningen — ikke at vi har flere funktioner. */}
             <ul className="sg-vs-liste">
-              <li><Flueben size={18} /> Vælg jeres kriterier én gang</li>
-              <li><Flueben size={18} /> Birdly holder øje hver dag</li>
-              <li><Flueben size={18} /> Få relevante match direkte på SMS og mail</li>
+              <li><Flueben size={18} /> Birdly holder øje</li>
+              <li><Flueben size={18} /> Birdly finder relevante opgaver</li>
+              <li><Flueben size={18} /> I får dem direkte på SMS</li>
+              <li><Flueben size={18} /> I vælger, hvilke I vil gå videre med</li>
             </ul>
             {/* ⚠️ DEN KORTE LINJE BÆRER SEKTIONEN. Den lange ejer-sætning stod
                 før som konklusion og druknede pointen; nu er den sekundær. */}

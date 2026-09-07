@@ -645,3 +645,90 @@ select.st-felt{appearance:none;background-image:url("data:image/svg+xml;utf8,<sv
    det var netop dét der fik dem til at stå justeret forskelligt i funnelen og
    på forsiden. De bor nu ét sted: app/vaerdikort.css, brugt gennem
    components/salg/VaerdiKort.js. Byg dem ALDRIG op igen her. */
+
+/* ============================================================================
+   FUNNELENS FØRSTE VIEWPORT — to kolonner (07-09-2026)
+
+   ⚠️ MÅLET: kunden kan taste CVR UDEN at scrolle, men har argumentet ved siden
+   af. Kold Meta-trafik skal hverken læse en landingsside først eller møde et
+   bart felt.
+
+   ⚠️ INGEN NYE FARVER. Alt er tokens fra globals.css.
+   ============================================================================ */
+
+.st-pre{display:grid;grid-template-columns:1.05fr .95fr;gap:44px;align-items:start}
+.st-pre-venstre h1{
+  font-family:'Plus Jakarta Sans',sans-serif;font-size:clamp(26px,3.2vw,40px);
+  font-weight:800;line-height:1.12;letter-spacing:-.025em;color:var(--navy)
+}
+.st-pre-sub{margin-top:18px;font-size:16.5px;line-height:1.6;color:var(--navy-soft)}
+/* SMS er produktoplevelsen og skal have sin egen vægt — ikke gemmes i en
+   punktliste sammen med alt andet. */
+.st-pre-sms{
+  margin-top:8px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;
+  font-size:17px;color:var(--navy)
+}
+
+/* "I skal ikke vinde mange / I skal bare vinde én" */
+.st-vind{margin-top:20px;display:flex;flex-direction:column;gap:1px}
+.st-vind-over{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:16px;color:var(--navy-soft)}
+.st-vind-under{
+  font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;
+  font-size:clamp(24px,3vw,34px);line-height:1.12;letter-spacing:-.025em;color:var(--navy)
+}
+.st-vind-under b{color:var(--teal);font-weight:800}
+
+.st-pre-trust{list-style:none;display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:18px}
+.st-pre-trust li{display:inline-flex;align-items:center;gap:6px;font-size:13.5px;font-weight:600;color:var(--navy-soft)}
+.st-pre-trust span{color:var(--teal);font-weight:800}
+
+/* Indvendingen "det er kun for de store" — besvaret FØR feltet. */
+.st-smaa{
+  margin-top:22px;background:var(--sky-soft);border:1px solid var(--sky-200);
+  border-radius:12px;padding:15px 17px
+}
+.st-smaa b{display:block;font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;color:var(--navy);margin-bottom:5px}
+.st-smaa p{font-size:14px;line-height:1.55;color:var(--navy-soft)}
+
+/* Kompakt sammenligning. ⚠️ IKKE en prissektion — den skal kun gøre det første
+   klik økonomisk indlysende. */
+.st-minianker{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:22px}
+.st-minianker-side{
+  background:#fff;border:1px solid var(--line);border-radius:12px;
+  padding:14px 16px;text-align:center
+}
+.st-minianker-side span{display:block;font-size:12.5px;color:var(--navy-soft)}
+.st-minianker-side b{
+  display:block;margin-top:4px;font-family:'Plus Jakarta Sans',sans-serif;
+  font-size:19px;font-weight:800;color:var(--teal);letter-spacing:-.02em
+}
+.st-minianker-side i{display:block;margin-top:3px;font-style:normal;font-size:12.5px;color:var(--navy-soft);line-height:1.4}
+.st-minianker-pris{background:var(--navy);border-color:var(--navy)}
+.st-minianker-pris span{color:var(--sky-200)}
+.st-minianker-pris b{color:#fff}
+.st-minianker-pris i{color:var(--sky-200)}
+
+/* Højre kolonne. Kortet må ikke blive for bredt — et CVR-felt på 500px læses
+   ikke bedre end et på 340. */
+.st-pre-hoejre{position:sticky;top:20px}
+.st-pre-bevis{margin-top:18px;padding-top:18px;border-top:1px solid var(--line)}
+
+/* ============================================================================
+   MOBIL — rækkefølgen er hele pointen.
+
+   ⚠️ INGEN TELEFONMOCKUP OG INGEN LANGE FORKLARINGER mellem overskrift og
+   CVR-felt. Rækkefølgen: overskrift → "I skal bare vinde én" → automatikken →
+   SMS → mindre virksomheder → regnestykke → felt. Alt andet må vente.
+   ============================================================================ */
+@media(max-width:900px){
+  .st-pre{grid-template-columns:1fr;gap:26px}
+  .st-pre-hoejre{position:static}
+}
+@media(max-width:560px){
+  .st-pre-venstre h1{font-size:26px}
+  .st-pre-sub{font-size:15.5px}
+  .st-pre-sms{font-size:16px}
+  .st-vind-under{font-size:24px}
+  .st-minianker{grid-template-columns:1fr;gap:10px}
+  .st-smaa{padding:13px 15px}
+}

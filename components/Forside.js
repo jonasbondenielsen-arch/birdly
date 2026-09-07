@@ -17,7 +17,8 @@ import StickyCtaMobil from "./salg/StickyCtaMobil";
 import { FagProvider } from "./salg/FagKontekst";
 import { Vaerdi } from "./salg/VaerdiSektion";
 import {
-  Hero, BevisBjaelke, RisikoFjernet, Problemet, ProblemPris, Loesningen,
+  Hero, BevisBjaelke, RisikoFjernet, RigtigeOpgaver, OffentligeOpgaver,
+  Overgang, Problemet, ProblemPris, Loesningen,
   Motoren, SmsDemo, FagVaelgerKort, Kundebevis, IkkePortal, Priser,
   SlutCta, EfterspoergselsLink,
 } from "./salg/Sektioner";
@@ -249,6 +250,10 @@ export default function Forside({ opgaveTal, funnelHref = "/kom-i-gang" }) {
           at vi optimerede to sider og lærte af ingen af dem. */}
       <Hero funnelHref={funnelHref} />
       <BevisBjaelke tal={opgaveTal} />
+      {/* ⚠️ DET ØKONOMISKE ARGUMENT LIGGER HØJT. Kold trafik scroller ikke ned
+          til en prissektion for at finde ud af hvad en opgave kan være værd. */}
+      <RigtigeOpgaver funnelHref={funnelHref} />
+      <OffentligeOpgaver funnelHref={funnelHref} />
       <RisikoFjernet funnelHref={funnelHref} />
       <Problemet />
       <ProblemPris fag="rengoring" />
@@ -266,6 +271,7 @@ export default function Forside({ opgaveTal, funnelHref = "/kom-i-gang" }) {
       <Vaerdi funnelHref={funnelHref} />
       <Kundebevis />
       <IkkePortal />
+      <Overgang funnelHref={funnelHref} />
 
       {/* Pris-streameren hører til ved prisen og har sin CSS nested i
           .birdly-home — derfor står den her og ikke inde i <Priser>, som også

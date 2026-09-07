@@ -22,7 +22,7 @@ import { hentAttribution } from "../lib/attribution";
 // checkoutens højre kolonne. Skærm 7's anker er PERSONLIGT og regnes af kundens
 // eget valg — se lib/vaerdiAnker.js. Byt dem aldrig om: den generiske sætning på
 // skærm 7 ville smide den personalisering væk, der er hele pointen med skærmen.
-import { GARANTI, GARANTI_LINK, VAERDI_ANKER } from "../lib/salgTekst";
+import { GARANTI, GARANTI_LINK, VAERDI_ANKER, VIND_EN, OFFENTLIGE } from "../lib/salgTekst";
 import { sporFunnel } from "../lib/ctaSporing";
 import { erLoebende, MAANEDSVAERDI, PROJEKTVAERDI, byggAnker, FORBEHOLD, BETINGET_LINJE } from "../lib/vaerdiAnker";
 import OpgaveKort from "./salg/OpgaveKort";
@@ -80,17 +80,18 @@ import "../app/start.css";
 const ETAPER = ["Virksomhed", "Opgaver", "Dine match", "Start Birdly"];
 
 // Skærm → etape (1-indekseret skærm, 0-indekseret etape).
-//   1 CVR + bekræftelse                      → Virksomhed
-//   2 Hvordan finder I opgaver i dag         → Opgaver
-//   3 Fag + arbejdsområder                   → Opgaver
-//   4 Område                                 → Opgaver
-//   5 Værdi-spørgsmål (fag-afhængigt)        → Opgaver
-//   6 Birdly Scan + resultat                 → Dine match
-//   7 Værdi-anker + opsummering + risiko     → Dine match
-//   8 Plan + kontakt + samtykker             → Start Birdly
-//   9 Betaling (kortvindue)                  → Start Birdly
-const SKAERM_ETAPE = { 1: 0, 2: 1, 3: 1, 4: 1, 5: 1, 6: 2, 7: 2, 8: 3, 9: 3 };
-const SIDSTE_SKAERM = 9;
+//   1  CVR + pre-funnel                     → Virksomhed
+//   2  FØRSTE SCAN (automatisk)              → Virksomhed
+//   3  Hvordan finder I opgaver i dag        → Opgaver
+//   4  Fag + arbejdsområder                  → Opgaver
+//   5  Område                                → Opgaver
+//   6  Værdi-spørgsmål                       → Opgaver
+//   7  Skarpere scan + resultat              → Dine match
+//   8  Værdi-anker + opsummering + risiko    → Dine match
+//   9  Plan + kontakt + samtykker            → Start Birdly
+//  10  Betaling (kortvindue)                 → Start Birdly
+const SKAERM_ETAPE = { 1: 0, 2: 0, 3: 1, 4: 1, 5: 1, 6: 1, 7: 2, 8: 2, 9: 3, 10: 3 };
+const SIDSTE_SKAERM = 10;
 
 // Samme SDK-indlæsning som /tilmeld. ⚠️ Bevidst duplikeret frem for at refaktorere
 // den live betalingssti midt i en ny funnel: Tilmeld.js er den eneste kanal der
@@ -176,7 +177,7 @@ const METODER = [
 // et valg frem for som et loft. Ændrer du et tal her, ændrer du kundens
 // matchkriterium — ikke en tekst.
 //
-// `garantiUndtaget` markerer de valg hvor handelsbetingelsernes §3.5 sætter
+// `garantiUndtaget` markerer de valg hvor handelsbetingelsernes 3.5 sætter
 // matchgarantien ud af kraft (loft under 2,5 mio. kr.). Kunden skal advares på
 // skærmen, ikke den dag hun beder om refusion.
 const PROJEKT_VALG = [
@@ -247,7 +248,26 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
   // vi viser ALDRIG en opgave fra et andet fag for at have noget at vise.
   const [preBevis, setPreBevis] = useState(null);
 
-  // Skærm 6 — selve scanningen. Kort overgang, så resultatet ikke bare "popper".
+  // ══════════════════════════════════════════════════════════════════════════
+  // FØRSTE SCAN — værdi FØR opsætning.
+  //
+  // ⚠️ HVORFOR DEN FINDES. Funnelen bad før om fag, område og størrelse FØR
+  // kunden havde set en eneste opgave. Det er at bede nogen konfigurere et
+  // produkt de ikke ved om virker. Nu kører der et opslag så snart CVR'et er
+  // bekræftet, på det fag CVR-opslaget selv pegede på — og kunden ser rigtige
+  // muligheder, før hun bliver spurgt om noget som helst.
+  //
+  // ⚠️ INTET NYT I BACKENDEN. Det er samme preview-kandidater og samme
+  // match-regel som resten af huset; det eneste nye er HVORNÅR den kaldes og at
+  // fag-gættet kommer fra branchekoden i stedet for fra kundens svar.
+  //
+  // ⚠️ GÆTTET KAN VÆRE FORKERT, og det siger vi. Branchekoden peger ikke altid
+  // rigtigt, og derfor hedder næste skridt "Gør jeres match endnu skarpere" —
+  // ikke "Bekræft". Kunden retter det på de følgende skærme.
+  const [foersteScan, setFoersteScan] = useState(null);
+  const [scannerFoerste, setScannerFoerste] = useState(false);
+
+  // Skærm 7 — selve scanningen. Kort overgang, så resultatet ikke bare "popper".
   const [scanner, setScanner] = useState(false);
   const [slaarOp, setSlaarOp] = useState(false);
   const [opslagFejl, setOpslagFejl] = useState("");
@@ -585,7 +605,63 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
   // ⚠️ Tallet regnes på den FULDE effektive liste — kundens afkrydsede områder OG
   // hendes bredde-valg. Regnede vi før hun havde valgt, ville trin 4 vise et tal
   // der ikke svarer til det hun får.
-  // ---- BIRDLY SCAN: skærm 5 → 6 ----
+  // ---- FØRSTE SCAN: skærm 1 → 2 ----
+  //
+  // Kriterier: fagets fulde kodesæt, bredde "alle", hele landet, ingen
+  // beløbsgrænse. Det er det bredeste ÆRLIGE udgangspunkt — og præcis det
+  // kunden selv ville få, hvis hun valgte faget og lod alt stå.
+  async function koerFoersteScan() {
+    // ⚠️ ANNONCEN SLÅR CVR-GÆTTET. Rækkefølgen er: ?fag= fra adressen, derefter
+    // branchekoden fra CVR-opslaget, ellers rengøring (den primære målgruppe).
+    //
+    // Den rækkefølge er ikke tilfældig. Har kunden klikket en annonce om
+    // rengøringsopgaver, HAR hun fortalt os hvad hun vil have; branchekoden er
+    // et gæt. Med den omvendte rækkefølge kunne en besøgende fra en
+    // rengørings-annonce få vist IT-opgaver, fordi CVR-registret havde hendes
+    // virksomhed registreret under noget andet — målt på et rigtigt CVR under
+    // afprøvningen.
+    //
+    // Det er også dét der holder scanningen i takt med det forvalgte fag længere
+    // nede i funnelen: begge læser ?fag= først.
+    //
+    // Alle tre valideres mod kataloget — en ukendt nøgle bliver aldrig brugt.
+    const kandidatFag = [startFag, gaetFag, "rengoring"].find((k) => k && fagByKey[k]);
+    // ⚠️ HVOR KOM FAGET FRA? Teksten under resultatet skal sige sandheden:
+    // "vi har gættet ud fra CVR-registret" er kun rigtigt når det FAKTISK kom
+    // fra branchekoden. Kom det fra annoncen, har kunden selv sagt det, og da
+    // ville sætningen påstå noget forkert om vores egen kilde.
+    const fagKilde = kandidatFag === startFag ? "annonce" : kandidatFag === gaetFag ? "cvr" : "standard";
+    if (!kandidatFag) { setTrin(3); return; }
+
+    setScannerFoerste(true);
+    setTrin(2);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+
+    const koder = (fagByKey[kandidatFag]?.smal || []).map((a) => a.cpv).filter(Boolean);
+    const [k] = await Promise.all([
+      hentKandidater({
+        fag_keys: [kandidatFag],
+        cpv_selections: koder,
+        bredde: "alle",
+        region_keys: ["hele_dk"],
+        min_amount: null,
+        max_amount: null,
+        med_eksempler: true,
+      }),
+      // Parallelt, ikke oveni: svarer serveren hurtigt, venter kunden alligevel
+      // kun det ene sekund overgangen tager.
+      new Promise((r) => setTimeout(r, 900)),
+    ]);
+
+    setFoersteScan({ fag: kandidatFag, kilde: fagKilde, ...k });
+    setScannerFoerste(false);
+    // ⚠️ FORVALGET SÆTTES HER, så skærm 4 starter med det fag vi lige har vist
+    // opgaver fra. Kunden kan fjerne det igen — det er et forvalg, ikke et valg.
+    setFagValgt((f) => (f.length ? f : [kandidatFag]));
+    sporFunnel("FirstScanCompleted", { fag: kandidatFag, antal: k?.i_omraade || 0 });
+  }
+
+  // ---- BIRDLY SCAN: skærm 6 → 7 ----
   //
   // ⚠️ SAMME KALD SOM FØR, samme kriterier, samme Edge Function. Det eneste nye
   // er `med_eksempler`, som beder om op til tre AF DE SAMME opgaver tallet er
@@ -603,7 +679,7 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
 
     setHenter(true);
     setScanner(true);
-    setTrin(6);
+    setTrin(7);
     window.scrollTo({ top: 0, behavior: "smooth" });
 
     const [k] = await Promise.all([
@@ -703,7 +779,7 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
         //
         // Står efter submitSignup, så et fejlet kald aldrig kan udløse den.
         if (!udenProeveNu) sporEnGang(`starttrial_${id}`, "StartTrial", pixelParams());
-        setTrin(9);
+        setTrin(10);
         window.scrollTo({ top: 0, behavior: "smooth" });
         return;
       }
@@ -720,7 +796,7 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
       });
       setSessionId(session_id);
       sporFunnel("CheckoutStarted", { interval });
-      setTrin(9);
+      setTrin(10);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (e) {
       // Værnene i signup svarer med almindeligt dansk — vis det ordret frem for at
@@ -996,7 +1072,13 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
   // udelukkende rækkefølge, copy og personalisering.
   // ══════════════════════════════════════════════════════════════════════════
   return (
-    <main className={"st-wrap" + (trin === 9 && !kortloes ? " st-wrap-bred" : "") + (trin >= 6 && trin <= 8 ? " st-wrap-mellem" : "")}>
+    <main className={"st-wrap"
+      + (trin === 10 && !kortloes ? " st-wrap-bred" : "")
+      // ⚠️ SKÆRM 1 ER TO KOLONNER og skal have den fulde bredde, ellers klemmes
+      // argumentet og CVR-kortet sammen. Skærm 2-9 er brede nok til kort og
+      // opsummering; kun de smalle spørgsmålsskærme bruger standardbredden.
+      + (trin === 1 ? " st-wrap-bred" : "")
+      + (trin >= 2 && trin <= 9 ? " st-wrap-mellem" : "")}>
       <FunnelTop />
 
       {/* FIRE ETAPER, ingen "trin 3 af 9" — se noten ved ETAPER. */}
@@ -1020,176 +1102,151 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
           kunden — hun skal kunne rette og prøve igen. */}
       {trin === 1 && !bekraeftet && (
         <>
-      {/* ══════════════════════════════════════════════════════════════════════
-          PRE-FUNNEL — SALG TIL KOLD TRAFIK (skærm 1)
+          {/* ══════════════════════════════════════════════════════════════════
+              PRE-FUNNEL — SALG TIL KOLD TRAFIK
 
-          ⚠️ HVORFOR DEN FINDES. Mange lander her direkte fra Meta uden nogensinde
-          at have set birdly.dk. De kender ikke produktet, prisen, garantien eller
-          os. Et bart CVR-felt beder dem om at identificere deres virksomhed for
-          en tjeneste de ikke ved hvad er — og det er dét, en funnel der "ligner
-          en tilmeldingsformular" koster.
+              ⚠️ HVORFOR DEN FINDES. Mange lander her direkte fra Meta uden
+              nogensinde at have set birdly.dk. De kender ikke produktet, prisen
+              eller os. Et bart CVR-felt beder dem identificere deres virksomhed
+              for en tjeneste de ikke ved hvad er — og det er dét, en funnel der
+              "ligner en tilmeldingsformular" koster.
 
-          ⚠️ CVR-FELTET STÅR ØVERST, IKKE NEDERST. Trafik der kommer fra
-          /kom-i-gang HAR set argumentet og skal ikke scrolle gennem det igen for
-          at komme i gang. Kold trafik scroller videre og finder bevis, regnestykke
-          og problem/løsning nedenunder — med en knap der fører tilbage til feltet.
-          Begge grupper får den korteste vej.
+              ⚠️ TO KOLONNER PÅ DESKTOP. Venstre bærer argumentet, højre bærer
+              CVR-feltet. Kunden kan taste med det samme UDEN at scrolle — men
+              hun har allerede læst hvorfor, fordi det står ved siden af.
+              På mobil stables de, og rækkefølgen er: overskrift → "I skal bare
+              vinde én" → automatikken → SMS → offentlige opgaver er også for
+              mindre virksomheder → regnestykke → CVR. Ingen telefonmockup og
+              ingen lange forklaringer mellem overskrift og felt.
 
-          ⚠️ DEN LÅNER IKKE FORSIDENS SEKTIONER. Samme designsystem — samme
-          tokens, samme knapper — men funnelens eget, kompakte formsprog (st-).
-          Klistrede vi forsidens .sg-sektioner ind her, ville /start blive en
-          kopi af den side kunden lige har forladt, og det er præcis dét den ikke
-          må være.
+              ⚠️ DEN LÅNER IKKE FORSIDENS SEKTIONER. Samme designsystem — samme
+              tokens, samme knapper — men funnelens eget, kompakte formsprog
+              (st-). Klistrede vi forsidens .sg-sektioner ind, ville /start blive
+              en kopi af den side kunden lige har forladt.
+              ══════════════════════════════════════════════════════════════════ */}
+          <div className="st-pre">
+            {/* ─────────── VENSTRE: argumentet ─────────── */}
+            <div className="st-pre-venstre">
+              <span className="st-pre-pill">For rengørings- &amp; servicevirksomheder</span>
 
-          ⚠️ 2-4 MOBILSKÆRME, IKKE 20. Vi kondenserer Hyros' arkitektur; vi
-          kopierer ikke deres længde.
-          ══════════════════════════════════════════════════════════════════════ */}
+              <h1>
+                {forvalgtLabel
+                  ? <>Find {forvalgtLabel.toLowerCase()}sopgaver, der kan være flere hundredetusinde kroner værd.</>
+                  : <>Find rengøringsopgaver, der kan være flere hundredetusinde kroner værd.</>}
+              </h1>
 
-      {/* ---- A1 · RESULTAT ---- */}
-      <div className="st-pre-hero">
-        <span className="st-pre-pill">Opgaver til danske virksomheder</span>
-        <h1>
-          {preOverskrift}
-          <span className="st-pre-em">Uden selv at lede.</span>
-        </h1>
-        <p className="st-pre-sub">
-          Birdly finder relevante private og offentlige opgaver og sender nye match
-          direkte på SMS og mail.
-        </p>
-        <ul className="st-pre-trust">
-          <li><span>✓</span> {TRIAL_DAYS} dage gratis</li>
-          <li><span>✓</span> 0 kr. i dag</li>
-          <li><span>✓</span> Ingen binding</li>
-          <li><span>✓</span> {GARANTI.kort}</li>
-        </ul>
-      </div>
+              {/* ⚠️ "I SKAL BARE VINDE ÉN" ER IKKE ET LØFTE. Den siger at der ikke
+                  skal MANGE vundne opgaver til, før årsprisen er lille i
+                  sammenligning. Skriv den aldrig om til "I vinder én". */}
+              <div className="st-vind">
+                <span className="st-vind-over">{VIND_EN.over}</span>
+                <span className="st-vind-under">{VIND_EN.underDel1}<b>{VIND_EN.underDel2}</b></span>
+              </div>
 
-      {/* ---- A5 · CVR (står højt, se noten ovenfor) ---- */}
-      <div className="st-kort" id="cvr-kort">
-        <h2 className="st-pre-h2">Se hvad Birdly kan finde til jer.</h2>
-        <p className="st-hj">
-          {forvalgtLabel
-            ? <>Start med CVR-nummeret. Så finder vi virksomheden og tilpasser Birdly til <b>{forvalgtLabel.toLowerCase()}</b> og jeres område.</>
-            : <>Start med CVR-nummeret. Så finder vi virksomheden og tilpasser Birdly til jeres fag og område.</>}
-        </p>
-        <label className="st-lab" htmlFor="cvr">CVR-nummer</label>
-        <input
-          id="cvr" className="st-felt" inputMode="numeric" autoComplete="off" maxLength={11}
-          value={cvr}
-          onChange={(e) => { setCvr(e.target.value); setFirma(""); setAdresse(null); setBranchetekst(null); setBekraeftet(false); setOpslagFejl(""); }}
-          onBlur={(e) => slaaOp(e.target.value)}
-          placeholder="12345678"
-        />
-        {slaarOp && <p className="st-hj">Slår op…</p>}
-        {opslagFejl && <p className="st-hj">{opslagFejl}</p>}
+              <p className="st-pre-sub">
+                Birdly finder automatisk relevante offentlige og private opgaver til jeres
+                virksomhed.
+              </p>
+              <p className="st-pre-sms">Når noget passer, får I det direkte på SMS.</p>
 
-        <button
-          className="btn btn-teal st-bred"
-          onClick={async () => {
-            if (cifre(cvr).length !== 8) return setFejl("Skriv et CVR-nummer på 8 cifre.");
-            setFejl("");
-            sporFunnel("CVRStarted");
-            if (!firma) await slaaOp(cvr);
-            setBekraeftet(true);
-            sporFunnel("BusinessIdentified");
-            window.scrollTo({ top: 0, behavior: "smooth" });
-          }}
-        >
-          Find min virksomhed →
-        </button>
-        {/* ⚠️ SÆTNINGEN ER SAND, OG DET ER DERFOR DEN MÅ STÅ. Kortet bindes
-            først på skærm 9; alt før det er opsætning og et opslag. Ændrer den
-            rækkefølge sig nogensinde, skal linjen væk samme dag. */}
-        <p className="st-under-knap">
-          0 kr. i dag · {TRIAL_DAYS} dage gratis · I skal ikke registrere kort endnu
-        </p>
-      </div>
+              <ul className="st-pre-trust">
+                <li><span>✓</span> Ingen portal</li>
+                <li><span>✓</span> Ingen daglig søgning</li>
+                <li><span>✓</span> Ingen kompliceret opsætning</li>
+              </ul>
 
-      {/* ---- A2 · ÆGTE BEVIS ----
-          ⚠️ TALLET OG OPGAVERNE ER ÆGTE ELLER FRAVÆRENDE. Samme kald som
-          resten af huset (preview-kandidater → birdly_match_candidates_for).
-          Er der intet, står der intet — vi falder ALDRIG tilbage på en opgave
-          fra et andet fag for at have noget at vise. */}
-      {preBevis && preBevis.antal > 0 && (
-        <div className="st-pre-sek">
-          <span className="st-pre-kick">Birdly arbejder allerede</span>
-          <p className="st-pre-tal">
-            <b>{daTal(preBevis.antal)}</b> {preFagOrd} som Birdly holder øje med lige nu
-          </p>
-          {preBevis.eksempler.length > 0 && (
-            <div className="st-opgaver">
-              {preBevis.eksempler.slice(0, 3).map((n, i) => (
-                <OpgaveKort key={i} opgave={n} />
-              ))}
+              {/* ⚠️ INDVENDINGEN SKAL STÅ FØR FELTET, ikke efter. "Det er kun for
+                  de store" er den grund folk lukker fanen med — den skal være
+                  besvaret inden de bliver bedt om noget. */}
+              <div className="st-smaa">
+                <b>{OFFENTLIGE.overskrift}</b>
+                <p>Det behøver ikke være bøvlet. {OFFENTLIGE.rolle1} {OFFENTLIGE.rolle2}</p>
+              </div>
+
+              {/* ⚠️ KOMPAKT SAMMENLIGNING, IKKE EN PRISSEKTION. Den skal kun gøre
+                  det første klik økonomisk indlysende. Beløbene til venstre er
+                  størrelsesordener med "kan være" foran — ikke et konkret udbud,
+                  og aldrig et tal vi har fundet på. */}
+              <div className="st-minianker">
+                <div className="st-minianker-side">
+                  <span>En relevant opgave</span>
+                  <b>kan være</b>
+                  <i>100.000 kr. · 300.000 kr. · eller mere</i>
+                </div>
+                <div className="st-minianker-side st-minianker-pris">
+                  <span>Birdly et helt år</span>
+                  <b>{priceText.yearlyBare}</b>
+                  <i>ekskl. moms</i>
+                </div>
+              </div>
             </div>
-          )}
-          <p className="st-pre-fin">
-            Det er den slags opgaver, Birdly kan holde øje med for jer.
-          </p>
-        </div>
-      )}
 
-      {/* ---- A3 · ØKONOMISK VÆRDI ----
-          ⚠️ SAMMENLIGNING, IKKE AFKAST. To beløb ved siden af hinanden og et
-          forbehold der siger rent ud at vi ikke garanterer en vundet opgave.
-          Reglen bor i lib/vaerdiAnker.js — læs den før du ændrer en sætning. */}
-      <div className="st-pre-sek">
-        <span className="st-pre-kick">Regnestykket</span>
-        <h2 className="st-pre-h2">
-          {preAnker.loebende ? "Hvad er én fast kunde værd?" : "Hvad er én opgave værd?"}
-        </h2>
+            {/* ─────────── HØJRE: CVR ─────────── */}
+            <div className="st-pre-hoejre">
+              <div className="st-kort" id="cvr-kort">
+                <h2 className="st-pre-h2">Se hvad Birdly kan finde til jer</h2>
+                <p className="st-hj">
+                  Indtast jeres CVR-nummer. Så finder Birdly virksomheden og begynder at
+                  lede efter relevante opgaver.
+                </p>
 
-        {/* ⚠️ SAMME EKSEMPEL SOM FORSIDEN. Scenariet og beløbene kommer fra
-            STANDARD_RENGOERING i lib/vaerdiAnker.js — ét sted, alle sider. Et
-            tal der skifter mellem landingssiden og funnelen får kunden til at
-            holde op med at tro på begge. */}
-        {/* ⚠️ SAMME KOMPONENT SOM FORSIDEN. Kortene var før bygget her med
-            `.st-anker-*`-klasser og på forsiden med `.sg-vaerdi-*` — to
-            implementeringer af det samme kort, som derfor stod justeret
-            forskelligt de to steder. Nu er der én: components/salg/VaerdiKort.js.
-            `taet` skruer KUN ned for skriftstørrelserne, fordi funnelens spalte
-            er smallere; padding, badge-offset og justering er fælles. */}
-        <VaerdiKort anker={preAnker} taet />
+                <label className="st-lab" htmlFor="cvr">CVR-nummer</label>
+                <input
+                  id="cvr" className="st-felt" inputMode="numeric" autoComplete="off" maxLength={11}
+                  value={cvr}
+                  onChange={(e) => { setCvr(e.target.value); setFirma(""); setAdresse(null); setBranchetekst(null); setBekraeftet(false); setOpslagFejl(""); }}
+                  onBlur={(e) => slaaOp(e.target.value)}
+                  placeholder="12345678"
+                />
+                {slaarOp && <p className="st-hj">Slår op…</p>}
+                {opslagFejl && <p className="st-hj">{opslagFejl}</p>}
 
-        {/* ⚠️ SAMMENLIGNINGEN STÅR INDE I KORTET, ikke også her. Den stod begge
-            steder efter sammenlægningen, og den samme sætning to gange med
-            tyve pixels mellemrum læses som en fejl — ikke som en pointe der
-            bliver understreget. Kun forbeholdene bliver. */}
-        {preAnker.kilde && <p className="st-forbehold">{preAnker.kilde}</p>}
-        <p className="st-forbehold">{FORBEHOLD}</p>
-      </div>
+                {/* ⚠️ CTA'EN LOVER BELØNNINGEN, ikke handlingen. "Fortsæt" siger
+                    hvad kunden skal gøre; den her siger hvad hun får. */}
+                <button
+                  className="btn btn-teal st-bred"
+                  onClick={async () => {
+                    if (cifre(cvr).length !== 8) return setFejl("Skriv et CVR-nummer på 8 cifre.");
+                    setFejl("");
+                    sporFunnel("CVRStarted");
+                    if (!firma) await slaaOp(cvr);
+                    setBekraeftet(true);
+                    sporFunnel("BusinessIdentified");
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }}
+                >
+                  Vis mig relevante opgaver →
+                </button>
+                {/* ⚠️ SÆTNINGEN ER SAND, OG DET ER DERFOR DEN MÅ STÅ. Kortet
+                    bindes først på skærm 10. Ændrer den rækkefølge sig, skal
+                    linjen væk samme dag. */}
+                <p className="st-under-knap">
+                  0 kr. i dag · {TRIAL_DAYS} dage gratis · Ingen binding
+                </p>
+              </div>
 
-      {/* ---- A4 · PROBLEM → LØSNING ---- */}
-      <div className="st-pre-sek">
-        <span className="st-pre-kick">Problemet</span>
-        <h2 className="st-pre-h2">Den opgave, I ikke ser,<br />kan I heller ikke byde på.</h2>
-        <p className="st-hj">
-          Muligheder ligger forskellige steder, og det meste er ikke relevant.
-        </p>
-
-        <div className="st-fix-boks">
-          <span className="st-pre-kick" style={{ color: "var(--teal)" }}>Løsningen</span>
-          <h3>Birdly leder. I får besked.</h3>
-          <ul>
-            <li><span>✓</span> Jeres fag</li>
-            <li><span>✓</span> Jeres område</li>
-            <li><span>✓</span> Jeres ønskede opgavestørrelse</li>
-            <li><span>✓</span> Private og offentlige muligheder</li>
-          </ul>
-          <p>→ direkte på SMS og mail</p>
-        </div>
-
-        <button
-          className="btn btn-teal st-bred"
-          onClick={() => {
-            const el = document.getElementById("cvr");
-            if (el) { el.scrollIntoView({ behavior: "smooth", block: "center" }); el.focus({ preventScroll: true }); }
-          }}
-        >
-          Find mine opgaver →
-        </button>
-        <p className="st-under-knap">0 kr. i dag · {TRIAL_DAYS} dage gratis</p>
-      </div>
+              {/* ---- ÆGTE BEVIS ----
+                  ⚠️ Tallet er ægte eller fraværende. Samme kald som resten af
+                  huset (preview-kandidater → birdly_match_candidates_for). Er der
+                  intet, står der intet — vi falder ALDRIG tilbage på en opgave
+                  fra et andet fag for at have noget at vise. */}
+              {preBevis && preBevis.antal > 0 && (
+                <div className="st-pre-bevis">
+                  <span className="st-pre-kick">Birdly holder allerede øje</span>
+                  <p className="st-pre-tal">
+                    <b>{daTal(preBevis.antal)}</b> {preFagOrd} lige nu
+                  </p>
+                  {preBevis.eksempler.length > 0 && (
+                    <div className="st-opgaver">
+                      {preBevis.eksempler.slice(0, 2).map((n, i) => (
+                        <OpgaveKort key={i} opgave={n} />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
         </>
       )}
 
@@ -1214,14 +1271,104 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
           {gaetFag && fagByKey[gaetFag] && (
             <p className="st-hj">Ser ud til at være <b>{fagByKey[gaetFag].label_da}</b>. I retter det på næste skridt.</p>
           )}
-          <button className="btn btn-teal st-bred" onClick={() => { setTrin(2); window.scrollTo({ top: 0, behavior: "smooth" }); }}>
-            Ja, fortsæt →
+          <button className="btn btn-teal st-bred" onClick={koerFoersteScan}>
+            Ja — vis mig opgaverne →
           </button>
           <button className="st-tilbage" onClick={() => setBekraeftet(false)}>Nej, søg igen</button>
         </div>
       )}
 
-      {/* ═══════════════ SKÆRM 2 — HVORDAN FINDER I OPGAVER I DAG ═══════════════
+      {/* ═══════════════ SKÆRM 2 — FØRSTE SCAN ═══════════════
+          ⚠️ VÆRDI FØR OPSÆTNING. Kunden har indtastet ét felt og ser nu rigtige
+          opgaver. Først BAGEFTER bliver hun spurgt om fag, område og størrelse —
+          og da hedder det "gør jeres match skarpere", ikke "opsæt Birdly".
+
+          ⚠️ ALT ER ÆGTE ELLER TOMT. Tallet og opgaverne kommer fra
+          preview-kandidater, som kalder selve match-reglen. Er der ingenting,
+          siger vi det — vi viser ALDRIG en opgave fra et andet fag for at have
+          noget at vise. */}
+      {trin === 2 && scannerFoerste && (
+        <div className="st-kort st-scan">
+          <div className="st-scan-ring" aria-hidden="true" />
+          <h1>Birdly leder efter opgaver til jer…</h1>
+          <ul className="st-scan-liste">
+            <li><span>✓</span> {firma || "Jeres virksomhed"}</li>
+            <li><span>✓</span> Offentlige og private opgaver</li>
+            <li><span>✓</span> Hele landet</li>
+          </ul>
+        </div>
+      )}
+
+      {trin === 2 && !scannerFoerste && foersteScan && (
+        <div className="st-kort st-resultat">
+          {foersteScan.i_omraade > 0 ? (
+            <>
+              <h1>Vi har fundet relevante muligheder til jer.</h1>
+              <p className="st-kontekst">
+                {fagByKey[foersteScan.fag]?.label_da || "Jeres fag"} · Hele landet
+              </p>
+
+              <div className="st-res">
+                <b>{foersteScan.i_omraade}</b>
+                <span>
+                  {foersteScan.i_omraade === 1 ? "aktiv mulighed lige nu" : "aktive muligheder lige nu"}
+                </span>
+              </div>
+
+              {/* ⚠️ ÆGTE OPGAVER, ELLER INGEN KORT. Mangler eksemplerne (den
+                  additive udgave af preview-kandidater er ikke rullet ud endnu),
+                  viser vi tallet uden kort. Vi fylder ALDRIG hullet. */}
+              {(foersteScan.eksempler || []).length > 0 && (
+                <div className="st-opgaver">
+                  {foersteScan.eksempler.slice(0, 3).map((n, i) => (
+                    <OpgaveKort key={i} opgave={n} />
+                  ))}
+                </div>
+              )}
+
+              <p className="st-bevis-tekst">
+                Det er den slags opgaver, Birdly kan holde øje med for jer. Når noget
+                passer, får I det direkte på SMS.
+              </p>
+
+              {/* ⚠️ "SKARPERE", IKKE "OPSÆT". Kunden har lige set at det virker;
+                  de næste skærme gør resultatet bedre — de tænder det ikke. */}
+              <button
+                className="btn btn-teal st-bred"
+                onClick={() => { setTrin(3); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+              >
+                Gør jeres match endnu skarpere →
+              </button>
+              <p className="st-under-knap">
+                {foersteScan.kilde === "cvr"
+                  ? <>Vi har gættet jeres fag ud fra CVR-registret. I retter det på næste skridt.</>
+                  : <>I kan vælge fag, område og størrelse på næste skridt.</>}
+              </p>
+            </>
+          ) : (
+            /* ⚠️ NUL ER ET LOVLIGT SVAR. Gættet kan være forkert, eller faget kan
+               have en stille uge. Begge dele fører samme sted hen: lad kunden
+               vælge selv. Vi opfinder ingen opgaver. */
+            <>
+              <h1>Lad os finde de rigtige opgaver til jer.</h1>
+              <p className="st-hj">
+                {foersteScan.kilde === "cvr"
+                  ? <>Vi gættede jeres fag ud fra CVR-registret, men fandt ingen aktive opgaver lige der. Fortæl os hvad I laver, så leder vi det rigtige sted.</>
+                  : <>Der er ingen aktive opgaver i den kategori lige nu. Fortæl os hvad I laver, så leder vi det rigtige sted.</>}
+              </p>
+              <button
+                className="btn btn-teal st-bred"
+                onClick={() => { setTrin(3); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+              >
+                Vælg jeres fag →
+              </button>
+            </>
+          )}
+          <button className="st-tilbage" onClick={() => { setBekraeftet(false); setTrin(1); }}>← Tilbage</button>
+        </div>
+      )}
+
+      {/* ═══════════════ SKÆRM 3 — HVORDAN FINDER I OPGAVER I DAG ═══════════════
           ⚠️ DIAGNOSE, IKKE ET KRITERIUM. Svaret sendes ikke til signup og påvirker
           ikke matchning med et komma. Det gør to ting: det får kunden til at sætte
           ord på sin egen situation, og det lader os svare på præcis den situation
@@ -1229,7 +1376,7 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
           ⚠️ INGEN ANGREB PÅ KONKURRENTER. Svaret til "vi bruger allerede en anden
           tjeneste" siger at Birdly ikke behøver erstatte den. Det er både sandt og
           stærkere end at tale nogen ned. */}
-      {trin === 2 && (
+      {trin === 3 && (
         <div className="st-kort">
           <h1>Hvordan finder I typisk nye opgaver i dag?</h1>
           <p className="st-hj">Så kan Birdly vise, hvor vi faktisk kan gøre en forskel.</p>
@@ -1254,19 +1401,19 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
           <button
             className="btn btn-teal st-bred"
             disabled={!metode}
-            onClick={() => { setTrin(3); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+            onClick={() => { setTrin(4); window.scrollTo({ top: 0, behavior: "smooth" }); }}
           >
             Fortsæt →
           </button>
-          <button className="st-tilbage" onClick={() => setTrin(1)}>← Tilbage</button>
+          <button className="st-tilbage" onClick={() => setTrin(2)}>← Tilbage</button>
         </div>
       )}
 
-      {/* ═══════════════ SKÆRM 3 — HVILKE OPGAVER ═══════════════
+      {/* ═══════════════ SKÆRM 4 — HVILKE OPGAVER ═══════════════
           Fag + arbejdsområder + bredde. ⚠️ DET ER DE ÆGTE MATCHKRITERIER:
           fag_keys og cpv_selections går til match-reglen. Datakilden er
           katalogets fag.smal — ingen opfundne kategorier. */}
-      {trin === 3 && (
+      {trin === 4 && (
         <div className="st-kort">
           <h1>Hvilke opgaver vil I gerne have flere af?</h1>
           <p className="st-hj">Vælg ét eller flere fag. I kan altid ændre det bagefter.</p>
@@ -1373,21 +1520,21 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
             className="btn btn-teal st-bred"
             onClick={() => {
               if (!fagValgt.length) return setFejl("Vælg mindst én branche.");
-              setFejl(""); setTrin(4); window.scrollTo({ top: 0, behavior: "smooth" });
+              setFejl(""); setTrin(5); window.scrollTo({ top: 0, behavior: "smooth" });
             }}
           >
             Fortsæt →
           </button>
-          <button className="st-tilbage" onClick={() => setTrin(2)}>← Tilbage</button>
+          <button className="st-tilbage" onClick={() => setTrin(3)}>← Tilbage</button>
         </div>
       )}
 
-      {/* ═══════════════ SKÆRM 4 — OMRÅDE ═══════════════
+      {/* ═══════════════ SKÆRM 5 — OMRÅDE ═══════════════
           ⚠️ SAMME GEOGRAFI SOM PRODUKTET HAR. Landsdelene kommer fra kataloget
           (region_nuts_map), og "hele_dk" er sin EGEN nøgle — ikke en optælling af
           de fem. Der er ikke opfundet hverken kommuner eller radius: findes det
           ikke i matchningen, spørger vi ikke om det. */}
-      {trin === 4 && (
+      {trin === 5 && (
         <div className="st-kort">
           <h1>Hvor vil I have opgaver?</h1>
           <p className="st-hj">Vælg hele landet eller de landsdele, I dækker.</p>
@@ -1438,16 +1585,16 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
             className="btn btn-teal st-bred"
             onClick={() => {
               if (!regionKeys.length) return setFejl("Vælg mindst én landsdel — eller hele Danmark.");
-              setFejl(""); setTrin(5); window.scrollTo({ top: 0, behavior: "smooth" });
+              setFejl(""); setTrin(6); window.scrollTo({ top: 0, behavior: "smooth" });
             }}
           >
             Fortsæt →
           </button>
-          <button className="st-tilbage" onClick={() => setTrin(3)}>← Tilbage</button>
+          <button className="st-tilbage" onClick={() => setTrin(4)}>← Tilbage</button>
         </div>
       )}
 
-      {/* ═══════════════ SKÆRM 5 — VÆRDI ═══════════════
+      {/* ═══════════════ SKÆRM 6 — VÆRDI ═══════════════
           ⚠️ TO FORSKELLIGE SPØRGSMÅL, OG DE GØR IKKE DET SAMME:
             · PROJEKTFAG (tømrer, VVS, entreprenør …): svaret ER kundens
               max_amount og går til match-reglen. Det filtrerer.
@@ -1457,7 +1604,7 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
               udbudssum, og at bruge den som beløbsfilter ville skære opgaver væk
               på et tal kunden troede var en illustration.
           Se lib/vaerdiAnker.js. Blandes de to sammen, filtrerer vi forkert. */}
-      {trin === 5 && (
+      {trin === 6 && (
         <div className="st-kort">
           {loebendeFag ? (
             <>
@@ -1489,7 +1636,7 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
             ))}
           </div>
 
-          {/* ⚠️ §3.5-ADVARSLEN. Handelsbetingelserne undtager matchgarantien hvis
+          {/* ⚠️ 3.5-ADVARSLEN. Handelsbetingelserne undtager matchgarantien hvis
               kunden afgrænser opgavestørrelsen til under 2,5 mio. kr. Vælger hun
               et snævert loft, skal hun kunne se det HER — ikke opdage det den dag
               hun beder om refusion. */}
@@ -1508,16 +1655,16 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
           >
             Find mine opgaver →
           </button>
-          <button className="st-tilbage" onClick={() => setTrin(4)}>← Tilbage</button>
+          <button className="st-tilbage" onClick={() => setTrin(5)}>← Tilbage</button>
         </div>
       )}
 
-      {/* ═══════════════ SKÆRM 6 — BIRDLY SCAN ═══════════════
+      {/* ═══════════════ SKÆRM 7 — SKARPERE SCAN ═══════════════
           ⚠️ OVERGANGEN LYVER IKKE. Der står præcis hvad vi slår op på, og de tre
           flueben er kundens EGNE valg. Ingen "scanner 4 millioner databaser",
           ingen AI-animation. Opslaget tager reelt et øjeblik, og det er dét
           øjeblik der vises — se noten ved tilResultat(). */}
-      {trin === 6 && (scanner || henter) && (
+      {trin === 7 && (scanner || henter) && (
         <div className="st-kort st-scan">
           <div className="st-scan-ring" aria-hidden="true" />
           <h1>Birdly leder efter opgaver, der matcher jer…</h1>
@@ -1529,7 +1676,7 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
         </div>
       )}
 
-      {trin === 6 && !scanner && !henter && (
+      {trin === 7 && !scanner && !henter && (
         <div className="st-kort st-resultat">
           {harMatch ? (
             <>
@@ -1566,7 +1713,7 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
                 selv finde dem — når en ny mulighed matcher, får I den direkte på SMS og mail.
               </p>
 
-              <button className="btn btn-teal st-bred" onClick={() => { sporFunnel("ValueAnchorViewed"); setTrin(7); window.scrollTo({ top: 0, behavior: "smooth" }); }}>
+              <button className="btn btn-teal st-bred" onClick={() => { sporFunnel("ValueAnchorViewed"); setTrin(8); window.scrollTo({ top: 0, behavior: "smooth" }); }}>
                 Ja — hold øje for mig →
               </button>
             </>
@@ -1587,22 +1734,22 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
                   eventuelt at udvide området.
                 </p>
               )}
-              <button className="btn btn-teal st-bred" onClick={() => { sporFunnel("ValueAnchorViewed"); setTrin(7); window.scrollTo({ top: 0, behavior: "smooth" }); }}>
+              <button className="btn btn-teal st-bred" onClick={() => { sporFunnel("ValueAnchorViewed"); setTrin(8); window.scrollTo({ top: 0, behavior: "smooth" }); }}>
                 Start overvågning →
               </button>
-              <button className="btn btn-ghost st-bred" onClick={() => setTrin(4)}>Udvid mine kriterier</button>
+              <button className="btn btn-ghost st-bred" onClick={() => setTrin(5)}>Udvid mine kriterier</button>
             </>
           )}
-          <button className="st-tilbage" onClick={() => setTrin(5)}>← Tilbage</button>
+          <button className="st-tilbage" onClick={() => setTrin(6)}>← Tilbage</button>
         </div>
       )}
 
-      {/* ═══════════════ SKÆRM 7 — VÆRDI, OPSUMMERING OG RISIKO ═══════════════
+      {/* ═══════════════ SKÆRM 8 — VÆRDI, OPSUMMERING OG RISIKO ═══════════════
           ⚠️ SAMMENLIGNING, IKKE AFKAST. Vi stiller to beløb op mod hinanden og
           skriver rent ud at vi ikke garanterer en vundet opgave. Reglen og alle
           tal bor i lib/vaerdiAnker.js — læs noten dér før du ændrer en sætning.
           Der må ALDRIG stå "Birdly giver X× igen" eller "du tjener pengene hjem". */}
-      {trin === 7 && (
+      {trin === 8 && (
         <div className="st-kort">
           <h1>{anker.loebende ? "Hvad er én fast aftale værd?" : "Hvad er én opgave værd?"}</h1>
 
@@ -1648,14 +1795,14 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
             </p>
           </div>
 
-          <button className="btn btn-teal st-bred" onClick={() => { setTrin(8); window.scrollTo({ top: 0, behavior: "smooth" }); }}>
+          <button className="btn btn-teal st-bred" onClick={() => { setTrin(9); window.scrollTo({ top: 0, behavior: "smooth" }); }}>
             Vælg plan →
           </button>
-          <button className="st-tilbage" onClick={() => setTrin(6)}>← Tilbage</button>
+          <button className="st-tilbage" onClick={() => setTrin(7)}>← Tilbage</button>
         </div>
       )}
 
-      {/* ═══════════════ SKÆRM 8 — PLAN, KONTAKT OG SAMTYKKER ═══════════════
+      {/* ═══════════════ SKÆRM 9 — PLAN, KONTAKT OG SAMTYKKER ═══════════════
           ⚠️ HER LIGGER SIGNUP-KALDET, OG RÆKKEFØLGEN ER URØRLIG:
           submitSignup → createSubscriptionSession → kortvindue. Knappen kalder
           det EKSISTERENDE tilBetaling(), som har alle værn: dublet-CVR/telefon,
@@ -1664,7 +1811,7 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
           ⚠️ SAMTYKKERNE ER PÅKRÆVEDE HER. Trin 4 opretter kunden med
           terms_accepted: true — fjernes krydset her, registrerer vi en accept
           hun ikke har givet. */}
-      {trin === 8 && (
+      {trin === 9 && (
         <div className="st-kort">
           <h1>Lad Birdly holde øje for jer.</h1>
 
@@ -1742,11 +1889,11 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
             {arbejder ? "Et øjeblik…" : "Start min overvågning →"}
           </button>
           <p className="st-under-knap">0 kr. trækkes i dag · {TRIAL_DAYS} dage gratis · opsig gratis inden</p>
-          <button className="st-tilbage" onClick={() => setTrin(7)}>← Tilbage</button>
+          <button className="st-tilbage" onClick={() => setTrin(8)}>← Tilbage</button>
         </div>
       )}
 
-      {trin === 9 && kortloes && (
+      {trin === 10 && kortloes && (
         <div className="st-kort st-kvit">
           <div className="st-ic">✓</div>
           <h1>Velkommen til Birdly!</h1>
@@ -1765,7 +1912,7 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
         </div>
       )}
 
-      {trin === 9 && !kortloes && (
+      {trin === 10 && !kortloes && (
         /* ══════════════════════════════════════════════════════════════════════
            CHECKOUT I TO KOLONNER (03-09-2026). Venstre = handlingen, højre =
            konteksten. På mobil stables de, og de to lange infobokse foldes
@@ -1929,8 +2076,8 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
                   </p>
                 )}
                 {/* ⚠️ FORTRYDELSESRET OG REFUSION STÅR I HVER SIT DOKUMENT — refusion i
-                    abonnementsbetingelserne §4.4, fortrydelsesretten i handelsbetingelserne
-                    §1.3. Derfor links til BEGGE. "Ingen fortrydelsesret" står positivt: det
+                    abonnementsbetingelserne 4.4, fortrydelsesretten i handelsbetingelserne
+                    1.3. Derfor links til BEGGE. "Ingen fortrydelsesret" står positivt: det
                     er ikke en mangel, men et faktum om aftaletypen (B2B). */}
                 <p className="ck-fin">
                   Birdly sælges udelukkende til erhvervsdrivende. Da der er tale om et erhvervskøb,
@@ -1948,7 +2095,7 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
                 står på forsiden og i FAQ'en, og stod også i det gamle trin 5. */}
             {/* ⚠️ GARANTIEN HAR BETINGELSER, OG DE SKAL VÆRE ÉT KLIK VÆK.
                 Løftet stod før helt ubetinget her, mens handelsbetingelserne
-                §3.3-3.6 sætter rammer: 60 dage, dine egne kriterier, og ikke ved
+                3.3-3.6 sætter rammer: 60 dage, dine egne kriterier, og ikke ved
                 et snævert beløbsfilter eller en meget nichepræget virksomhed.
                 Et ubetinget markedsføringsløfte side om side med en betinget
                 aftaletekst er ikke bare uryddeligt — det er noget kunden kan
@@ -1965,7 +2112,7 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
 
             {/* ⚠️ GARANTIEN LÆSES NU FRA lib/salgTekst.js. Teksten er ORDRET den
                 samme som før — det var netop DENNE formulering (60 dage + "inden
-                for de kriterier du selv vælger" + link til §3.3) der blev valgt
+                for de kriterier du selv vælger" + link til 3.3) der blev valgt
                 som husets ene rigtige, og resten af sitet er rettet ind efter
                 den. At den nu kommer fra en konstant betyder at en fremtidig
                 ændring rammer alle steder på én gang, i stedet for at efterlade

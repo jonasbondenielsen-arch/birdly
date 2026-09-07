@@ -6,6 +6,7 @@ import VaerdiKort from "./VaerdiKort";
 import { Flueben } from "./Ikoner";
 import { priceText } from "../../lib/pakke";
 import { byggAnker } from "../../lib/vaerdiAnker";
+import { VIND_EN } from "../../lib/salgTekst";
 import { useFag } from "./FagKontekst";
 import { sporFunnel } from "../../lib/ctaSporing";
 
@@ -91,11 +92,18 @@ export function Vaerdi({ funnelHref, fag = null, valgt = null }) {
       <div className="sg-wrap">
         <div className="sg-midt">
           <span className="sg-kick">Regnestykket</span>
+          {/* ⚠️ OVERSKRIFTEN SÆLGER POINTEN, IKKE SPØRGSMÅLET. "Hvad er én fast
+              kunde værd?" er en overskrift man skal svare på selv; den her
+              siger konklusionen først og lader kortene nedenunder vise
+              regnestykket. Fremhævningen ligger på "vinde én". */}
           <h2 className="sg-big">
-            {a.loebende ? "Hvad er én fast kunde værd?" : "Hvad er én opgave værd?"}
+            {VIND_EN.over}
+            <span className="sg-big-em">{VIND_EN.underDel1}<b>{VIND_EN.underDel2}</b></span>
           </h2>
           <p className="sg-lead">
-            Birdly koster {priceText.yearlyBare} ekskl. moms for et helt år.
+            {a.loebende
+              ? <>En enkelt god rengøringsaftale kan være mange gange mere værd end et helt års Birdly.</>
+              : <>En enkelt god opgave kan være mange gange mere værd end et helt års Birdly.</>}
           </p>
         </div>
 
@@ -113,6 +121,40 @@ export function Vaerdi({ funnelHref, fag = null, valgt = null }) {
             Begge er obligatoriske. */}
         {a.kilde && <p className="sg-forbehold">{a.kilde}</p>}
         <p className="sg-forbehold">{a.forbehold}</p>
+
+        {/* ══════════════════════════════════════════════════════════════════
+            DET STØRRE ANKER — offentlige opgaver.
+
+            ⚠️ INGEN OPDIGTET UDBUDSSUM. Der står "kan være flere hundredetusinde
+            kroner" — ikke et konkret beløb, og ikke et eksempel-udbud vi har
+            fundet på. Beholdningen svinger, og vi har ingen dokumentation for et
+            typisk niveau. Skal der en dag stå et tal her, skal det komme fra en
+            RIGTIG opgave i basen med oplyst værdi og være mærket som sådan.
+
+            ⚠️ KUN PÅ LØBENDE FAG. Projektfagene har allerede deres eget anker i
+            kortet ovenfor, og to beløbsargumenter i træk ville udvande begge.
+            ══════════════════════════════════════════════════════════════════ */}
+        {a.loebende && (
+          <div className="sg-stort-anker">
+            <span className="sg-kick">Og det kan være langt større</span>
+            <h3>Offentlige rengøringsopgaver kan være flere hundredetusinde kroner værd.</h3>
+            <p>
+              Det kan være rengøring for kommuner, institutioner, boligorganisationer og
+              andre offentlige kunder.
+            </p>
+            <div className="sg-stort-anker-pris">
+              <span>Birdly et helt år</span>
+              <b>{priceText.yearlyBare}</b>
+            </div>
+            {/* ⚠️ EN VARIATION, IKKE SAMME SÆTNING IGEN. "I skal bare vinde én"
+                står allerede to gange på siden — tidligt i "Det er rigtige
+                opgaver" og som overskrift her i regnestykket. Tre gange gør den
+                til en talemåde i stedet for et argument. Samme pointe, andre ord. */}
+            <p className="sg-stort-anker-slut">
+              Én god opgave kan betale et helt års Birdly mange gange hjem.
+            </p>
+          </div>
+        )}
 
         <div className="sg-cta-row" style={{ justifyContent: "center" }}>
           <Cta href={funnelHref} placering="vaerdi" />
