@@ -27,9 +27,16 @@ export default function Footer() {
       <div className="finner">
         {/* Øverst: alle links i én centreret, wrappende række */}
         <nav className="flinks">
-          <a href="/#hvorfor">Hvorfor Birdly</a>
-          <a href="/#hvordan">Hvordan virker det</a>
-          <a href="/#priser">Priser</a>
+          {/* ⚠️ RIGTIGE RUTER, IKKE ANKRE (06-09-2026). Punkterne pegede på
+              /#hvorfor, /#hvordan og /#priser — altså tilbage til forsiden og ned
+              til et afsnit. Fra en underside var det to hop for at nå noget der
+              nu har sin egen adresse, og fra en telefon landede man et vilkårligt
+              sted på en meget lang side.
+              "FAQ" og "Om os" bliver ved med at være ankre: de findes KUN som
+              afsnit på roden og har ingen egen rute at pege på. */}
+          <Link href="/hvorfor-birdly">Hvorfor Birdly</Link>
+          <Link href="/sadan-virker-det">Sådan virker det</Link>
+          <Link href="/priser">Priser</Link>
           <a href="/#faq">FAQ</a>
           <a href="/#om">Om os</a>
           <Link href="/brancher">For dit fag</Link>

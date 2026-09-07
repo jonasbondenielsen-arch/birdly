@@ -1,0 +1,229 @@
+/* ============================================================================
+   VÆRDI-ANKERET — ÉN kilde til de to sammenligningskort.
+
+   ⚠️ HVORFOR DEN HER FIL FINDES. Kortene fandtes i TO implementeringer:
+   `.sg-vaerdi-*` i forsidens salg.css og `.st-anker-*` i funnelens start.css.
+   To sæt regler for det samme kort betyder at de driver fra hinanden — og det
+   gjorde de: boksene stod ikke justeret ens på forsiden og i funnelen, fordi
+   den ene havde `justify-content: center` og den anden ikke, og fordi
+   badge-offset og padding var skrevet to gange med hver sin værdi.
+
+   Filen importeres af selve komponenten (components/salg/VaerdiKort.js), så
+   den følger med uanset hvilken side kortene bruges på. Der findes ikke længere
+   et sted hvor man KAN style dem forskelligt.
+
+   ⚠️ INGEN NYE FARVER. Alt er tokens fra globals.css:
+   --navy · --navy-soft · --sky · --sky-soft · --sky-200 · --teal · --line.
+   ============================================================================ */
+
+/* ---------------------------------------------------------------- rammen
+   ⚠️ `stretch` ER SELVE JUSTERINGEN. Uden den får hvert kort sin egen højde
+   efter sit eget indhold, og så står de store tal i forskellig højde. Med den
+   er kortene lige høje, og "mod" kan centreres mellem dem. */
+.va {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: stretch;
+  gap: calc(22px * var(--sp));
+  margin-top: calc(34px * var(--sp));
+}
+
+/* "mod" — lodret centreret mellem de to kort. */
+.va-mod {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 800;
+  font-size: 15px;
+  color: var(--navy-soft);
+}
+
+/* ---------------------------------------------------------------- kortet
+   ⚠️ `flex-start`, IKKE `center`. Med `center` centrerer hvert kort sit eget
+   indhold uafhængigt af naboen, og da Birdly-kortet har flere linjer, begynder
+   venstre korts første linje lavere end højres. Badges kan være pixel-justeret
+   og indholdet under dem stadig skride — og det er indholdet man ser.
+
+   ⚠️ `padding-top` SKAL VÆRE ENS I BEGGE og give plads til badget, som ligger
+   uden for kortet. Én værdi, ét sted. */
+.va-kort {
+  position: relative;
+  /* ⚠️ EKSPLICIT. Badget ligger 13px OVER kortets overkant, og et `overflow`
+     arvet eller tilføjet senere ville skære toppen af pillen. Det står her, så
+     ingen kommer til at lukke kortet med en baggrund eller gradient der
+     klipper. Ligger der en dag en gradient på kortet, skal den lægges på et
+     INDRE lag — ikke på denne wrapper. */
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  text-align: center;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  padding: 30px 24px 26px;
+  box-shadow: var(--shadow);
+}
+
+/* Birdly-siden: navy, så prisen står i kontrast til eksemplet. */
+.va-kort--birdly {
+  background: var(--navy);
+  border-color: var(--navy);
+}
+
+/* ---------------------------------------------------------------- badget
+   ⚠️ ÉN REGEL, TO FARVER. `top`, `height`, `line-height`, `padding`,
+   `border-radius`, `font-size` og `box-sizing` er FÆLLES — kun baggrund, kant
+   og tekstfarve må afvige. Bliver de skrevet to steder, ender de to badges i
+   hver sin højde, og det er præcis den fejl der har været rettet to gange før.
+
+   ⚠️ HOLD BEGGE BADGE-TEKSTER KORTE. Et 320px badge ved siden af et 90px badge
+   læses som skævt, uanset hvor præcist de er placeret. Derfor "Eksempel" og
+   "Birdly" — ikke hele labelen. Navnet står som kortets første linje. */
+.va-badge {
+  position: absolute;
+  top: -13px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  box-sizing: border-box;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 13px;
+  border-radius: 999px;
+  white-space: nowrap;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  background: var(--sky-soft);
+  border: 1px solid var(--sky-200);
+  color: var(--navy);
+}
+/* ⚠️ OPAK BAGGRUND — OG DET ER SELVE FEJLRETTELSEN (07-09-2026).
+   Badget havde `rgba(255,255,255,.16)`, altså 16 % hvid. Pillen STRADDLER
+   kortkanten: den nederste halvdel ligger på det navy kort, den øverste på
+   sektionens lyse baggrund. 16 % hvid over lysegrå er praktisk talt usynlig, og
+   derfor så badget klippet ud — det var det ikke, det var gennemsigtigt.
+
+   Der er ingen `overflow: hidden` nogen steder i kæden; clipping var aldrig
+   årsagen, og en overflow-rettelse ville ikke have ændret noget.
+
+   Løsningen er en OPAK baggrund, så hele pillen er synlig uanset hvad der ligger
+   bag den. Navy + teal kant: samme tokens som resten af huset, og kanten binder
+   badget til Birdly-kortet uden at gøre det til sidens kraftigste element.
+
+   ⚠️ BRUG ALDRIG EN GENNEMSIGTIG BAGGRUND HER IGEN. Et badge der ligger halvt
+   uden for sit kort, kan ikke være halvgennemsigtigt — så vil halvdelen af det
+   altid forsvinde ind i det der tilfældigvis ligger bagved. */
+.va-badge--lys {
+  background: var(--navy);
+  border-color: var(--teal);
+  color: #fff;
+}
+
+/* ---------------------------------------------------------------- indhold */
+.va-navn {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--navy-soft);
+  margin-bottom: 6px;
+}
+.va-kort--birdly .va-navn { color: var(--sky-200); }
+
+.va-scenarie { list-style: none; margin: 0 0 14px; display: grid; gap: 2px; }
+.va-scenarie li { font-size: 13.5px; line-height: 1.45; color: var(--navy-soft); }
+
+/* Hovedtallet. clamp, så det samme kort virker i funnelens smalle spalte og i
+   forsidens brede grid uden to sæt regler. */
+.va-tal {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: clamp(calc(26px * var(--sk)), 3.4vw, calc(46px * var(--sk)));
+  font-weight: 800;
+  color: var(--teal);
+  letter-spacing: -.03em;
+  line-height: 1.08;
+}
+.va-kort--birdly .va-tal { color: #fff; }
+
+/* Lighedstegnet er en overgang, ikke et budskab. */
+.va-lig { font-size: 15px; font-weight: 600; color: var(--navy-soft); margin: 10px 0 4px; }
+.va-aar { font-size: 17px; font-weight: 700; color: var(--navy); }
+.va-kort--birdly .va-aar { color: #fff; }
+.va-md {
+  margin-top: 6px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--sky-200);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+/* ------------------------------------------------------- sammenligningen
+   ⚠️ TRE LINJER, IKKE ÉN SÆTNING. Tallet bærer sin egen linje mellem en optakt
+   og en efterskrift, så man ser "ca. 24×" før man læser noget.
+   ⚠️ MÅ IKKE VÆRE STØRRE END PRISEN. 4.990 kr. er kortets hovedtal; bliver
+   forholdstallet lige så stort, konkurrerer de om det samme blik.
+   ⚠️ `margin-top: auto` skubber blokken til bunden, så skillelinjen står samme
+   sted uanset hvor mange linjer der er over den. */
+.va-sml {
+  margin-top: auto;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, .16);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.va-sml-over { font-size: 13.5px; line-height: 1.45; color: #a9c0d4; max-width: 34ch; }
+.va-sml-tal {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: clamp(calc(24px * var(--sk)), 2.6vw, calc(34px * var(--sk)));
+  font-weight: 800;
+  color: var(--sky);
+  letter-spacing: -.03em;
+  line-height: 1.1;
+  margin: 4px 0 2px;
+}
+.va-sml-under { font-size: 14.5px; font-weight: 700; color: #dce9f4; }
+
+/* ============================================================================
+   TÆT VARIANT — den ENESTE tilladte forskel mellem de to brugssteder.
+
+   Funnelens spalte er 520-720px bred mod forsidens 1180-1420px. Uden en lidt
+   mindre typografi brækker beløbene dér. ⚠️ DEN ÆNDRER KUN SKRIFTSTØRRELSER —
+   aldrig padding, badge-offset, justering eller rækkefølge. Alt det der kan få
+   de to kort til at stå forskelligt, er fælles.
+   ============================================================================ */
+.va--taet { gap: 14px; margin-top: 22px; }
+.va--taet .va-kort { padding: 26px 16px 20px; }
+.va--taet .va-tal { font-size: clamp(calc(22px * var(--sk)), 5.4vw, calc(30px * var(--sk))); }
+.va--taet .va-navn { font-size: 13px; }
+.va--taet .va-scenarie li { font-size: 12.5px; }
+.va--taet .va-aar { font-size: 15px; }
+.va--taet .va-md { font-size: 13.5px; }
+.va--taet .va-badge { height: 24px; font-size: 10px; padding: 0 11px; top: -12px; }
+.va--taet .va-sml { padding-top: 16px; }
+.va--taet .va-sml-tal { font-size: clamp(calc(22px * var(--sk)), 5vw, calc(28px * var(--sk))); }
+.va--taet .va-sml-over { font-size: 12.5px; }
+.va--taet .va-sml-under { font-size: 13.5px; }
+.va--taet .va-mod { font-size: 13px; }
+
+/* ---------------------------------------------------------------- mobil
+   Kortene stables: eksemplet først, Birdly under. "mod" bliver stående som
+   skillelinje mellem dem — den forklarer hvad man kigger på. */
+@media (max-width: 700px) {
+  .va { grid-template-columns: 1fr; gap: 12px; }
+  .va-mod { padding: 2px 0; }
+  .va-kort { padding: 26px 18px 22px; }
+  .va-tal { font-size: clamp(26px, 8vw, 34px); }
+  .va-badge { height: 24px; font-size: 10px; padding: 0 11px; top: -12px; }
+  .va-sml { padding-top: 16px; }
+  .va-sml-tal { font-size: 26px; }
+  .va-sml-over { font-size: 13px; }
+}

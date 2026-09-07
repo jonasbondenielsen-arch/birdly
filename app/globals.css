@@ -15,6 +15,111 @@ html{scroll-behavior:smooth}
   --shadow:0 1px 2px rgba(13,27,42,.04), 0 14px 34px rgba(13,27,42,.08);
   --shadow-lg:0 30px 70px rgba(13,27,42,.16);
   --r:18px;
+
+  /* ══════════════════════════════════════════════════════════════════════
+     SKALA — TRE KNAPPER FOR HELE SITETS DESKTOP-STØRRELSE.
+
+     ⚠️ HVORFOR DE FINDES. Typografien var skrevet som ~40 løsrevne px-værdier
+     spredt over salg.css, start.css, forside.css og vaerdikort.css, plus to
+     medieblokke (≥1500px og ≥1800px) der gjorde det HELE større igen. På en
+     1440-1920px skærm fyldte heroen næsten hele viewporten, og man skulle
+     scrolle før man havde set noget. Der var intet sted man kunne skrue.
+
+     Nu er der tre:
+       --sk    overskrifter og de store tal
+       --sk-t  brødtekst (lead, mellemstore linjer)
+       --sp    lodret luft (sektionspadding, de største gaps)
+
+     ⚠️ DE ER 1 PÅ MOBIL OG TABLET — OG DET ER SELVE SIKKERHEDEN.
+     Faktorerne skifter først ved ≥1025px. Under den bredde er hver eneste
+     regel matematisk identisk med før: calc(46px * 1) ER 46px. Mobil (390px)
+     og tablet (768px) kan altså ikke ændre sig ved et uheld, uanset hvor
+     mange steder tokenet bliver brugt. Skal noget skrues, skrues det HER —
+     ikke i det enkelte element.
+
+     ⚠️ TYPOGRAFIEN ER SKREVET SOM clamp(gulv, vw, loft), OG FAKTOREN GANGES
+     PÅ BEGGE ENDER. Det var den ikke i første omgang — da kun loftet blev
+     ganget, endte 20 af 37 regler med et loft der var MINDRE end deres eget
+     gulv. clamp returnerer gulvet i den situation, så de regler frøs fast
+     midt i en nedskalering: H1 blev ved med at krympe mens de mellemstore
+     overskrifter stod stille. Det er præcis det hierarki-skred vi ville
+     undgå.
+
+     Med faktoren på begge ender flytter hele rampen sig samlet, forholdet
+     mellem gulv, vw-trin og loft er uændret, og en regel kan aldrig kollapse
+     uanset hvor langt ned --sk skrues.
+
+     ⚠️ OG GULVET ER STADIG URØRT PÅ MOBIL. Faktoren er 1 under 1025px, så
+     calc(30px * var(--sk)) ER 30px dér. Gulvet beskytter små skærme præcis
+     som før; det er kun på desktop — hvor et gulv skrevet til 390px alligevel
+     ikke beskytter noget — at det følger med ned.
+     ══════════════════════════════════════════════════════════════════════ */
+  --sk:1;
+  --sk-t:1;
+  --sp:1;
+  --sk-m:1;
+  --btn:1;
+  --tlf:1;
+}
+
+@media (min-width:1025px){
+  :root{
+    /* Overskrifter bærer mest af nedskaleringen, brødteksten kun en anelse.
+       Det er med vilje: hierarkiet skal blive, men afstanden mellem en H1 og
+       en brødtekstlinje var blevet så stor at overskriften alene fyldte en
+       skærm.
+
+       40 % på overskrifter, 16 % på brødtekst, 40 % på luften. Fire runder
+       den 07-09-2026: 14/6/16, 28/12/28 og 32/16/32 var alle for milde.
+       Brødteksten stopper ved 16 %, fordi den mindste af dem (17px) så
+       lander på 14,3px — under det er det ikke længere behageligt at læse
+       en salgsside, og det er ikke brødteksten der fylder folden.
+
+       ⚠️ TRE TOKENS MERE, OG DE ER IKKE TYPOGRAFI: --sk-m, --btn og --tlf.
+       De findes fordi tre ting IKKE fulgte med typografien ned og derfor
+       overtog som sidens største elementer. De er forklaret hver for sig
+       nedenfor.
+
+       ⚠️ SKRUER MAN VIDERE NED, KOLLAPSER NOGLE clamp(). Et loft der bliver
+       MINDRE end sit eget gulv får clamp til at returnere gulvet, og så
+       holder elementet op med at skalere med resten. Se listen af de syv
+       regler der allerede står på gulvet i dag — de er noteret i CSS'en dér
+       hvor de står, med `⚠️ PÅ GULVET`. */
+    --sk:.60;
+    --sk-t:.84;
+    --sp:.60;
+
+    /* ── --sk-m · FUNNELENS MELLEMOVERSKRIFTER ────────────────────────────
+       Hvorfor de ikke bare kan bruge --sk: funnelens type-rampe er allerede
+       trykket sammen. Forsidens H1 starter på 58px og dens brødtekst på
+       18,5 — der er luft at tage af. Funnelens kort-overskrifter starter på
+       25-27px og dens brødtekst på 15-16,5. Ganger man 25 med .60, får man
+       15px: nøjagtig samme størrelse som brødteksten under den, og så er
+       overskriften holdt op med at være en overskrift.
+
+       ⚠️ OG BRØDTEKSTEN KAN IKKE FØLGE MED NED. 15px * --sk-t (.84) = 12,6px
+       — under den 14px-grænse vi har sat for læsbarhed. Derfor bliver
+       funnelens brødtekst stående, og overskrifterne får deres egen, mildere
+       faktor, så afstanden mellem dem bevares. Resultat: kort-H2 20px mod
+       brødtekst 15-16,5px.
+       ────────────────────────────────────────────────────────────────────── */
+    --sk-m:.74;
+
+    /* ── --btn · CTA-KNAPPER ──────────────────────────────────────────────
+       Knapperne har deres egen størrelse og fulgte ikke med typografien ned;
+       de stod tilbage som sidens største element. 15 % mindre på desktop.
+       ⚠️ MOBIL RØRES IKKE: faktoren er 1 dér, så knappen bliver ved med at
+       være ~56px høj at ramme med en tommelfinger. Under ~44px er en knap
+       ikke længere til at trykke på, og det er en funnel-knap. */
+    --btn:.85;
+
+    /* ── --tlf · TELEFON-MOCKUPPEN ────────────────────────────────────────
+       Den satte hero-højden på forsiden efter at teksten var skrumpet —
+       heroen kunne ikke blive kortere, uanset hvor langt --sk blev skruet
+       ned, fordi illustrationen var det høje element. 26 % mindre på
+       desktop. Se .sg-telefon i salg.css. */
+    --tlf:.74;
+  }
 }
 body{font-family:'Inter',system-ui,sans-serif;color:var(--navy);line-height:1.6;-webkit-font-smoothing:antialiased}
 a{color:inherit;text-decoration:none}

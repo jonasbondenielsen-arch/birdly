@@ -1,43 +1,47 @@
-import NyForside from "../../components/NyForside";
+import Salgsside from "../../components/salg/Salgsside";
 import { hentOpgaveTal } from "../../lib/opgaveTal";
+import { medQuery } from "../../lib/funnelLink";
 
 // /kom-i-gang — SALGSSIDEN. Funnelens indgang og Meta-annoncernes landingsside.
 //
 //   annonce / husets CTA / de 36 /fag/-sider  →  DENNE side  →  /start  →  betaling
 //
-// ⚠️ ADRESSEN SKAL VÆRE STABIL. Den kommer til at stå i annoncer, og en annonce
-// der peger på en død URL er spildte penge. Derfor ikke /ny: det navn betød
-// "den nye" mens den kørte forsøgsvis ved siden af forsiden, og om et år ville
-// ingen kunne se hvad det var. /kom-i-gang siger hvad siden gør — og matcher det
-// sprog knapperne bruger.
+// ⚠️ ADRESSEN SKAL VÆRE STABIL. Den står i annoncer, og en annonce der peger på
+// en død URL er spildte penge. /tilmeld og /ny omdirigerer permanent hertil.
 //
 // ⚠️ NOINDEX — OG DET ER EN BESLUTNING, IKKE EN FORGLEMMELSE.
-// Siden sælger det SAMME til den SAMME søgende som forsiden, og dens fire
-// FAQ-svar er ordret de samme strenge som fire af rodens tolv. Var begge
+// Siden sælger det SAMME til den SAMME søgende som roden. Var begge
 // indekserbare, ville vi selv sætte dem op mod hinanden på de søgeord roden
-// lever af — og en anden title ville kun sløre det, ikke løse det.
+// lever af. Den skal ikke rangere; den skal konvertere betalt trafik.
 //
-// Den skal ikke rangere. Den skal konvertere betalt trafik. Annoncer har ingen
-// glæde af et indeks.
-//
-// Vil vi senere have organisk trafik direkte på funnelen, kræver det at siden
-// får sit EGET indhold og sit eget søgeord — ikke bare at flaget vendes.
+// ⚠️ SAMME COPY SOM RODEN, ÉN KILDE. Sektionerne kommer fra
+// components/salg/Sektioner.js, som forsiden også bruger. Forskellen mellem de
+// to sider er hvad der ligger UNDER dem: roden har hele SEO-laget (de tolv
+// FAQ-svar, forklaringssektionerne, FAQPage-schemaet), denne har ingenting.
+// Skrev vi to sæt tekst, ville en besøgende fra Google og en fra Facebook få
+// hvert sit løfte om det samme produkt.
 export const metadata = {
   title: "Kom i gang med Birdly",
   description:
-    // ⚠️ SIDEN ER noindex (se robots nedenfor), saa teksten paavirker ikke Google.
-    // Den er rettet for konsistens: Birdly leverer baade offentlige og private
-    // opgaver, og en beskrivelse der kun naevner den ene bliver forkert i det
-    // oejeblik nogen kopierer den videre til en side der ER indekserbar.
     "Fortæl os hvad I laver, og hvor. Så holder vi øje med de offentlige og private opgaver, der passer til jer, og sender besked på SMS.",
   robots: { index: false, follow: true },
 };
 
-// ?fag= / ?region= sættes af de 36 /fag/-siders CTA og føres videre til /start.
-// Salgssiden validerer dem ikke — det gør /start mod kataloget, så der kun findes
-// ÉT sted hvor de bliver troet på.
+// ?fag= / ?region= sættes af de 36 /fag/-siders CTA. ?utm_* / ?fbclid / ?angle
+// kommer fra annoncerne.
+//
+// ⚠️ ALT DET FØRES VIDERE TIL /start — se lib/funnelLink.js. Forvalget skal
+// overleve hele kæden, ellers taber en besøgende fra "Entreprenøropgaver i
+// Nordjylland" sit fag ét skridt før mål. Salgssiden validerer ikke værdierne;
+// det gør /start mod kataloget, så der kun findes ÉT sted hvor de bliver troet på.
+//
+// ⚠️ UTM'erne fanges OGSÅ af lib/attribution.js ved landing (sessionStorage), så
+// målingen overlever selv hvis nogen deler et nøgent link videre. Begge veje er
+// med vilje: sessionStorage kan fejle i privat browsing, og en adresselinje man
+// kan se er lettere at fejlsøge.
 export default async function Page({ searchParams }) {
-  const { fag = null, region = null } = (await searchParams) || {};
+  const sp = (await searchParams) || {};
+  const raaFag = Array.isArray(sp.fag) ? sp.fag[0] : sp.fag;
   const tal = await hentOpgaveTal();
-  return <NyForside tal={tal} fag={fag} region={region} />;
+  return <Salgsside tal={tal} funnelHref={medQuery("/start", sp)} fag={raaFag || null} />;
 }
