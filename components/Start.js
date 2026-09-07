@@ -1236,22 +1236,44 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
                   ⚠️ MANGLER ET FELT, VISES DET IKKE. Er hele svaret null, står
                   blokken der slet ikke — samme regel som forsiden. */}
               {(bevisAabne != null || bevisNye != null || bevisBydbare != null) && (
+                /* ⚠️ ET KORT, IKKE EN TEKSTSTRIBE. Tallene stod som løs tekst med
+                   en streg over og lignede noget der var kastet ind ved siden af
+                   CVR-kortet. Nu er de et stat-kort i samme formsprog som resten
+                   af siden — samme radius, samme kant, samme padding.
+                   Præsentationen er det eneste der er ændret: felterne, kilden og
+                   værdierne er de samme. */
                 <div className="st-pre-bevis">
-                  <span className="st-pre-kick">Birdly holder allerede øje</span>
-                  {bevisAabne != null && (
-                    <p className="st-pre-tal">
-                      <b>{daTal(bevisAabne)}</b> åbne opgaver lige nu
-                    </p>
-                  )}
-                  <ul className="st-pulje-liste">
+                  <span className="st-pre-kick">
+                    <span className="st-prik" aria-hidden="true" /> Birdly holder allerede øje
+                  </span>
+
+                  {/* Hvert nøgletal som stort tal + lille label. ⚠️ Hver flise
+                      renderes kun hvis feltet FINDES — samme regel som forsidens
+                      bevis-bjælke: hellere et hul i grid'et end et gættet tal. */}
+                  <div className="st-stats">
+                    {bevisAabne != null && (
+                      <div className="st-stat">
+                        <b>{daTal(bevisAabne)}</b>
+                        <span>åbne opgaver lige nu</span>
+                      </div>
+                    )}
                     {bevisNye != null && (
-                      <li><b>{daTal(bevisNye)}</b> nye de seneste 7 dage</li>
+                      <div className="st-stat">
+                        <b>{daTal(bevisNye)}</b>
+                        <span>nye de seneste 7 dage</span>
+                      </div>
                     )}
                     {bevisBydbare != null && (
-                      <li><b>{daTal(bevisBydbare)}</b> opgaver i alt</li>
+                      <div className="st-stat">
+                        <b>{daTal(bevisBydbare)}</b>
+                        <span>opgaver i alt</span>
+                      </div>
                     )}
-                    <li>Opdateres <b>2×</b> dagligt</li>
-                  </ul>
+                    <div className="st-stat">
+                      <b>2×</b>
+                      <span>opdateres dagligt</span>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>

@@ -711,7 +711,65 @@ select.st-felt{appearance:none;background-image:url("data:image/svg+xml;utf8,<sv
 /* Højre kolonne. Kortet må ikke blive for bredt — et CVR-felt på 500px læses
    ikke bedre end et på 340. */
 .st-pre-hoejre{position:sticky;top:20px}
-.st-pre-bevis{margin-top:18px;padding-top:18px;border-top:1px solid var(--line)}
+/* ============================================================================
+   BEVIS-KORTET PÅ FUNNELENS FØRSTE VIEWPORT
+
+   ⚠️ ET KORT, IKKE EN TEKSTSTRIBE. Tallene stod som løs tekst under en streg og
+   lignede noget der var kastet ind ved siden af CVR-kortet. Nu har de samme
+   formsprog som resten af siden: samme radius (--r), samme kantfarve, samme
+   skygge-familie — så de to kolonner ser designet ud i stedet for skæve.
+
+   ⚠️ INGEN NYE FARVER. Den bløde baggrund er den samme sky→teal-gradient som
+   forsidens bevis-bjælke bruger, bare i lav alpha. Alt er tokens fra
+   globals.css.
+
+   ⚠️ KUN PRÆSENTATION. Felterne, kilden (get-opgave-tal) og værdierne er
+   uændrede.
+   ============================================================================ */
+.st-pre-bevis{
+  margin-top:16px;
+  background:linear-gradient(160deg,var(--sky-soft) 0%,#fbfdff 52%,rgba(0,179,166,.08) 100%);
+  border:1px solid var(--sky-200);
+  border-radius:var(--r);
+  padding:20px 20px 18px;
+  box-shadow:0 1px 2px rgba(13,27,42,.03),0 8px 22px rgba(13,27,42,.05)
+}
+
+/* Live-dioden. Samme blide puls som forsidens bevis-bjælke — en indikator, ikke
+   en alarm. Egen keyframe, fordi salg.css ikke indlæses på /start. */
+.st-prik{
+  display:inline-block;width:8px;height:8px;border-radius:50%;
+  background:var(--teal);flex:0 0 8px;margin-right:7px;vertical-align:1px;
+  animation:stPreDiode 2.4s ease-in-out infinite
+}
+@keyframes stPreDiode{
+  0%,100%{box-shadow:0 0 0 0 rgba(0,179,166,.45);transform:scale(1)}
+  50%{box-shadow:0 0 0 5px rgba(0,179,166,0);transform:scale(1.12)}
+}
+@media(prefers-reduced-motion:reduce){
+  .st-prik{animation:none;box-shadow:0 0 0 3px rgba(0,179,166,.16)}
+}
+
+/* ⚠️ 2×2, IKKE EN RÆKKE. Højre kolonne er ~380px bred; fire tal på én linje
+   ville presse tallene ned i en størrelse hvor de holder op med at være bevis.
+   Fliserne har ens højde, så kortet står roligt uanset hvor lange labelsene er. */
+.st-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.st-stat{
+  background:rgba(255,255,255,.82);
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:14px 12px;
+  text-align:center;
+  display:flex;flex-direction:column;justify-content:center
+}
+.st-stat b{
+  display:block;font-family:'Plus Jakarta Sans',sans-serif;
+  font-size:clamp(22px,2.4vw,28px);font-weight:800;
+  color:var(--teal);letter-spacing:-.03em;line-height:1.1
+}
+.st-stat span{
+  display:block;margin-top:5px;font-size:12.5px;line-height:1.4;color:var(--navy-soft)
+}
 
 /* ============================================================================
    MOBIL — rækkefølgen er hele pointen.
@@ -725,6 +783,13 @@ select.st-felt{appearance:none;background-image:url("data:image/svg+xml;utf8,<sv
   .st-pre-hoejre{position:static}
 }
 @media(max-width:560px){
+  /* To fliser ved siden af hinanden holder også på 390px: kortet er da ~354px
+     bredt, altså ~165px pr. flise. Tallet er stadig læsbart, og et 1-kolonne
+     grid ville gøre kortet dobbelt så højt uden at vinde noget. */
+  .st-pre-bevis{padding:17px 15px 15px}
+  .st-stats{gap:8px}
+  .st-stat{padding:12px 8px}
+  .st-stat span{font-size:11.5px}
   .st-pre-venstre h1{font-size:26px}
   .st-pre-sub{font-size:15.5px}
   .st-pre-sms{font-size:16px}
@@ -737,9 +802,8 @@ select.st-felt{appearance:none;background-image:url("data:image/svg+xml;utf8,<sv
    ⚠️ SAMME DATA SOM FORSIDENS BEVIS-BJÆLKE (get-opgave-tal). De store tal er
    totaler, det lille er kundens fag — derfor står de i samme sætning med
    "heraf matcher", så totalen ikke kan læses som hendes eget tal. */
-/* ⚠️ .st-pulje LÅ HER OG ER FJERNET. Den viste totalerne PÅ scan-resultatet;
-   de hører til FØR CVR, hvor vi endnu ikke kender kunden. Efter CVR skal tallet
-   være hendes eget — se .st-pulje-liste nedenfor, som bærer totalerne på skærm 1. */
-.st-pulje-liste{list-style:none;display:grid;gap:5px;margin-top:8px}
-.st-pulje-liste li{font-size:13.5px;line-height:1.5;color:var(--navy-soft)}
-.st-pulje-liste b{font-weight:800;color:var(--navy)}
+/* ⚠️ .st-pulje OG .st-pulje-liste LÅ HER OG ER BEGGE FJERNET.
+   .st-pulje viste totalerne PÅ scan-resultatet; de hører til FØR CVR, hvor vi
+   endnu ikke kender kunden. .st-pulje-liste bar dem derefter som løs tekst i
+   højre kolonne — de bor nu i et rigtigt stat-kort, se .st-pre-bevis og
+   .st-stats ovenfor. Byg dem ikke op igen her. */
