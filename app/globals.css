@@ -15,6 +15,48 @@ html{scroll-behavior:smooth}
   --shadow:0 1px 2px rgba(13,27,42,.04), 0 14px 34px rgba(13,27,42,.08);
   --shadow-lg:0 30px 70px rgba(13,27,42,.16);
   --r:18px;
+
+  /* ══════════════════════════════════════════════════════════════════════
+     SKALA — TRE KNAPPER FOR HELE SITETS DESKTOP-STØRRELSE.
+
+     ⚠️ HVORFOR DE FINDES. Typografien var skrevet som ~40 løsrevne px-værdier
+     spredt over salg.css, start.css, forside.css og vaerdikort.css, plus to
+     medieblokke (≥1500px og ≥1800px) der gjorde det HELE større igen. På en
+     1440-1920px skærm fyldte heroen næsten hele viewporten, og man skulle
+     scrolle før man havde set noget. Der var intet sted man kunne skrue.
+
+     Nu er der tre:
+       --sk    overskrifter og de store tal
+       --sk-t  brødtekst (lead, mellemstore linjer)
+       --sp    lodret luft (sektionspadding, de største gaps)
+
+     ⚠️ DE ER 1 PÅ MOBIL OG TABLET — OG DET ER SELVE SIKKERHEDEN.
+     Faktorerne skifter først ved ≥1025px. Under den bredde er hver eneste
+     regel matematisk identisk med før: calc(46px * 1) ER 46px. Mobil (390px)
+     og tablet (768px) kan altså ikke ændre sig ved et uheld, uanset hvor
+     mange steder tokenet bliver brugt. Skal noget skrues, skrues det HER —
+     ikke i det enkelte element.
+
+     ⚠️ TYPOGRAFIEN ER SKREVET SOM clamp(gulv, vw, loft). Faktoren ganges KUN
+     på loftet. Gulvet er det mobile minimum og skal blive stående som det er;
+     ganger man det, bliver små skærme sværere at læse, og det er ikke det her
+     handler om.
+     ══════════════════════════════════════════════════════════════════════ */
+  --sk:1;
+  --sk-t:1;
+  --sp:1;
+}
+
+@media (min-width:1025px){
+  :root{
+    /* Overskrifter bærer mest af nedskaleringen, brødteksten kun en anelse.
+       Det er med vilje: hierarkiet skal blive, men afstanden mellem en H1 og
+       en brødtekstlinje var blevet så stor at overskriften alene fyldte en
+       skærm. 14 % på overskrifter, 6 % på brødtekst, 16 % på luften. */
+    --sk:.86;
+    --sk-t:.94;
+    --sp:.84;
+  }
 }
 body{font-family:'Inter',system-ui,sans-serif;color:var(--navy);line-height:1.6;-webkit-font-smoothing:antialiased}
 a{color:inherit;text-decoration:none}

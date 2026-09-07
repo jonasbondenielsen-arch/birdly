@@ -24,8 +24,8 @@
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: stretch;
-  gap: 22px;
-  margin-top: 34px;
+  gap: calc(22px * var(--sp));
+  margin-top: calc(34px * var(--sp));
 }
 
 /* "mod" — lodret centreret mellem de to kort. */
@@ -144,7 +144,7 @@
    forsidens brede grid uden to sæt regler. */
 .va-tal {
   font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: clamp(26px, 3.4vw, 46px);
+  font-size: clamp(26px, 3.4vw, calc(46px * var(--sk)));
   font-weight: 800;
   color: var(--teal);
   letter-spacing: -.03em;
@@ -183,7 +183,7 @@
 .va-sml-over { font-size: 13.5px; line-height: 1.45; color: #a9c0d4; max-width: 34ch; }
 .va-sml-tal {
   font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: clamp(24px, 2.6vw, 34px);
+  font-size: clamp(24px, 2.6vw, calc(34px * var(--sk)));
   font-weight: 800;
   color: var(--sky);
   letter-spacing: -.03em;
@@ -202,14 +202,14 @@
    ============================================================================ */
 .va--taet { gap: 14px; margin-top: 22px; }
 .va--taet .va-kort { padding: 26px 16px 20px; }
-.va--taet .va-tal { font-size: clamp(22px, 5.4vw, 30px); }
+.va--taet .va-tal { font-size: clamp(22px, 5.4vw, calc(30px * var(--sk))); }
 .va--taet .va-navn { font-size: 13px; }
 .va--taet .va-scenarie li { font-size: 12.5px; }
 .va--taet .va-aar { font-size: 15px; }
 .va--taet .va-md { font-size: 13.5px; }
 .va--taet .va-badge { height: 24px; font-size: 10px; padding: 0 11px; top: -12px; }
 .va--taet .va-sml { padding-top: 16px; }
-.va--taet .va-sml-tal { font-size: clamp(22px, 5vw, 28px); }
+.va--taet .va-sml-tal { font-size: clamp(22px, 5vw, calc(28px * var(--sk))); }
 .va--taet .va-sml-over { font-size: 12.5px; }
 .va--taet .va-sml-under { font-size: 13.5px; }
 .va--taet .va-mod { font-size: 13px; }

@@ -18,7 +18,7 @@
 .st-wrap .btn-teal{background:var(--teal);color:#fff;padding:15px 26px;box-shadow:0 10px 24px rgba(0,179,166,.28)}
 .st-wrap .btn-ghost{background:#fff;color:var(--navy);padding:15px 24px;border:1.5px solid var(--line)}
 .st-wrap .btn:disabled{opacity:.6;cursor:default;box-shadow:none}
-.st-wrap{max-width:520px;margin:0 auto;padding:22px 18px 72px}
+.st-wrap{max-width:520px;margin:0 auto;padding:22px 18px calc(72px * var(--sp))}
 /* ⚠️ ERSTATTET NEDERST I FILEN. Logoet stod centreret alene; nu er der også
    en vej tilbage til salgssiden. Se .st-top i funnel-afsnittet. */
 
@@ -31,7 +31,7 @@
 .st-trin{margin:9px 0 18px;font-size:13px;font-weight:700;color:var(--navy-soft);letter-spacing:.02em}
 
 .st-kort{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:26px 24px 28px;box-shadow:var(--shadow)}
-.st-kort h1{font-family:'Plus Jakarta Sans',sans-serif;font-size:25px;font-weight:800;line-height:1.22;letter-spacing:-.015em;color:var(--navy)}
+.st-kort h1{font-family:'Plus Jakarta Sans',sans-serif;font-size:calc(25px * var(--sk));font-weight:800;line-height:1.22;letter-spacing:-.015em;color:var(--navy)}
 .st-hj{margin-top:8px;font-size:15px;line-height:1.55;color:var(--navy-soft)}
 
 .st-lab{display:block;margin:20px 0 6px;font-size:13px;font-weight:700;color:var(--navy)}
@@ -549,7 +549,8 @@ select.st-felt{appearance:none;background-image:url("data:image/svg+xml;utf8,<sv
      meget lange linjer er sværere at udfylde. */
   .st-wrap{max-width:580px}
   .st-wrap-mellem{max-width:820px}
-  .st-kort h1{font-size:28px}
+  /* ⚠️ `.st-kort h1{font-size:28px}` er fjernet her (07-09-2026). Kun BREDDEN
+     må vokse på en stor skærm — se noten i salg.css ved 1500px-blokken. */
 }
 
 @media(max-width:560px){
@@ -583,7 +584,7 @@ select.st-felt{appearance:none;background-image:url("data:image/svg+xml;utf8,<sv
   font-family:'Plus Jakarta Sans',sans-serif
 }
 .st-pre-hero h1{
-  font-family:'Plus Jakarta Sans',sans-serif;font-size:clamp(28px,7vw,40px);
+  font-family:'Plus Jakarta Sans',sans-serif;font-size:clamp(28px,7vw,calc(40px * var(--sk)));
   font-weight:800;line-height:1.1;letter-spacing:-.025em;color:var(--navy)
 }
 .st-pre-em{display:block;color:var(--sky)}
@@ -602,7 +603,7 @@ select.st-felt{appearance:none;background-image:url("data:image/svg+xml;utf8,<sv
   font-family:'Plus Jakarta Sans',sans-serif
 }
 .st-pre-h2{
-  font-family:'Plus Jakarta Sans',sans-serif;font-size:clamp(21px,4.4vw,27px);
+  font-family:'Plus Jakarta Sans',sans-serif;font-size:clamp(21px,4.4vw,calc(27px * var(--sk)));
   font-weight:800;line-height:1.2;letter-spacing:-.02em;color:var(--navy)
 }
 .st-pre-tal{margin-top:6px;font-size:17px;line-height:1.5;color:var(--navy)}
@@ -656,9 +657,9 @@ select.st-felt{appearance:none;background-image:url("data:image/svg+xml;utf8,<sv
    ⚠️ INGEN NYE FARVER. Alt er tokens fra globals.css.
    ============================================================================ */
 
-.st-pre{display:grid;grid-template-columns:1.05fr .95fr;gap:44px;align-items:start}
+.st-pre{display:grid;grid-template-columns:1.05fr .95fr;gap:calc(44px * var(--sp));align-items:start}
 .st-pre-venstre h1{
-  font-family:'Plus Jakarta Sans',sans-serif;font-size:clamp(26px,3.2vw,40px);
+  font-family:'Plus Jakarta Sans',sans-serif;font-size:clamp(26px,3.2vw,calc(40px * var(--sk)));
   font-weight:800;line-height:1.12;letter-spacing:-.025em;color:var(--navy)
 }
 .st-pre-sub{margin-top:18px;font-size:16.5px;line-height:1.6;color:var(--navy-soft)}
@@ -674,7 +675,7 @@ select.st-felt{appearance:none;background-image:url("data:image/svg+xml;utf8,<sv
 .st-vind-over{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:16px;color:var(--navy-soft)}
 .st-vind-under{
   font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;
-  font-size:clamp(24px,3vw,34px);line-height:1.12;letter-spacing:-.025em;color:var(--navy)
+  font-size:clamp(24px,3vw,calc(34px * var(--sk)));line-height:1.12;letter-spacing:-.025em;color:var(--navy)
 }
 .st-vind-under b{color:var(--teal);font-weight:800}
 
@@ -764,7 +765,7 @@ select.st-felt{appearance:none;background-image:url("data:image/svg+xml;utf8,<sv
 }
 .st-stat b{
   display:block;font-family:'Plus Jakarta Sans',sans-serif;
-  font-size:clamp(22px,2.4vw,28px);font-weight:800;
+  font-size:clamp(22px,2.4vw,calc(28px * var(--sk)));font-weight:800;
   color:var(--teal);letter-spacing:-.03em;line-height:1.1
 }
 .st-stat span{

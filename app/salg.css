@@ -28,8 +28,8 @@
 .sg h3 { font-weight: 700; letter-spacing: -.01em; color: var(--navy); }
 
 .sg-wrap { max-width: 1180px; margin: 0 auto; padding: 0 26px; }
-.sg .sg-sek { padding: 84px 0; }
-.sg .sg-sek-taet { padding: 56px 0; }
+.sg .sg-sek { padding: calc(84px * var(--sp)) 0; }
+.sg .sg-sek-taet { padding: calc(56px * var(--sp)) 0; }
 .sg-graa { background: var(--grey); }
 .sg-blaa { background: var(--sky-soft); }
 .sg-navy { background: var(--navy); color: #fff; }
@@ -42,9 +42,9 @@
 }
 .sg-navy .sg-kick { color: var(--sky); }
 
-.sg-big { font-size: clamp(30px, 3.7vw, 46px); }
+.sg-big { font-size: clamp(30px, 3.7vw, calc(46px * var(--sk))); }
 .sg-lead {
-  font-size: 18.5px; line-height: 1.62; color: var(--navy-soft);
+  font-size: calc(18.5px * var(--sk-t)); line-height: 1.62; color: var(--navy-soft);
   margin-top: 18px; max-width: 62ch;
 }
 .sg-midt { text-align: center; }
@@ -97,18 +97,18 @@
 .sg-navcta-2:hover { border-color: var(--sky-200); color: var(--navy); }
 
 /* ---------------------------------------------------------------- 1 · hero */
-.sg .sg-hero { background: linear-gradient(180deg, var(--sky-soft) 0%, #fff 100%); padding: 62px 0 76px; }
-.sg-herogrid { display: grid; grid-template-columns: 1.06fr .94fr; gap: 52px; align-items: center; }
+.sg .sg-hero { background: linear-gradient(180deg, var(--sky-soft) 0%, #fff 100%); padding: calc(62px * var(--sp)) 0 calc(76px * var(--sp)); }
+.sg-herogrid { display: grid; grid-template-columns: 1.06fr .94fr; gap: calc(52px * var(--sp)); align-items: center; }
 .sg-pill {
   display: inline-block; background: #fff; border: 1px solid var(--sky-200);
   border-radius: 999px; padding: 7px 15px; font-size: 12.5px; font-weight: 700;
   text-transform: uppercase; letter-spacing: .08em; color: var(--navy); margin-bottom: 20px;
 }
-.sg-hero h1 { font-size: clamp(36px, 4.7vw, 58px); }
+.sg-hero h1 { font-size: clamp(36px, 4.7vw, calc(58px * var(--sk))); }
 /* Anden linje er løftets følelsesmæssige halvdel og skal bære visuelt.
    Sky, ikke en ny farve — samme greb som forsidens .sky-em. */
 .sg-hero h1 .sg-em { color: var(--sky); display: block; }
-.sg-hero .sg-lead { font-size: 19.5px; max-width: 40ch; }
+.sg-hero .sg-lead { font-size: calc(19.5px * var(--sk-t)); max-width: 40ch; }
 
 /* ---------------------------------------------------------------- telefon
    Ren CSS + inline SVG. ⚠️ INTET LIBRARY. Meta-trafik er mobil, og en
@@ -149,7 +149,7 @@
 .sg .sg-bevis { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: #fff; padding: 30px 0; }
 .sg-bevis-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; align-items: center; }
 .sg-bevis-celle { text-align: center; }
-.sg-tal { font-size: 30px; font-weight: 800; color: var(--teal); letter-spacing: -.03em; line-height: 1.1; }
+.sg-tal { font-size: calc(30px * var(--sk)); font-weight: 800; color: var(--teal); letter-spacing: -.03em; line-height: 1.1; }
 .sg-bevis-celle small { display: block; font-size: 13.5px; color: var(--navy-soft); margin-top: 5px; line-height: 1.4; }
 /* ⚠️ OVERSKRIFTEN ER DET FØRSTE ØJET SKAL FANGE, ikke tallene. Bjælken beviser
    at motoren kører — den er ikke et analytics-panel. Derfor navy, større og
@@ -169,7 +169,7 @@
   background: #fff; border: 1px solid var(--line); border-radius: var(--r);
   padding: 44px 40px; box-shadow: var(--shadow); text-align: center;
 }
-.sg-risiko-kort h2 { font-size: clamp(26px, 3.1vw, 38px); }
+.sg-risiko-kort h2 { font-size: clamp(26px, 3.1vw, calc(38px * var(--sk))); }
 .sg-fire { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 34px; }
 .sg-fire-item {
   display: flex; align-items: center; justify-content: center; gap: 9px;
@@ -227,16 +227,16 @@
 .sg-fagpanel {
   margin-top: 30px; background: #fff; border: 1px solid var(--line);
   border-radius: var(--r); padding: 34px 30px; box-shadow: var(--shadow);
-  min-height: 232px; display: flex; flex-direction: column; justify-content: center;
+  min-height: calc(232px * var(--sp)); display: flex; flex-direction: column; justify-content: center;
 }
 .sg-fagsvar { text-align: center; }
-.sg-fagsvar .sg-tal { font-size: clamp(40px, 5.4vw, 62px); }
+.sg-fagsvar .sg-tal { font-size: clamp(40px, 5.4vw, calc(62px * var(--sk))); }
 .sg-fagsvar-under { font-size: 17.5px; color: var(--navy-soft); margin-top: 8px; }
 .sg-fagsvar-under b { color: var(--navy); font-weight: 700; }
 
 /* Resultatlinjen over kortene — ægte tal fra matchmotoren. */
 .sg-fagsvar-linje {
-  text-align: center; font-size: clamp(17px, 1.5vw, 20px); line-height: 1.5;
+  text-align: center; font-size: clamp(17px, 1.5vw, calc(20px * var(--sk-t))); line-height: 1.5;
   color: var(--navy); margin-bottom: 24px;
 }
 .sg-fagsvar-linje b { font-weight: 800; color: var(--teal); font-size: 1.25em; }
@@ -264,7 +264,7 @@
 .sg-laast { text-align: center; font-size: 13.5px; color: var(--navy-soft); margin-top: 20px; }
 
 /* ---------------------------------------------------------- 7 · sms-demo */
-.sg-demogrid { display: grid; grid-template-columns: .9fr 1.1fr; gap: 56px; align-items: center; }
+.sg-demogrid { display: grid; grid-template-columns: .9fr 1.1fr; gap: calc(56px * var(--sp)); align-items: center; }
 .sg-punkter { list-style: none; display: grid; gap: 14px; margin-top: 28px; }
 .sg-punkter li { display: flex; align-items: flex-start; gap: 12px; font-size: 16.5px; color: var(--navy); line-height: 1.5; }
 .sg-punkter svg { flex: 0 0 20px; margin-top: 3px; }
@@ -359,8 +359,8 @@
 .sg .sg-faq-svar { padding: 0 22px 20px; font-size: 15.5px; line-height: 1.65; color: var(--navy-soft); }
 
 /* --------------------------------------------------------- 12 · slut-cta */
-.sg .sg-slut { text-align: center; padding: 92px 0; }
-.sg-slut h2 { font-size: clamp(30px, 4vw, 48px); }
+.sg .sg-slut { text-align: center; padding: calc(92px * var(--sp)) 0; }
+.sg-slut h2 { font-size: clamp(30px, 4vw, calc(48px * var(--sk))); }
 .sg-slut p { font-size: 19px; color: var(--sky-200); margin-top: 16px; }
 
 /* ⚠️ HVORFOR NOGLE REGLER STÅR SOM `.sg .sg-sek` OG IKKE BARE `.sg-sek`.
@@ -392,17 +392,19 @@
    indholdsbredden og typografien lov til at vokse en smule, og samtidig
    stramme den lodrette luft, så en sektion ikke fylder en hel skærm.
    ============================================================================ */
+/* ⚠️ HER STOD EN TYPE-OPSKALERING — DEN ER FJERNET (07-09-2026).
+   Blokken satte hero-H1 til 62px, .sg-big til 50px, .sg-lead op og
+   sektionspadding til 92px på præcis de skærme hvor problemet var værst. En
+   1920px skærm har ikke brug for STØRRE bogstaver; den har brug for at der er
+   mere end én sektion i syne ad gangen. Skriv den aldrig tilbage — skal
+   desktop justeres, gøres det på --sk / --sk-t / --sp i globals.css.
+
+   Det der er tilbage, er BREDDE, ikke størrelse: rammen må gerne vokse, så
+   indholdet ikke svømmer i et hvidt lærred. Det var den del af den gamle blok
+   der faktisk løste noget. */
 @media (min-width: 1500px) {
   .sg-wrap { max-width: 1320px; }
-  .sg .sg-sek { padding: 92px 0; }
-  .sg-hero h1 { font-size: 62px; }
-  .sg-hero .sg-lead { font-size: 21px; max-width: 42ch; }
-  .sg-big { font-size: 50px; }
-  .sg-lead { font-size: 19.5px; }
-  .sg-tal { font-size: 34px; }
-  .sg-telefon { width: 330px; }
-  .sg-kort p, .sg-trin-kort p { font-size: 16.5px; }
-  .sg-opgave-titel { font-size: 17.5px; }
+  .sg-hero .sg-lead { max-width: 42ch; }
   .sg-tilbud { max-width: 680px; }
 }
 
@@ -482,10 +484,10 @@
 }
 .sg-koster-stor {
   font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800;
-  font-size: clamp(36px, 5vw, 54px); color: var(--navy);
+  font-size: clamp(36px, 5vw, calc(54px * var(--sk))); color: var(--navy);
   letter-spacing: -.03em; line-height: 1.05; margin-top: 6px;
 }
-.sg-koster-kort .sg-tal { font-size: clamp(26px, 3.2vw, 34px); }
+.sg-koster-kort .sg-tal { font-size: clamp(26px, 3.2vw, calc(34px * var(--sk))); }
 
 /* -------------------------------------------------------- 6 · løsningen
    Fire punkter der alle er noget KUNDEN vælger — ikke fire features. */
@@ -502,7 +504,7 @@
 /* Resultat-linjen efter de tre trin i motoren. Fremhævet, fordi det er
    udbyttet — ikke endnu et skridt. */
 .sg-resultatlinje {
-  margin-top: 34px; text-align: center; font-size: clamp(18px, 2vw, 22px);
+  margin-top: 34px; text-align: center; font-size: clamp(18px, 2vw, calc(22px * var(--sk-t)));
   font-weight: 700; color: var(--navy); font-family: 'Plus Jakarta Sans', sans-serif;
   max-width: 60ch; margin-left: auto; margin-right: auto;
 }
@@ -584,12 +586,10 @@
    ikke lettere. Derfor vokser rammen og overskrifterne, mens `.sg-lead` holdes
    i skak af sin max-width i ch.
    ============================================================================ */
+/* Samme rettelse som ovenfor: kun rammen vokser. 66px hero-H1 og 60px
+   pris-tal er fjernet — se noten ved 1500px-blokken. */
 @media (min-width: 1800px) {
   .sg-wrap { max-width: 1420px; }
-  .sg-hero h1 { font-size: 66px; }
-  .sg-big { font-size: 54px; }
-  .sg-telefon { width: 350px; }
-  .sg-koster-stor { font-size: 60px; }
 }
 
 /* ============================================================================
@@ -610,7 +610,7 @@
   background: linear-gradient(160deg, var(--sky-soft) 0%, #fbfdff 46%, rgba(0,179,166,.07) 100%);
   border-top: 1px solid var(--sky-200);
   border-bottom: 1px solid var(--sky-200);
-  padding: 40px 0 34px;
+  padding: calc(40px * var(--sp)) 0 calc(34px * var(--sp));
 }
 
 /* Bevis-kort. Ens højde via `align-items: stretch` på griddet, så en celle med
@@ -626,7 +626,7 @@
   display: flex; flex-direction: column; justify-content: center;
 }
 /* Tallet er beviset — det må gerne fylde. */
-.sg-bevis-kort .sg-tal { font-size: clamp(28px, 3vw, 38px); }
+.sg-bevis-kort .sg-tal { font-size: clamp(28px, 3vw, calc(38px * var(--sk))); }
 .sg-bevis-kort small {
   display: block; font-size: 13.5px; line-height: 1.4;
   color: var(--navy-soft); margin-top: 6px;
@@ -854,16 +854,16 @@
 .sg-vind { margin: 34px auto 0; display: flex; flex-direction: column; align-items: center; gap: 2px; }
 .sg-vind-over {
   font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700;
-  font-size: clamp(18px, 2vw, 22px); color: var(--navy-soft);
+  font-size: clamp(18px, 2vw, calc(22px * var(--sk-t))); color: var(--navy-soft);
 }
 .sg-vind-under {
   font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800;
-  font-size: clamp(30px, 4.4vw, 46px); color: var(--navy);
+  font-size: clamp(30px, 4.4vw, calc(46px * var(--sk))); color: var(--navy);
   letter-spacing: -.025em; line-height: 1.1;
 }
 .sg-vind-under b { color: var(--teal); font-weight: 800; }
 .sg-vind-lille .sg-vind-over { font-size: 15px; }
-.sg-vind-lille .sg-vind-under { font-size: clamp(22px, 3vw, 30px); }
+.sg-vind-lille .sg-vind-under { font-size: clamp(22px, 3vw, calc(30px * var(--sk))); }
 
 /* Fremhævning inde i en stor overskrift (REGNESTYKKET). */
 .sg-big-em { display: block; }
@@ -892,11 +892,11 @@
 
 /* ---------------------------------------------------------- overgangen
    Kort, mørk, én pointe. Den bryder rytmen mellem to lyse sektioner. */
-.sg-overgang { padding: 74px 0; }
-.sg-overgang h2 { font-size: clamp(24px, 3vw, 34px); color: #fff; }
+.sg-overgang { padding: calc(74px * var(--sp)) 0; }
+.sg-overgang h2 { font-size: clamp(24px, 3vw, calc(34px * var(--sk))); color: #fff; }
 .sg-overgang-stor {
   margin-top: 12px; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800;
-  font-size: clamp(26px, 3.8vw, 42px); line-height: 1.15; letter-spacing: -.025em;
+  font-size: clamp(26px, 3.8vw, calc(42px * var(--sk))); line-height: 1.15; letter-spacing: -.025em;
   color: #fff; max-width: 22ch; margin-left: auto; margin-right: auto;
 }
 .sg-overgang-stor b { color: var(--sky); }
@@ -909,7 +909,7 @@
   background: var(--sky-soft); border: 1px solid var(--sky-200);
   border-radius: var(--r); padding: 30px 28px 26px;
 }
-.sg-stort-anker h3 { font-size: clamp(19px, 2.2vw, 24px); line-height: 1.25; margin-bottom: 10px; }
+.sg-stort-anker h3 { font-size: clamp(19px, 2.2vw, calc(24px * var(--sk-t))); line-height: 1.25; margin-bottom: 10px; }
 .sg-stort-anker p { font-size: 15.5px; line-height: 1.6; color: var(--navy-soft); }
 .sg-stort-anker-pris {
   display: inline-flex; align-items: baseline; gap: 12px; margin-top: 20px;
@@ -918,7 +918,7 @@
 .sg-stort-anker-pris span { font-size: 14px; color: var(--navy-soft); }
 .sg-stort-anker-slut {
   margin-top: 18px; font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: clamp(17px, 1.9vw, 20px); font-weight: 700; color: var(--navy);
+  font-size: clamp(17px, 1.9vw, calc(20px * var(--sk-t))); font-weight: 700; color: var(--navy);
   line-height: 1.35;
 }
 .sg-stort-anker-pris b {
