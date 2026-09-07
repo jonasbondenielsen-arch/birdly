@@ -465,32 +465,9 @@ select.st-felt{appearance:none;background-image:url("data:image/svg+xml;utf8,<sv
 .st-opgaver .sg-opgave{box-shadow:none}
 
 /* ------------------------------------------------- skærm 7: værdi-ankeret */
-.st-anker{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:stretch;margin-top:20px}
-.st-anker-boks{
-  position:relative;background:#fff;border:1px solid var(--line);border-radius:14px;
-  padding:24px 16px 18px;text-align:center
-}
-.st-anker-navn{font-size:13px;font-weight:700;color:var(--navy-soft);font-family:'Plus Jakarta Sans',sans-serif;margin-bottom:8px}
-.st-anker-tal{font-family:'Plus Jakarta Sans',sans-serif;font-size:clamp(22px,6vw,30px);font-weight:800;color:var(--teal);letter-spacing:-.03em;line-height:1.1}
-.st-anker-lig{font-size:16px;font-weight:700;color:var(--navy-soft);margin:6px 0 2px}
-.st-anker-aar{font-size:15px;font-weight:700;color:var(--navy)}
-.st-anker-vs{display:flex;align-items:center;font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:14px;color:var(--navy-soft)}
-.st-anker-pris{background:var(--navy);border-color:var(--navy)}
-.st-anker-pris .st-anker-tal,.st-anker-pris .st-anker-aar{color:#fff}
-.st-anker-pris .st-anker-navn{color:var(--sky-200)}
 
 /* ⚠️ "EKSEMPEL"-MÆRKATET SKAL KUNNE LÆSES UDEN AT MAN LEDER. Det er det der
    skiller et regneeksempel fra en påstand om hvad kunden får. */
-.st-maerkat{
-  position:absolute;top:-10px;left:50%;transform:translateX(-50%);
-  background:var(--sky-soft);color:var(--navy);border:1px solid var(--sky-200);
-  font-size:10px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;
-  padding:3px 10px;border-radius:999px;font-family:'Plus Jakarta Sans',sans-serif;white-space:nowrap
-}
-.st-maerkat-lys{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.3);color:#fff}
-
-.st-anker-linje{margin-top:18px;font-size:17px;line-height:1.5;color:var(--navy);text-align:center}
-.st-anker-linje b{font-weight:800;color:var(--teal)}
 
 /* ⚠️ FORBEHOLDET ER OBLIGATORISK OG STÅR LIGE UNDER TALLET. Uden det læses
    forholdet som et løfte om udbytte. Se lib/vaerdiAnker.js. */
@@ -580,9 +557,9 @@ select.st-felt{appearance:none;background-image:url("data:image/svg+xml;utf8,<sv
   .st-etaper{gap:4px}
   .st-valgkort-2{grid-template-columns:1fr}
   /* Ankeret stables: beløb, "mod", beløb. */
-  .st-anker{grid-template-columns:1fr;gap:10px}
-  .st-anker-vs{justify-content:center}
-  .st-anker-linje{font-size:16px}
+  
+  
+  
   .st-opsum dl > div{font-size:13.5px}
   .st-plan-pris{font-size:32px}
   .st-risiko-tal{font-size:30px}
@@ -658,21 +635,13 @@ select.st-felt{appearance:none;background-image:url("data:image/svg+xml;utf8,<sv
    ⚠️ height OG line-height er begge sat. Uden fast højde afhænger badget af den
    nedarvede linjehøjde, og den er ikke ens i et hvidt og et navy kort.
    ============================================================================ */
-.st-badge{
-  position:absolute;top:-12px;left:50%;transform:translateX(-50%);z-index:2;
-  box-sizing:border-box;height:24px;
-  display:inline-flex;align-items:center;justify-content:center;
-  padding:0 12px;border-radius:999px;white-space:nowrap;
-  font-family:'Plus Jakarta Sans',sans-serif;font-size:10px;font-weight:800;
-  line-height:1;letter-spacing:.09em;text-transform:uppercase;
-  background:var(--sky-soft);border:1px solid var(--sky-200);color:var(--navy)
-}
-.st-badge-lys{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.34);color:#fff}
 
 /* Scenariet under badget i pre-funnelens anker. */
-.st-scenarie{list-style:none;margin:0 0 12px;display:grid;gap:2px}
-.st-scenarie li{font-size:12.5px;line-height:1.45;color:var(--navy-soft)}
-.st-anker-pris .st-scenarie li{color:var(--sky-200)}
 
 /* Kortet skal have plads til badget uden at teksten klemmes op i det. */
-.st-anker-boks{padding-top:26px}
+
+/* ⚠️ VÆRDI-ANKERETS KORT LÅ HER (.st-anker-*, .st-badge-*, .st-scenarie).
+   De er slettet. Kortene fandtes i to udgaver — én her og én i salg.css — og
+   det var netop dét der fik dem til at stå justeret forskelligt i funnelen og
+   på forsiden. De bor nu ét sted: app/vaerdikort.css, brugt gennem
+   components/salg/VaerdiKort.js. Byg dem ALDRIG op igen her. */

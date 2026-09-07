@@ -26,6 +26,7 @@ import { GARANTI, GARANTI_LINK, VAERDI_ANKER } from "../lib/salgTekst";
 import { sporFunnel } from "../lib/ctaSporing";
 import { erLoebende, MAANEDSVAERDI, PROJEKTVAERDI, byggAnker, FORBEHOLD, BETINGET_LINJE } from "../lib/vaerdiAnker";
 import OpgaveKort from "./salg/OpgaveKort";
+import VaerdiKort from "./salg/VaerdiKort";
 import { daTal } from "../lib/opgaveTal";
 // ⚠️ forside.css importeres IKKE. Den er nested under `.birdly-home`, så dens
 // klasser virker alligevel ikke her — og importen ville kun sende hele forsidens
@@ -1142,47 +1143,18 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
             STANDARD_RENGOERING i lib/vaerdiAnker.js — ét sted, alle sider. Et
             tal der skifter mellem landingssiden og funnelen får kunden til at
             holde op med at tro på begge. */}
-        <div className="st-anker">
-          <div className="st-anker-boks">
-            {/* ⚠️ KORT BADGE I FUNNELEN, IKKE FORSIDENS LANGE.
-                Ankerets kort er tre kolonner i en 520px-spalte, altså ~230px
-                brede. Den fulde label ("Eksempel · Fast erhvervsrengøring") er
-                ~244px og stak 14px ud over kortkanten — målt. Badget siger
-                derfor kun "Eksempel" her, og selve eksemplet står som en linje
-                inde i kortet. Samme oplysning, geometri der holder. */}
-            <span className="st-badge">Eksempel</span>
-            <div className="st-anker-navn">{preAnker.navn}</div>
-            {preAnker.scenarie.length > 0 && (
-              <ul className="st-scenarie">
-                {preAnker.scenarie.map((linje) => <li key={linje}>{linje}</li>)}
-              </ul>
-            )}
-            {preAnker.loebende ? (
-              <>
-                <div className="st-anker-tal">{preAnker.maaned}</div>
-                <div className="st-anker-lig">=</div>
-                <div className="st-anker-aar">{preAnker.aar}</div>
-              </>
-            ) : (
-              <div className="st-anker-tal">{preAnker.opgave}</div>
-            )}
-          </div>
-          <div className="st-anker-vs" aria-hidden="true">mod</div>
-          <div className="st-anker-boks st-anker-pris">
-            <span className="st-badge st-badge-lys">Faktisk pris</span>
-            <div className="st-anker-navn">Birdly et helt år</div>
-            <div className="st-anker-tal">{priceText.yearlyBare}</div>
-            <div className="st-anker-aar">ekskl. moms</div>
-          </div>
-        </div>
+        {/* ⚠️ SAMME KOMPONENT SOM FORSIDEN. Kortene var før bygget her med
+            `.st-anker-*`-klasser og på forsiden med `.sg-vaerdi-*` — to
+            implementeringer af det samme kort, som derfor stod justeret
+            forskelligt de to steder. Nu er der én: components/salg/VaerdiKort.js.
+            `taet` skruer KUN ned for skriftstørrelserne, fordi funnelens spalte
+            er smallere; padding, badge-offset og justering er fælles. */}
+        <VaerdiKort anker={preAnker} taet />
 
-        {preAnker.forhold && (
-          <p className="st-anker-linje">
-            {preAnker.loebende
-              ? <>En aftale i den størrelse har en årlig værdi på <b>{preAnker.forhold.tekst}</b> Birdlys årspris.</>
-              : <>Et helt års Birdly svarer til <b>{preAnker.andel}</b> af værdien på en opgave i den størrelse.</>}
-          </p>
-        )}
+        {/* ⚠️ SAMMENLIGNINGEN STÅR INDE I KORTET, ikke også her. Den stod begge
+            steder efter sammenlægningen, og den samme sætning to gange med
+            tyve pixels mellemrum læses som en fejl — ikke som en pointe der
+            bliver understreget. Kun forbeholdene bliver. */}
         {preAnker.kilde && <p className="st-forbehold">{preAnker.kilde}</p>}
         <p className="st-forbehold">{FORBEHOLD}</p>
       </div>
@@ -1634,47 +1606,14 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
         <div className="st-kort">
           <h1>{anker.loebende ? "Hvad er én fast aftale værd?" : "Hvad er én opgave værd?"}</h1>
 
-          <div className="st-anker">
-            <div className="st-anker-boks">
-              {/* ⚠️ HER ER TALLET KUNDENS EGET, ikke husets standard-eksempel:
-                  hun har selv valgt intervallet på skærm 5. Derfor står der
-                  "Eksempel" og ikke scenariet med kontoret i København — vi ved
-                  intet om hendes lokaler. Se byggAnker i lib/vaerdiAnker.js. */}
-              <span className="st-badge">{anker.maerkat}</span>
-              {anker.loebende ? (
-                <>
-                  <div className="st-anker-navn">En aftale på</div>
-                  <div className="st-anker-tal">{anker.maaned}</div>
-                  <div className="st-anker-lig">=</div>
-                  <div className="st-anker-aar">{anker.aar}</div>
-                </>
-              ) : (
-                <>
-                  <div className="st-anker-navn">En opgave til</div>
-                  <div className="st-anker-tal">{anker.opgave}</div>
-                </>
-              )}
-            </div>
-            <div className="st-anker-vs" aria-hidden="true">mod</div>
-            <div className="st-anker-boks st-anker-pris">
-              <span className="st-badge st-badge-lys">Faktisk pris</span>
-              <div className="st-anker-navn">Birdly et helt år</div>
-              <div className="st-anker-tal">{priceText.yearlyBare}</div>
-              <div className="st-anker-aar">ekskl. moms</div>
-            </div>
-          </div>
+          {/* Samme delte kort som pre-funnelen og forsiden. Her er ankeret
+              PERSONLIGT — regnet af kundens eget valg på skærm 5. */}
+          <VaerdiKort anker={anker} taet />
 
-          {anker.forhold && (
-            <p className="st-anker-linje">
-              {anker.loebende
-                ? <>En aftale i den størrelse har en årlig værdi på <b>{anker.forhold.tekst}</b> Birdlys årspris.</>
-                : <>Et helt års Birdly svarer til <b>{anker.andel}</b> af værdien på en opgave i den størrelse.</>}
-            </p>
-          )}
-
-          {/* ⚠️ FORBEHOLDET ER OBLIGATORISK OG STÅR LIGE UNDER TALLET. Uden det
+          {/* ⚠️ FORBEHOLDET ER OBLIGATORISK OG STÅR LIGE UNDER KORTET. Uden det
               læses forholdet som et løfte om udbytte. Flyt det aldrig ned under
-              knappen, og gør det aldrig mindre end her. */}
+              knappen, og gør det aldrig mindre end her.
+              Selve sammenligningen står inde i kortet — ikke også her. */}
           <p className="st-forbehold">{FORBEHOLD}</p>
           <p className="st-hj">{BETINGET_LINJE}</p>
 

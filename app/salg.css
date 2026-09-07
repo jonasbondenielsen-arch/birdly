@@ -274,31 +274,12 @@
    To beløb ved siden af hinanden. ⚠️ Sammenligningen er hele sektionen — derfor
    er begge bokse lige store, og "mod" står imellem dem som en vægtskål, ikke som
    en pil der peger på en gevinst. */
-.sg-vaerdi { display: grid; grid-template-columns: 1fr auto 1fr; gap: 26px; align-items: stretch; margin-top: 40px; }
-.sg-vaerdi-boks {
-  background: #fff; border: 1px solid var(--line); border-radius: var(--r);
-  padding: 32px 26px 30px; text-align: center; box-shadow: var(--shadow); position: relative;
-}
-.sg-vaerdi-boks .sg-tal { font-size: clamp(34px, 4.4vw, 52px); }
-.sg-vaerdi-navn { font-size: 15px; font-weight: 700; color: var(--navy-soft); font-family: 'Plus Jakarta Sans', sans-serif; margin-bottom: 12px; }
+
 .sg-vaerdi-lig { font-size: 20px; font-weight: 700; color: var(--navy-soft); margin: 8px 0 4px; }
-.sg-vaerdi-aar { font-size: 17px; font-weight: 700; color: var(--navy); }
-.sg-vaerdi-vs { display: flex; align-items: center; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 17px; color: var(--navy-soft); }
-.sg-vaerdi-boks.sg-pris-side { background: var(--navy); border-color: var(--navy); }
-.sg-vaerdi-boks.sg-pris-side .sg-tal,
-.sg-vaerdi-boks.sg-pris-side .sg-vaerdi-aar { color: #fff; }
-.sg-vaerdi-boks.sg-pris-side .sg-vaerdi-navn { color: var(--sky-200); }
 
 /* ⚠️ "EKSEMPEL"-MÆRKATET SKAL VÆRE LÆSBART UDEN AT MAN LEDER. Det er det der
    skiller et realistisk regneeksempel fra en påstand om hvad kunden får. Derfor
    sidder det på selve kortet, ikke som en fodnote under sektionen. */
-.sg-maerkat {
-  position: absolute; top: -11px; left: 50%; transform: translateX(-50%);
-  background: var(--sky-soft); color: var(--navy); border: 1px solid var(--sky-200);
-  font-size: 11px; font-weight: 800; letter-spacing: .09em; text-transform: uppercase;
-  padding: 4px 12px; border-radius: 999px; font-family: 'Plus Jakarta Sans', sans-serif;
-}
-.sg-maerkat-lys { background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.3); color: #fff; }
 
 /* Forbeholdet under forholdstallet. Dæmpet, men aldrig lille nok til at blive
    overset — uden det læses tallet som et løfte om udbytte. */
@@ -382,7 +363,6 @@
 .sg-slut h2 { font-size: clamp(30px, 4vw, 48px); }
 .sg-slut p { font-size: 19px; color: var(--sky-200); margin-top: 16px; }
 
-
 /* ⚠️ HVORFOR NOGLE REGLER STÅR SOM `.sg .sg-sek` OG IKKE BARE `.sg-sek`.
    På forsiden ligger salgs-sektionerne INDE i .birdly-home, fordi launch-baren og
    pris-streameren har deres CSS nested derinde og ville stå ustylede udenfor.
@@ -432,8 +412,8 @@
   .sg-hero .sg-lead { max-width: none; }
   .sg-demogrid { grid-template-columns: 1fr; gap: 36px; }
   .sg-nav { display: none; }
-  .sg-vaerdi { grid-template-columns: 1fr; gap: 18px; }
-  .sg-vaerdi-vs { text-align: center; }
+  
+  
 }
 @media (max-width: 1024px) {
   /* Tre opgavekort ved siden af hinanden bliver for smalle før 1024px —
@@ -477,8 +457,8 @@
   .sg-anker { font-size: 16.5px; }
   .sg-flow-pil { transform: rotate(90deg); }
   /* Værdi-sammenligningen stables: beløb, "mod", beløb. */
-  .sg-vaerdi { grid-template-columns: 1fr; gap: 14px; }
-  .sg-vaerdi-boks { padding: 26px 20px 22px; }
+  
+  
   .sg-maaned { flex-direction: column; align-items: stretch; text-align: center; gap: 12px; }
   .sg-maaned .sg-btn { width: 100%; }
   .sg-opgave-titel { font-size: 16px; }
@@ -659,15 +639,26 @@
    løftet — men kun en anelse. Gør man forskellen for stor, ligner det en
    stråmand, og så mister sektionen sin troværdighed. */
 .sg-vs { grid-template-columns: 1fr auto 1fr; align-items: stretch; }
+/* ⚠️ LABEL OG UNDERLINJE SKAL KUNNE SKELNES. Underteksten havde en negativ
+   top-margin (-12px) og lå derfor nærmest oven i overskriften — "DEN GAMLE
+   MÅDE" og "En almindelig udbudstjeneste" flød sammen til én blok. Nu er der
+   luft imellem dem, og reglen gælder BEGGE kort, så de ikke kan komme til at
+   se forskellige ud. */
+.sg-vs-kort h3 { margin-bottom: 0; line-height: 1.25; }
 .sg-vs-under {
-  display: block; font-size: 13.5px; color: var(--navy-soft);
-  margin: -12px 0 16px;
+  display: block; font-size: 13.5px; line-height: 1.5; color: var(--navy-soft);
+  margin: 7px 0 20px;
 }
-.sg-vs-kort h3 { margin-bottom: 6px; }
 
+/* ⚠️ SYNLIG KANT, MEN NEUTRAL. Det grå kort flød ud i sektionens baggrund og
+   lignede ikke et kort. Det har nu en tydelig afgrænsning og en let skygge —
+   men i --line, ALDRIG i teal. Teal-kanten er Birdly-kortets, og den skal blive
+   ved med at være dét der vinder blikket. Kortet skal være defineret, ikke
+   fremhævet. */
 .sg-vs-gammel {
   background: var(--grey);
-  border-color: #dfe4ec;
+  border: 1.5px solid var(--line);
+  box-shadow: 0 1px 2px rgba(13,27,42,.03), 0 8px 20px rgba(13,27,42,.05);
   /* Let afmættet, så den læses som "det man plejer" frem for som et tilbud. */
   filter: saturate(.85);
 }
@@ -730,8 +721,14 @@
    afhænger badgets højde af den nedarvede linjehøjde, og den er ikke ens inde i
    et navy-kort og et hvidt kort. Med begge dele kan de ikke skride fra hinanden.
 
-   ⚠️ KORTET SKAL VÆRE position: relative. Det er `.sg-vaerdi-boks` og
-   `.sg-koster-kort` allerede.
+   ⚠️ KORTET SKAL VÆRE position: relative. Det er `.sg-koster-kort` allerede.
+
+   ⚠️ VÆRDI-ANKERETS EGNE KORT LIGGER IKKE HER LÆNGERE. De havde et komplet sæt
+   `.sg-vaerdi-*`-regler her OG et parallelt sæt `.st-anker-*` i start.css — to
+   implementeringer af det samme kort, som drev fra hinanden og stod justeret
+   forskelligt på forsiden og i funnelen. Begge sæt er slettet; kortene bor nu
+   i app/vaerdikort.css og bruges gennem components/salg/VaerdiKort.js.
+   Genskab dem ALDRIG her.
    ============================================================================ */
 .sg-badge {
   position: absolute;
@@ -768,7 +765,6 @@
 /* Scenariet under badget — to korte linjer, dæmpet. */
 .sg-scenarie { list-style: none; margin: 0 0 14px; display: grid; gap: 2px; }
 .sg-scenarie li { font-size: 13.5px; line-height: 1.45; color: var(--navy-soft); }
-.sg-vaerdi-boks .sg-vaerdi-navn { margin-bottom: 6px; }
 
 /* ------------------------------------------------------------ responsivt */
 @media (max-width: 860px) {
@@ -809,37 +805,22 @@
    ⚠️ ENS STARTPUNKT I BEGGE KORT. Badget ligger uden for kortet, så indholdet
    skal have plads til det — ellers begynder venstre korts første linje højere
    end højres. Samme padding-top på begge, sat ét sted. */
-.sg-vaerdi-boks { padding-top: 30px; }
 
 /* Lighedstegnet er en overgang, ikke et budskab. */
 .sg-vaerdi-lig { font-size: 15px; font-weight: 600; color: var(--navy-soft); margin: 10px 0 4px; }
 
 /* Det mørke kort bar før kun ét tal og så tomt ud ved siden af venstre kort.
    Månedsprisen og selve sammenligningen bor nu her. */
-.sg-pris-md {
-  margin-top: 6px; font-size: 15px; font-weight: 700; color: var(--sky-200);
-  font-family: 'Plus Jakarta Sans', sans-serif;
-}
+
 /* ⚠️ SAMMENLIGNINGEN ER TRE LINJER, IKKE ÉN SÆTNING. Den stod før som en
    almindelig linje med tallet i fed, og så var den bare mere brødtekst i et
    kort der i forvejen var tyndt. Nu bærer tallet sin egen linje mellem en
    optakt og en efterskrift — man ser "ca. 24×" før man læser noget.
    ⚠️ TALLET MÅ IKKE VÆRE STØRRE END PRISEN. 4.990 kr. er kortets hovedtal;
    bliver 24× lige så stort, konkurrerer de to om det samme blik. */
-.sg-pris-sammenlign {
-  margin-top: 22px; padding-top: 20px;
-  border-top: 1px solid rgba(255,255,255,.16);
-  display: flex; flex-direction: column; align-items: center; gap: 2px;
-}
+
 /* 26ch tvang "…denne størrelse / svarer til" til at brække midt i sætningen.
    34ch giver den plads til én linje på desktop og wrapper stadig pænt på mobil. */
-.sg-sml-over { font-size: 13.5px; line-height: 1.45; color: #a9c0d4; max-width: 34ch; }
-.sg-sml-tal {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: clamp(28px, 3vw, 34px); font-weight: 800;
-  color: var(--sky); letter-spacing: -.03em; line-height: 1.1; margin: 4px 0 2px;
-}
-.sg-sml-under { font-size: 14.5px; font-weight: 700; color: #dce9f4; }
 
 /* ⚠️ flex-start, IKKE center. Med `center` centrerede hvert kort sit eget
    indhold uafhængigt af naboen, og da det mørke kort har flere linjer, begyndte
@@ -847,15 +828,14 @@
    men indholdet under dem var det ikke — og det er dét man ser.
    Med flex-start starter begge kort ved den samme padding-top, og griddets
    `stretch` giver dem stadig samme højde. */
-.sg-vaerdi-boks { display: flex; flex-direction: column; justify-content: flex-start; }
+
 /* Sammenligningen skubbes ned i bunden af det mørke kort, så skillelinjen står
    samme sted uanset hvor mange linjer der er over den. */
-.sg-pris-sammenlign { margin-top: auto; }
 
 @media (max-width: 560px) {
   .sg-chips { gap: 6px; margin-top: 18px; }
   .sg-chips li { font-size: 12px; padding: 5px 11px; }
-  .sg-pris-sammenlign { margin-top: 18px; padding-top: 16px; }
-  .sg-sml-tal { font-size: 26px; }
-  .sg-sml-over { font-size: 13px; }
+  
+  
+  
 }

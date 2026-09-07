@@ -2,8 +2,9 @@
 
 import { useEffect, useRef } from "react";
 import Cta from "./Cta";
+import VaerdiKort from "./VaerdiKort";
 import { Flueben } from "./Ikoner";
-import { PLAN, priceText } from "../../lib/pakke";
+import { priceText } from "../../lib/pakke";
 import { byggAnker } from "../../lib/vaerdiAnker";
 import { useFag } from "./FagKontekst";
 import { sporFunnel } from "../../lib/ctaSporing";
@@ -49,9 +50,6 @@ export function Vaerdi({ funnelHref, fag = null, valgt = null }) {
   const { fag: fraKontekst } = useFag("rengoring");
   const brugtFag = fag || fraKontekst;
   const a = byggAnker(brugtFag, valgt);
-  // ⚠️ REGNET, IKKE SKREVET: 4.990 / 12 = 415,83 → "ca. 416 kr./md.". Et
-  // håndskrevet tal ville stå forkert dagen efter en prisændring.
-  const prMaaned = Math.round(PLAN.yearly / 12).toLocaleString("da-DK");
 
   // ⚠️ INTERN HÆNDELSE, ingen Meta. Fortæller om ankeret faktisk blev SET —
   // det er sidens stærkeste argument, og vi skal kunne se om folk når ned til det.
@@ -101,79 +99,11 @@ export function Vaerdi({ funnelHref, fag = null, valgt = null }) {
           </p>
         </div>
 
-        <div className="sg-vaerdi">
-          {/* ═══════════════ VENSTRE — EKSEMPLET ═══════════════
-              ⚠️ BADGET HEDDER KUN "EKSEMPEL". Det bar før hele labelen
-              ("EKSEMPEL · FAST ERHVERVSRENGØRING"), og et 320px badge ved siden
-              af et 90px badge læses som skævt, selv når de er pixel-identisk
-              placeret. Navnet står nu som kortets første linje, hvor det hører
-              hjemme. Begge badges er nu korte og sammenlignelige. */}
-          <div className="sg-vaerdi-boks">
-            <span className="sg-badge">Eksempel</span>
-            <div className="sg-vaerdi-navn">{a.navn}</div>
-            {/* Scenariet gør tallet konkret nok til at kunden kan holde det op
-                mod sin egen hverdag. Det står kun på husets standard-eksempel —
-                har hun selv valgt et interval, ville det være vores antagelse
-                om hendes forretning. */}
-            {a.scenarie.length > 0 && (
-              <ul className="sg-scenarie">
-                {a.scenarie.map((linje) => <li key={linje}>{linje}</li>)}
-              </ul>
-            )}
-            {a.loebende ? (
-              <>
-                <div className="sg-tal">{a.maaned}</div>
-                {/* ⚠️ LIGHEDSTEGNET ER DÆMPET MED VILJE. Hierarkiet er
-                    månedsbeløb → årsbeløb; et stort "=" imellem stjal
-                    opmærksomhed fra begge tal. */}
-                <div className="sg-vaerdi-lig" aria-hidden="true">=</div>
-                <div className="sg-vaerdi-aar">{a.aar}</div>
-              </>
-            ) : (
-              <div className="sg-tal">{a.opgave}</div>
-            )}
-          </div>
-
-          <div className="sg-vaerdi-vs" aria-hidden="true">mod</div>
-
-          {/* ═══════════════ HØJRE — BIRDLY ═══════════════
-              ⚠️ HELE SAMMENLIGNINGEN BOR HER. Kortet bar før kun prisen og så
-              tomt ud ved siden af eksemplet; forholdstallet stod som en løs
-              linje under kortene, hvor det blev læst som en fodnote. Nu er
-              pointen inde i kortet, hvor prisen er — man skal kunne forstå
-              sektionen uden at læse noget under kortene.
-
-              ⚠️ SAMMENLIGNING, IKKE AFKAST. "svarer til ca. 24× Birdlys
-              årspris" beskriver forholdet mellem en kontraktværdi og en
-              abonnementspris. "24× ROI", "24× afkast" eller "Birdly giver 24×"
-              ville sige noget om penge der kommer retur — og det er præcis den
-              påstand vi ikke må fremsætte. Se lib/vaerdiAnker.js. */}
-          <div className="sg-vaerdi-boks sg-pris-side">
-            <span className="sg-badge sg-badge-lys">Birdly</span>
-            <div className="sg-vaerdi-navn">Birdly et helt år</div>
-            <div className="sg-tal">{priceText.yearlyBare}</div>
-            <div className="sg-vaerdi-aar">ekskl. moms</div>
-            <div className="sg-pris-md">ca. {prMaaned} kr./md.</div>
-
-            {(a.forhold || a.andel) && (
-              <div className="sg-pris-sammenlign">
-                {a.loebende ? (
-                  <>
-                    <span className="sg-sml-over">Én fast aftale i denne størrelse svarer til</span>
-                    <span className="sg-sml-tal">{a.forhold.tekst}</span>
-                    <span className="sg-sml-under">Birdlys årspris</span>
-                  </>
-                ) : (
-                  <>
-                    <span className="sg-sml-over">Et helt års Birdly svarer til</span>
-                    <span className="sg-sml-tal">{a.andel}</span>
-                    <span className="sg-sml-under">af værdien på en opgave i den størrelse</span>
-                  </>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
+        {/* ⚠️ ÉN DELT KOMPONENT. Kortene var før bygget her OG i Start.js med
+            hver sit sæt klasser, og derfor stod de justeret forskelligt på
+            forsiden og i funnelen. Nu findes markup og styling ét sted —
+            components/salg/VaerdiKort.js. */}
+        <VaerdiKort anker={a} />
 
         {/* ⚠️ KUN DE TO FORBEHOLD HER. Den betingede afslutning ("Vinder I bare
             én relevant opgave…") stod også her, men sammenligningen bor nu inde
