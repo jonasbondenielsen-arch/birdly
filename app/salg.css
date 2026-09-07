@@ -55,16 +55,16 @@
    knap ser ens ud uanset hvilken side den står på. */
 .sg-btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 9px;
-  font-weight: 700; font-size: 16px; border: 0; border-radius: 12px;
+  font-weight: 700; font-size: calc(16px * var(--btn)); border: 0; border-radius: 12px;
   cursor: pointer; text-decoration: none; transition: transform .15s, box-shadow .15s;
 }
-.sg-btn-teal { background: var(--teal); color: #fff; padding: 15px 26px; box-shadow: 0 10px 24px rgba(0,179,166,.28); }
+.sg-btn-teal { background: var(--teal); color: #fff; padding: calc(15px * var(--btn)) calc(26px * var(--btn)); box-shadow: 0 10px 24px rgba(0,179,166,.28); }
 .sg-btn-teal:hover { transform: translateY(-2px); box-shadow: 0 16px 32px rgba(0,179,166,.36); }
-.sg-btn-ghost { background: #fff; color: var(--navy); padding: 15px 24px; border: 1.5px solid var(--line); }
+.sg-btn-ghost { background: #fff; color: var(--navy); padding: calc(15px * var(--btn)) calc(24px * var(--btn)); border: 1.5px solid var(--line); }
 .sg-btn-ghost:hover { border-color: var(--sky); color: var(--sky); }
-.sg-btn-hvid { background: #fff; color: var(--teal); padding: 16px 30px; }
+.sg-btn-hvid { background: #fff; color: var(--teal); padding: calc(16px * var(--btn)) calc(30px * var(--btn)); }
 .sg-btn-hvid:hover { transform: translateY(-2px); }
-.sg-btn-stor { padding: 18px 34px; font-size: 17.5px; }
+.sg-btn-stor { padding: calc(18px * var(--btn)) calc(34px * var(--btn)); font-size: calc(17.5px * var(--btn)); }
 .sg-btn-bred { width: 100%; }
 @media (prefers-reduced-motion: reduce) { .sg-btn:hover { transform: none; } }
 
@@ -114,7 +114,18 @@
    Ren CSS + inline SVG. ⚠️ INTET LIBRARY. Meta-trafik er mobil, og en
    animations-pakke til én telefon ville koste mere i bundle end den giver.
    Højden er FAST, så der ikke sker layout-shift når beskeden animerer ind. */
+/* ⚠️ `zoom`, IKKE `transform: scale()`. Mockuppen skulle skaleres ned FOR AT
+   GØRE HEROEN KORTERE, og `transform` ændrer kun hvordan elementet TEGNES —
+   den plads det optager i layoutet er den samme. Heroen ville altså have
+   beholdt sin højde, og hele øvelsen var spildt. `zoom` ændrer den brugte
+   størrelse, så pladsen følger med.
+
+   Mockuppen er ren CSS og tekst — ingen bitmap — så den er lige så skarp ved
+   74 % som ved 100 %.
+
+   ⚠️ MOBIL RØRES IKKE: --tlf er 1 under 1025px, og `zoom: 1` gør ingenting. */
 .sg-telefon {
+  zoom: var(--tlf);
   width: 300px; max-width: 100%; margin: 0 auto; background: var(--navy);
   border-radius: 38px; padding: 12px; box-shadow: var(--shadow-lg);
   position: relative;
@@ -136,7 +147,12 @@
 
 /* ⚠️ ETIKETTEN ER IKKE PYNT. Beskeden er et EKSEMPEL på hvad kunden modtager —
    ikke en opgave der ligger i basen lige nu. Uden linjen kan en besøgende tro at
-   hun kigger på et live-match, og så er en illustration blevet til en påstand. */
+   hun kigger på et live-match, og så er en illustration blevet til en påstand.
+
+   ⚠️ DEN SKALERER IKKE MED --tlf. Mockuppen omkring den er krympet til 74 %,
+   men det her er en forbeholds-linje der skal LÆSES — ved 12px * .74 = 8,9px
+   er den der kun i navnet, og et forbehold ingen kan læse er ikke et forbehold.
+   Den bliver på 12px. */
 .sg-telefon-note { text-align: center; font-size: 12px; color: var(--navy-soft); margin-top: 14px; }
 
 /* Beskeden glider ind én gang. Kort, blødt, og respekterer reduced-motion. */

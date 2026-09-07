@@ -11,10 +11,10 @@
   .sky-em{color:var(--sky)}
 
   /* buttons */
-  .btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;font-family:'Plus Jakarta Sans';font-weight:700;border:0;border-radius:12px;cursor:pointer;transition:transform .15s,box-shadow .15s;font-size:16px}
-  .btn-teal{background:var(--teal);color:#fff;padding:15px 26px;box-shadow:0 10px 24px rgba(0,179,166,.28)}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;font-family:'Plus Jakarta Sans';font-weight:700;border:0;border-radius:12px;cursor:pointer;transition:transform .15s,box-shadow .15s;font-size:calc(16px * var(--btn))}
+  .btn-teal{background:var(--teal);color:#fff;padding:calc(15px * var(--btn)) calc(26px * var(--btn));box-shadow:0 10px 24px rgba(0,179,166,.28)}
   .btn-teal:hover{transform:translateY(-2px);box-shadow:0 16px 32px rgba(0,179,166,.36)}
-  .btn-ghost{background:#fff;color:var(--navy);padding:15px 24px;border:1.5px solid var(--line)}
+  .btn-ghost{background:#fff;color:var(--navy);padding:calc(15px * var(--btn)) calc(24px * var(--btn));border:1.5px solid var(--line)}
   .btn-ghost:hover{border-color:var(--sky);color:var(--sky)}
   .btn-sky{background:var(--sky);color:#fff;padding:15px 26px;box-shadow:0 10px 24px rgba(46,183,255,.3)}
   .btn-sky:hover{transform:translateY(-2px)}

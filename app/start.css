@@ -14,9 +14,9 @@
    begge steder — noteret som kandidat til at flytte op i globals.css.
    ============================================================ */
 
-.st-wrap .btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;border:0;border-radius:12px;cursor:pointer;text-decoration:none;font-size:16px}
-.st-wrap .btn-teal{background:var(--teal);color:#fff;padding:15px 26px;box-shadow:0 10px 24px rgba(0,179,166,.28)}
-.st-wrap .btn-ghost{background:#fff;color:var(--navy);padding:15px 24px;border:1.5px solid var(--line)}
+.st-wrap .btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;border:0;border-radius:12px;cursor:pointer;text-decoration:none;font-size:calc(16px * var(--btn))}
+.st-wrap .btn-teal{background:var(--teal);color:#fff;padding:calc(15px * var(--btn)) calc(26px * var(--btn));box-shadow:0 10px 24px rgba(0,179,166,.28)}
+.st-wrap .btn-ghost{background:#fff;color:var(--navy);padding:calc(15px * var(--btn)) calc(24px * var(--btn));border:1.5px solid var(--line)}
 .st-wrap .btn:disabled{opacity:.6;cursor:default;box-shadow:none}
 .st-wrap{max-width:520px;margin:0 auto;padding:22px 18px calc(72px * var(--sp))}
 /* ⚠️ ERSTATTET NEDERST I FILEN. Logoet stod centreret alene; nu er der også
@@ -31,7 +31,7 @@
 .st-trin{margin:9px 0 18px;font-size:13px;font-weight:700;color:var(--navy-soft);letter-spacing:.02em}
 
 .st-kort{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:26px 24px 28px;box-shadow:var(--shadow)}
-.st-kort h1{font-family:'Plus Jakarta Sans',sans-serif;font-size:calc(25px * var(--sk));font-weight:800;line-height:1.22;letter-spacing:-.015em;color:var(--navy)}
+.st-kort h1{font-family:'Plus Jakarta Sans',sans-serif;font-size:calc(25px * var(--sk-m));font-weight:800;line-height:1.22;letter-spacing:-.015em;color:var(--navy)}
 .st-hj{margin-top:8px;font-size:15px;line-height:1.55;color:var(--navy-soft)}
 
 .st-lab{display:block;margin:20px 0 6px;font-size:13px;font-weight:700;color:var(--navy)}
@@ -603,7 +603,7 @@ select.st-felt{appearance:none;background-image:url("data:image/svg+xml;utf8,<sv
   font-family:'Plus Jakarta Sans',sans-serif
 }
 .st-pre-h2{
-  font-family:'Plus Jakarta Sans',sans-serif;font-size:clamp(calc(21px * var(--sk)), 4.4vw, calc(27px * var(--sk)));
+  font-family:'Plus Jakarta Sans',sans-serif;font-size:clamp(calc(21px * var(--sk-m)), 4.4vw, calc(27px * var(--sk-m)));
   font-weight:800;line-height:1.2;letter-spacing:-.02em;color:var(--navy)
 }
 .st-pre-tal{margin-top:6px;font-size:17px;line-height:1.5;color:var(--navy)}
@@ -765,7 +765,7 @@ select.st-felt{appearance:none;background-image:url("data:image/svg+xml;utf8,<sv
 }
 .st-stat b{
   display:block;font-family:'Plus Jakarta Sans',sans-serif;
-  font-size:clamp(calc(22px * var(--sk)), 2.4vw, calc(28px * var(--sk)));font-weight:800;
+  font-size:clamp(calc(22px * var(--sk-m)), 2.4vw, calc(28px * var(--sk-m)));font-weight:800;
   color:var(--teal);letter-spacing:-.03em;line-height:1.1
 }
 .st-stat span{
