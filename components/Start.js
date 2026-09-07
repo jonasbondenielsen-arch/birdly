@@ -241,13 +241,6 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
   // var en illustration.
   const [vaerdiValg, setVaerdiValg] = useState(null);
 
-  // Pre-funnelens bevis. ⚠️ SAMME KALD SOM RESTEN AF HUSET
-  // (preview-kandidater → birdly_match_candidates_for). Hentes én gang når
-  // kataloget er der, på det fag adressen peger på — eller rengøring, som er
-  // den nuværende primære målgruppe. Fejler det, står sektionen der slet ikke;
-  // vi viser ALDRIG en opgave fra et andet fag for at have noget at vise.
-  const [preBevis, setPreBevis] = useState(null);
-
   // ══════════════════════════════════════════════════════════════════════════
   // FØRSTE SCAN — værdi FØR opsætning.
   //
@@ -914,38 +907,21 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
   // og regnestykke, og en tilfældig streng må ikke kunne skrive nogen af dem.
   const preFag = startFag && fagByKey[startFag] ? startFag : "rengoring";
   const preAnker = byggAnker(preFag, null);
-  const preFagOrd = forvalgtLabel ? forvalgtLabel.toLowerCase() + "sopgaver" : "opgaver";
 
   // Trade-specifik overskrift. Læses af kataloget, som alt andet.
   const preOverskrift = forvalgtLabel
     ? <>Få flere opgaver inden for {forvalgtLabel.toLowerCase()}.</>
     : <>Få flere relevante opgaver.</>;
 
-// ⚠️ HENTES ÉN GANG, OG KUN PÅ SKÆRM 1. Beviset hører til i pre-funnelen; er
-  // kunden kommet videre, er kaldet spildt båndbredde på en telefon. Fejler det,
-  // sættes intet, og sektionen renderer sig væk — se noten ved preBevis.
-  useEffect(() => {
-    if (!katalog || trin !== 1 || preBevis) return;
-    const f = fagByKey[preFag];
-    if (!f) return;
-    let levende = true;
-    const koder = (f.smal || []).map((a) => a.cpv).filter(Boolean);
-    hentKandidater({
-      fag_keys: [preFag],
-      cpv_selections: koder,
-      bredde: "alle",
-      region_keys: ["hele_dk"],
-      min_amount: null,
-      max_amount: null,
-      med_eksempler: true,
-    }).then((k) => {
-      if (!levende) return;
-      const antal = k?.i_omraade || 0;
-      setPreBevis({ antal, eksempler: k?.eksempler || [] });
-      if (antal > 0) sporFunnel("PrefunnelProofViewed", { fag: preFag, antal });
-    });
-    return () => { levende = false; };
-  }, [katalog, trin, preBevis, fagByKey, preFag]);
+// ⚠️ HER LÅ ET FAG-SPECIFIKT FORHÅNDSOPSLAG. Det er fjernet (07-09-2026).
+  // Skærm 1 viste et fag-tal hentet fra preview-kandidater FØR kunden havde
+  // tastet CVR — altså et tal gættet ud fra ?fag= eller et forvalg, og dermed
+  // forkert for alle andre end dem der kom fra præcis den annonce. Nu viser
+  // skærm 1 hele puljen (get-opgave-tal, samme kilde som forsiden), og det
+  // fag-specifikke tal kommer på skærm 2, hvor vi FAKTISK kender kunden.
+  //
+  // Sidegevinst: ét netværkskald mindre ved hver indlæsning af funnelen — på en
+  // telefon, i det sekund førstehåndsindtrykket dannes.
 
   // ══════════════════════════════════════════════════════════════════════════
   // FORSIDENS BEVIS-TAL, GENBRUGT I FUNNELEN
@@ -1244,24 +1220,38 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
                 </p>
               </div>
 
-              {/* ---- ÆGTE BEVIS ----
-                  ⚠️ Tallet er ægte eller fraværende. Samme kald som resten af
-                  huset (preview-kandidater → birdly_match_candidates_for). Er der
-                  intet, står der intet — vi falder ALDRIG tilbage på en opgave
-                  fra et andet fag for at have noget at vise. */}
-              {preBevis && preBevis.antal > 0 && (
+              {/* ---- ÆGTE BEVIS: HELE PULJEN ----
+                  ⚠️ BREDE TAL FØR CVR, KONKRETE EFTER (07-09-2026).
+                  Her har vi ikke kundens CVR endnu og ved derfor ikke hvilket fag
+                  hun er i. Et fag-specifikt tal på dette trin ville være gættet ud
+                  fra ?fag= eller et forvalg — og dermed forkert for alle andre end
+                  dem der kom fra præcis den annonce. Totalerne gælder alle.
+                  Det konkrete, fag-specifikke tal kommer på næste skærm, hvor vi
+                  FAKTISK ved hvem hun er.
+
+                  ⚠️ SAMME KILDE SOM FORSIDEN. Felterne kommer fra get-opgave-tal
+                  via lib/opgaveTal.js — de samme værdier som bevis-bjælken viser
+                  på / og /kom-i-gang. Ingen nye tal, intet nyt opslag.
+
+                  ⚠️ MANGLER ET FELT, VISES DET IKKE. Er hele svaret null, står
+                  blokken der slet ikke — samme regel som forsiden. */}
+              {(bevisAabne != null || bevisNye != null || bevisBydbare != null) && (
                 <div className="st-pre-bevis">
                   <span className="st-pre-kick">Birdly holder allerede øje</span>
-                  <p className="st-pre-tal">
-                    <b>{daTal(preBevis.antal)}</b> {preFagOrd} lige nu
-                  </p>
-                  {preBevis.eksempler.length > 0 && (
-                    <div className="st-opgaver">
-                      {preBevis.eksempler.slice(0, 2).map((n, i) => (
-                        <OpgaveKort key={i} opgave={n} />
-                      ))}
-                    </div>
+                  {bevisAabne != null && (
+                    <p className="st-pre-tal">
+                      <b>{daTal(bevisAabne)}</b> åbne opgaver lige nu
+                    </p>
                   )}
+                  <ul className="st-pulje-liste">
+                    {bevisNye != null && (
+                      <li><b>{daTal(bevisNye)}</b> nye de seneste 7 dage</li>
+                    )}
+                    {bevisBydbare != null && (
+                      <li><b>{daTal(bevisBydbare)}</b> opgaver i alt</li>
+                    )}
+                    <li>Opdateres <b>2×</b> dagligt</li>
+                  </ul>
                 </div>
               )}
             </div>
@@ -1327,46 +1317,38 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
                 {fagByKey[foersteScan.fag]?.label_da || "Jeres fag"} · Hele landet
               </p>
 
+              {/* ⚠️ HER ER TALLET KONKRET OG FAG-SPECIFIKT. Nu KENDER vi kunden:
+                  CVR er slået op, faget er kendt, og tallet kommer fra
+                  preview-kandidater med hendes egne kriterier. Derfor står der
+                  "der matcher jer" — ikke "lige nu", som er et udsagn om puljen.
+                  ⚠️ "ÅBNE" ER PRÆCIST. Match-reglen tæller kun opgaver med frist
+                  i fremtiden (eller fristløse inden for 60 dage, jf. 0060). */}
               <div className="st-res">
                 <b>{foersteScan.i_omraade}</b>
                 <span>
-                  {foersteScan.i_omraade === 1 ? "aktiv mulighed lige nu" : "aktive muligheder lige nu"}
+                  {foersteScan.i_omraade === 1
+                    ? "åben opgave der matcher jer"
+                    : "åbne opgaver der matcher jer"}
                 </span>
               </div>
 
-              {/* ⚠️ HELE PULJEN, SÅ TALLET FÅR EN MÅLESTOK. "16 muligheder" siger
-                  ikke i sig selv om Birdly er stor eller lille; sat op mod de
-                  åbne opgaver i hele beholdningen gør det.
-                  ⚠️ TOTALERNE ER STORE, FAG-TALLET ER LILLE — og sætningen siger
-                  "heraf matcher", så ingen kan læse totalen som sit eget tal.
-                  ⚠️ Hvert led renderes kun hvis feltet FINDES. Samme regel som
-                  bevis-bjælken på forsiden: hellere en kortere sætning end et
-                  gættet tal. */}
-              {(bevisAabne != null || bevisNye != null) && (
-                <p className="st-pulje">
-                  Birdly holder øje med{" "}
-                  {bevisAabne != null && <><b>{daTal(bevisAabne)}</b> åbne opgaver lige nu</>}
-                  {bevisAabne != null && bevisNye != null && " · "}
-                  {bevisNye != null && <><b>{daTal(bevisNye)}</b> nye de seneste 7 dage</>}
-                  {" "}— heraf matcher <b>{foersteScan.i_omraade}</b> jeres fag.
-                  {bevisBydbare != null && (
-                    <span className="st-pulje-fin">
-                      {daTal(bevisBydbare)} opgaver i alt · opdateres 2× dagligt
-                    </span>
-                  )}
-                </p>
-              )}
+              {/* ⚠️ INGEN "NYE DE SENESTE 14 DAGE" HER — OG DET ER IKKE GLEMT.
+                  Kilderne kan ikke levere det:
+                    · get-opgave-tal har `nye_7_dage`, men GLOBALT for hele
+                      beholdningen — ikke pr. fag. At vise det her ville påstå at
+                      tallet gjaldt kundens fag.
+                    · preview-kandidater returnerer overhovedet ingen dato-
+                      opdeling — kun i_omraade, paa_landsplan, effektive_koder.
+                    · Tal pr. branche blev BEVIDST fjernet fra get-opgave-tal
+                      30-07-2026.
+                  Leddet er derfor udeladt frem for at bygge en ny forespørgsel
+                  eller vise et globalt tal som om det var fagets. Se rapporten:
+                  det kræver en beslutning om at udvide en Edge Function.
 
-              {/* ⚠️ ÆGTE OPGAVER, ELLER INGEN KORT. Mangler eksemplerne (den
-                  additive udgave af preview-kandidater er ikke rullet ud endnu),
-                  viser vi tallet uden kort. Vi fylder ALDRIG hullet. */}
-              {(foersteScan.eksempler || []).length > 0 && (
-                <div className="st-opgaver">
-                  {foersteScan.eksempler.slice(0, 3).map((n, i) => (
-                    <OpgaveKort key={i} opgave={n} />
-                  ))}
-                </div>
-              )}
+                  ⚠️ TOTALERNE STÅR HELLER IKKE HER LÆNGERE. De hører til FØR
+                  CVR, hvor vi endnu ikke ved hvem kunden er. Her skal tallet være
+                  hendes eget — blandes de to, forsvinder pointen med at have
+                  spurgt om CVR. */}
 
               <p className="st-bevis-tekst">
                 Det er den slags opgaver, Birdly kan holde øje med for jer. Når noget

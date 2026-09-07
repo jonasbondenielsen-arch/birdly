@@ -737,10 +737,9 @@ select.st-felt{appearance:none;background-image:url("data:image/svg+xml;utf8,<sv
    ⚠️ SAMME DATA SOM FORSIDENS BEVIS-BJÆLKE (get-opgave-tal). De store tal er
    totaler, det lille er kundens fag — derfor står de i samme sætning med
    "heraf matcher", så totalen ikke kan læses som hendes eget tal. */
-.st-pulje{
-  margin-top:14px;font-size:15px;line-height:1.6;color:var(--navy-soft);
-  background:var(--sky-soft);border:1px solid var(--sky-200);
-  border-radius:12px;padding:13px 16px
-}
-.st-pulje b{font-weight:800;color:var(--navy)}
-.st-pulje-fin{display:block;margin-top:6px;font-size:12.5px;color:var(--navy-soft)}
+/* ⚠️ .st-pulje LÅ HER OG ER FJERNET. Den viste totalerne PÅ scan-resultatet;
+   de hører til FØR CVR, hvor vi endnu ikke kender kunden. Efter CVR skal tallet
+   være hendes eget — se .st-pulje-liste nedenfor, som bærer totalerne på skærm 1. */
+.st-pulje-liste{list-style:none;display:grid;gap:5px;margin-top:8px}
+.st-pulje-liste li{font-size:13.5px;line-height:1.5;color:var(--navy-soft)}
+.st-pulje-liste b{font-weight:800;color:var(--navy)}
