@@ -52,10 +52,20 @@ html{scroll-behavior:smooth}
     /* Overskrifter bærer mest af nedskaleringen, brødteksten kun en anelse.
        Det er med vilje: hierarkiet skal blive, men afstanden mellem en H1 og
        en brødtekstlinje var blevet så stor at overskriften alene fyldte en
-       skærm. 14 % på overskrifter, 6 % på brødtekst, 16 % på luften. */
-    --sk:.86;
-    --sk-t:.94;
-    --sp:.84;
+       skærm.
+
+       28 % på overskrifter, 12 % på brødtekst, 28 % på luften (07-09-2026:
+       første forsøg med 14/6/16 var for mildt — heroen fyldte stadig hele
+       viewporten på Jonas' skærm).
+
+       ⚠️ SKRUER MAN VIDERE NED, KOLLAPSER NOGLE clamp(). Et loft der bliver
+       MINDRE end sit eget gulv får clamp til at returnere gulvet, og så
+       holder elementet op med at skalere med resten. Se listen af de syv
+       regler der allerede står på gulvet i dag — de er noteret i CSS'en dér
+       hvor de står, med `⚠️ PÅ GULVET`. */
+    --sk:.72;
+    --sk-t:.88;
+    --sp:.72;
   }
 }
 body{font-family:'Inter',system-ui,sans-serif;color:var(--navy);line-height:1.6;-webkit-font-smoothing:antialiased}

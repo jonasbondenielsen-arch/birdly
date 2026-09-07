@@ -202,6 +202,11 @@
    ============================================================================ */
 .va--taet { gap: 14px; margin-top: 22px; }
 .va--taet .va-kort { padding: 26px 16px 20px; }
+/* ⚠️ PÅ GULVET. 30 * --sk (.72) = 21,6 px, altså UNDER gulvet på 22 px.
+   clamp returnerer gulvet når loftet er mindre, så den her står fast på 22 px
+   og følger IKKE længere med resten ned. Gulvet er mobilens minimum og må
+   ikke sænkes for at få desktop mindre — skal den være mindre på desktop,
+   skal den have sin egen desktop-regel. Afventer Jonas. */
 .va--taet .va-tal { font-size: clamp(22px, 5.4vw, calc(30px * var(--sk))); }
 .va--taet .va-navn { font-size: 13px; }
 .va--taet .va-scenarie li { font-size: 12.5px; }
@@ -209,6 +214,11 @@
 .va--taet .va-md { font-size: 13.5px; }
 .va--taet .va-badge { height: 24px; font-size: 10px; padding: 0 11px; top: -12px; }
 .va--taet .va-sml { padding-top: 16px; }
+/* ⚠️ PÅ GULVET. 28 * --sk (.72) = 20,2 px, altså UNDER gulvet på 22 px.
+   clamp returnerer gulvet når loftet er mindre, så den her står fast på 22 px
+   og følger IKKE længere med resten ned. Gulvet er mobilens minimum og må
+   ikke sænkes for at få desktop mindre — skal den være mindre på desktop,
+   skal den have sin egen desktop-regel. Afventer Jonas. */
 .va--taet .va-sml-tal { font-size: clamp(22px, 5vw, calc(28px * var(--sk))); }
 .va--taet .va-sml-over { font-size: 12.5px; }
 .va--taet .va-sml-under { font-size: 13.5px; }

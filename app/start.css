@@ -602,6 +602,11 @@ select.st-felt{appearance:none;background-image:url("data:image/svg+xml;utf8,<sv
   text-transform:uppercase;color:var(--navy-soft);margin-bottom:10px;
   font-family:'Plus Jakarta Sans',sans-serif
 }
+/* ⚠️ PÅ GULVET. 27 * --sk (.72) = 19,4 px, altså UNDER gulvet på 21 px.
+   clamp returnerer gulvet når loftet er mindre, så den her står fast på 21 px
+   og følger IKKE længere med resten ned. Gulvet er mobilens minimum og må
+   ikke sænkes for at få desktop mindre — skal den være mindre på desktop,
+   skal den have sin egen desktop-regel. Afventer Jonas. */
 .st-pre-h2{
   font-family:'Plus Jakarta Sans',sans-serif;font-size:clamp(21px,4.4vw,calc(27px * var(--sk)));
   font-weight:800;line-height:1.2;letter-spacing:-.02em;color:var(--navy)
@@ -763,6 +768,11 @@ select.st-felt{appearance:none;background-image:url("data:image/svg+xml;utf8,<sv
   text-align:center;
   display:flex;flex-direction:column;justify-content:center
 }
+/* ⚠️ PÅ GULVET. 28 * --sk (.72) = 20,2 px, altså UNDER gulvet på 22 px.
+   clamp returnerer gulvet når loftet er mindre, så den her står fast på 22 px
+   og følger IKKE længere med resten ned. Gulvet er mobilens minimum og må
+   ikke sænkes for at få desktop mindre — skal den være mindre på desktop,
+   skal den have sin egen desktop-regel. Afventer Jonas. */
 .st-stat b{
   display:block;font-family:'Plus Jakarta Sans',sans-serif;
   font-size:clamp(22px,2.4vw,calc(28px * var(--sk)));font-weight:800;

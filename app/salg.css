@@ -487,6 +487,11 @@
   font-size: clamp(36px, 5vw, calc(54px * var(--sk))); color: var(--navy);
   letter-spacing: -.03em; line-height: 1.05; margin-top: 6px;
 }
+/* ⚠️ PÅ GULVET. 34 * --sk (.72) = 24,5 px, altså UNDER gulvet på 26 px.
+   clamp returnerer gulvet når loftet er mindre, så den her står fast på 26 px
+   og følger IKKE længere med resten ned. Gulvet er mobilens minimum og må
+   ikke sænkes for at få desktop mindre — skal den være mindre på desktop,
+   skal den have sin egen desktop-regel. Afventer Jonas. */
 .sg-koster-kort .sg-tal { font-size: clamp(26px, 3.2vw, calc(34px * var(--sk))); }
 
 /* -------------------------------------------------------- 6 · løsningen
@@ -626,6 +631,11 @@
   display: flex; flex-direction: column; justify-content: center;
 }
 /* Tallet er beviset — det må gerne fylde. */
+/* ⚠️ PÅ GULVET. 38 * --sk (.72) = 27,4 px, altså UNDER gulvet på 28 px.
+   clamp returnerer gulvet når loftet er mindre, så den her står fast på 28 px
+   og følger IKKE længere med resten ned. Gulvet er mobilens minimum og må
+   ikke sænkes for at få desktop mindre — skal den være mindre på desktop,
+   skal den have sin egen desktop-regel. Afventer Jonas. */
 .sg-bevis-kort .sg-tal { font-size: clamp(28px, 3vw, calc(38px * var(--sk))); }
 .sg-bevis-kort small {
   display: block; font-size: 13.5px; line-height: 1.4;
@@ -863,6 +873,11 @@
 }
 .sg-vind-under b { color: var(--teal); font-weight: 800; }
 .sg-vind-lille .sg-vind-over { font-size: 15px; }
+/* ⚠️ PÅ GULVET. 30 * --sk (.72) = 21,6 px, altså UNDER gulvet på 22 px.
+   clamp returnerer gulvet når loftet er mindre, så den her står fast på 22 px
+   og følger IKKE længere med resten ned. Gulvet er mobilens minimum og må
+   ikke sænkes for at få desktop mindre — skal den være mindre på desktop,
+   skal den have sin egen desktop-regel. Afventer Jonas. */
 .sg-vind-lille .sg-vind-under { font-size: clamp(22px, 3vw, calc(30px * var(--sk))); }
 
 /* Fremhævning inde i en stor overskrift (REGNESTYKKET). */
