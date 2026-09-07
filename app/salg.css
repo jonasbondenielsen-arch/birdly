@@ -42,7 +42,7 @@
 }
 .sg-navy .sg-kick { color: var(--sky); }
 
-.sg-big { font-size: clamp(30px, 3.7vw, calc(46px * var(--sk))); }
+.sg-big { font-size: clamp(calc(30px * var(--sk)), 3.7vw, calc(46px * var(--sk))); }
 .sg-lead {
   font-size: calc(18.5px * var(--sk-t)); line-height: 1.62; color: var(--navy-soft);
   margin-top: 18px; max-width: 62ch;
@@ -104,7 +104,7 @@
   border-radius: 999px; padding: 7px 15px; font-size: 12.5px; font-weight: 700;
   text-transform: uppercase; letter-spacing: .08em; color: var(--navy); margin-bottom: 20px;
 }
-.sg-hero h1 { font-size: clamp(36px, 4.7vw, calc(58px * var(--sk))); }
+.sg-hero h1 { font-size: clamp(calc(36px * var(--sk)), 4.7vw, calc(58px * var(--sk))); }
 /* Anden linje er løftets følelsesmæssige halvdel og skal bære visuelt.
    Sky, ikke en ny farve — samme greb som forsidens .sky-em. */
 .sg-hero h1 .sg-em { color: var(--sky); display: block; }
@@ -169,7 +169,7 @@
   background: #fff; border: 1px solid var(--line); border-radius: var(--r);
   padding: 44px 40px; box-shadow: var(--shadow); text-align: center;
 }
-.sg-risiko-kort h2 { font-size: clamp(26px, 3.1vw, calc(38px * var(--sk))); }
+.sg-risiko-kort h2 { font-size: clamp(calc(26px * var(--sk)), 3.1vw, calc(38px * var(--sk))); }
 .sg-fire { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 34px; }
 .sg-fire-item {
   display: flex; align-items: center; justify-content: center; gap: 9px;
@@ -230,13 +230,13 @@
   min-height: calc(232px * var(--sp)); display: flex; flex-direction: column; justify-content: center;
 }
 .sg-fagsvar { text-align: center; }
-.sg-fagsvar .sg-tal { font-size: clamp(40px, 5.4vw, calc(62px * var(--sk))); }
+.sg-fagsvar .sg-tal { font-size: clamp(calc(40px * var(--sk)), 5.4vw, calc(62px * var(--sk))); }
 .sg-fagsvar-under { font-size: 17.5px; color: var(--navy-soft); margin-top: 8px; }
 .sg-fagsvar-under b { color: var(--navy); font-weight: 700; }
 
 /* Resultatlinjen over kortene — ægte tal fra matchmotoren. */
 .sg-fagsvar-linje {
-  text-align: center; font-size: clamp(17px, 1.5vw, calc(20px * var(--sk-t))); line-height: 1.5;
+  text-align: center; font-size: clamp(calc(17px * var(--sk-t)), 1.5vw, calc(20px * var(--sk-t))); line-height: 1.5;
   color: var(--navy); margin-bottom: 24px;
 }
 .sg-fagsvar-linje b { font-weight: 800; color: var(--teal); font-size: 1.25em; }
@@ -360,7 +360,7 @@
 
 /* --------------------------------------------------------- 12 · slut-cta */
 .sg .sg-slut { text-align: center; padding: calc(92px * var(--sp)) 0; }
-.sg-slut h2 { font-size: clamp(30px, 4vw, calc(48px * var(--sk))); }
+.sg-slut h2 { font-size: clamp(calc(30px * var(--sk)), 4vw, calc(48px * var(--sk))); }
 .sg-slut p { font-size: 19px; color: var(--sky-200); margin-top: 16px; }
 
 /* ⚠️ HVORFOR NOGLE REGLER STÅR SOM `.sg .sg-sek` OG IKKE BARE `.sg-sek`.
@@ -484,15 +484,10 @@
 }
 .sg-koster-stor {
   font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800;
-  font-size: clamp(36px, 5vw, calc(54px * var(--sk))); color: var(--navy);
+  font-size: clamp(calc(36px * var(--sk)), 5vw, calc(54px * var(--sk))); color: var(--navy);
   letter-spacing: -.03em; line-height: 1.05; margin-top: 6px;
 }
-/* ⚠️ PÅ GULVET. 34 * --sk (.72) = 24,5 px, altså UNDER gulvet på 26 px.
-   clamp returnerer gulvet når loftet er mindre, så den her står fast på 26 px
-   og følger IKKE længere med resten ned. Gulvet er mobilens minimum og må
-   ikke sænkes for at få desktop mindre — skal den være mindre på desktop,
-   skal den have sin egen desktop-regel. Afventer Jonas. */
-.sg-koster-kort .sg-tal { font-size: clamp(26px, 3.2vw, calc(34px * var(--sk))); }
+.sg-koster-kort .sg-tal { font-size: clamp(calc(26px * var(--sk)), 3.2vw, calc(34px * var(--sk))); }
 
 /* -------------------------------------------------------- 6 · løsningen
    Fire punkter der alle er noget KUNDEN vælger — ikke fire features. */
@@ -509,7 +504,7 @@
 /* Resultat-linjen efter de tre trin i motoren. Fremhævet, fordi det er
    udbyttet — ikke endnu et skridt. */
 .sg-resultatlinje {
-  margin-top: 34px; text-align: center; font-size: clamp(18px, 2vw, calc(22px * var(--sk-t)));
+  margin-top: 34px; text-align: center; font-size: clamp(calc(18px * var(--sk-t)), 2vw, calc(22px * var(--sk-t)));
   font-weight: 700; color: var(--navy); font-family: 'Plus Jakarta Sans', sans-serif;
   max-width: 60ch; margin-left: auto; margin-right: auto;
 }
@@ -631,12 +626,7 @@
   display: flex; flex-direction: column; justify-content: center;
 }
 /* Tallet er beviset — det må gerne fylde. */
-/* ⚠️ PÅ GULVET. 38 * --sk (.72) = 27,4 px, altså UNDER gulvet på 28 px.
-   clamp returnerer gulvet når loftet er mindre, så den her står fast på 28 px
-   og følger IKKE længere med resten ned. Gulvet er mobilens minimum og må
-   ikke sænkes for at få desktop mindre — skal den være mindre på desktop,
-   skal den have sin egen desktop-regel. Afventer Jonas. */
-.sg-bevis-kort .sg-tal { font-size: clamp(28px, 3vw, calc(38px * var(--sk))); }
+.sg-bevis-kort .sg-tal { font-size: clamp(calc(28px * var(--sk)), 3vw, calc(38px * var(--sk))); }
 .sg-bevis-kort small {
   display: block; font-size: 13.5px; line-height: 1.4;
   color: var(--navy-soft); margin-top: 6px;
@@ -864,21 +854,16 @@
 .sg-vind { margin: 34px auto 0; display: flex; flex-direction: column; align-items: center; gap: 2px; }
 .sg-vind-over {
   font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700;
-  font-size: clamp(18px, 2vw, calc(22px * var(--sk-t))); color: var(--navy-soft);
+  font-size: clamp(calc(18px * var(--sk-t)), 2vw, calc(22px * var(--sk-t))); color: var(--navy-soft);
 }
 .sg-vind-under {
   font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800;
-  font-size: clamp(30px, 4.4vw, calc(46px * var(--sk))); color: var(--navy);
+  font-size: clamp(calc(30px * var(--sk)), 4.4vw, calc(46px * var(--sk))); color: var(--navy);
   letter-spacing: -.025em; line-height: 1.1;
 }
 .sg-vind-under b { color: var(--teal); font-weight: 800; }
 .sg-vind-lille .sg-vind-over { font-size: 15px; }
-/* ⚠️ PÅ GULVET. 30 * --sk (.72) = 21,6 px, altså UNDER gulvet på 22 px.
-   clamp returnerer gulvet når loftet er mindre, så den her står fast på 22 px
-   og følger IKKE længere med resten ned. Gulvet er mobilens minimum og må
-   ikke sænkes for at få desktop mindre — skal den være mindre på desktop,
-   skal den have sin egen desktop-regel. Afventer Jonas. */
-.sg-vind-lille .sg-vind-under { font-size: clamp(22px, 3vw, calc(30px * var(--sk))); }
+.sg-vind-lille .sg-vind-under { font-size: clamp(calc(22px * var(--sk)), 3vw, calc(30px * var(--sk))); }
 
 /* Fremhævning inde i en stor overskrift (REGNESTYKKET). */
 .sg-big-em { display: block; }
@@ -908,10 +893,10 @@
 /* ---------------------------------------------------------- overgangen
    Kort, mørk, én pointe. Den bryder rytmen mellem to lyse sektioner. */
 .sg-overgang { padding: calc(74px * var(--sp)) 0; }
-.sg-overgang h2 { font-size: clamp(24px, 3vw, calc(34px * var(--sk))); color: #fff; }
+.sg-overgang h2 { font-size: clamp(calc(24px * var(--sk)), 3vw, calc(34px * var(--sk))); color: #fff; }
 .sg-overgang-stor {
   margin-top: 12px; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800;
-  font-size: clamp(26px, 3.8vw, calc(42px * var(--sk))); line-height: 1.15; letter-spacing: -.025em;
+  font-size: clamp(calc(26px * var(--sk)), 3.8vw, calc(42px * var(--sk))); line-height: 1.15; letter-spacing: -.025em;
   color: #fff; max-width: 22ch; margin-left: auto; margin-right: auto;
 }
 .sg-overgang-stor b { color: var(--sky); }
@@ -924,7 +909,7 @@
   background: var(--sky-soft); border: 1px solid var(--sky-200);
   border-radius: var(--r); padding: 30px 28px 26px;
 }
-.sg-stort-anker h3 { font-size: clamp(19px, 2.2vw, calc(24px * var(--sk-t))); line-height: 1.25; margin-bottom: 10px; }
+.sg-stort-anker h3 { font-size: clamp(calc(19px * var(--sk-t)), 2.2vw, calc(24px * var(--sk-t))); line-height: 1.25; margin-bottom: 10px; }
 .sg-stort-anker p { font-size: 15.5px; line-height: 1.6; color: var(--navy-soft); }
 .sg-stort-anker-pris {
   display: inline-flex; align-items: baseline; gap: 12px; margin-top: 20px;
@@ -933,7 +918,7 @@
 .sg-stort-anker-pris span { font-size: 14px; color: var(--navy-soft); }
 .sg-stort-anker-slut {
   margin-top: 18px; font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: clamp(17px, 1.9vw, calc(20px * var(--sk-t))); font-weight: 700; color: var(--navy);
+  font-size: clamp(calc(17px * var(--sk-t)), 1.9vw, calc(20px * var(--sk-t))); font-weight: 700; color: var(--navy);
   line-height: 1.35;
 }
 .sg-stort-anker-pris b {

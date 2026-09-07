@@ -37,10 +37,22 @@ html{scroll-behavior:smooth}
      mange steder tokenet bliver brugt. Skal noget skrues, skrues det HER —
      ikke i det enkelte element.
 
-     ⚠️ TYPOGRAFIEN ER SKREVET SOM clamp(gulv, vw, loft). Faktoren ganges KUN
-     på loftet. Gulvet er det mobile minimum og skal blive stående som det er;
-     ganger man det, bliver små skærme sværere at læse, og det er ikke det her
-     handler om.
+     ⚠️ TYPOGRAFIEN ER SKREVET SOM clamp(gulv, vw, loft), OG FAKTOREN GANGES
+     PÅ BEGGE ENDER. Det var den ikke i første omgang — da kun loftet blev
+     ganget, endte 20 af 37 regler med et loft der var MINDRE end deres eget
+     gulv. clamp returnerer gulvet i den situation, så de regler frøs fast
+     midt i en nedskalering: H1 blev ved med at krympe mens de mellemstore
+     overskrifter stod stille. Det er præcis det hierarki-skred vi ville
+     undgå.
+
+     Med faktoren på begge ender flytter hele rampen sig samlet, forholdet
+     mellem gulv, vw-trin og loft er uændret, og en regel kan aldrig kollapse
+     uanset hvor langt ned --sk skrues.
+
+     ⚠️ OG GULVET ER STADIG URØRT PÅ MOBIL. Faktoren er 1 under 1025px, så
+     calc(30px * var(--sk)) ER 30px dér. Gulvet beskytter små skærme præcis
+     som før; det er kun på desktop — hvor et gulv skrevet til 390px alligevel
+     ikke beskytter noget — at det følger med ned.
      ══════════════════════════════════════════════════════════════════════ */
   --sk:1;
   --sk-t:1;
@@ -54,18 +66,18 @@ html{scroll-behavior:smooth}
        en brødtekstlinje var blevet så stor at overskriften alene fyldte en
        skærm.
 
-       28 % på overskrifter, 12 % på brødtekst, 28 % på luften (07-09-2026:
-       første forsøg med 14/6/16 var for mildt — heroen fyldte stadig hele
-       viewporten på Jonas' skærm).
+       32 % på overskrifter, 16 % på brødtekst, 32 % på luften. Tre runder
+       den 07-09-2026: 14/6/16 og derefter 28/12/28 var begge for milde —
+       heroen fyldte stadig for meget på Jonas' skærm.
 
        ⚠️ SKRUER MAN VIDERE NED, KOLLAPSER NOGLE clamp(). Et loft der bliver
        MINDRE end sit eget gulv får clamp til at returnere gulvet, og så
        holder elementet op med at skalere med resten. Se listen af de syv
        regler der allerede står på gulvet i dag — de er noteret i CSS'en dér
        hvor de står, med `⚠️ PÅ GULVET`. */
-    --sk:.72;
-    --sk-t:.88;
-    --sp:.72;
+    --sk:.68;
+    --sk-t:.84;
+    --sp:.68;
   }
 }
 body{font-family:'Inter',system-ui,sans-serif;color:var(--navy);line-height:1.6;-webkit-font-smoothing:antialiased}
