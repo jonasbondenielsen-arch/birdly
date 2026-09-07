@@ -28,10 +28,14 @@ import { sporFunnel } from "../../lib/ctaSporing";
 // sektion der starter tom beder den besøgende om at arbejde for beviset. Alle
 // andre fag er ét klik væk og lige så ægte.
 //
-// ⚠️ EKSEMPLERNE KRÆVER DEN NYE preview-kandidater. Feltet `eksempler` er
-// additivt og udrulles separat (birdly-admin, gren `relaunch-eksempler`). Indtil
-// da returnerer funktionen kun tallet — og så viser vi tallet uden kort frem for
+// ⚠️ DER VISES INGEN OPGAVEKORT LIGE NU, OG DET ER MED VILJE (07-09-2026).
+// Både Edge Function'en (preview-kandidater) og hjælperen (lib/kandidater.js)
+// er rullet TILBAGE til produktionens version, fordi matchmotoren skal være
+// urørt. `med_eksempler` sendes stadig med, men serveren kender ikke feltet, så
+// svaret indeholder ingen `eksempler` — og så viser vi tallet uden kort frem for
 // at falde tilbage på noget irrelevant. Se `manglerEksempler` nedenfor.
+// Skal kortene tændes igen, kræver det Jonas' ja til at deploye den additive
+// udgave af preview-kandidater.
 // ============================================================================
 
 // Rækkefølgen er GTM-prioriteret: rengøring og service først, fordi det er dem

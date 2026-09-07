@@ -732,3 +732,15 @@ select.st-felt{appearance:none;background-image:url("data:image/svg+xml;utf8,<sv
   .st-minianker{grid-template-columns:1fr;gap:10px}
   .st-smaa{padding:13px 15px}
 }
+
+/* Puljen bag det fag-specifikke tal på første-scan-skærmen.
+   ⚠️ SAMME DATA SOM FORSIDENS BEVIS-BJÆLKE (get-opgave-tal). De store tal er
+   totaler, det lille er kundens fag — derfor står de i samme sætning med
+   "heraf matcher", så totalen ikke kan læses som hendes eget tal. */
+.st-pulje{
+  margin-top:14px;font-size:15px;line-height:1.6;color:var(--navy-soft);
+  background:var(--sky-soft);border:1px solid var(--sky-200);
+  border-radius:12px;padding:13px 16px
+}
+.st-pulje b{font-weight:800;color:var(--navy)}
+.st-pulje-fin{display:block;margin-top:6px;font-size:12.5px;color:var(--navy-soft)}

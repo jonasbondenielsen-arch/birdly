@@ -1,4 +1,5 @@
 import Start from "../../components/Start";
+import { hentOpgaveTal } from "../../lib/opgaveTal";
 
 // /start — husets ENESTE tilmeldings-funnel (03-08-2026).
 //
@@ -34,5 +35,13 @@ export const metadata = {
 // ?betaling=annulleret  cancel_url — hun afbrød, intet er trukket.
 export default async function Page({ searchParams }) {
   const { fag = null, region = null, betaling = null } = (await searchParams) || {};
-  return <Start startFag={fag} startRegion={region} betaling={betaling} />;
+  // ⚠️ SAMME KILDE SOM FORSIDEN, INTET NYT. hentOpgaveTal() kalder den
+  // eksisterende get-opgave-tal — samme funktion, samme cache (10 min), samme
+  // felter som bevis-bjælken på / og /kom-i-gang. Vi henter altså ikke nye data;
+  // vi viser de tal huset allerede har, ét sted mere.
+  //
+  // ⚠️ KASTER ALDRIG. Fejler kaldet, returnerer hentOpgaveTal null, og funnelen
+  // renderer bevis-linjen slet ikke — præcis som forsiden gør.
+  const opgaveTal = await hentOpgaveTal();
+  return <Start startFag={fag} startRegion={region} betaling={betaling} opgaveTal={opgaveTal} />;
 }

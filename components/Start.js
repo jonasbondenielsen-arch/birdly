@@ -201,7 +201,7 @@ function tilE164(raa) {
   return d.length >= 8 ? "+" + d : null;
 }
 
-export default function Start({ startFag = null, startRegion = null, betaling = null }) {
+export default function Start({ startFag = null, startRegion = null, betaling = null, opgaveTal = null }) {
   // ⚠️ RETUR FRA REEPAY. Den hostede checkout forlader vores side, så al state er
   // væk når kunden kommer tilbage — derfor afgøres kvitteringen af URL'en, ikke af
   // hukommelsen. `ok` viser kvitteringen; `annulleret` sender hende tilbage i
@@ -947,6 +947,25 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
     return () => { levende = false; };
   }, [katalog, trin, preBevis, fagByKey, preFag]);
 
+  // ══════════════════════════════════════════════════════════════════════════
+  // FORSIDENS BEVIS-TAL, GENBRUGT I FUNNELEN
+  //
+  // ⚠️ SAMME KILDE, INGEN NYE TAL. Felterne kommer fra get-opgave-tal via
+  // lib/opgaveTal.js — nøjagtig de samme værdier som bevis-bjælken viser på
+  // forsiden og /kom-i-gang. Der er ikke tilføjet et eneste nyt opslag.
+  //
+  // ⚠️ MANGLER ET FELT, VISES DET IKKE. Samme regel som forsiden: et gæt eller
+  // et nul er værre end ingen linje. Er hele svaret null (fejlet kald), står
+  // bevis-linjen der slet ikke.
+  //
+  // ⚠️ DE STORE TAL ER TOTALER, DET LILLE ER FAG-SPECIFIKT. Totalerne beskriver
+  // hele den aktive pulje; det fag-specifikke tal kommer fra scanningen og
+  // gælder KUN kundens fag. De må aldrig bytte plads eller blandes sammen — så
+  // ville vi love at hendes fag har 398 opgaver.
+  const bevisAabne = typeof opgaveTal?.bydbare_aabne === "number" ? opgaveTal.bydbare_aabne : null;
+  const bevisNye = typeof opgaveTal?.nye_7_dage === "number" ? opgaveTal.nye_7_dage : null;
+  const bevisBydbare = typeof opgaveTal?.bydbare === "number" ? opgaveTal.bydbare : null;
+
   // Skærm → etape. Ukendt skærm falder til første etape frem for at kaste.
   const etape = SKAERM_ETAPE[trin] ?? 0;
 
@@ -1314,6 +1333,29 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
                   {foersteScan.i_omraade === 1 ? "aktiv mulighed lige nu" : "aktive muligheder lige nu"}
                 </span>
               </div>
+
+              {/* ⚠️ HELE PULJEN, SÅ TALLET FÅR EN MÅLESTOK. "16 muligheder" siger
+                  ikke i sig selv om Birdly er stor eller lille; sat op mod de
+                  åbne opgaver i hele beholdningen gør det.
+                  ⚠️ TOTALERNE ER STORE, FAG-TALLET ER LILLE — og sætningen siger
+                  "heraf matcher", så ingen kan læse totalen som sit eget tal.
+                  ⚠️ Hvert led renderes kun hvis feltet FINDES. Samme regel som
+                  bevis-bjælken på forsiden: hellere en kortere sætning end et
+                  gættet tal. */}
+              {(bevisAabne != null || bevisNye != null) && (
+                <p className="st-pulje">
+                  Birdly holder øje med{" "}
+                  {bevisAabne != null && <><b>{daTal(bevisAabne)}</b> åbne opgaver lige nu</>}
+                  {bevisAabne != null && bevisNye != null && " · "}
+                  {bevisNye != null && <><b>{daTal(bevisNye)}</b> nye de seneste 7 dage</>}
+                  {" "}— heraf matcher <b>{foersteScan.i_omraade}</b> jeres fag.
+                  {bevisBydbare != null && (
+                    <span className="st-pulje-fin">
+                      {daTal(bevisBydbare)} opgaver i alt · opdateres 2× dagligt
+                    </span>
+                  )}
+                </p>
+              )}
 
               {/* ⚠️ ÆGTE OPGAVER, ELLER INGEN KORT. Mangler eksemplerne (den
                   additive udgave af preview-kandidater er ikke rullet ud endnu),
