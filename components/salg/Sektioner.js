@@ -220,23 +220,23 @@ export function Problemet() {
         <div className="sg-tre">
           <div className="sg-kort">
             <div className="sg-kort-ic"><Oeje /></div>
-            <h3>Du skal selv holde øje</h3>
-            <p>Nye opslag kommer løbende — mens I passer jeres virksomhed.</p>
+            <h3>Vi finder de rigtige.</h3>
+            <p>Vi sorterer støjen fra og finder de opgaver, der faktisk passer til jer.</p>
           </div>
           <div className="sg-kort">
             <div className="sg-kort-ic"><Bunke /></div>
-            <h3>Det meste er ikke relevant</h3>
-            <p>Forkert fag, område eller opgavestørrelse.</p>
+            <h3>Vi sender dem direkte til jer.</h3>
+            <p>Ingen daglig jagt i udbudsportaler. Når noget passer, får I besked.</p>
           </div>
           <div className="sg-kort">
             <div className="sg-kort-ic"><Ur /></div>
-            <h3>Den rigtige kan blive overset</h3>
-            <p>En relevant mulighed kan dukke op, mens fokus er et helt andet sted.</p>
+            <h3>De store skal ikke have det hele.</h3>
+            <p>Offentlige kontrakter er også for mindre virksomheder. Birdly gør det lettere at komme med i spillet.</p>
           </div>
         </div>
 
         <p className="sg-afslut">
-          Birdly vender det om: I fortæller os, hvad I vil have. Vi holder øje. I får besked.
+          Flere relevante opgaver. Mindre jagt. Mere forretning.
         </p>
       </div>
     </section>
