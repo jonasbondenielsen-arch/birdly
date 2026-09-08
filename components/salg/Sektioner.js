@@ -3,6 +3,7 @@ import Cta, { CtaSekundaer } from "./Cta";
 import SmsTelefon from "./SmsTelefon";
 import FaqListe from "./FaqListe";
 import { Flueben, Kryds, Oeje, Bunke, Ur } from "./Ikoner";
+import { tekster } from "../../lib/tekster";
 import { daTal, fmtOpdateret } from "../../lib/opgaveTal";
 import { PLAN, priceText, YEARLY_SAVING, TRIAL_DAYS } from "../../lib/pakke";
 import {
@@ -33,10 +34,13 @@ import { byggAnker, BETINGET_LINJE, FORBEHOLD } from "../../lib/vaerdiAnker";
 
 // ---------------------------------------------------------------- hjælpere
 
-function TrustRaekke({ mork = false }) {
+function TrustRaekke({ mork = false, marked = "DK" }) {
+  // DK bruger husets TRUST fra salgTekst.js UAENDRET; andre markeder har deres
+  // egen raekke i ordbogen. Der oversaettes ikke i koden.
+  const raekke = marked === "DK" ? TRUST : (tekster(marked).trust || TRUST);
   return (
     <ul className="sg-trust">
-      {TRUST.map((t) => (
+      {raekke.map((t) => (
         <li key={t}>
           <Flueben farve={mork ? "#2EB7FF" : "#00B3A6"} size={17} /> {t}
         </li>
@@ -79,9 +83,17 @@ export function Hero({
   funnelHref,
   overskrift,
   under,
-  eyebrow = "For rengørings- & servicevirksomheder",
-  chips = HERO_CHIPS,
+  eyebrow,
+  chips,
+  // ⚠️ MARKEDET ER EN PROP MED DK SOM DEFAULT. Laeste komponenten selv
+  // headers(), ville forsiden blive DYNAMISK og miste sin cache - og DK's
+  // statiske forside er praecis det der ikke maa roeres. Den danske rute
+  // sender ingenting, faar DK-ordbogen, og renderer noejagtig som foer.
+  marked = "DK",
 }) {
+  const T = tekster(marked).hero;
+  eyebrow = eyebrow ?? T.eyebrow;
+  chips = chips ?? T.chips;
   return (
     <section className="sg-hero">
       <div className="sg-wrap sg-herogrid">
@@ -101,22 +113,17 @@ export function Hero({
                 efter "rengørings-", og en bindestreg i slutningen af en linje
                 læses som et delt ord — ikke som den korrekte danske
                 sammentrækning "rengørings- og serviceopgaver". */}
-            {overskrift || <>Få flere rengørings-&nbsp;og serviceopgaver.</>}
-            <span className="sg-em">Uden selv at lede.</span>
+            {overskrift || T.overskrift}
+            <span className="sg-em">{T.overskriftEm}</span>
           </h1>
           {/* ⚠️ ÉN SÆTNING, OG DER MÅ IKKE KOMME MERE. Hero'en skal forstås på
               under fem sekunder; hver ekstra linje her koster af den tid. */}
           <p className="sg-lead">
-            {under || (
-              <>
-                Birdly finder offentlige og private opgaver, der passer til jeres
-                virksomhed — og sender nye match direkte på SMS.
-              </>
-            )}
+            {under || T.under}
           </p>
 
           {chips?.length > 0 && (
-            <ul className="sg-chips" aria-label="Eksempler på opgavetyper">
+            <ul className="sg-chips" aria-label={T.chipsLabel}>
               {chips.map((c) => <li key={c}>{c}</li>)}
             </ul>
           )}
@@ -129,7 +136,7 @@ export function Hero({
             <Cta href={funnelHref} placering="hero" stor />
             <CtaSekundaer href="/sadan-virker-det" placering="hero-sekundaer" />
           </div>
-          <TrustRaekke />
+          <TrustRaekke marked={marked} />
         </div>
         <div>
           <SmsTelefon />
@@ -150,7 +157,8 @@ export function Hero({
  * er det første øjet skal fange — tallene er dokumentationen bagefter, ikke
  * sidens hovedbudskab. Derfor er de mindre end H1 og bjælken er lav.
  */
-export function BevisBjaelke({ tal }) {
+export function BevisBjaelke({ tal, marked = "DK" }) {
+  const T = tekster(marked).bevis;
   const bydbare = typeof tal?.bydbare === "number" ? tal.bydbare : null;
   const aabne = typeof tal?.bydbare_aabne === "number" ? tal.bydbare_aabne : null;
   const nye = typeof tal?.nye_7_dage === "number" ? tal.nye_7_dage : null;
@@ -162,7 +170,7 @@ export function BevisBjaelke({ tal }) {
     <section className="sg-bevis">
       <div className="sg-wrap">
         <div className="sg-bevis-h">
-          <span className="sg-prik" aria-hidden="true" /> Birdly arbejder allerede
+          <span className="sg-prik" aria-hidden="true" />{" " + T.overskrift}
         </div>
         {/* ⚠️ KORT, IKKE LØSE TAL. Tallene svævede før på hvid baggrund og lignede
             en fodnote man kunne scrolle forbi. I hver sit kort på en dæmpet
@@ -172,31 +180,31 @@ export function BevisBjaelke({ tal }) {
           {aabne != null && (
             <div className="sg-bevis-kort">
               <div className="sg-tal">{daTal(aabne)}</div>
-              <small>opgaver med åben frist</small>
+              <small>{T.aabne}</small>
             </div>
           )}
           {bydbare != null && (
             <div className="sg-bevis-kort">
               <div className="sg-tal">{daTal(bydbare)}</div>
-              <small>opgaver vi holder øje med</small>
+              <small>{T.bydbare}</small>
             </div>
           )}
           {nye != null && (
             <div className="sg-bevis-kort">
               <div className="sg-tal">{daTal(nye)}</div>
-              <small>nye de seneste 7 dage</small>
+              <small>{T.nye}</small>
             </div>
           )}
           <div className="sg-bevis-kort">
-            <div className="sg-tal">2× dagligt</div>
-            <small>opdaterer Birdly</small>
+            <div className="sg-tal">{T.frekvensTal}</div>
+            <small>{T.frekvens}</small>
           </div>
         </div>
         {/* ⚠️ Tidspunktet er hentetidspunktet fra sidste gennemførte ingest-kørsel
             — ALDRIG new Date(). En klokke der viser "nu" beviser ingenting om
             hvornår vi sidst hentede; den ville stå og lyve friskhed. Mangler det,
             står linjen der slet ikke. */}
-        {opdateret && <p className="sg-bevis-opd">Sidst opdateret {opdateret}</p>}
+        {opdateret && <p className="sg-bevis-opd">{T.opdateret + " "}{opdateret}</p>}
       </div>
     </section>
   );

@@ -44,6 +44,32 @@ export function proxy(request) {
 
   const headers = new Headers(request.headers);
   headers.set(MARKED_HEADER, marked);
+
+  // ── REWRITE TIL MARKEDETS EGET TRAE ────────────────────────────────────────
+  // ⚠️ HER STOD "DEN SAETTER EEN HEADER OG GOER ELLERS INTET". Det gjaldt saa
+  // laenge der kun fandtes eet site. Nu findes det engelske, og valget stod
+  // mellem to onder:
+  //   (a) lade `/` laese headers() og vaelge marked pr. request - hvilket ville
+  //       goere DEN DANSKE forside dynamisk og koste dens cache
+  //   (b) rewrite britiske vaerter til et eget statisk trae under /uk
+  // (b) vinder, fordi den danske renderingssti saa er BOGSTAVELIGT UROERT -
+  // og det er dét der goer DK bevisligt byte-identisk.
+  //
+  // ⚠️ ADRESSEN AENDRER SIG IKKE FOR BRUGEREN. Et rewrite er internt; en
+  // redirect ville have vist /uk i adresselinjen og gjort det til en anden side.
+  //
+  // ⚠️ KUN NAAR MARKEDET IKKE ER STANDARD. Er svaret DK, roeres ruten ikke med
+  // eet tegn - saa kan et uheld her ikke ramme Danmark.
+  if (marked !== STANDARD_MARKED) {
+    const sti = request.nextUrl.pathname;
+    const praefiks = "/" + marked.toLowerCase();
+    if (!sti.startsWith(praefiks)) {
+      const url = request.nextUrl.clone();
+      url.pathname = praefiks + (sti === "/" ? "" : sti);
+      return NextResponse.rewrite(url, { request: { headers } });
+    }
+  }
+
   return NextResponse.next({ request: { headers } });
 }
 
