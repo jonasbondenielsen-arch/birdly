@@ -405,9 +405,12 @@ export default function Forside({ opgaveTal, funnelHref = "/kom-i-gang" }) {
             <div className="reveal">
               <span className="kick" style={{ color: "var(--sky)" }}>Om os</span>
               <h2>Bygget af folk, der selv har siddet i den anden ende.</h2>
-              <p>Gennem mange år i grossist- og produktionsleddet har vi selv mærket, hvor besværligt og tidskrævende det er at finde de opgaver, der rent faktisk passer. Derfor lavede vi Birdly — det stik modsatte af en stor, støvet udbudsportal.</p>
-              <p>Vi gør én ting: matcher konkrete opgaver med din virksomhed og sender dig en simpel besked. Resten kan du selv.</p>
-              <div className="sign">Folkene bag Birdly</div>
+              <p>Birdly er bygget til de mindre rengørings- og servicevirksomheder, der er trætte af, at offentlige opgaver føles som noget, der kun er for de store.</p>
+              <p>Det gider vi ikke acceptere.</p>
+              <p>Der ligger masser af gode offentlige og private opgaver derude. Problemet er bare, at de ofte er gemt bag tunge portaler, lange tekster og systemer, som mindre virksomheder hverken har tid eller lyst til at rode med.</p>
+              <p>Birdly gør det enkelt. Vi finder de relevante opgaver, sorterer støjen fra og giver jer besked, når noget passer.</p>
+              <p>Vi er i dag i Danmark og England, og Holland er næste marked. For behovet er det samme overalt: Dygtige mindre virksomheder skal have en reel chance for at byde på de opgaver, de faktisk kan løse.</p>
+              <p>De store selskaber skal ikke have banen for sig selv.</p>
             </div>
             <div className="promise reveal">
               <div className="h"><svg width="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="9" r="6" stroke="#2EB7FF" strokeWidth="2" /><path d="M8 14l-2 8 6-3 6 3-2-8" stroke="#2EB7FF" strokeWidth="2" strokeLinejoin="round" /></svg> Vores løfte</div>
