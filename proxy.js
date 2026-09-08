@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { markedForHost, STANDARD_MARKED } from "./lib/markets";
+import { markedForHostMedOverride, STANDARD_MARKED } from "./lib/markets";
 
 // ============================================================================
 // HVILKET MARKED ER DENNE REQUEST? (multimarket Fase 6, 08-09-2026)
@@ -34,7 +34,13 @@ import { markedForHost, STANDARD_MARKED } from "./lib/markets";
 export const MARKED_HEADER = "x-birdly-marked";
 
 export function proxy(request) {
-  const marked = markedForHost(request.headers.get("host"))?.id || STANDARD_MARKED;
+  // ⚠️ OVERRIDEN GAELDER KUN NAAR VAERTEN ER UKENDT (se markets.js). Den
+  // saettes paa preview-deploymentet, saa UK-sitet kan ses foer DNS peges - og
+  // den kan ALDRIG flytte www.birdly.dk, fordi en kendt vaert altid vinder.
+  const marked = markedForHostMedOverride(
+    request.headers.get("host"),
+    process.env.NEXT_PUBLIC_FORCE_MARKED,
+  )?.id || STANDARD_MARKED;
 
   const headers = new Headers(request.headers);
   headers.set(MARKED_HEADER, marked);
