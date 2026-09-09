@@ -174,7 +174,7 @@ export default function Salgsside({ tal, funnelHref, fag = null, marked = "DK" }
   // Hver sektions egen pakke. Nøglerne er dem sektionen faktisk læser —
   // står der en her, sektionen ikke bruger, er den død vægt i strømmen.
   const ord = O && {
-    hero: { ...O.hero, trust: O.trust, ctaPrimaer: cta, ctaSekundaer: O.cta?.sekundaer },
+    hero: { ...O.hero, trust: O.trust, ctaPrimaer: cta, ctaSekundaer: O.cta?.sekundaer, telefon: O.telefon },
     bevis: O.bevis,
     vaerdi: { ...O.vaerdi, ctaPrimaer: cta },
     offentlige: { ...O.offentlige, ctaPrimaer: cta },
@@ -183,7 +183,7 @@ export default function Salgsside({ tal, funnelHref, fag = null, marked = "DK" }
     koster: O.koster,
     loesningen: { ...O.loesningen, ctaPrimaer: cta },
     motoren: { ...O.motoren, ctaPrimaer: cta },
-    sms: O.sms,
+    sms: { ...O.sms, telefon: O.telefon },
     portal: O.portal,
     overgang: { ...O.overgang, ctaPrimaer: cta },
     // ⚠️ PRISER LÅNER FRA RISIKO, OG NØGLERNE ER OMDØBT MED VILJE.

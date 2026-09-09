@@ -164,6 +164,34 @@ export default function StartUk({ katalog, pris, hjem }) {
         <a className="st-tilbage-link" href={hjem}>{T.tilbage}</a>
       </div>
 
+      {/* ⚠️ FUNNELENS TOP - DEN MANGLEDE HELT.
+          `funnel.eyebrow`, `.overskrift`, `.under` og `.intro` laa i ordbogen
+          fra foerste dag og blev ALDRIG rendret: komponenten aabnede direkte
+          i firmanummer-feltet, saa den britiske funnel havde logo, et
+          tilbage-link og et input - og intet argument. DK's funnel har hele
+          `st-pre`-blokken foer feltet, og noten dér siger hvorfor:
+          indvendingen skal besvares FOER man beder om noget.
+          Opdaget af scripts/verify-uk-indhold.mjs 09-09-2026.
+
+          ⚠️ KUN FOERSTE TRIN. Paa trin 2-6 har den besoegende allerede
+          sagt ja; saelger man videre dér, ser det ud som om man er i tvivl.
+
+          ⚠️ DK's TRIN-INDIKATOR ER IKKE MED. Den kraever fire etape-navne
+          ("1 Virksomhed · 2 Opgaver · 3 Dine match · 4 Start Birdly"), og de
+          findes ikke paa engelsk - hverken i copy-filen eller i en brief.
+          Hellere en manglende indikator end fire navne jeg selv har fundet
+          paa. Flagget til Jonas. */}
+      {navn === "firma" && (
+        <div className="st-pre">
+          <div className="st-pre-venstre">
+            <span className="st-pre-pill">{T.eyebrow}</span>
+            <h1>{T.overskrift}</h1>
+            <p className="st-pre-sub">{T.under}</p>
+            <p className="st-pre-sms">{T.intro}</p>
+          </div>
+        </div>
+      )}
+
       <div className="st-kort">
         {fejl && <p className="st-fejl">{fejl}</p>}
         {besked && <p className="st-info">{besked}</p>}

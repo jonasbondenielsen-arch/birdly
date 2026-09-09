@@ -64,6 +64,15 @@ const norm = (s) =>
     .replace(/"b":"[A-Za-z0-9_-]{15,}"/g, "BUILDID")
     .replace(/\/_next\/static\/chunks\/[A-Za-z0-9_.-]+/g, "CHUNK")
     .replace(/\/_next\/static\/[A-Za-z0-9_-]{15,}\//g, "/_next/static/BUILD/")
+    // ⚠️ VERCELS DEPLOYMENT-ID. Den findes KUN paa et deployet site, ikke i et
+    // lokalt byg, og den er unik pr. deployment - noejagtig som Next's build-id
+    // ovenfor. Uden den her kan vagten ikke maale mod PRODUKTION, og det er
+    // netop dér beviset betyder mest: et lokalt byg beviser hvad koden goer,
+    // produktionen beviser hvad kunden faar.
+    // To former: `data-dpl-id="dpl_…"` paa <html> og `?dpl=dpl_…` paa aktiver.
+    .replace(/ data-dpl-id="dpl_[A-Za-z0-9]+"/g, "")
+    .replace(/\?dpl=dpl_[A-Za-z0-9]+/g, "")
+    .replace(/\\"dpl_[A-Za-z0-9]+\\"/g, "DPL")
     // ⚠️ KUN SELVE TIDSSTEMPLET, ikke "alt efter ordet opdateret". Foerste
     // udgave var graadig og aad forskellige maengder tekst i de to filer - saa
     // meldte den forskel hvor der ingen var. En normaliser der er for bred,

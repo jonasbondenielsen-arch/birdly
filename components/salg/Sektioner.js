@@ -426,7 +426,15 @@ export function Hero({
         <div>
           {/* ⚠️ MARKEDET SKAL MED HERTIL. Uden det stod telefonen på dansk midt
               i den britiske hero — se noten i SmsTelefon.js. */}
-          <SmsTelefon ord={ord} />
+          {/* ⚠️ `ord.telefon`, IKKE `ord`. Hero's egen skive er hero-teksten;
+              telefonen har sin egen. Sendte vi hele hero-skiven, fandt
+              SmsTelefon ingen af sine noegler - og fordi den falder tilbage til
+              DA_TELEFON KUN naar prop'en er tom, blev resultatet en TOM
+              telefon paa den britiske side. Ikke dansk, ikke engelsk: tom.
+              Set paa et skaermbillede af produktionen 09-09-2026; ingen af
+              mine indholds-tjek saa den, fordi de talte sektioner og ledte
+              efter danske tegn - ikke efter om teksten var DER. */}
+          <SmsTelefon ord={ord?.telefon} />
         </div>
       </div>
     </section>
@@ -631,7 +639,7 @@ export function SmsDemo({ fag = "rengoring", ord = null }) {
       <div className="sg-wrap sg-demogrid">
         <div>
           <SmsTelefon
-            ord={ord}
+            ord={ord?.telefon}
             titel={T.telefonTitel}
             fag={e?.fag}
             sted={e?.sted}
