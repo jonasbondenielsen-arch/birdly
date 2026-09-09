@@ -1,6 +1,7 @@
 import Salgsside from "../../components/salg/Salgsside";
 import { hentOpgaveTal } from "../../lib/opgaveTal";
 import { baseUrl, MARKEDER } from "../../lib/markets";
+import { tekster } from "../../lib/tekster";
 
 const GB = MARKEDER.GB;
 
@@ -37,6 +38,28 @@ export const metadata = {
   // ⚠️ CANONICAL PEGER PAA getbirdly.co.uk, ikke paa /uk. Stien er intern; det
   // er vaerten kunden ser, og den Google skal indeksere.
   alternates: { canonical: baseUrl("GB") + "/" },
+  // ⚠️ OG-TAGGENE SKAL OVERSKRIVES, IKKE ARVES. Uden det her blok arver
+  // /uk rodlayoutets DANSKE openGraph og twitter - maalt 09-09-2026: et delt
+  // link til den britiske side viste "Offentlige og private opgaver direkte
+  // paa SMS | Birdly" med dansk broedtekst. Siden er noindex, saa Google saa
+  // det aldrig; et menneske der delte linket, gjorde.
+  //
+  // ⚠️ INGEN `images`. Det danske OG-billede har dansk tekst braendt ind,
+  // og et britisk findes ikke endnu. Hellere intet billede end et forkert -
+  // Fase B, sammen med logo-assettet.
+  openGraph: {
+    title: "Get more cleaning and service contracts | Birdly",
+    description: tekster("GB").meta.ogBeskrivelse,
+    url: baseUrl("GB") + "/",
+    siteName: tekster("GB").meta.ogSite,
+    locale: "en_GB",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "Get more cleaning and service contracts | Birdly",
+    description: tekster("GB").meta.ogBeskrivelse,
+  },
   // ⚠️ INGEN INDEKSERING FOER MARKEDET ER LANCERET. GB er DRAFT: juraen er
   // DRAFT, der er ingen GBP-plan i Frisbii, og flere sektioner mangler endnu
   // deres engelske copy. Et indekseret site i den tilstand ville lokke folk

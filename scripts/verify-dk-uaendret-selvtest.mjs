@@ -59,6 +59,26 @@ const proever = [
   // Blankede vi den med, kunne "2×" blive til "3×" uden at nogen saa det.
   ["st-stat: KONSTANTEN 2x aendres (den er IKKE et live-tal)",
    (s) => s.replace("<b>2×</b>", "<b>3×</b>")],
+
+  // ⚠️ 09-09-2026: RSC-STRØMMEN SAMMENLIGNES NU SOM INDHOLD, IKKE SOM
+  // RÆKKEFØLGE. Next.js tildeler ikke raekke-id'er deterministisk mellem to
+  // byg af samme kildekode - bevist med en kontrolproeve paa 9dc2ccd mod sig
+  // selv. Det er den stoerste loesning vagten har faaet, og derfor de tre
+  // proever herunder: de beviser at det KUN er nummereringen der er blevet
+  // usynlig, ikke indholdet.
+  //
+  // En raekke-id-ombytning maa IKKE fange (det er stoejen vi tilgav), men alt
+  // andet i stroemmen skal stadig give roedt.
+  // ⚠️ NETOP DEN HER FORM VAR DEN AEGTE REGRESSION 09-09-2026: `marked="DK"`
+  // blev sendt som prop til en klient-komponent og landede i stroemmen paa
+  // hver eneste danske side. Proeven beviser at en prop-vaerdi i stroemmen
+  // stadig giver roedt efter at nummereringen blev tilgivet.
+  ["RSC: en PROP-VAERDI aendres (stroemmens indhold skal stadig sammenlignes)",
+   (s) => s.replace('\\"marked\\":\\"DK\\"', '\\"marked\\":\\"GB\\"')],
+  ["RSC: en KLIENT-REFERENCE forsvinder (en komponent er faldet ud)",
+   (s) => s.replace(/\\n[0-9a-f]+:I\[\d+,\[[^\]]*\],\\"IconMark\\"\]/, "")],
+  ["RSC: en TEKST i stroemmen aendres",
+   (s) => s.replace('\\"Hvilke opgaver finder Birdly?\\"', '\\"Hvilke opgaver finder I?\\"')],
 ];
 
 let fejl = 0;

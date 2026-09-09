@@ -96,6 +96,24 @@ const FRA_BRIEF = new Map([
    "'\"across England\" -> \"across the UK\". Vores 12 regioner daekker Skotland/Wales/NI, " +
    "saa \"England\" alene er usandt.' Resten af saetningen er filens egen."],
 
+  // ── FAQ'ens datakilde-svar MED Jonas' geografi-afklaring. ──
+  // ⚠️ SAMME RETTELSE SOM §26's supporting-linje, og af samme grund. Filen
+  // aabner svaret "For England, Birdly uses...". Jonas 09-09-2026: "brug 'the
+  // UK', ikke 'England' ... Find a Tender daekker Skotland/Wales/NI". Lod vi
+  // sidens EGEN kildeforklaring sige "For England", ville den modsige
+  // funnelens "across the UK" tre klik vaek. Resten af svaret er filens eget,
+  // ordret - ogsaa de to afsnit, der her er slaaet sammen til eet svar.
+  ["For the UK, Birdly uses official public procurement data, with Find a Tender as the main central source for new Procurement Act notices. We can also use other official and buyer sources where needed. The tender documents and submission itself may sit on a separate e-tender portal, and Birdly links you back to the original source. The raw notices are public. Birdly's job is to do the watching, filtering and matching so you don't have to.",
+   "Copy-filen §25's datakilde-svar, med Jonas' rettelse 09-09-2026: " +
+   "'brug \"the UK\", ikke \"England\"'. Kun de tre foerste ord er aendret; " +
+   "resten staar ordret i filen."],
+
+  // ── §30's homepage-description MED samme geografi-rettelse. ──
+  ["Birdly finds relevant public and private cleaning work across the UK and sends the right matches straight to your phone. 14 days free.",
+   "Copy-filen §30's homepage-description, med Jonas' rettelse 09-09-2026: " +
+   "'\"across England\" -> \"across the UK\"'. Bruges som og:description og " +
+   "twitter:description paa /uk, saa et delt link ikke viser den arvede danske."],
+
   // ── GBP-baandene. Jonas' brief 09-09-2026, punkt 4. ──
   // ⚠️ IKKE BARE ETIKETTER. Taersklerne bindes til max_amount i match-reglen,
   // praecis som DK's baand. Aendrer nogen et tal her, aendrer de hvad kunden
@@ -120,8 +138,9 @@ const UNDTAGET = new Map([
           "ALDRIG vises til en kunde - etiketten staar ved siden af i 'label'."],
 
   // ── FAQ'ens foldeknap. UI-chrome, ikke salgscopy. ──
-  // ⚠️ DET ER TRE STRENGE JEG SELV HAR SKREVET, OG DE STAAR HER FOR AT DET SKAL
-  // VAERE SYNLIGT. Copy-filen beskriver ikke at FAQ'en foldes - foldningen er
+  // ⚠️ GODKENDT AF JONAS 09-09-2026 som "funktionel UI ... bare naturligt
+  // britisk engelsk". De staar her alligevel, saa det bliver ved med at vaere
+  // synligt at de ikke kommer fra copy-filen. Copy-filen beskriver ikke at FAQ'en foldes - foldningen er
   // husets egen loesning (lib/faq.js: seks synlige, resten foldet men stadig i
   // HTML'en saa den kan crawles), og filen har derfor ingen ordlyd til knappen.
   // Alternativet var at vise alle fjorten spoergsmaal og lade FAQ'en blive
