@@ -160,10 +160,10 @@ const UNDTAGET = new Map([
   //
   // Godkendt af Jonas 09-09-2026 som funktionel UI (samme kategori som
   // FAQ-foldeknappen). Ordforraadet er filens eget - "Company" fra "Company
-  // number"/"Company name", "Work" fra "relevant public and private work" -
+  // number"/"Company name", "Contracts" fra "What size of contracts" -
   // og "Start Birdly" er husets egen etape, ordret som DK's fjerde.
   // Vil Jonas have andre navne, er det tre strenge i en.js' funnel-blok.
-  ["etaper", "Funnelens tre etape-navne (Company / Work / Start Birdly). " +
+  ["etaper", "Funnelens tre etape-navne (Company / Contracts / Start Birdly). " +
              "Copy-filen har ingen etape-navne; huset kraever navngivne etaper " +
              "frem for 'Step 3 of 6' (se noten i components/Start.js)."],
   ["etapeord", "Skjult skaermlaeser-label: ordet 'Stage' i 'Stage 2 of 3'. UI-chrome."],
