@@ -32,6 +32,20 @@ import "../../app/start.css";
 
 const SKAERME = ["firma", "omraade", "stoerrelse", "type", "kontakt", "betaling"];
 
+// ⚠️ SEKS INTERNE SKAERME, TRE SYNLIGE ETAPER - og kunden ser aldrig de
+// seks. Husets regel fra components/Start.js: et taelleværk ("Step 3 of 6")
+// fortaeller hvor lang formularen er; en etape fortaeller hvad man er i gang
+// med. DK fjernede taelleværket 06-09-2026, og UK genindfoerer det ikke.
+//
+// Tilfoejes eller fjernes en skaerm, aendres KUN tabellen her.
+//   firma       -> Company
+//   omraade     -> Work
+//   stoerrelse  -> Work
+//   type        -> Work
+//   kontakt     -> Start Birdly
+//   betaling    -> Start Birdly
+const SKAERM_ETAPE = [0, 1, 1, 1, 2, 2];
+
 // ⚠️ SPEJLER app/api/company/route.js. Samme regel, to steder — Edge/route og
 // klient kan ikke dele kode her uden at trække serverkoden ind i bundtet.
 // Ændrer du den ene, skal du ændre den anden.
@@ -150,6 +164,7 @@ export default function StartUk({ katalog, pris, hjem }) {
   }
 
   const navn = SKAERME[skaerm];
+  const etape = SKAERM_ETAPE[skaerm];
 
   return (
     // ⚠️ SAMME STRUKTUR SOM DK's FUNNEL, og det er ikke kosmetik.
@@ -181,6 +196,23 @@ export default function StartUk({ katalog, pris, hjem }) {
           findes ikke paa engelsk - hverken i copy-filen eller i en brief.
           Hellere en manglende indikator end fire navne jeg selv har fundet
           paa. Flagget til Jonas. */}
+      {/* ⚠️ ETAPERNE STAAR OVER KORTET, OGSAA PAA FOERSTE SKAERM. De er en
+          orientering, ikke en kvittering: den der lander her skal kunne se at
+          det er kort, FOER hun skriver noget. Markup og klasser er husets
+          egne (.st-etaper i app/start.css) - `nu` for den aktuelle, `gjort`
+          for de overstaaede. */}
+      <ol
+        className="st-etaper"
+        aria-label={`${T.etapeOrd} ${etape + 1} ${T.etapeAf} ${T.etaper.length}: ${T.etaper[etape]}`}
+      >
+        {T.etaper.map((e, i) => (
+          <li key={e} className={i < etape ? "gjort" : i === etape ? "nu" : ""}>
+            <span className="st-etape-prik" aria-hidden="true">{i < etape ? "✓" : i + 1}</span>
+            <span className="st-etape-navn">{e}</span>
+          </li>
+        ))}
+      </ol>
+
       {navn === "firma" && (
         <div className="st-pre">
           <div className="st-pre-venstre">
@@ -188,6 +220,19 @@ export default function StartUk({ katalog, pris, hjem }) {
             <h1>{T.overskrift}</h1>
             <p className="st-pre-sub">{T.under}</p>
             <p className="st-pre-sms">{T.intro}</p>
+
+            {/* ⚠️ TRUST-RAEKKEN STAAR FOER FELTET, ikke efter. Det er DK's
+                begrundelse i Start.js: indvendingen skal vaere besvaret inden
+                man beder om noget.
+                ⚠️ STRENGEN ER COPY-FILENS EGEN, §26 "Trust:" - skrevet TIL
+                funnelen. Den stod indtil nu kun paa betalings-trinnet, hvor
+                den kom for sent. Punkterne er filens egen liste, delt paa
+                dens egen "·"-separator: samme ord, husets struktur. */}
+            <ul className="st-pre-trust">
+              {T.trust.split("·").map((t) => (
+                <li key={t}><span>✓</span> {t.trim()}</li>
+              ))}
+            </ul>
           </div>
         </div>
       )}

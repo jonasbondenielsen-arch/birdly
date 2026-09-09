@@ -150,6 +150,24 @@ const UNDTAGET = new Map([
                  "copy-filen beskriver ikke foldningen. Skrevet af CC, flagget til Jonas 09-09-2026."],
   ["meresuffix", "FAQ'ens foldeknap: ordet 'more' i '(8 more)'. Samme grund som mereprefix."],
   ["skjul", "FAQ'ens foldeknap i aaben tilstand: 'Show fewer questions'. Samme grund som mereprefix."],
+
+  // ── Funnelens etape-indikator. ──
+  // ⚠️ DE STAAR HER NETOP FORDI DE VILLE PASSERE VED ET TILFAELDE.
+  // Vagten spoerger `KILDE.includes(...)`, og "company" og "work" staar
+  // hundrede steder i copy-filen. De ville altsaa blive godkendt som
+  // "fundet i filen" uden at filen nogensinde har foreslaaet dem som
+  // etape-navne. En streng der bestaar ved et sammentraef, er ikke bevist.
+  //
+  // Godkendt af Jonas 09-09-2026 som funktionel UI (samme kategori som
+  // FAQ-foldeknappen). Ordforraadet er filens eget - "Company" fra "Company
+  // number"/"Company name", "Work" fra "relevant public and private work" -
+  // og "Start Birdly" er husets egen etape, ordret som DK's fjerde.
+  // Vil Jonas have andre navne, er det tre strenge i en.js' funnel-blok.
+  ["etaper", "Funnelens tre etape-navne (Company / Work / Start Birdly). " +
+             "Copy-filen har ingen etape-navne; huset kraever navngivne etaper " +
+             "frem for 'Step 3 of 6' (se noten i components/Start.js)."],
+  ["etapeord", "Skjult skaermlaeser-label: ordet 'Stage' i 'Stage 2 of 3'. UI-chrome."],
+  ["etapeaf", "Skjult skaermlaeser-label: ordet 'of'. UI-chrome."],
 ]);
 
 const { en } = await import("../lib/tekster/en.js").catch(() => import("./lib/tekster/en.js"));
