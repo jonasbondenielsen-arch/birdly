@@ -3,8 +3,6 @@ import Cta, { CtaSekundaer } from "./Cta";
 import SmsTelefon from "./SmsTelefon";
 import FaqListe from "./FaqListe";
 import { Flueben, Kryds, Oeje, Bunke, Ur } from "./Ikoner";
-import { tekster, t } from "../../lib/tekster";
-import { MARKEDER } from "../../lib/markets";
 import { daTal, fmtOpdateret } from "../../lib/opgaveTal";
 import { PLAN, priceText, YEARLY_SAVING, TRIAL_DAYS } from "../../lib/pakke";
 import {
@@ -33,86 +31,275 @@ import { byggAnker, BETINGET_LINJE, FORBEHOLD } from "../../lib/vaerdiAnker";
 // lib/vaerdiAnker.js før du rører én sætning dér.
 // ============================================================================
 
+
+// ============================================================================
+// DE DANSKE SEKTIONS-STRENGE.
+//
+// ⚠️ DE BOR HER, IKKE I lib/tekster/da.js - OG DET ER EN MAALT BESLUTNING.
+// da.js blev lavet for at DK ikke skulle kunne flytte sig ved et uheld:
+// komponenten slog op i stedet for at have teksten i sig. Men Sektioner.js
+// importeres af components/Forside.js, som er "use client" - saa opslaget
+// traak BEGGE ordboeger ned i den danske forsides klient-bundt, og
+// klient-referencerne blev registreret i en anden raekkefoelge end i
+// baseline. Forsiden var den eneste side der flyttede sig af det (09-09-2026).
+//
+// Strengene er FLYTTET hertil, ikke kopieret. To udgaver af den samme danske
+// saetning ville kunne skride fra hinanden uden at nogen saa det, og det er
+// praecis det da.js fandtes for at forhindre. Nu er der én udgave igen - den
+// ligger bare dér hvor den bruges, som den gjorde foer ordbogen fandtes.
+//
+// ⚠️ RET ALDRIG EN STRENG HER "MENS DU ER I GANG". En forbedret formulering
+// er en aendring af det live danske site og hoerer til sin egen opgave med
+// sin egen godkendelse.
+//
+// ⚠️ HAARDE MELLEMRUM OG TANKESTREGER ER MEDTAGET MED VILJE. Hero'ens
+// "rengoerings- og" har et haardt mellemrum, fordi linjen ellers braekkede
+// efter bindestregen og blev laest som et delt ord. Erstattes det med et
+// almindeligt mellemrum, ser diffen ens ud i en terminal og forskellig i en
+// browser.
+// ============================================================================
+
+const DA_HERO = {
+    eyebrow: "For rengørings- & servicevirksomheder",
+    //   = hårdt mellemrum. Se noten øverst.
+    // ⚠️ HAARDT MELLEMRUM, skrevet som kode med vilje. I komponenten
+    // stod der `&nbsp;`. Skrev jeg et almindeligt mellemrum her, ville de to
+    // strenge se ENS ud i en diff og FORSKELLIGE i browseren, hvor linjen igen
+    // ville braekke efter bindestregen. Et usynligt tegn skal skrives synligt.
+    overskrift: "Få flere rengørings- og serviceopgaver.",
+    overskriftEm: "Uden selv at lede.",
+    under:
+      "Birdly finder offentlige og private opgaver, der passer til jeres virksomhed — og sender nye match direkte på SMS.",
+    chips: ["Rengøring", "Vinduespolering", "Trappevask", "Ejendomsservice", "Erhvervsrengøring"],
+    chipsLabel: "Eksempler på opgavetyper",
+  };
+
+const DA_BEVIS = {
+    overskrift: "Birdly arbejder allerede",
+    opdateret: "Sidst opdateret",
+    // Etiketterne under hvert tal i bevis-bjælken.
+    aabne: "opgaver med åben frist",
+    bydbare: "opgaver vi holder øje med",
+    nye: "nye de seneste 7 dage",
+    frekvensTal: "2× dagligt",
+    frekvens: "opdaterer Birdly",
+  };
+
+const DA_PROBLEMET = {
+    kick: "Problemet",
+    // ⚠️ TO NØGLER, FORDI DER STÅR ET <br /> IMELLEM. Slås de sammen til én
+    // streng med et linjeskift, forsvinder linjebruddet i HTML.
+    overskrift: "Opgaverne er der.",
+    overskrift2: "Problemet er at finde de rigtige.",
+    kort: [
+      {
+        titel: "Vi finder de rigtige.",
+        tekst: "Vi sorterer støjen fra og finder de opgaver, der faktisk passer til jer.",
+      },
+      {
+        titel: "Vi sender dem direkte til jer.",
+        tekst: "Ingen daglig jagt i udbudsportaler. Når noget passer, får I besked.",
+      },
+      {
+        titel: "De store skal ikke have det hele.",
+        tekst:
+          "Offentlige kontrakter er også for mindre virksomheder. Birdly gør det lettere at komme med i spillet.",
+      },
+    ],
+    afslut: "Flere relevante opgaver. Mindre jagt. Mere forretning.",
+  };
+
+const DA_MOTOREN = {
+    kick: "Sådan virker det",
+    overskrift: "Du fortæller os én gang, hvad I leder efter.",
+    overskrift2: "Birdly gør resten.",
+    trin: [
+      {
+        nr: "01",
+        titel: "Fortæl hvad I vil have",
+        tekst: "Vælg fag, område og størrelsen på de opgaver, I vil høre om.",
+      },
+      {
+        nr: "02",
+        titel: "Birdly holder øje",
+        tekst: "Vi finder relevante offentlige og private muligheder og sorterer resten fra.",
+      },
+      {
+        nr: "03",
+        titel: "Få besked",
+        tekst: "Når noget passer, får I det direkte på SMS og mail.",
+      },
+    ],
+    flow: ["Jeres kriterier", "Birdly holder øje", "SMS til jer"],
+    resultatlinje: "Og så gør I kun noget, når opgaven er interessant.",
+    afslut: "Ingen daglig søgning. Ingen portal. Ingen støj.",
+  };
+
+const DA_SMS = {
+    kick: "Beskeden",
+    // ⚠️ OVERSKRIFTEN OG DE TO LINJER KOMMER FRA salgTekst.js FOR DANMARK
+    // (SMS_LINJE, SMS_UNDER, IKKE_HOLDE_OEJE). De står IKKE her — se `hus()`
+    // i Sektioner.js. Kun det der stod inline i komponenten bor i ordbogen.
+    lead1: "Birdly finder automatisk relevante offentlige og private opgaver til jeres virksomhed.",
+    punkter: ["Kort resumé", "Frist", "Direkte link", "Bud-skabelon hvor relevant"],
+    // Telefonens eksempel i DEN her sektion (SmsDemo) — ikke hero'ens.
+    telefonTitel: "Nyt Birdly-match",
+    telefonFrist: "18/09",
+  };
+
+const DA_VAERDI = {
+    kick: "Det er rigtige opgaver",
+    lead: "Birdly finder relevante offentlige og private opgaver til jer. I vælger selv, hvilke I vil byde på.",
+  };
+
+const DA_OFFENTLIGE = {
+    kick: "Offentlige opgaver",
+    trin: ["Birdly finder opgaven", "I får den på SMS", "I vælger, om I vil byde"],
+  };
+
+const DA_OVERGANG = {
+    overskrift: "De opgaver er der allerede.",
+    // ⚠️ MELLEMRUMMENE I ENDERNE HØRER TIL. Sætningen var delt af et <b> midt
+    // inde i sig selv, og de to tekstnoder bar hver sit mellemrum.
+    stor1: "Spørgsmålet er bare, om I ",
+    stor2: "ser dem",
+    stor3: " — og byder på dem.",
+  };
+
+const DA_KOSTER = {
+    kick: "Hvad det kan koste",
+    overskrift: "Den opgave, I ikke ser,",
+    overskrift2: "kan I heller ikke byde på.",
+  };
+
+const DA_LOESNINGEN = {
+    kick: "Løsningen",
+    overskrift: "Birdly leder.",
+    // ⚠️ ANDEN HALVDEL STÅR I ET <span> MED EGEN FARVE. To nøgler, fordi der
+    // er et <br /> og en farve imellem — ikke fordi sætningen er delt.
+    overskrift2: "I får besked.",
+    punkter: [
+      "Jeres fag",
+      "Jeres område",
+      "Jeres ønskede opgavestørrelse",
+      "Private og offentlige muligheder",
+    ],
+    lead: "Når noget passer, sender Birdly det direkte på SMS og mail.",
+    afslut: "Mindre søgning. Flere relevante muligheder.",
+  };
+
+const DA_RISIKO = {
+    kick: "Prøv det uden risiko",
+    // ⚠️ OVERSKRIFTEN ER GARANTI.overskrift FRA salgTekst.js. Den står ikke
+    // her: garanti-tekst har ÉN kilde, og CLAUDE.md er skarp på det.
+    lead: "Se først, hvad Birdly finder til jeres virksomhed. 0 kr. i dag.",
+    // ⚠️ FØRSTE PUNKT BYGGES AF TRIAL_DAYS ("{n} dage gratis"), fordi tallet
+    // kommer fra lib/pakke.js. Derfor står kun de tre faste her.
+    punkter: ["Ingen binding", "Ingen portal", "Opsætning på få minutter"],
+  };
+
+const DA_PORTAL = {
+    kick: "Forskellen",
+    overskrift: "Endnu en portal?",
+    overskrift2: "Nej tak.",
+    gammel: {
+      titel: "Den gamle måde",
+      under: "En almindelig udbudstjeneste",
+      punkter: ["Log ind", "Søg", "Vælg filtre", "Gennemgå opgaver", "Læs", "Sortér", "Gentag"],
+    },
+    ny: {
+      titel: "Birdly",
+      under: "Jeres kriterier, én gang",
+      // ⚠️ HANDLINGERNE ER BIRDLYS, IKKE KUNDENS. Venstre side er syv ting
+      // kunden selv skal gøre; her gør Birdly tre af fire. Det ER hele
+      // sammenligningen — ikke at vi har flere funktioner.
+      punkter: [
+        "Birdly holder øje",
+        "Birdly finder relevante opgaver",
+        "I får dem direkte på SMS",
+        "I vælger, hvilke I vil gå videre med",
+      ],
+    },
+    payoff: "I leder ikke. Birdly gør.",
+    // ⚠️ EJER-SÆTNINGEN STÅR IKKE HER. Den kommer fra EJER_LINJE i
+    // salgTekst.js, og CLAUDE.md siger den skal blive stående ordret to steder.
+    // En kopi hertil ville være et tredje sted den kunne skride fra.
+    afslut:
+      "Birdly er ikke lavet til at give jer mere software. Det er lavet til at give jer relevante opgaver.",
+  };
+
+const DA_PRISER = {
+    kick: "Én pakke. Alt inkluderet.",
+    overskrift: "Prøv gratis. Behold Birdly, hvis det giver mening.",
+    badge: "Bedst værdi",
+    planNavn: "Årligt",
+    // ⚠️ SELVE BELØBENE STÅR IKKE HER. De kommer fra lib/pakke.js, som er
+    // husets enekilde og bundet til Frisbii. CLAUDE.md: hardkod ALDRIG et
+    // beløb i en komponent — og en kopi i ordbogen ville være præcis det.
+    punkter: [
+      "Offentlige + private opgaver",
+      "SMS + mail ved match",
+      "Alle relevante kriterier",
+    ],
+    maanedSpm: "Foretrækker I månedlig betaling?",
+    ctaMaaned: "Vælg månedsbetaling",
+    ingenBinding: "ingen binding",
+  };
+
+const DA_SLUT = {
+    overskrift: "Den næste relevante opgave findes måske allerede.",
+    under: "Lad Birdly holde øje for jer.",
+  };
+
 // ---------------------------------------------------------------- hjælpere
 
 /**
- * Husets egen konstant for Danmark — ordbogen for alle andre markeder.
+ * ⚠️ SEKTIONERNE LAESER IKKE ORDBOGEN. DE FAAR `ord`.
  *
- * ⚠️ DANMARK MÅ IKKE GÅ GENNEM ORDBOGEN HER. `salgTekst.js` og
- * `vaerdiAnker.js` ER husets kilder; CLAUDE.md siger det rent ud: al
- * garanti-tekst og alle forholdstal kommer derfra, og intet hardkodes i en
- * sektion. Lagde jeg DK's ordlyd om til et ordbogsopslag, ville hver sætning
- * afhænge af at TO strenge blev holdt ens — og de ville kunne skride fra
- * hinanden uden at nogen så det. Med den her funktion er DK bogstaveligt talt
- * det samme udtryk som før.
+ * Filen importerede `lib/tekster` og `lib/markets` indtil 09-09-2026. Det
+ * saa uskyldigt ud - Sektioner.js er jo serverkode - men components/
+ * Forside.js er "use client" og importerer 17 sektioner herfra. Dermed
+ * havnede BEGGE ordboeger i den danske forsides klient-bundt, og
+ * klient-referencerne blev registreret i en anden raekkefoelge end i
+ * baseline. Forsiden var den eneste side der flyttede sig af det.
  *
- * ⚠️ ET ANDET MARKED FALDER IKKE TILBAGE TIL DANSK. Mangler nøglen, kommer der
- * `null` ud, og afsnittet udelades — samme regel som lib/tekster/index.js. En
- * dansk sætning på en britisk side er værre end en manglende: den ser ud som
- * om den hører til.
+ * Nu kommer teksten ind som data fra Salgsside (server):
+ *
+ *     ord == null   ->  DANSK. Sektionen laeser husets egne konstanter
+ *                       (salgTekst.js, pakke.js, vaerdiAnker.js) uaendret.
+ *                       Det er CLAUDE.md's regel: EEN kilde pr. saetning.
+ *     ord != null   ->  markedets tekst, faerdig-slaaet op paa serveren.
+ *
+ * ⚠️ ET ANDET MARKED FALDER ALDRIG TILBAGE TIL DANSK. Mangler en noegle, er
+ * vaerdien undefined, og afsnittet udelades - samme regel som
+ * lib/tekster/index.js. En dansk saetning paa en britisk side er vaerre end
+ * en manglende: den ser ud som om den hoerer til.
+ *
+ * ⚠️ DK MAA HELLER IKKE FAA `ord={null}` SOM PROP. En prop paa en
+ * klient-komponent serialiseres uanset vaerdi. Salgsside spreder derfor
+ * null i stedet for at sende en tom prop. Se noten i Cta.js.
  */
-function hus(marked, husets, sti) {
-  return marked === "DK" ? husets : t(marked, sti);
-}
+
 
 /**
- * Markedets pris-tekster — REGNET, ikke skrevet.
+ * CTA-knappens tekst som props - og INTET for Danmark.
  *
- * ⚠️ DANMARK RØRES IKKE. DK's beløb kommer fortsat fra lib/pakke.js, som er
- * husets enekilde og bundet til Frisbii. Den her funktion kaldes kun for
- * ANDRE markeder, og den regner det samme som pakke.js gør for DK:
- * månedsækvivalent, besparelse og hvor mange måneder året svarer til.
+ * ⚠️ Cta er en KLIENT-komponent, saa hver prop den faar, skrives ind i
+ * RSC-stroemmen. `marked="DK"` lagde altsaa "marked":"DK" ind i hver eneste
+ * danske side (maalt 09-09-2026 paa forsiden, /hvorfor-birdly og
+ * /kom-i-gang). Prop'ens vaerdi var korrekt; problemet var at den fandtes.
  *
- * ⚠️ LOKAL FUNKTION, IKKE EN NY EKSPORT. En ny eksport i et delt modul er
- * ikke gratis her: 09-09-2026 flyttede netop det DK-forsidens bytes, fordi
- * bundleren grupperede chunks anderledes. Se noten i app/uk/page.js.
- *
- * ⚠️ ALDRIG KURS-KONVERTERET. £59/£590 er Jonas' beslutning, ikke 499 kr.
- * omregnet — se lib/markets.js.
+ * Returnerer null naar teksten er dansk, saa `{...ctaProp(undefined)}`
+ * spreder ingenting og knappen faar noejagtig de props den fik foer.
  */
-function prisFor(marked) {
-  const p = MARKEDER[marked]?.pris;
-  if (!p) return null;
-  const sym = MARKEDER[marked].valutaSymbol;
-  const maanedsTotal = p.maaned * 12;
-  const spar = maanedsTotal - p.aar;
-  return {
-    aar: `${sym}${p.aar}/year`,
-    maaned: `${sym}${p.maaned}/month`,
-    // Regnet: 590/12 = 49,17 → "around £49/month".
-    prMaaned: `${sym}${Math.round(p.aar / 12)}/month`,
-    spar: `${sym}${spar}`,
-    // Betal for N måneder, få 12. 590/59 = 10 præcis.
-    maanederBetalt: Math.round(p.aar / p.maaned),
-    proeveDage: p.proeveDage,
-  };
+function ctaProp(tekst) {
+  return tekst ? { tekst } : null;
 }
 
-/**
- * CTA-knappens tekst som PROPS — og INTET for Danmark.
- *
- * ⚠️ DEN HER FUNKTION FINDES FOR AT DK IKKE SKAL FLYTTE SIG. Cta er en
- * klient-komponent, og hver prop den får, bliver skrevet ind i RSC-strømmen.
- * `marked={marked}` lagde altså "marked":"DK" ind i hver eneste danske side —
- * målt 09-09-2026 på forsiden, /hvorfor-birdly og /kom-i-gang. Prop'ens værdi
- * var korrekt; problemet var at den overhovedet var der.
- *
- * Returnerer `null` for DK, så `{...ctaTekst("DK", "primaer")}` spreder
- * ingenting og knappen får nøjagtig de props den fik før ordbogen fandtes.
- *
- * ⚠️ OPSLAGET SKER HER, PÅ SERVEREN. Cta må ikke selv læse ordbogen — så
- * havner både den danske og den engelske ordbog i klient-bundtet på danske
- * sider. Se den fulde note i Cta.js.
- */
-function ctaTekst(marked, noegle) {
-  if (marked === "DK") return null;
-  return { tekst: tekster(marked)?.cta?.[noegle] ?? CTA[noegle] };
-}
-
-function TrustRaekke({ mork = false, marked = "DK" }) {
-  // DK bruger husets TRUST fra salgTekst.js UAENDRET; andre markeder har deres
-  // egen raekke i ordbogen. Der oversaettes ikke i koden.
-  const raekke = marked === "DK" ? TRUST : (tekster(marked).trust || TRUST);
+function TrustRaekke({ mork = false, raekke = TRUST }) {
+  // DK bruger husets TRUST fra salgTekst.js UAENDRET - det er default-vaerdien,
+  // saa den danske sti er bogstaveligt talt den samme som foer ordbogen fandtes.
+  // Andre markeder faar deres egen raekke ind som prop. Der oversaettes ikke i koden.
   return (
     <ul className="sg-trust">
       {raekke.map((t) => (
@@ -133,7 +320,7 @@ function TrustRaekke({ mork = false, marked = "DK" }) {
  * REFUSION, ikke om en fire gange længere prøveperiode. Se noten i
  * lib/salgTekst.js: det er den letteste og dyreste fejl at lave her.
  */
-export function GarantiFin({ klasse = "sg-fin", marked = "DK" }) {
+export function GarantiFin({ klasse = "sg-fin", ord = null }) {
   // ⚠️ DANMARKS GARANTI-TEKST KOMMER FORTSAT FRA salgTekst.js, UROERT.
   // CLAUDE.md: al garanti-tekst har EEN kilde. En kopi i ordbogen ville vaere
   // et andet sted den kunne komme til at staa anderledes - og netop den
@@ -144,9 +331,9 @@ export function GarantiFin({ klasse = "sg-fin", marked = "DK" }) {
   // UK-loefte, praecis som DK, og er ikke gated paa faerdig jura.
   // ⚠️ LINKET peger paa en britisk betingelses-side der endnu er DRAFT. Teksten
   // maa vises, men den skal kunne slaas op - se pre-live-tjeklisten.
-  const praecis = hus(marked, GARANTI.praecis, "risiko.garantiPraecis");
-  const forbehold = hus(marked, GARANTI.forbehold, "risiko.garantiForbehold");
-  const linkTekst = hus(marked, GARANTI.linkTekst, "risiko.garantiLink");
+  const praecis = ord ? ord.garantiPraecis : GARANTI.praecis;
+  const forbehold = ord ? ord.garantiForbehold : GARANTI.forbehold;
+  const linkTekst = ord ? ord.garantiLink : GARANTI.linkTekst;
   if (!praecis) return null;
   return (
     <p className={klasse}>
@@ -179,13 +366,13 @@ export function Hero({
   eyebrow,
   chips,
   sekundaerHref = "/sadan-virker-det",
-  // ⚠️ MARKEDET ER EN PROP MED DK SOM DEFAULT. Laeste komponenten selv
+  // ⚠️ TEKSTEN ER EN PROP, IKKE ET ORDBOGSOPSLAG. Laeste komponenten selv
   // headers(), ville forsiden blive DYNAMISK og miste sin cache - og DK's
   // statiske forside er praecis det der ikke maa roeres. Den danske rute
-  // sender ingenting, faar DK-ordbogen, og renderer noejagtig som foer.
-  marked = "DK",
+  // sender ingenting og renderer noejagtig som foer.
+  ord = null,
 }) {
-  const T = tekster(marked).hero;
+  const T = ord || DA_HERO;
   eyebrow = eyebrow ?? T.eyebrow;
   chips = chips ?? T.chips;
   return (
@@ -227,19 +414,19 @@ export function Hero({
                 Birdly dækker 20 fag, og huset har ÉN primær CTA. En
                 fag-specifik knap ville splitte det genkendelige klik op i lige
                 så mange varianter som vi har fag. */}
-            <Cta href={funnelHref} placering="hero" stor {...ctaTekst(marked, "primaer")} />
+            <Cta href={funnelHref} placering="hero" stor {...ctaProp(T.ctaPrimaer)} />
             {/* ⚠️ SEKUNDÆRENS MÅL ER EN PROP, FORDI /sadan-virker-det ER EN
                 DANSK SIDE. Uden den ville den britiske hero have sendt en
                 britisk besøgende til dansk tekst — et dødt spor midt i
                 løftet. DK's default er uændret. */}
-            <CtaSekundaer href={sekundaerHref} placering="hero-sekundaer" {...ctaTekst(marked, "sekundaer")} />
+            <CtaSekundaer href={sekundaerHref} placering="hero-sekundaer" {...ctaProp(T.ctaSekundaer)} />
           </div>
-          <TrustRaekke marked={marked} />
+          <TrustRaekke raekke={T.trust} />
         </div>
         <div>
           {/* ⚠️ MARKEDET SKAL MED HERTIL. Uden det stod telefonen på dansk midt
               i den britiske hero — se noten i SmsTelefon.js. */}
-          <SmsTelefon marked={marked} />
+          <SmsTelefon ord={ord} />
         </div>
       </div>
     </section>
@@ -257,8 +444,8 @@ export function Hero({
  * er det første øjet skal fange — tallene er dokumentationen bagefter, ikke
  * sidens hovedbudskab. Derfor er de mindre end H1 og bjælken er lav.
  */
-export function BevisBjaelke({ tal, marked = "DK" }) {
-  const T = tekster(marked).bevis;
+export function BevisBjaelke({ tal, ord = null }) {
+  const T = ord || DA_BEVIS;
   const bydbare = typeof tal?.bydbare === "number" ? tal.bydbare : null;
   const aabne = typeof tal?.bydbare_aabne === "number" ? tal.bydbare_aabne : null;
   const nye = typeof tal?.nye_7_dage === "number" ? tal.nye_7_dage : null;
@@ -312,8 +499,8 @@ export function BevisBjaelke({ tal, marked = "DK" }) {
 
 // ------------------------------------------------------------ 3 · PROBLEMET
 
-export function Problemet({ marked = "DK" }) {
-  const T = tekster(marked).problemet;
+export function Problemet({ ord = null }) {
+  const T = ord || DA_PROBLEMET;
   return (
     <section className="sg-sek" id="problem">
       <div className="sg-wrap">
@@ -359,8 +546,8 @@ export function Problemet({ marked = "DK" }) {
 
 // -------------------------------------------------------------- 4 · MOTOREN
 
-export function Motoren({ funnelHref, marked = "DK" }) {
-  const T = tekster(marked).motoren;
+export function Motoren({ funnelHref, ord = null }) {
+  const T = ord || DA_MOTOREN;
   return (
     <section className="sg-sek sg-graa" id="hvordan">
       <div className="sg-wrap">
@@ -409,7 +596,7 @@ export function Motoren({ funnelHref, marked = "DK" }) {
         <p className="sg-afslut">{T.afslut}</p>
 
         <div className="sg-cta-row" style={{ justifyContent: "center" }}>
-          <Cta href={funnelHref} placering="motor" {...ctaTekst(marked, "primaer")} />
+          <Cta href={funnelHref} placering="motor" {...ctaProp(T.ctaPrimaer)} />
         </div>
       </div>
     </section>
@@ -432,19 +619,19 @@ const SMS_EKSEMPEL = {
   entreprenor: { fag: "Entreprenør", hvad: "Byggemodning og kloakarbejde", sted: "Roskilde Kommune" },
 };
 
-export function SmsDemo({ fag = "rengoring", marked = "DK" }) {
-  const T = tekster(marked).sms;
+export function SmsDemo({ fag = "rengoring", ord = null }) {
+  const T = ord || DA_SMS;
   // ⚠️ TELEFONENS INDHOLD FOELGER MARKEDET, IKKE FAGET, PAA GB.
   // SMS_EKSEMPEL er DK's 20 fag; GB har eet. Paa andre markeder tages
   // eksemplet derfor fra ordbogens `telefon`-blok, som SmsTelefon selv
   // slaar op naar den ikke faar props.
-  const e = marked === "DK" ? (SMS_EKSEMPEL[fag] || SMS_EKSEMPEL.rengoring) : null;
+  const e = ord ? null : (SMS_EKSEMPEL[fag] || SMS_EKSEMPEL.rengoring);
   return (
     <section className="sg-sek">
       <div className="sg-wrap sg-demogrid">
         <div>
           <SmsTelefon
-            marked={marked}
+            ord={ord}
             titel={T.telefonTitel}
             fag={e?.fag}
             sted={e?.sted}
@@ -454,18 +641,18 @@ export function SmsDemo({ fag = "rengoring", marked = "DK" }) {
         </div>
         <div>
           <span className="sg-kick">{T.kick}</span>
-          <h2 className="sg-big">{hus(marked, SMS_LINJE, "sms.linje")}</h2>
+          <h2 className="sg-big">{ord ? ord.linje : SMS_LINJE}</h2>
           {/* ⚠️ TO TEKSTNODER, PRAECIS SOM FOER. Literalen bar selv sit
               afsluttende mellemrum foran udtrykket; `+ " "` bevarer baade
               mellemrummet og nodestrukturen. React saetter <!-- --> mellem to
               nabo-tekstnoder, og et ekstra {" "} ville have givet tre. */}
           <p className="sg-lead">
-            {T.lead1 + " "}{hus(marked, SMS_UNDER, "sms.lead2")}
+            {T.lead1 + " "}{ord ? ord.lead2 : SMS_UNDER}
           </p>
           {/* ⚠️ ÉN GANG PÅ HELE SIDEN. Sætningen er stærk netop fordi den er
               sjælden; står den tre steder, bliver den en talemåde. */}
           <p className="sg-afslut" style={{ textAlign: "left", margin: "18px 0 0", maxWidth: "34ch" }}>
-            {hus(marked, IKKE_HOLDE_OEJE, "sms.ikkeHoldeOeje")}
+            {ord ? ord.ikkeHoldeOeje : IKKE_HOLDE_OEJE}
           </p>
           {/* ⚠️ DANMARK RENDERER LISTEN LITTERALT, som før ordbogen fandtes.
               Et `.map()` sætter en `key` på hvert <li>, og key'en skrives ind i
@@ -473,7 +660,7 @@ export function SmsDemo({ fag = "rengoring", marked = "DK" }) {
               sider flyttede sig altså af en ændring der ikke var synlig.
               Målt 09-09-2026. Grenen ligger om HELE <ul>, ikke om børnene:
               et fragment ville selv lægge et lag ind i strømmen. */}
-          {marked === "DK" ? (
+          {!ord ? (
             <ul className="sg-punkter">
               <li><Flueben size={20} /> Kort resumé</li>
               <li><Flueben size={20} /> Frist</li>
@@ -510,8 +697,8 @@ export function SmsDemo({ fag = "rengoring", marked = "DK" }) {
  * omskrives til "I vinder én", og den må aldrig stå sammen med noget der
  * antyder en garanti. Se lib/salgTekst.js.
  */
-export function RigtigeOpgaver({ funnelHref, marked = "DK" }) {
-  const V = tekster(marked).vaerdi;
+export function RigtigeOpgaver({ funnelHref, ord = null }) {
+  const V = ord || DA_VAERDI;
   return (
     <section className="sg-sek sg-blaa" id="vaerd">
       <div className="sg-wrap sg-midt">
@@ -522,20 +709,20 @@ export function RigtigeOpgaver({ funnelHref, marked = "DK" }) {
             this ... Preferred if proof is not yet ready". Der findes ingen
             britiske tal endnu, så vi bruger reserven. Det er ikke en
             udvanding — det er filens eget valg for præcis denne situation. */}
-        <h2 className="sg-big">{hus(marked, STOERRELSE_LINJE, "vaerdi.stoerrelse")}</h2>
+        <h2 className="sg-big">{ord ? ord.stoerrelse : STOERRELSE_LINJE}</h2>
         <p className="sg-lead">
           {V.lead}
         </p>
 
         <div className="sg-vind">
-          <span className="sg-vind-over">{hus(marked, VIND_EN.over, "vaerdi.vindOver")}</span>
+          <span className="sg-vind-over">{ord ? ord.vindOver : VIND_EN.over}</span>
           <span className="sg-vind-under">
-            {hus(marked, VIND_EN.underDel1, "vaerdi.vindUnder1")}<b>{hus(marked, VIND_EN.underDel2, "vaerdi.vindUnder2")}</b>
+            {ord ? ord.vindUnder1 : VIND_EN.underDel1}<b>{ord ? ord.vindUnder2 : VIND_EN.underDel2}</b>
           </span>
         </div>
 
         <div className="sg-cta-row" style={{ justifyContent: "center" }}>
-          <Cta href={funnelHref} placering="vaerd" {...ctaTekst(marked, "primaer")} />
+          <Cta href={funnelHref} placering="vaerd" {...ctaProp(V.ctaPrimaer)} />
         </div>
       </div>
     </section>
@@ -555,14 +742,14 @@ export function RigtigeOpgaver({ funnelHref, marked = "DK" }) {
  * og at opgaverne kommer i forskellige størrelser. Begge dele er sande. "Alle
  * kan byde på alt" ville ikke være det.
  */
-export function OffentligeOpgaver({ funnelHref, marked = "DK" }) {
-  const O = tekster(marked).offentlige;
+export function OffentligeOpgaver({ funnelHref, ord = null }) {
+  const O = ord || DA_OFFENTLIGE;
   return (
     <section className="sg-sek">
       <div className="sg-wrap sg-midt">
         <span className="sg-kick">{O.kick}</span>
-        <h2 className="sg-big">{hus(marked, OFFENTLIGE.overskrift, "offentlige.overskrift")}</h2>
-        <p className="sg-lead">{hus(marked, OFFENTLIGE.brod, "offentlige.brod")}</p>
+        <h2 className="sg-big">{ord ? ord.overskrift : OFFENTLIGE.overskrift}</h2>
+        <p className="sg-lead">{ord ? ord.brod : OFFENTLIGE.brod}</p>
 
         <div className="sg-tretrin">
           <div className="sg-tretrin-item">
@@ -582,11 +769,11 @@ export function OffentligeOpgaver({ funnelHref, marked = "DK" }) {
         </div>
 
         <p className="sg-afslut">
-          {hus(marked, OFFENTLIGE.rolle1, "offentlige.rolle1")} {hus(marked, OFFENTLIGE.rolle2, "offentlige.rolle2")}
+          {ord ? ord.rolle1 : OFFENTLIGE.rolle1} {ord ? ord.rolle2 : OFFENTLIGE.rolle2}
         </p>
 
         <div className="sg-cta-row" style={{ justifyContent: "center" }}>
-          <Cta href={funnelHref} placering="offentlige" {...ctaTekst(marked, "primaer")} />
+          <Cta href={funnelHref} placering="offentlige" {...ctaProp(O.ctaPrimaer)} />
         </div>
       </div>
     </section>
@@ -603,8 +790,8 @@ export function OffentligeOpgaver({ funnelHref, marked = "DK" }) {
  * at det eneste der mangler, er at man ser dem. Det er den samme pointe set fra
  * kundens side — ikke en gentagelse.
  */
-export function Overgang({ funnelHref, marked = "DK" }) {
-  const G = tekster(marked).overgang;
+export function Overgang({ funnelHref, ord = null }) {
+  const G = ord || DA_OVERGANG;
   return (
     <section className="sg-navy sg-overgang">
       <div className="sg-wrap sg-midt">
@@ -617,7 +804,7 @@ export function Overgang({ funnelHref, marked = "DK" }) {
           {G.stor1}<b>{G.stor2}</b>{G.stor3}
         </p>
         <div className="sg-cta-row" style={{ justifyContent: "center" }}>
-          <Cta href={funnelHref} placering="overgang" variant="hvid" stor {...ctaTekst(marked, "primaer")} />
+          <Cta href={funnelHref} placering="overgang" variant="hvid" stor {...ctaProp(G.ctaPrimaer)} />
         </div>
       </div>
     </section>
@@ -642,8 +829,8 @@ export function Overgang({ funnelHref, marked = "DK" }) {
  * det ville forudsætte at kunden ville have vundet opgaven. Der står at en
  * opgave man ikke ser, ikke kan bydes på. Det er sandt uanset udfaldet.
  */
-export function ProblemPris({ fag = "rengoring", marked = "DK" }) {
-  const T = tekster(marked).koster;
+export function ProblemPris({ fag = "rengoring", ord = null }) {
+  const T = ord || DA_KOSTER;
   // ⚠️ VAERDI-ANKERET ER DANSK, OG DET BLIVER DET INDTIL DER ER BRITISKE TAL.
   // byggAnker regner paa DKK-belob fra lib/vaerdiAnker.js. Den fil siger selv:
   // "INGEN OPDIGTET UDBUDSSUM ... skal komme fra en RIGTIG opgave i basen med
@@ -657,7 +844,7 @@ export function ProblemPris({ fag = "rengoring", marked = "DK" }) {
   //
   // Indtil da viser GB copy-filens belob-frie udgave. Den er sand uanset, og
   // det rigtige tal kan taendes senere uden at roere resten af sektionen.
-  const a = marked === "DK" ? byggAnker(fag) : null;
+  const a = ord ? null : byggAnker(fag);
   return (
     /* ⚠️ NAVY, IKKE HVID. Sektionen er sidens vigtigste direkte-respons-moment,
        og den stod før som endnu en hvid sektion mellem to andre hvide — nem at
@@ -725,8 +912,8 @@ export function ProblemPris({ fag = "rengoring", marked = "DK" }) {
  * område, størrelse, type — ikke noget produktet indeholder. Det er forskellen
  * på "her er hvad vi kan" og "her er hvad I bestemmer".
  */
-export function Loesningen({ funnelHref, marked = "DK" }) {
-  const T = tekster(marked).loesningen;
+export function Loesningen({ funnelHref, ord = null }) {
+  const T = ord || DA_LOESNINGEN;
   return (
     <section className="sg-sek sg-blaa">
       <div className="sg-wrap sg-midt">
@@ -739,7 +926,7 @@ export function Loesningen({ funnelHref, marked = "DK" }) {
               sider flyttede sig altså af en ændring der ikke var synlig.
               Målt 09-09-2026. Grenen ligger om HELE <ul>, ikke om børnene:
               et fragment ville selv lægge et lag ind i strømmen. */}
-        {marked === "DK" ? (
+        {!ord ? (
           <ul className="sg-fix">
             <li><Flueben size={19} /> Jeres fag</li>
             <li><Flueben size={19} /> Jeres område</li>
@@ -758,7 +945,7 @@ export function Loesningen({ funnelHref, marked = "DK" }) {
         <p className="sg-afslut">{T.afslut}</p>
 
         <div className="sg-cta-row" style={{ justifyContent: "center" }}>
-          <Cta href={funnelHref} placering="loesning" {...ctaTekst(marked, "primaer")} />
+          <Cta href={funnelHref} placering="loesning" {...ctaProp(T.ctaPrimaer)} />
         </div>
       </div>
     </section>
@@ -792,7 +979,7 @@ const FAG_KORT = [
   { slug: null, navn: "Andre fag", resultat: "Birdly dækker 20 fag — fra maler og kloak til IT og catering.", cta: "Se alle fag" },
 ];
 
-export function FagVaelgerKort({ marked = "DK" } = {}) {
+export function FagVaelgerKort({ ord = null } = {}) {
   // ⚠️ ENDNU IKKE OVERSAT — SEKTIONEN UDELADER SIG SELV PAA ANDRE MARKEDER.
   // Hellere en manglende sektion end en dansk. Det er samme regel som
   // lib/tekster/index.js: en dansk saetning paa en britisk side er VAERRE end
@@ -800,7 +987,7 @@ export function FagVaelgerKort({ marked = "DK" } = {}) {
   // Naar sektionens engelske copy findes, flyttes strengene til ordbogen og
   // den her linje ryger. Indtil da er DK bit-for-bit uroert: `marked` er "DK",
   // og resten af funktionen er ikke aendret med eet tegn.
-  if (marked !== "DK") return null;
+  if (ord) return null;
 
   return (
     <section className="sg-sek" id="brancher">
@@ -827,8 +1014,8 @@ export function FagVaelgerKort({ marked = "DK" } = {}) {
 
 // ---------------------------------------------------- 7 · RISIKO FJERNET
 
-export function RisikoFjernet({ funnelHref, marked = "DK" }) {
-  const T = tekster(marked).risiko;
+export function RisikoFjernet({ funnelHref, ord = null }) {
+  const T = ord || DA_RISIKO;
   return (
     <section className="sg-sek sg-blaa" id="risiko">
       <div className="sg-wrap">
@@ -838,7 +1025,7 @@ export function RisikoFjernet({ funnelHref, marked = "DK" }) {
               dage; matchgarantiens 60 dage handler om refusion og står i
               <GarantiFin> lige nedenfor. Smelter de sammen, lover overskriften
               en prøveperiode der er fire gange længere end den er. */}
-          <h2>{hus(marked, GARANTI.overskrift, "risiko.overskrift")}</h2>
+          <h2>{ord ? ord.overskrift : GARANTI.overskrift}</h2>
           <p className="sg-lead" style={{ margin: "14px auto 0" }}>
             {T.lead}
           </p>
@@ -853,7 +1040,7 @@ export function RisikoFjernet({ funnelHref, marked = "DK" }) {
                    <div className="sg-fire"> og ikke inde i den.
               ⚠️ `{" " + x}` OG IKKE `" {x}"` i GB-grenen: to nabo-tekstnoder
               giver React's <!-- -->-markør. */}
-          {marked === "DK" ? (
+          {!ord ? (
             <div className="sg-fire">
               <div className="sg-fire-item"><Flueben size={18} /> {TRIAL_DAYS} dage gratis</div>
               <div className="sg-fire-item"><Flueben size={18} /> Ingen binding</div>
@@ -870,10 +1057,10 @@ export function RisikoFjernet({ funnelHref, marked = "DK" }) {
           )}
 
           <div className="sg-cta-row" style={{ justifyContent: "center" }}>
-            <Cta href={funnelHref} placering="risiko" {...ctaTekst(marked, "primaer")} />
+            <Cta href={funnelHref} placering="risiko" {...ctaProp(T.ctaPrimaer)} />
           </div>
 
-          <GarantiFin marked={marked} />
+          <GarantiFin ord={ord} />
         </div>
       </div>
     </section>
@@ -893,7 +1080,7 @@ export function RisikoFjernet({ funnelHref, marked = "DK" }) {
 const VIS_KUNDEBEVIS = false;
 const KUNDEBEVIS = []; // { citat, navn, firma }
 
-export function Kundebevis({ marked = "DK" } = {}) {
+export function Kundebevis({ ord = null } = {}) {
   // ⚠️ ENDNU IKKE OVERSAT — SEKTIONEN UDELADER SIG SELV PAA ANDRE MARKEDER.
   // Hellere en manglende sektion end en dansk. Det er samme regel som
   // lib/tekster/index.js: en dansk saetning paa en britisk side er VAERRE end
@@ -901,7 +1088,7 @@ export function Kundebevis({ marked = "DK" } = {}) {
   // Naar sektionens engelske copy findes, flyttes strengene til ordbogen og
   // den her linje ryger. Indtil da er DK bit-for-bit uroert: `marked` er "DK",
   // og resten af funktionen er ikke aendret med eet tegn.
-  if (marked !== "DK") return null;
+  if (ord) return null;
 
   if (!VIS_KUNDEBEVIS || KUNDEBEVIS.length === 0) return null;
   return (
@@ -928,8 +1115,8 @@ export function Kundebevis({ marked = "DK" } = {}) {
 
 // ------------------------------------------------------- 9 · IKKE EN PORTAL
 
-export function IkkePortal({ marked = "DK" }) {
-  const P = tekster(marked).portal;
+export function IkkePortal({ ord = null }) {
+  const P = ord || DA_PORTAL;
   return (
     <section className="sg-sek">
       <div className="sg-wrap">
@@ -952,7 +1139,7 @@ export function IkkePortal({ marked = "DK" }) {
                 modsat de tre kort i Problemet, hvor hvert kort har sit eget. */}
             {/* ⚠️ DK LITTERALT: en `key` fra et .map() lander i RSC-strømmen, hvor
                 baseline har `null`. Se den fulde note i SmsDemo. */}
-            {marked === "DK" ? (
+            {!ord ? (
               <ul className="sg-vs-liste">
                 <li><Kryds /> Log ind</li>
                 <li><Kryds /> Søg</li>
@@ -981,7 +1168,7 @@ export function IkkePortal({ marked = "DK" }) {
                 sammenligningen — ikke at vi har flere funktioner. */}
             {/* ⚠️ DK LITTERALT: en `key` fra et .map() lander i RSC-strømmen, hvor
                 baseline har `null`. Se den fulde note i SmsDemo. */}
-            {marked === "DK" ? (
+            {!ord ? (
               <ul className="sg-vs-liste">
                 <li><Flueben size={18} /> Birdly holder øje</li>
                 <li><Flueben size={18} /> Birdly finder relevante opgaver</li>
@@ -996,7 +1183,7 @@ export function IkkePortal({ marked = "DK" }) {
             {/* ⚠️ DEN KORTE LINJE BÆRER SEKTIONEN. Den lange ejer-sætning stod
                 før som konklusion og druknede pointen; nu er den sekundær. */}
             <p className="sg-vs-payoff">{P.payoff}</p>
-            <p className="sg-fin">{hus(marked, EJER_LINJE, "portal.ejerLinje")}</p>
+            <p className="sg-fin">{ord ? ord.ejerLinje : EJER_LINJE}</p>
           </div>
         </div>
 
@@ -1010,15 +1197,18 @@ export function IkkePortal({ marked = "DK" }) {
 
 // -------------------------------------------------------------- 10 · PRISER
 
-export function Priser({ funnelHref, medOverskrift = true, marked = "DK" }) {
-  const T = tekster(marked).priser;
+export function Priser({ funnelHref, medOverskrift = true, ord = null }) {
+  const T = ord || DA_PRISER;
   // ⚠️ TO PRIS-KILDER, OG DE MÅ IKKE BLANDES.
   //   DK  lib/pakke.js  — husets enekilde, bundet til Frisbii. RØRES IKKE.
   //   GB  markets.js    — £59/£590, Jonas' beslutning, aldrig kurs-konverteret.
   // `p` er null for DK, og hver DK-linje nedenfor er derfor ord for ord den
   // samme som før.
-  const p = marked === "DK" ? null : prisFor(marked);
-  if (marked !== "DK" && !p) return null;
+  // ⚠️ PRISEN REGNES PAA SERVEREN OG KOMMER IND SOM DATA. Den laa foer i en
+  // lokal prisFor() der laeste MARKEDER fra lib/markets.js - og det modul
+  // fulgte med ned i den danske forsides klient-bundt. Se noten oeverst.
+  const p = ord ? ord.pris : null;
+  if (ord && !p) return null;
 
   // ⚠️ REGNET, IKKE SKREVET: 4.990 / 12 = 415,83 → "ca. 416 kr./md.". Et
   // håndskrevet tal ville stå forkert dagen efter en prisændring.
@@ -1086,10 +1276,10 @@ export function Priser({ funnelHref, medOverskrift = true, marked = "DK" }) {
                 garantiens korte navn. */}
             {p ? (
               <ul className="sg-plan-liste">
-                <li><Flueben size={17} />{" " + tekster(marked).risiko.proeveDage}</li>
+                <li><Flueben size={17} />{" " + ord.proeveDage}</li>
                 {T.punkter.map((x) => <li key={x}><Flueben size={17} />{" " + x}</li>)}
-                <li><Flueben size={17} />{" " + (t(marked, "trust.3") || "")}</li>
-                <li><Flueben size={17} />{" " + tekster(marked).risiko.punkter[0]}</li>
+                <li><Flueben size={17} />{" " + (ord.trust3 || "")}</li>
+                <li><Flueben size={17} />{" " + ord.risikoIngenBinding}</li>
               </ul>
             ) : (
               <ul className="sg-plan-liste">
@@ -1105,7 +1295,7 @@ export function Priser({ funnelHref, medOverskrift = true, marked = "DK" }) {
             <Cta href={funnelHref} placering="priser-aar" bred stor>
               {p ? T.ctaAar : <>Start {TRIAL_DAYS} dage gratis</>}
             </Cta>
-            <p className="sg-plan-fin">{hus(marked, VAERDI_ANKER, "priser.vaerdiAnker")}</p>
+            <p className="sg-plan-fin">{ord ? ord.vaerdiAnker : VAERDI_ANKER}</p>
           </div>
 
           {/* Måneden: tydeligt tilgængelig, visuelt sekundær. */}
@@ -1119,7 +1309,7 @@ export function Priser({ funnelHref, medOverskrift = true, marked = "DK" }) {
                   række: se også sg-plan-spar og <small> ovenfor. */}
               {p ? (
                 <span>
-                  {`${p.maaned} ${T.exVat} · ${tekster(marked).risiko.proeveDage} · ${T.ingenBinding}`}
+                  {`${p.maaned} ${T.exVat} · ${ord.proeveDage} · ${T.ingenBinding}`}
                 </span>
               ) : (
                 <span>{priceText.monthly} ekskl. moms · {TRIAL_DAYS} dage gratis · ingen binding</span>
@@ -1132,8 +1322,8 @@ export function Priser({ funnelHref, medOverskrift = true, marked = "DK" }) {
         </div>
 
         <div className="sg-garantiboks">
-          <p><b>{hus(marked, GARANTI.overskrift, "risiko.overskrift")}</b></p>
-          <GarantiFin klasse="sg-fin sg-fin-midt" marked={marked} />
+          <p><b>{ord ? ord.garantiOverskrift : GARANTI.overskrift}</b></p>
+          <GarantiFin klasse="sg-fin sg-fin-midt" ord={ord} />
         </div>
       </div>
     </section>
@@ -1142,18 +1332,18 @@ export function Priser({ funnelHref, medOverskrift = true, marked = "DK" }) {
 
 // ------------------------------------------------------ 11 · RESULTAT IGEN
 
-export function SlutCta({ funnelHref, marked = "DK" }) {
-  const S = tekster(marked).slut;
+export function SlutCta({ funnelHref, ord = null }) {
+  const S = ord || DA_SLUT;
   return (
     <section className="sg-navy sg-slut">
       <div className="sg-wrap">
         <h2>{S.overskrift}</h2>
         <p>{S.under}</p>
         <div className="sg-cta-row" style={{ justifyContent: "center" }}>
-          <Cta href={funnelHref} placering="slut" variant="hvid" stor {...ctaTekst(marked, "primaer")} />
+          <Cta href={funnelHref} placering="slut" variant="hvid" stor {...ctaProp(S.ctaPrimaer)} />
         </div>
         <div style={{ display: "flex", justifyContent: "center" }}>
-          <TrustRaekke mork marked={marked} />
+          <TrustRaekke mork raekke={S.trust} />
         </div>
       </div>
     </section>
@@ -1172,7 +1362,7 @@ export function SlutCta({ funnelHref, marked = "DK" }) {
  * fulde forklaring (hvor opgaverne kommer fra, bud-skabelonen, antal SMS'er), og
  * de står i HTML'en uanset om detaljen er åben. De er stadig crawlbare.
  */
-export function SalgFaq({ funnelHref, marked = "DK" }) {
+export function SalgFaq({ funnelHref, ord = null }) {
   // ⚠️ TO GRENE, IKKE EN OVERSAT KOMPONENT. Den danske sti er ikke ændret med
   // ét tegn: samme kick, samme overskrift, samme <FaqListe /> uden props.
   // Den britiske sender sine egne lister ind i den SAMME komponent — se noten
@@ -1182,8 +1372,7 @@ export function SalgFaq({ funnelHref, marked = "DK" }) {
   // Hellere en manglende sektion end en dansk. Samme regel som
   // lib/tekster/index.js: en dansk sætning på en britisk side er VÆRRE end en
   // manglende, for den ser ud som om den hører til.
-  const T = marked === "DK" ? null : tekster(marked)?.faq;
-  if (marked !== "DK" && !T?.top?.length) return null;
+  if (ord && !ord.top?.length) return null;
 
   return (
     <section className="sg-sek" id="faq">
@@ -1194,8 +1383,8 @@ export function SalgFaq({ funnelHref, marked = "DK" }) {
               RSC-rækkerne på danske sider — samme klasse af fejl som den nye
               eksport i lib/markets.js. Valget ligger derfor INDE i hvert
               element, hvor det kun er en streng der skifter. */}
-          <span className="sg-kick">{marked === "DK" ? "Spørgsmål" : T.kick}</span>
-          <h2 className="sg-big">{marked === "DK" ? "Det, du tænker lige nu." : T.overskrift}</h2>
+          <span className="sg-kick">{ord ? ord.kick : "Spørgsmål"}</span>
+          <h2 className="sg-big">{ord ? ord.overskrift : "Det, du tænker lige nu."}</h2>
         </div>
 
         {/* ⚠️ SAMME KOMPONENT, ANDEN DATA. Den britiske FAQ laa foerst i sin
@@ -1203,19 +1392,19 @@ export function SalgFaq({ funnelHref, marked = "DK" }) {
             ekstra chunk paa /priser og /sadan-virker-det - danske sider der
             aldrig renderer den. Se den fulde note i FaqListe.js.
             DK kalder fortsat uden props og faar husets egne lister. */}
-        {marked === "DK" ? (
+        {!ord ? (
           <FaqListe />
         ) : (
           <FaqListe
-            top={T.top}
-            rest={T.rest}
-            etiketter={{ merePrefix: T.merePrefix, mereSuffix: T.mereSuffix, skjul: T.skjul }}
+            top={ord.top}
+            rest={ord.rest}
+            etiketter={{ merePrefix: ord.merePrefix, mereSuffix: ord.mereSuffix, skjul: ord.skjul }}
           />
         )}
 
         {funnelHref && (
           <div className="sg-cta-row" style={{ justifyContent: "center" }}>
-            <Cta href={funnelHref} placering="faq" {...ctaTekst(marked, "primaer")} />
+            <Cta href={funnelHref} placering="faq" {...ctaProp(ord?.ctaPrimaer)} />
           </div>
         )}
       </div>
@@ -1233,7 +1422,7 @@ export function SalgFaq({ funnelHref, marked = "DK" }) {
  * skulle beskrive et arbejde han gerne ville UDFØRE, og en husejer der klikkede
  * på "Find opgaver nu" landede i et CVR-felt.
  */
-export function EfterspoergselsLink({ marked = "DK" } = {}) {
+export function EfterspoergselsLink({ ord = null } = {}) {
   // ⚠️ ENDNU IKKE OVERSAT — SEKTIONEN UDELADER SIG SELV PAA ANDRE MARKEDER.
   // Hellere en manglende sektion end en dansk. Det er samme regel som
   // lib/tekster/index.js: en dansk saetning paa en britisk side er VAERRE end
@@ -1241,7 +1430,7 @@ export function EfterspoergselsLink({ marked = "DK" } = {}) {
   // Naar sektionens engelske copy findes, flyttes strengene til ordbogen og
   // den her linje ryger. Indtil da er DK bit-for-bit uroert: `marked` er "DK",
   // og resten af funktionen er ikke aendret med eet tegn.
-  if (marked !== "DK") return null;
+  if (ord) return null;
 
   return (
     <section className="sg-sek-taet" style={{ borderTop: "1px solid var(--line)" }}>

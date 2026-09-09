@@ -11,6 +11,7 @@ import {
   SlutCta, SalgFaq, EfterspoergselsLink,
 } from "./Sektioner";
 import { tekster, t } from "../../lib/tekster";
+import { MARKEDER } from "../../lib/markets";
 import { getBrancheByFagKey } from "../../lib/branche";
 import "../../app/salg.css";
 
@@ -131,6 +132,79 @@ export default function Salgsside({ tal, funnelHref, fag = null, marked = "DK" }
   // til rengøring og service, ingen chips til de øvrige fag.
   const chips = saerlig ? saerlig.chips : b ? [] : undefined;
 
+  // ══════════════════════════════════════════════════════════════════════
+  // ORDBOGSOPSLAGET SKER HER. HVER GANG.
+  //
+  // ⚠️ INGEN SEKTION SLÅR SELV OP. components/Forside.js er "use client" og
+  // importerer 17 sektioner fra Sektioner.js — læste de ordbogen, fulgte
+  // både den danske og den engelske med ned i den DANSKE forsides
+  // klient-bundt. Det var det der flyttede forsidens RSC-rækker 09-09-2026,
+  // og det er derfor reglen nu er absolut: ordbogen læses på serveren, og
+  // sektionen får en færdig `ord`.
+  //
+  // ⚠️ DK FÅR INGEN `ord`-PROP OVERHOVEDET. Ikke `ord={null}` — en prop på en
+  // klient-komponent serialiseres uanset værdi, og `"ord":null` i strømmen
+  // er en ændring af DK. Derfor `{...(ord ? { ord } : null)}` hver gang.
+  //
+  // ⚠️ ET ANDET MARKED FALDER ALDRIG TILBAGE TIL DANSK. Mangler en nøgle, er
+  // værdien undefined, og sektionen udelader afsnittet — aldrig en dansk
+  // sætning på en britisk side.
+  // ══════════════════════════════════════════════════════════════════════
+  const O = marked === "DK" ? null : tekster(marked);
+  const cta = O?.cta?.primaer;
+
+  // Markedets pris — REGNET, ikke skrevet, og aldrig kurs-konverteret.
+  // £59/£590 er Jonas' beslutning, ikke 499 kr. omregnet (lib/markets.js).
+  const pris = (() => {
+    const pr = O ? MARKEDER[marked]?.pris : null;
+    if (!pr) return null;
+    const sym = MARKEDER[marked].valutaSymbol;
+    return {
+      aar: `${sym}${pr.aar}/year`,
+      maaned: `${sym}${pr.maaned}/month`,
+      // Regnet: 590/12 = 49,17 → "around £49/month".
+      prMaaned: `${sym}${Math.round(pr.aar / 12)}/month`,
+      spar: `${sym}${pr.maaned * 12 - pr.aar}`,
+      // Betal for N måneder, få 12. 590/59 = 10 præcis.
+      maanederBetalt: Math.round(pr.aar / pr.maaned),
+      proeveDage: pr.proeveDage,
+    };
+  })();
+
+  // Hver sektions egen pakke. Nøglerne er dem sektionen faktisk læser —
+  // står der en her, sektionen ikke bruger, er den død vægt i strømmen.
+  const ord = O && {
+    hero: { ...O.hero, trust: O.trust, ctaPrimaer: cta, ctaSekundaer: O.cta?.sekundaer },
+    bevis: O.bevis,
+    vaerdi: { ...O.vaerdi, ctaPrimaer: cta },
+    offentlige: { ...O.offentlige, ctaPrimaer: cta },
+    risiko: { ...O.risiko, ctaPrimaer: cta },
+    problemet: O.problemet,
+    koster: O.koster,
+    loesningen: { ...O.loesningen, ctaPrimaer: cta },
+    motoren: { ...O.motoren, ctaPrimaer: cta },
+    sms: O.sms,
+    portal: O.portal,
+    overgang: { ...O.overgang, ctaPrimaer: cta },
+    // ⚠️ PRISER LÅNER FRA RISIKO, OG NØGLERNE ER OMDØBT MED VILJE.
+    // `priser.overskrift` er sektionens egen; garantiens hedder noget andet,
+    // ellers ville den ene stille overskrive den anden. Samme med
+    // `ingenBinding`, som findes begge steder med hver sin betydning.
+    priser: {
+      ...O.priser,
+      pris,
+      proeveDage: O.risiko?.proeveDage,
+      trust3: O.trust?.[2],
+      risikoIngenBinding: O.risiko?.punkter?.[0],
+      garantiOverskrift: O.risiko?.overskrift,
+      garantiPraecis: O.risiko?.garantiPraecis,
+      garantiForbehold: O.risiko?.garantiForbehold,
+      garantiLink: O.risiko?.garantiLink,
+    },
+    slut: { ...O.slut, trust: O.trust, ctaPrimaer: cta },
+    faq: O.faq && { ...O.faq, ctaPrimaer: cta },
+  };
+
   // ⚠️ SAMLET HÉR, IKKE INDE I KOMPONENTEN. Vaerdi er klient-kode; alt hvad
   // den skal bruge fra ordbogen, slås op på serveren og sendes med som data.
   // DK får `null` og dermed præcis de props sektionen havde før ordbogen fandtes.
@@ -138,12 +212,12 @@ export default function Salgsside({ tal, funnelHref, fag = null, marked = "DK" }
     marked === "DK"
       ? null
       : {
-          kick: tekster(marked)?.regnestykket?.kick,
-          lead: tekster(marked)?.regnestykket?.lead,
-          vindOver: t(marked, "vaerdi.vindOver") || "",
-          vindUnder1: t(marked, "vaerdi.vindUnder1") || "",
-          vindUnder2: t(marked, "vaerdi.vindUnder2") || "",
-          cta: tekster(marked)?.cta?.primaer,
+          kick: O?.regnestykket?.kick,
+          lead: O?.regnestykket?.lead,
+          vindOver: O?.vaerdi?.vindOver || "",
+          vindUnder1: O?.vaerdi?.vindUnder1 || "",
+          vindUnder2: O?.vaerdi?.vindUnder2 || "",
+          cta,
         };
 
   return (
@@ -161,29 +235,29 @@ export default function Salgsside({ tal, funnelHref, fag = null, marked = "DK" }
         <SalgHeader
           funnelHref={funnelHref}
           marked={marked}
-          {...(marked === "DK" ? null : { ctaTekst: tekster(marked)?.cta?.primaer })}
+          {...(cta ? { ctaTekst: cta } : null)}
         />
 
         <Hero funnelHref={funnelHref} overskrift={overskrift} under={under} eyebrow={eyebrow} chips={chips}
-              marked={marked} sekundaerHref={marked === "DK" ? undefined : "#hvordan"} />
-        <BevisBjaelke tal={tal} marked={marked} />
+              {...(ord ? { ord: ord.hero, sekundaerHref: "#hvordan" } : null)} />
+        <BevisBjaelke tal={tal} {...(ord ? { ord: ord.bevis } : null)} />
         {/* ⚠️ DET ØKONOMISKE ARGUMENT LIGGER HØJT. Kold trafik scroller ikke ned
             til en prissektion for at finde ud af hvad en opgave kan være værd. */}
-        <RigtigeOpgaver funnelHref={funnelHref} marked={marked} />
-        <OffentligeOpgaver funnelHref={funnelHref} marked={marked} />
-        <RisikoFjernet funnelHref={funnelHref} marked={marked} />
-        <Problemet marked={marked} />
-        <ProblemPris fag={fagNoegle} marked={marked} />
-        <Loesningen funnelHref={funnelHref} marked={marked} />
+        <RigtigeOpgaver funnelHref={funnelHref} {...(ord ? { ord: ord.vaerdi } : null)} />
+        <OffentligeOpgaver funnelHref={funnelHref} {...(ord ? { ord: ord.offentlige } : null)} />
+        <RisikoFjernet funnelHref={funnelHref} {...(ord ? { ord: ord.risiko } : null)} />
+        <Problemet {...(ord ? { ord: ord.problemet } : null)} />
+        <ProblemPris fag={fagNoegle} {...(ord ? { ord: ord.koster } : null)} />
+        <Loesningen funnelHref={funnelHref} {...(ord ? { ord: ord.loesningen } : null)} />
         {/* ⚠️ FagBevis ER EN KLIENT-KOMPONENT, og hver prop den får,
             serialiseres ind i RSC-strømmen. `marked="DK"` flyttede altså danske
             sider uden at ændre noget synligt. Sektionen er alligevel kun
             dansk (den venter på FTS), så valget hører hjemme HER på serveren —
             ikke som en prop den selv skal læse. Se noten i Cta.js. */}
         {marked === "DK" && <FagBevis funnelHref={funnelHref} />}
-        <Motoren funnelHref={funnelHref} marked={marked} />
-        <SmsDemo fag={fagNoegle} marked={marked} />
-        <FagVaelgerKort marked={marked} />
+        <Motoren funnelHref={funnelHref} {...(ord ? { ord: ord.motoren } : null)} />
+        <SmsDemo fag={fagNoegle} {...(ord ? { ord: ord.sms } : null)} />
+        {!ord && <FagVaelgerKort />}
         {/* ⚠️ ORDBOGSOPSLAGET SKER HER, PÅ SERVEREN. Vaerdi er en
             klient-komponent; læste den selv ordbogen, havnede både den danske
             og den engelske ned i klient-bundtet på hver dansk side. `ord` =
@@ -192,15 +266,17 @@ export default function Salgsside({ tal, funnelHref, fag = null, marked = "DK" }
             Det er ikke nok at værdien er tom; prop'en må slet ikke findes på DK.
             /kom-i-gang flyttede sig på præcis det. Derfor spread, ikke prop. */}
         <Vaerdi funnelHref={funnelHref} {...(vaerdiOrd ? { ord: vaerdiOrd } : null)} />
-        <Kundebevis marked={marked} />
-        <IkkePortal marked={marked} />
-        <Overgang funnelHref={funnelHref} marked={marked} />
-        <Priser funnelHref={funnelHref} marked={marked} />
-        <SlutCta funnelHref={funnelHref} marked={marked} />
-        <SalgFaq funnelHref={funnelHref} marked={marked} />
-        <EfterspoergselsLink marked={marked} />
+        {!ord && <Kundebevis />}
+        <IkkePortal {...(ord ? { ord: ord.portal } : null)} />
+        <Overgang funnelHref={funnelHref} {...(ord ? { ord: ord.overgang } : null)} />
+        <Priser funnelHref={funnelHref} {...(ord ? { ord: ord.priser } : null)} />
+        <SlutCta funnelHref={funnelHref} {...(ord ? { ord: ord.slut } : null)} />
+        <SalgFaq funnelHref={funnelHref} {...(ord ? { ord: ord.faq } : null)} />
+        {!ord && <EfterspoergselsLink />}
 
-        <Footer marked={marked} />
+        {/* Footeren faar adressen, ikke markedet - se noten i Footer.js.
+            DK sender ingenting og faar husets egen footer. */}
+        <Footer {...(O ? { supportMail: MARKEDER[marked]?.supportMail } : null)} />
         {/* Samme regel: DK får NØJAGTIG de props komponenten fik før ordbogen
             fandtes — kun funnelHref. Både teksten og "vis opret-opgave" har
             danske standardværdier inde i komponenten. */}
@@ -208,7 +284,7 @@ export default function Salgsside({ tal, funnelHref, fag = null, marked = "DK" }
           funnelHref={funnelHref}
           {...(marked === "DK"
             ? null
-            : { tekst: tekster(marked)?.cta?.primaer, visOpretOpgave: false })}
+            : { tekst: cta, visOpretOpgave: false })}
         />
       </div>
     </FagProvider>

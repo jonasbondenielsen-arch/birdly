@@ -1,4 +1,3 @@
-import { MARKEDER } from "../lib/markets";
 import Link from "next/link";
 import { BirdMark } from "./Logo";
 import SamtykkeLink from "./SamtykkeLink";
@@ -22,7 +21,14 @@ const VIDEN_KLAR = KLARE_GUIDES.length > 0;
    Juridisk til venstre, firmaoplysninger i midten, sociale ikoner til højre).
    Sociale URL'er er PLADSHOLDERE indtil Jonas leverer dem. Firmaoplysninger:
    enkeltmandsvirksomhed (ingen "ApS", intet registreringsnummer). */
-export default function Footer({ marked = "DK" }) {
+// ⚠️ FOOTEREN LAESER IKKE MARKEDSMODELLEN. Den importerede MARKEDER fra
+// lib/markets.js - men Footer naaes fra components/Forside.js, som er
+// "use client", saa modulet fulgte med ned i den DANSKE forsides
+// klient-bundt. Baseline havde det ikke, og forsidens RSC-raekker flyttede
+// sig af det (09-09-2026). Support-adressen kommer nu ind som prop fra
+// serveren; ingen prop = den danske footer, praecis som foer.
+// Se den fulde note i Cta.js.
+export default function Footer({ supportMail = null }) {
   // ⚠️ GB FAAR IKKE DEN DANSKE FOOTER. Hvert eneste link herunder peger paa en
   // DANSK side (/priser, /viden, /brancher, betingelserne). Et britisk klik paa
   // "Priser" ville lande i dansk tekst - et doedt spor i bunden af siden.
@@ -32,13 +38,12 @@ export default function Footer({ marked = "DK" }) {
   // "Report a problem". Indtil da staar der det ENESTE der er sandt og
   // nyttigt: hvor man skriver til os. Adressen kommer fra markedsmodellen,
   // ikke fra en streng her.
-  if (marked !== "DK") {
-    const m = MARKEDER[marked];
+  if (supportMail) {
     return (
       <footer className="ft">
         <div className="ft-wrap">
           <p className="ft-fin">
-            <a href={`mailto:${m?.supportMail || ""}`}>{m?.supportMail}</a>
+            <a href={`mailto:${supportMail}`}>{supportMail}</a>
           </p>
         </div>
       </footer>

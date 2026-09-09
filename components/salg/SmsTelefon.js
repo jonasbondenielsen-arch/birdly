@@ -1,5 +1,4 @@
 import { Fugl } from "./Ikoner";
-import { tekster } from "../../lib/tekster";
 
 // ============================================================================
 // TELEFONEN MED BESKEDEN — produktet på ét blik.
@@ -30,6 +29,28 @@ import { tekster } from "../../lib/tekster";
 // ⚠️ HVER STRENG ER STADIG EN PROP FØRST. SmsDemo sender sine egne værdier ind
 // (fag, sted, hvad pr. kunde-fag), og de skal blive ved med at vinde over
 // ordbogen. Ordbogen er defaulten, ikke en overstyring.
+// ⚠️ DEN DANSKE TEKST BOR HER, IKKE I ORDBOGEN. SmsTelefon naaes fra
+// components/Forside.js, som er "use client" - et ordbogsopslag her ville
+// laegge baade den danske og den engelske ordbog i den danske forsides
+// klient-bundt. Se den fulde note i Sektioner.js.
+const DA_TELEFON = {
+    nu: "nu",
+    titel: "Nyt opgavematch",
+    fag: "Rengøring",
+    sted: "Roskilde",
+    hvad: "Fast rengøringsaftale",
+    // ⚠️ MELLEMRUMMET EFTER KOLON HØRER TIL STRENGEN. I komponenten stod der
+    // `Frist: {frist}` — literalen bar selv sit mellemrum.
+    fristLabel: "Frist: ",
+    frist: "18. sept.",
+    link: "Se opgaven →",
+    stop: "Svar STOP for at afmelde",
+    // ⚠️ ÉN LINJE. I komponenten stod de to sætninger på hver sin kodelinje,
+    // men JSX folder linjeskiftet til ét mellemrum — så det er én tekstnode.
+    kvittering: "Du skal ikke søge, logge ind eller holde øje. Vi sender den næste, når den kommer.",
+    note: "Eksempel på en besked. Sådan ser et match ud, når det lander.",
+  };
+
 export default function SmsTelefon({
   titel,
   fag,
@@ -38,9 +59,9 @@ export default function SmsTelefon({
   frist,
   animer = true,
   note,
-  marked = "DK",
+  ord = null,
 }) {
-  const T = tekster(marked).telefon;
+  const T = ord || DA_TELEFON;
   titel = titel ?? T.titel;
   fag = fag ?? T.fag;
   sted = sted ?? T.sted;
