@@ -1,4 +1,7 @@
-import { Hero, BevisBjaelke, Problemet, Motoren } from "../../components/salg/Sektioner";
+import {
+  Hero, BevisBjaelke, Problemet, Motoren,
+  RigtigeOpgaver, OffentligeOpgaver, Overgang, IkkePortal, SlutCta,
+} from "../../components/salg/Sektioner";
 import { hentOpgaveTal } from "../../lib/opgaveTal";
 import { baseUrl, MARKEDER } from "../../lib/markets";
 
@@ -54,6 +57,11 @@ export default async function UkForside() {
       <BevisBjaelke marked="GB" tal={tal} />
       <Problemet marked="GB" />
       <Motoren marked="GB" funnelHref="/uk/start" />
+      <RigtigeOpgaver marked="GB" funnelHref="/uk/start" />
+      <OffentligeOpgaver marked="GB" funnelHref="/uk/start" />
+      <Overgang marked="GB" funnelHref="/uk/start" />
+      <IkkePortal marked="GB" />
+      <SlutCta marked="GB" funnelHref="/uk/start" />
     </div>
   );
 }

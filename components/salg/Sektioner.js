@@ -3,7 +3,7 @@ import Cta, { CtaSekundaer } from "./Cta";
 import SmsTelefon from "./SmsTelefon";
 import FaqListe from "./FaqListe";
 import { Flueben, Kryds, Oeje, Bunke, Ur } from "./Ikoner";
-import { tekster } from "../../lib/tekster";
+import { tekster, t } from "../../lib/tekster";
 import { daTal, fmtOpdateret } from "../../lib/opgaveTal";
 import { PLAN, priceText, YEARLY_SAVING, TRIAL_DAYS } from "../../lib/pakke";
 import {
@@ -33,6 +33,26 @@ import { byggAnker, BETINGET_LINJE, FORBEHOLD } from "../../lib/vaerdiAnker";
 // ============================================================================
 
 // ---------------------------------------------------------------- hjælpere
+
+/**
+ * Husets egen konstant for Danmark — ordbogen for alle andre markeder.
+ *
+ * ⚠️ DANMARK MÅ IKKE GÅ GENNEM ORDBOGEN HER. `salgTekst.js` og
+ * `vaerdiAnker.js` ER husets kilder; CLAUDE.md siger det rent ud: al
+ * garanti-tekst og alle forholdstal kommer derfra, og intet hardkodes i en
+ * sektion. Lagde jeg DK's ordlyd om til et ordbogsopslag, ville hver sætning
+ * afhænge af at TO strenge blev holdt ens — og de ville kunne skride fra
+ * hinanden uden at nogen så det. Med den her funktion er DK bogstaveligt talt
+ * det samme udtryk som før.
+ *
+ * ⚠️ ET ANDET MARKED FALDER IKKE TILBAGE TIL DANSK. Mangler nøglen, kommer der
+ * `null` ud, og afsnittet udelades — samme regel som lib/tekster/index.js. En
+ * dansk sætning på en britisk side er værre end en manglende: den ser ud som
+ * om den hører til.
+ */
+function hus(marked, husets, sti) {
+  return marked === "DK" ? husets : t(marked, sti);
+}
 
 function TrustRaekke({ mork = false, marked = "DK" }) {
   // DK bruger husets TRUST fra salgTekst.js UAENDRET; andre markeder har deres
@@ -77,7 +97,11 @@ export function GarantiFin({ klasse = "sg-fin" }) {
 // ⚠️ ALLE FEM ER TING BIRDLY FAKTISK MATCHER PÅ. De er ikke pyntede kategorier:
 // de ligger under rengørings- og service-fagene i kataloget. Skriver vi et
 // område her som motoren ikke dækker, er chippen et løfte vi ikke kan holde.
-const HERO_CHIPS = ["Rengøring", "Vinduespolering", "Trappevask", "Ejendomsservice", "Erhvervsrengøring"];
+//
+// ⚠️ SELVE LISTEN BOR I ORDBOGEN (lib/tekster/*.js → hero.chips). Den stod
+// også her som `HERO_CHIPS` indtil 09-09-2026, men blev ikke længere læst —
+// en efterladt kopi af de fem danske chips er præcis den drift ordbogen
+// findes for at forhindre.
 
 export function Hero({
   funnelHref,
@@ -396,26 +420,32 @@ export function SmsDemo({ fag = "rengoring" }) {
  * omskrives til "I vinder én", og den må aldrig stå sammen med noget der
  * antyder en garanti. Se lib/salgTekst.js.
  */
-export function RigtigeOpgaver({ funnelHref }) {
+export function RigtigeOpgaver({ funnelHref, marked = "DK" }) {
+  const V = tekster(marked).vaerdi;
   return (
     <section className="sg-sek sg-blaa" id="vaerd">
       <div className="sg-wrap sg-midt">
-        <span className="sg-kick">Det er rigtige opgaver</span>
-        <h2 className="sg-big">{STOERRELSE_LINJE}</h2>
+        <span className="sg-kick">{V.kick}</span>
+        {/* ⚠️ DEN BRITISKE OVERSKRIFT ER COPY-FILENS EGEN RESERVE, ikke dens
+            hovedforslag. Filen skriver "hundreds of thousands of pounds" og
+            tilføjer straks: "Do not state this unless current UK data supports
+            this ... Preferred if proof is not yet ready". Der findes ingen
+            britiske tal endnu, så vi bruger reserven. Det er ikke en
+            udvanding — det er filens eget valg for præcis denne situation. */}
+        <h2 className="sg-big">{hus(marked, STOERRELSE_LINJE, "vaerdi.stoerrelse")}</h2>
         <p className="sg-lead">
-          Birdly finder relevante offentlige og private opgaver til jer. I vælger selv,
-          hvilke I vil byde på.
+          {V.lead}
         </p>
 
         <div className="sg-vind">
-          <span className="sg-vind-over">{VIND_EN.over}</span>
+          <span className="sg-vind-over">{hus(marked, VIND_EN.over, "vaerdi.vindOver")}</span>
           <span className="sg-vind-under">
-            {VIND_EN.underDel1}<b>{VIND_EN.underDel2}</b>
+            {hus(marked, VIND_EN.underDel1, "vaerdi.vindUnder1")}<b>{hus(marked, VIND_EN.underDel2, "vaerdi.vindUnder2")}</b>
           </span>
         </div>
 
         <div className="sg-cta-row" style={{ justifyContent: "center" }}>
-          <Cta href={funnelHref} placering="vaerd" />
+          <Cta href={funnelHref} placering="vaerd" marked={marked} />
         </div>
       </div>
     </section>
@@ -435,37 +465,38 @@ export function RigtigeOpgaver({ funnelHref }) {
  * og at opgaverne kommer i forskellige størrelser. Begge dele er sande. "Alle
  * kan byde på alt" ville ikke være det.
  */
-export function OffentligeOpgaver({ funnelHref }) {
+export function OffentligeOpgaver({ funnelHref, marked = "DK" }) {
+  const O = tekster(marked).offentlige;
   return (
     <section className="sg-sek">
       <div className="sg-wrap sg-midt">
-        <span className="sg-kick">Offentlige opgaver</span>
-        <h2 className="sg-big">{OFFENTLIGE.overskrift}</h2>
-        <p className="sg-lead">{OFFENTLIGE.brod}</p>
+        <span className="sg-kick">{O.kick}</span>
+        <h2 className="sg-big">{hus(marked, OFFENTLIGE.overskrift, "offentlige.overskrift")}</h2>
+        <p className="sg-lead">{hus(marked, OFFENTLIGE.brod, "offentlige.brod")}</p>
 
         <div className="sg-tretrin">
           <div className="sg-tretrin-item">
             <span className="sg-tretrin-nr">1</span>
-            <b>Birdly finder opgaven</b>
+            <b>{O.trin[0]}</b>
           </div>
           <span className="sg-tretrin-pil" aria-hidden="true">→</span>
           <div className="sg-tretrin-item">
             <span className="sg-tretrin-nr">2</span>
-            <b>I får den på SMS</b>
+            <b>{O.trin[1]}</b>
           </div>
           <span className="sg-tretrin-pil" aria-hidden="true">→</span>
           <div className="sg-tretrin-item">
             <span className="sg-tretrin-nr">3</span>
-            <b>I vælger, om I vil byde</b>
+            <b>{O.trin[2]}</b>
           </div>
         </div>
 
         <p className="sg-afslut">
-          {OFFENTLIGE.rolle1} {OFFENTLIGE.rolle2}
+          {hus(marked, OFFENTLIGE.rolle1, "offentlige.rolle1")} {hus(marked, OFFENTLIGE.rolle2, "offentlige.rolle2")}
         </p>
 
         <div className="sg-cta-row" style={{ justifyContent: "center" }}>
-          <Cta href={funnelHref} placering="offentlige" />
+          <Cta href={funnelHref} placering="offentlige" marked={marked} />
         </div>
       </div>
     </section>
@@ -482,16 +513,21 @@ export function OffentligeOpgaver({ funnelHref }) {
  * at det eneste der mangler, er at man ser dem. Det er den samme pointe set fra
  * kundens side — ikke en gentagelse.
  */
-export function Overgang({ funnelHref }) {
+export function Overgang({ funnelHref, marked = "DK" }) {
+  const G = tekster(marked).overgang;
   return (
     <section className="sg-navy sg-overgang">
       <div className="sg-wrap sg-midt">
-        <h2>De opgaver er der allerede.</h2>
+        <h2>{G.overskrift}</h2>
+        {/* ⚠️ FREMHÆVNINGEN LIGGER MIDT I SÆTNINGEN, så linjen er delt i tre
+            nøgler frem for én. Et <b> kan ikke bo i en streng uden at vi enten
+            tillader HTML i ordbogen eller sætter markup sammen af tekst —
+            begge dele er en dør vi ikke skal åbne for en enkelt fed halvdel. */}
         <p className="sg-overgang-stor">
-          Spørgsmålet er bare, om I <b>ser dem</b> — og byder på dem.
+          {G.stor1}<b>{G.stor2}</b>{G.stor3}
         </p>
         <div className="sg-cta-row" style={{ justifyContent: "center" }}>
-          <Cta href={funnelHref} placering="overgang" variant="hvid" stor />
+          <Cta href={funnelHref} placering="overgang" variant="hvid" stor marked={marked} />
         </div>
       </div>
     </section>
@@ -728,13 +764,14 @@ export function Kundebevis() {
 
 // ------------------------------------------------------- 9 · IKKE EN PORTAL
 
-export function IkkePortal() {
+export function IkkePortal({ marked = "DK" }) {
+  const P = tekster(marked).portal;
   return (
     <section className="sg-sek">
       <div className="sg-wrap">
         <div className="sg-midt">
-          <span className="sg-kick">Forskellen</span>
-          <h2 className="sg-big">Endnu en portal?<br />Nej tak.</h2>
+          <span className="sg-kick">{P.kick}</span>
+          <h2 className="sg-big">{P.overskrift}<br />{P.overskrift2}</h2>
         </div>
 
         {/* ⚠️ FORSKELLEN SKAL KUNNE SES, IKKE KUN LÆSES. De to kort så næsten ens
@@ -744,16 +781,13 @@ export function IkkePortal() {
             mister hele sektionen troværdighed. */}
         <div className="sg-vs">
           <div className="sg-vs-kort sg-vs-gammel">
-            <h3>Den gamle måde</h3>
-            <span className="sg-vs-under">En almindelig udbudstjeneste</span>
+            <h3>{P.gammel.titel}</h3>
+            <span className="sg-vs-under">{P.gammel.under}</span>
+            {/* ⚠️ HER ER ET .map() DET RIGTIGE. Alle syv punkter deler det
+                SAMME ikon, så der findes ingen parallel liste der kan skride —
+                modsat de tre kort i Problemet, hvor hvert kort har sit eget. */}
             <ul className="sg-vs-liste">
-              <li><Kryds /> Log ind</li>
-              <li><Kryds /> Søg</li>
-              <li><Kryds /> Vælg filtre</li>
-              <li><Kryds /> Gennemgå opgaver</li>
-              <li><Kryds /> Læs</li>
-              <li><Kryds /> Sortér</li>
-              <li><Kryds /> Gentag</li>
+              {P.gammel.punkter.map((x) => <li key={x}><Kryds /> {x}</li>)}
             </ul>
           </div>
 
@@ -762,27 +796,23 @@ export function IkkePortal() {
           <div className="sg-vs-imellem" aria-hidden="true"><span>vs.</span></div>
 
           <div className="sg-vs-kort sg-vs-ny">
-            <h3>Birdly</h3>
-            <span className="sg-vs-under">Jeres kriterier, én gang</span>
+            <h3>{P.ny.titel}</h3>
+            <span className="sg-vs-under">{P.ny.under}</span>
             {/* ⚠️ HANDLINGERNE ER BIRDLYS, IKKE KUNDENS. Venstre side er syv ting
                 kunden selv skal gøre; her gør Birdly tre af fire. Det er hele
                 sammenligningen — ikke at vi har flere funktioner. */}
             <ul className="sg-vs-liste">
-              <li><Flueben size={18} /> Birdly holder øje</li>
-              <li><Flueben size={18} /> Birdly finder relevante opgaver</li>
-              <li><Flueben size={18} /> I får dem direkte på SMS</li>
-              <li><Flueben size={18} /> I vælger, hvilke I vil gå videre med</li>
+              {P.ny.punkter.map((x) => <li key={x}><Flueben size={18} /> {x}</li>)}
             </ul>
             {/* ⚠️ DEN KORTE LINJE BÆRER SEKTIONEN. Den lange ejer-sætning stod
                 før som konklusion og druknede pointen; nu er den sekundær. */}
-            <p className="sg-vs-payoff">I leder ikke. Birdly gør.</p>
-            <p className="sg-fin">{EJER_LINJE}</p>
+            <p className="sg-vs-payoff">{P.payoff}</p>
+            <p className="sg-fin">{hus(marked, EJER_LINJE, "portal.ejerLinje")}</p>
           </div>
         </div>
 
         <p className="sg-afslut">
-          Birdly er ikke lavet til at give jer mere software. Det er lavet til at give jer
-          relevante opgaver.
+          {P.afslut}
         </p>
       </div>
     </section>
@@ -869,17 +899,18 @@ export function Priser({ funnelHref, medOverskrift = true }) {
 
 // ------------------------------------------------------ 11 · RESULTAT IGEN
 
-export function SlutCta({ funnelHref }) {
+export function SlutCta({ funnelHref, marked = "DK" }) {
+  const S = tekster(marked).slut;
   return (
     <section className="sg-navy sg-slut">
       <div className="sg-wrap">
-        <h2>Den næste relevante opgave findes måske allerede.</h2>
-        <p>Lad Birdly holde øje for jer.</p>
+        <h2>{S.overskrift}</h2>
+        <p>{S.under}</p>
         <div className="sg-cta-row" style={{ justifyContent: "center" }}>
-          <Cta href={funnelHref} placering="slut" variant="hvid" stor />
+          <Cta href={funnelHref} placering="slut" variant="hvid" stor marked={marked} />
         </div>
         <div style={{ display: "flex", justifyContent: "center" }}>
-          <TrustRaekke mork />
+          <TrustRaekke mork marked={marked} />
         </div>
       </div>
     </section>
