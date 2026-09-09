@@ -76,6 +76,38 @@ const FRA_BRIEF = new Map([
    "Jonas' brief 09-09-2026: 'Erstat den med en simpel bekraeftelse (\"Continue as " +
    "a cleaning business\")'. Erstatter copy-filens trade-picker, som ikke giver " +
    "mening med eet fag."],
+
+  // ── Companies House-gatens tre svar. Jonas' brief 09-09-2026, punkt 1. ──
+  // Asymmetrien er DK's: vi ved hvornaar formatet er forkert, vi ved hvornaar
+  // nummeret ikke findes - og naar VI fejler, lukker vi igennem.
+  ["That doesn't look like a UK company number. It's usually 8 digits (like 01234567), or two letters and six digits (like SC123456).",
+   "Jonas' brief 09-09-2026, punkt 1: 'Ugyldigt format (klient-side, gaa ikke videre - bed om rettelse)'."],
+  ["We couldn't find that company on Companies House. Double-check the number — or if you don't have a company number, carry on as a cleaning business.",
+   "Jonas' brief 09-09-2026, punkt 1: 'Gyldigt format, ikke fundet paa CH (blokér nummer-stien, men tilbyd cleaning-vejen)'."],
+  ["We couldn't check that just now — no problem, carry on.",
+   "Jonas' brief 09-09-2026, punkt 1: 'Opslag fejler (CH-API-fejl) -> luk igennem (asymmetri som DK)'."],
+  ["This company looks dissolved on Companies House. If you're still trading, carry on as a cleaning business.",
+   "Jonas' brief 09-09-2026, punkt 2: 'Dissolved - rettet (min modsigelse fjernet). Ikke \"choose your trade\" " +
+   "(picker'en er droppet). I stedet advar-men-tillad -> cleaning-vejen'."],
+
+  // ── §26's supporting-linje MED Jonas' rettelse. ──
+  ["Tell Birdly what you do. We'll look for relevant public and private work across the UK and send the right matches straight to your phone.",
+   "Copy-filen §26's supporting-linje, med Jonas' rettelse 09-09-2026 punkt 3: " +
+   "'\"across England\" -> \"across the UK\". Vores 12 regioner daekker Skotland/Wales/NI, " +
+   "saa \"England\" alene er usandt.' Resten af saetningen er filens egen."],
+
+  // ── GBP-baandene. Jonas' brief 09-09-2026, punkt 4. ──
+  // ⚠️ IKKE BARE ETIKETTER. Taersklerne bindes til max_amount i match-reglen,
+  // praecis som DK's baand. Aendrer nogen et tal her, aendrer de hvad kunden
+  // faar - ikke hvordan det staar skrevet.
+  ["Under £25,000",
+   "Jonas' brief 09-09-2026, punkt 4: 'Under £25,000 · £25,000-£100,000 · £100,000-£500,000 · £500,000+'."],
+  ["£25,000–£100,000",
+   "Jonas' brief 09-09-2026, punkt 4 - samme baand-liste."],
+  ["£100,000–£500,000",
+   "Jonas' brief 09-09-2026, punkt 4 - samme baand-liste."],
+  ["£500,000+",
+   "Jonas' brief 09-09-2026, punkt 4 - samme baand-liste."],
 ]);
 
 const UNDTAGET = new Map([
@@ -84,6 +116,8 @@ const UNDTAGET = new Map([
   ["frekvenstal", "Faktum om motoren (cron 2x dagligt), ikke en saetning fra copy-filen."],
   ["frekvens", "Samme som frekvenstal."],
   ["nr", "Trinnumre 01/02/03 - tal, ikke ordlyd."],
+  ["key", "Interne noegler (fx baand-id'er som 'u25k'), ikke synlig tekst. De maa " +
+          "ALDRIG vises til en kunde - etiketten staar ved siden af i 'label'."],
 ]);
 
 const { en } = await import("../lib/tekster/en.js").catch(() => import("./lib/tekster/en.js"));
