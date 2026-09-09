@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { sporCta } from "../../lib/ctaSporing";
 import { CTA } from "../../lib/salgTekst";
+import { t } from "../../lib/tekster";
 
 // ============================================================================
 // STICKY CTA — kun mobil, kun efter hero'en er scrollet forbi.
@@ -25,7 +26,7 @@ import { CTA } from "../../lib/salgTekst";
 // Samtykke-banneret ligger på z-index 90; denne er 70 og skubbes op af den
 // højde banneret selv melder ud (--samtykke-h). Vi gætter ikke på højden.
 // ============================================================================
-export default function StickyCtaMobil({ funnelHref }) {
+export default function StickyCtaMobil({ funnelHref, marked = "DK" }) {
   const [vis, setVis] = useState(false);
 
   useEffect(() => {
@@ -61,9 +62,14 @@ export default function StickyCtaMobil({ funnelHref }) {
         tabIndex={vis ? 0 : -1}
         onClick={() => sporCta("sticky-mobil", funnelHref)}
       >
-        {CTA.primaer} <span aria-hidden="true">→</span>
+        {marked === "DK" ? CTA.primaer : (t(marked, "cta.primaer") || CTA.primaer)} <span aria-hidden="true">→</span>
       </Link>
-      <a href="#priser" className="sg-sticky-pris" tabIndex={vis ? 0 : -1}>Pris</a>
+      {/* ⚠️ GENVEJEN UDELADES PAA ANDRE MARKEDER. Ordet er dansk, OG ankeret
+          peger paa #priser - en sektion der udelader sig selv paa GB, saa
+          klikket ville ikke foere nogen steder. */}
+      {marked === "DK" && (
+        <a href="#priser" className="sg-sticky-pris" tabIndex={vis ? 0 : -1}>Pris</a>
+      )}
     </div>
   );
 }

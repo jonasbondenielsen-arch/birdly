@@ -1,103 +1,63 @@
-import {
-  Hero, BevisBjaelke, Problemet, Motoren,
-  RigtigeOpgaver, OffentligeOpgaver, Overgang, IkkePortal, SlutCta,
-} from "../../components/salg/Sektioner";
+import Salgsside from "../../components/salg/Salgsside";
 import { hentOpgaveTal } from "../../lib/opgaveTal";
 import { baseUrl, MARKEDER } from "../../lib/markets";
-// ⚠️ DEN HER LINJE MANGLEDE, OG SIDEN STOD HELT USTYLET.
-// `salg.css` bærer alle `.sg-*`-klasserne som salg/Sektioner bruger — hero,
-// chips, telefon-mockup, trust-række, knapper, trin. Den er IKKE nested (til
-// forskel fra forside.css, der ligger inde i `.birdly-home`), så den virker
-// hvor som helst — men den skal IMPORTERES. Hver dansk side der bruger de
-// samme sektioner gør det eksplicit: /hvorfor-birdly, /priser,
-// /sadan-virker-det og components/Forside.js.
-//
-// ⚠️ HVORFOR DET SLAP IGENNEM: mine beviser målte INDHOLD (HTML-diff, curl,
-// "ingen danske tegn"). En manglende stylesheet-import ændrer ikke ét tegn i
-// teksten — kun hvordan den ser ud. Målt på det deployede preview bagefter:
-// /hvorfor-birdly hentede TO stylesheets, /uk kun ét.
-import "../salg.css";
-
-// ============================================================================
-// DET ENGELSKE BIRDLY — getbirdly.co.uk (UK Fase A, del 2)
-//
-// ⚠️ EGET STATISK TRÆ, IKKE EN DYNAMISK FORSIDE. `proxy.js` rewriter britiske
-// værter hertil, så adressen udadtil stadig er getbirdly.co.uk/. Alternativet
-// var at lade `/` læse `headers()` og vælge marked pr. request — men det ville
-// gøre den DANSKE forside dynamisk og koste dens cache. Med et rewrite bliver
-// begge markeder statisk genereret, og DK's renderingssti er bogstaveligt talt
-// urørt. Det er også derfor DK kan bevises byte-identisk: den kode kører ikke
-// et andet sted, den kører præcis som før.
-//
-// ⚠️ SAMME KOMPONENTER SOM DANMARK. Der er ikke bygget en UK-forside; der er
-// sendt `marked="GB"` ind i husets egne sektioner, som slår teksten op i
-// ordbogen. En kopi ville drive fra den danske i samme øjeblik nogen rettede
-// den ene.
-// ============================================================================
 
 const GB = MARKEDER.GB;
+
+// ============================================================================
+// DET ENGELSKE BIRDLY — getbirdly.co.uk
+//
+// ⚠️ SAMME KOMPOSITION SOM DANMARK, IKKE EN HAANDPLUKKET LISTE.
+// Foerste udgave af den her side satte selv seks sektioner sammen. Den fik
+// derfor hverken header, footer eller sticky-CTA, og raekkefoelgen var min
+// egen frem for husets. `components/salg/Salgsside.js` ER siden: 19 elementer
+// i en dokumenteret psykologisk raekkefoelge, og den raekkefoelge er et
+// produktvalg der er begrundet linje for linje i komponenten.
+//
+// Nu sendes `marked="GB"` ind, og resten foelger af sig selv. Retter nogen
+// DK's raekkefoelge, retter de UK's samtidig - det er hele pointen.
+//
+// ⚠️ SEKTIONER UDEN ENGELSK COPY UDELADER SIG SELV.
+// Hver sektion faar `marked` og returnerer null hvis den ikke er oversat
+// endnu. Hellere en manglende sektion end en dansk: en dansk saetning paa en
+// britisk side er VAERRE end en manglende, for den ser ud som om den hoerer
+// til. Naar copy'en kommer, taender sektionen af sig selv - der er ingen
+// liste her at huske at opdatere.
+//
+// ⚠️ EGET STATISK TRAE. `proxy.js` rewriter britiske vaerter hertil, saa
+// adressen udadtil er getbirdly.co.uk/. Alternativet - at lade `/` vaelge
+// marked pr. request - ville have gjort DEN DANSKE forside dynamisk og kostet
+// dens cache.
+// ============================================================================
 
 export const metadata = {
   title: "Get more cleaning and service contracts | Birdly",
   description:
     "Birdly finds public and private work that fits your business — and sends new matches straight to your phone.",
-  // ⚠️ CANONICAL PEGER PÅ getbirdly.co.uk, ikke på /uk. Stien er intern; det
-  // er værten kunden ser, og det er den Google skal indeksere.
+  // ⚠️ CANONICAL PEGER PAA getbirdly.co.uk, ikke paa /uk. Stien er intern; det
+  // er vaerten kunden ser, og den Google skal indeksere.
   alternates: { canonical: baseUrl("GB") + "/" },
-  // ⚠️ INGEN INDEKSERING FØR MARKEDET ER LANCERET. GB er DRAFT: domænet peger
-  // ingen steder, priserne er ikke oprettet i Frisbii, og juraen er DRAFT. Et
-  // indekseret site i den tilstand ville lokke folk ind på noget der ikke kan
-  // købes. Fjernes når pre-live-tjeklisten er grøn.
+  // ⚠️ INGEN INDEKSERING FOER MARKEDET ER LANCERET. GB er DRAFT: juraen er
+  // DRAFT, der er ingen GBP-plan i Frisbii, og flere sektioner mangler endnu
+  // deres engelske copy. Et indekseret site i den tilstand ville lokke folk
+  // ind paa noget der ikke kan koebes. Fjernes naar pre-live-tjeklisten er
+  // groen.
   robots: GB.lanceret ? undefined : { index: false, follow: false },
 };
 
 export default async function UkForside() {
-  // ⚠️ BEVIS-BJÆLKEN ER SLUKKET FOR GB, OG DET ER EN BESLUTNING (09-09-2026).
+  // ⚠️ BEVIS-BJAELKEN ER SLUKKET FOR GB, OG DET ER EN BESLUTNING.
+  // Bjaelken er ikke bare tal - den er en AKTIVITETS-PAASTAND ("Birdly is
+  // already keeping watch", "2× a day", "new in the last 7 days"). For GB har
+  // ingesten koert NUL gange og kilden (FTS) er slukket, saa hver af de
+  // paastande er usand i dag.
   //
-  // Bjælken er ikke bare tal — den er en AKTIVITETS-PÅSTAND: "Birdly is already
-  // keeping watch", "2× a day", "new in the last 7 days". For GB har ingesten
-  // kørt NUL gange og kilden (FTS) er slukket, så hver af de påstande er usand
-  // i dag. Selv de sande snapshot-tal forfalder: de 301 britiske udbud kom ind
-  // i ét backfill, så "new in the last 7 days" ville svare 301 og derefter
-  // falde til 0 uden at noget var gået galt.
-  //
-  // ⚠️ HVORFOR EN EKSPLICIT GATE OG IKKE BARE `hentOpgaveTal`s selvkontrol.
-  // Den kontrol virker ved et TILFÆLDE i dag: GB-domænerne er slukkede, så
-  // funktionen svarer DK, uenigheden opdages, og bjælken forsvinder. Men den
-  // dag DNS peges og domænerne tændes, ville bjælken TÆNDE AF SIG SELV med
-  // frosne tal — uden at nogen havde besluttet det. Gaten skal hænge på om
-  // motoren kører, ikke på om domænet svarer.
-  //
-  // `GB.dataLever` sættes til true når FTS kører live. Så bliver bjælken
-  // ægte af sig selv, og der er ingen kode at huske at ændre.
-  // ⚠️ LÆSES SOM DATA, IKKE GENNEM EN NY EKSPORTERET FUNKTION.
-  // Første forsøg lagde en `dataLever()`-hjælper i lib/markets.js — og DA
-  // FLYTTEDE DEN DANSKE FORSIDE SIG. Ikke indholdet: titel, tal og FAQ-schema
-  // var identiske, men RSC-strømmens række-id'er blev nummereret om (FAQ-
-  // schemaet gik fra række "f" til "10", IconMark modsat). En ny eksport
-  // ændrer modulets form, og bundleren grupperer chunks anderledes.
-  // Kontrolprøven main-mod-main var ren, så det var ikke byggestøj.
-  // Nøglen aflæses derfor direkte på markedet — samme oplysning, ingen ny
-  // eksport, DK uberørt.
+  // ⚠️ GATEN HAENGER PAA OM MOTOREN KOERER, ikke paa om domaenet svarer.
+  // Indtil 09-09-2026 var bjaelken ogsaa beskyttet af at get-opgave-tal
+  // svarede DK for en GB-vaert - men den spaerring forsvandt praecis da
+  // domaenet blev taendt (migration 0144). `dataLever` baerer nu alene, og det
+  // er derfor det flag findes.
   const tal = GB.dataLever ? await hentOpgaveTal("GB", baseUrl("GB")) : null;
 
-  return (
-    <div className="sg" lang="en-GB">
-      {/* ⚠️ SEKUNDÆREN PEGER PÅ SIDENS EGEN "HOW IT WORKS", ikke på
-          /sadan-virker-det. Den danske støtteside findes ikke på engelsk, og
-          en britisk besøgende der trykker "See how it works" skal ikke lande i
-          dansk tekst. Ankeret virker, fordi Motoren står længere nede på
-          samme side. Den dag UK får sin egen støtteside, er det den ene prop. */}
-      <Hero marked="GB" funnelHref="/uk/start" sekundaerHref="#hvordan" />
-      {/* Renderer sig selv væk når `tal` er null — se noten ovenfor. */}
-      <BevisBjaelke marked="GB" tal={tal} />
-      <Problemet marked="GB" />
-      <Motoren marked="GB" funnelHref="/uk/start" />
-      <RigtigeOpgaver marked="GB" funnelHref="/uk/start" />
-      <OffentligeOpgaver marked="GB" funnelHref="/uk/start" />
-      <Overgang marked="GB" funnelHref="/uk/start" />
-      <IkkePortal marked="GB" />
-      <SlutCta marked="GB" funnelHref="/uk/start" />
-    </div>
-  );
+  return <Salgsside marked="GB" tal={tal} funnelHref="/uk/start" />;
 }

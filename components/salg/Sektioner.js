@@ -363,7 +363,16 @@ const SMS_EKSEMPEL = {
   entreprenor: { fag: "Entreprenør", hvad: "Byggemodning og kloakarbejde", sted: "Roskilde Kommune" },
 };
 
-export function SmsDemo({ fag = "rengoring" }) {
+export function SmsDemo({ fag = "rengoring", marked = "DK" }) {
+  // ⚠️ ENDNU IKKE OVERSAT — SEKTIONEN UDELADER SIG SELV PAA ANDRE MARKEDER.
+  // Hellere en manglende sektion end en dansk. Det er samme regel som
+  // lib/tekster/index.js: en dansk saetning paa en britisk side er VAERRE end
+  // en manglende, for den ser ud som om den hoerer til.
+  // Naar sektionens engelske copy findes, flyttes strengene til ordbogen og
+  // den her linje ryger. Indtil da er DK bit-for-bit uroert: `marked` er "DK",
+  // og resten af funktionen er ikke aendret med eet tegn.
+  if (marked !== "DK") return null;
+
   const e = SMS_EKSEMPEL[fag] || SMS_EKSEMPEL.rengoring;
   return (
     <section className="sg-sek">
@@ -552,7 +561,16 @@ export function Overgang({ funnelHref, marked = "DK" }) {
  * det ville forudsætte at kunden ville have vundet opgaven. Der står at en
  * opgave man ikke ser, ikke kan bydes på. Det er sandt uanset udfaldet.
  */
-export function ProblemPris({ fag = "rengoring" }) {
+export function ProblemPris({ fag = "rengoring", marked = "DK" }) {
+  // ⚠️ ENDNU IKKE OVERSAT — SEKTIONEN UDELADER SIG SELV PAA ANDRE MARKEDER.
+  // Hellere en manglende sektion end en dansk. Det er samme regel som
+  // lib/tekster/index.js: en dansk saetning paa en britisk side er VAERRE end
+  // en manglende, for den ser ud som om den hoerer til.
+  // Naar sektionens engelske copy findes, flyttes strengene til ordbogen og
+  // den her linje ryger. Indtil da er DK bit-for-bit uroert: `marked` er "DK",
+  // og resten af funktionen er ikke aendret med eet tegn.
+  if (marked !== "DK") return null;
+
   const a = byggAnker(fag);
   return (
     /* ⚠️ NAVY, IKKE HVID. Sektionen er sidens vigtigste direkte-respons-moment,
@@ -612,7 +630,16 @@ export function ProblemPris({ fag = "rengoring" }) {
  * område, størrelse, type — ikke noget produktet indeholder. Det er forskellen
  * på "her er hvad vi kan" og "her er hvad I bestemmer".
  */
-export function Loesningen({ funnelHref }) {
+export function Loesningen({ funnelHref, marked = "DK" }) {
+  // ⚠️ ENDNU IKKE OVERSAT — SEKTIONEN UDELADER SIG SELV PAA ANDRE MARKEDER.
+  // Hellere en manglende sektion end en dansk. Det er samme regel som
+  // lib/tekster/index.js: en dansk saetning paa en britisk side er VAERRE end
+  // en manglende, for den ser ud som om den hoerer til.
+  // Naar sektionens engelske copy findes, flyttes strengene til ordbogen og
+  // den her linje ryger. Indtil da er DK bit-for-bit uroert: `marked` er "DK",
+  // og resten af funktionen er ikke aendret med eet tegn.
+  if (marked !== "DK") return null;
+
   return (
     <section className="sg-sek sg-blaa">
       <div className="sg-wrap sg-midt">
@@ -666,7 +693,16 @@ const FAG_KORT = [
   { slug: null, navn: "Andre fag", resultat: "Birdly dækker 20 fag — fra maler og kloak til IT og catering.", cta: "Se alle fag" },
 ];
 
-export function FagVaelgerKort() {
+export function FagVaelgerKort({ marked = "DK" } = {}) {
+  // ⚠️ ENDNU IKKE OVERSAT — SEKTIONEN UDELADER SIG SELV PAA ANDRE MARKEDER.
+  // Hellere en manglende sektion end en dansk. Det er samme regel som
+  // lib/tekster/index.js: en dansk saetning paa en britisk side er VAERRE end
+  // en manglende, for den ser ud som om den hoerer til.
+  // Naar sektionens engelske copy findes, flyttes strengene til ordbogen og
+  // den her linje ryger. Indtil da er DK bit-for-bit uroert: `marked` er "DK",
+  // og resten af funktionen er ikke aendret med eet tegn.
+  if (marked !== "DK") return null;
+
   return (
     <section className="sg-sek" id="brancher">
       <div className="sg-wrap">
@@ -692,7 +728,16 @@ export function FagVaelgerKort() {
 
 // ---------------------------------------------------- 7 · RISIKO FJERNET
 
-export function RisikoFjernet({ funnelHref }) {
+export function RisikoFjernet({ funnelHref, marked = "DK" }) {
+  // ⚠️ ENDNU IKKE OVERSAT — SEKTIONEN UDELADER SIG SELV PAA ANDRE MARKEDER.
+  // Hellere en manglende sektion end en dansk. Det er samme regel som
+  // lib/tekster/index.js: en dansk saetning paa en britisk side er VAERRE end
+  // en manglende, for den ser ud som om den hoerer til.
+  // Naar sektionens engelske copy findes, flyttes strengene til ordbogen og
+  // den her linje ryger. Indtil da er DK bit-for-bit uroert: `marked` er "DK",
+  // og resten af funktionen er ikke aendret med eet tegn.
+  if (marked !== "DK") return null;
+
   return (
     <section className="sg-sek sg-blaa" id="risiko">
       <div className="sg-wrap">
@@ -738,7 +783,16 @@ export function RisikoFjernet({ funnelHref }) {
 const VIS_KUNDEBEVIS = false;
 const KUNDEBEVIS = []; // { citat, navn, firma }
 
-export function Kundebevis() {
+export function Kundebevis({ marked = "DK" } = {}) {
+  // ⚠️ ENDNU IKKE OVERSAT — SEKTIONEN UDELADER SIG SELV PAA ANDRE MARKEDER.
+  // Hellere en manglende sektion end en dansk. Det er samme regel som
+  // lib/tekster/index.js: en dansk saetning paa en britisk side er VAERRE end
+  // en manglende, for den ser ud som om den hoerer til.
+  // Naar sektionens engelske copy findes, flyttes strengene til ordbogen og
+  // den her linje ryger. Indtil da er DK bit-for-bit uroert: `marked` er "DK",
+  // og resten af funktionen er ikke aendret med eet tegn.
+  if (marked !== "DK") return null;
+
   if (!VIS_KUNDEBEVIS || KUNDEBEVIS.length === 0) return null;
   return (
     <section className="sg-sek">
@@ -821,7 +875,16 @@ export function IkkePortal({ marked = "DK" }) {
 
 // -------------------------------------------------------------- 10 · PRISER
 
-export function Priser({ funnelHref, medOverskrift = true }) {
+export function Priser({ funnelHref, medOverskrift = true, marked = "DK" }) {
+  // ⚠️ ENDNU IKKE OVERSAT — SEKTIONEN UDELADER SIG SELV PAA ANDRE MARKEDER.
+  // Hellere en manglende sektion end en dansk. Det er samme regel som
+  // lib/tekster/index.js: en dansk saetning paa en britisk side er VAERRE end
+  // en manglende, for den ser ud som om den hoerer til.
+  // Naar sektionens engelske copy findes, flyttes strengene til ordbogen og
+  // den her linje ryger. Indtil da er DK bit-for-bit uroert: `marked` er "DK",
+  // og resten af funktionen er ikke aendret med eet tegn.
+  if (marked !== "DK") return null;
+
   // ⚠️ REGNET, IKKE SKREVET: 4.990 / 12 = 415,83 → "ca. 416 kr./md.". Et
   // håndskrevet tal ville stå forkert dagen efter en prisændring.
   const prMaaned = Math.round(PLAN.yearly / 12).toLocaleString("da-DK");
@@ -929,7 +992,16 @@ export function SlutCta({ funnelHref, marked = "DK" }) {
  * fulde forklaring (hvor opgaverne kommer fra, bud-skabelonen, antal SMS'er), og
  * de står i HTML'en uanset om detaljen er åben. De er stadig crawlbare.
  */
-export function SalgFaq({ funnelHref }) {
+export function SalgFaq({ funnelHref, marked = "DK" }) {
+  // ⚠️ ENDNU IKKE OVERSAT — SEKTIONEN UDELADER SIG SELV PAA ANDRE MARKEDER.
+  // Hellere en manglende sektion end en dansk. Det er samme regel som
+  // lib/tekster/index.js: en dansk saetning paa en britisk side er VAERRE end
+  // en manglende, for den ser ud som om den hoerer til.
+  // Naar sektionens engelske copy findes, flyttes strengene til ordbogen og
+  // den her linje ryger. Indtil da er DK bit-for-bit uroert: `marked` er "DK",
+  // og resten af funktionen er ikke aendret med eet tegn.
+  if (marked !== "DK") return null;
+
   return (
     <section className="sg-sek" id="faq">
       <div className="sg-wrap">
@@ -960,7 +1032,16 @@ export function SalgFaq({ funnelHref }) {
  * skulle beskrive et arbejde han gerne ville UDFØRE, og en husejer der klikkede
  * på "Find opgaver nu" landede i et CVR-felt.
  */
-export function EfterspoergselsLink() {
+export function EfterspoergselsLink({ marked = "DK" } = {}) {
+  // ⚠️ ENDNU IKKE OVERSAT — SEKTIONEN UDELADER SIG SELV PAA ANDRE MARKEDER.
+  // Hellere en manglende sektion end en dansk. Det er samme regel som
+  // lib/tekster/index.js: en dansk saetning paa en britisk side er VAERRE end
+  // en manglende, for den ser ud som om den hoerer til.
+  // Naar sektionens engelske copy findes, flyttes strengene til ordbogen og
+  // den her linje ryger. Indtil da er DK bit-for-bit uroert: `marked` er "DK",
+  // og resten af funktionen er ikke aendret med eet tegn.
+  if (marked !== "DK") return null;
+
   return (
     <section className="sg-sek-taet" style={{ borderTop: "1px solid var(--line)" }}>
       <div className="sg-wrap sg-midt">

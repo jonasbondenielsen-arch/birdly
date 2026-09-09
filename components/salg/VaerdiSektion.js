@@ -42,7 +42,11 @@ import { sporFunnel } from "../../lib/ctaSporing";
  * @param {string} fag  fagnøgle — afgør om ankeret er en løbende aftale
  *                      (rengøring/service) eller et enkeltprojekt.
  */
-export function Vaerdi({ funnelHref, fag = null, valgt = null }) {
+export function Vaerdi({ funnelHref, fag = null, valgt = null, marked = "DK" }) {
+  // ⚠️ ENDNU IKKE OVERSAT — UDELADER SIG SELV PAA ANDRE MARKEDER.
+  // Hellere en manglende sektion end en dansk. Se noten i Salgsside.js.
+  if (marked !== "DK") return null;
+
   // ⚠️ FAGET FØLGER FANEN I BEVIS-SEKTIONEN. Klikker den besøgende "VVS"
   // deroppe, skifter regnestykket hernede med — ellers ser en VVS'er sit eget
   // fag i beviset og en rengøringsaftale som sit eksempel to sektioner senere.

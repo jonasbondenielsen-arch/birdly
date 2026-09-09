@@ -1,3 +1,4 @@
+import { MARKEDER } from "../lib/markets";
 import Link from "next/link";
 import { BirdMark } from "./Logo";
 import SamtykkeLink from "./SamtykkeLink";
@@ -21,7 +22,29 @@ const VIDEN_KLAR = KLARE_GUIDES.length > 0;
    Juridisk til venstre, firmaoplysninger i midten, sociale ikoner til højre).
    Sociale URL'er er PLADSHOLDERE indtil Jonas leverer dem. Firmaoplysninger:
    enkeltmandsvirksomhed (ingen "ApS", intet registreringsnummer). */
-export default function Footer() {
+export default function Footer({ marked = "DK" }) {
+  // ⚠️ GB FAAR IKKE DEN DANSKE FOOTER. Hvert eneste link herunder peger paa en
+  // DANSK side (/priser, /viden, /brancher, betingelserne). Et britisk klik paa
+  // "Priser" ville lande i dansk tekst - et doedt spor i bunden af siden.
+  //
+  // ⚠️ OG DEN MAA IKKE BARE VAERE TOM. Fase B skal give UK sin egen footer med
+  // de ti juraside, "operated by Birdly.dk, CVR 35764283, Denmark" og
+  // "Report a problem". Indtil da staar der det ENESTE der er sandt og
+  // nyttigt: hvor man skriver til os. Adressen kommer fra markedsmodellen,
+  // ikke fra en streng her.
+  if (marked !== "DK") {
+    const m = MARKEDER[marked];
+    return (
+      <footer className="ft">
+        <div className="ft-wrap">
+          <p className="ft-fin">
+            <a href={`mailto:${m?.supportMail || ""}`}>{m?.supportMail}</a>
+          </p>
+        </div>
+      </footer>
+    );
+  }
+
   return (
     <footer className="birdly-footer">
       <div className="finner">

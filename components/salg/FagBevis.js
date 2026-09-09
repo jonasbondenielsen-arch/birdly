@@ -59,7 +59,11 @@ const STANDARD = "rengoring";
  *   side hun lige er landet på — og til at se et bevis der ikke handler om
  *   hende. På forsiden er fanerne omvendt hele pointen.
  */
-export default function FagBevis({ funnelHref, laastFag = null }) {
+export default function FagBevis({ funnelHref, laastFag = null, marked = "DK" }) {
+  // ⚠️ ENDNU IKKE OVERSAT — UDELADER SIG SELV PAA ANDRE MARKEDER.
+  // Hellere en manglende sektion end en dansk. Se noten i Salgsside.js.
+  if (marked !== "DK") return null;
+
   const [katalog, setKatalog] = useState(null);
   // ⚠️ FAGET ER DELT MED VÆRDI-ANKERET længere nede på siden. Vælger den
   // besøgende "VVS" her, skal regnestykket dernede også være en VVS-opgave —

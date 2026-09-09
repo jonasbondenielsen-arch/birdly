@@ -24,25 +24,42 @@ import { OPRET_OPGAVE_I_NAV } from "../../lib/opretOpgave";
 // handlinger bliver stående — det er dem der betyder noget på en telefon, og
 // resten af sitet nås fra footeren. En menu ingen kan åbne er værre end ingen menu.
 // ============================================================================
-export default function SalgHeader({ funnelHref }) {
+export default function SalgHeader({ funnelHref, marked = "DK" }) {
+  // ⚠️ GB FAAR INGEN NAV-LINKS, OG DET ER ET VALG - ikke en forglemmelse.
+  // Alle fem punkter peger paa DANSKE sider (/sadan-virker-det, /brancher,
+  // /priser, /hvorfor-birdly, /viden), og "Opret opgave" ogsaa. Et britisk
+  // klik paa "Priser" ville lande i dansk tekst.
+  //
+  // ⚠️ OG DE MAA HELLER IKKE BARE OVERSAETTES. Copy-filen §3 har labels
+  // ("How it works", "Pricing", "Guides"), men SIDERNE findes ikke paa
+  // engelsk endnu - et link til en 404 er vaerre end intet link.
+  // ⚠️ "For your trade" skal desuden ALDRIG med paa UK: markedet er
+  // cleaning-only, og en brancheoversigt ville love 20 fag vi ikke har.
+  //
+  // Headeren beholder logo og CTA, saa siden faar sin topbar og hero'en ikke
+  // starter i y=0. Fase B giver UK sine egne sider - og saa sin egen nav.
+  const visNav = marked === "DK";
+
   return (
     <header className="sg-top">
       <div className="sg-wrap sg-bar">
         <Logo height={32} />
-        <nav className="sg-nav">
-          <Link href="/sadan-virker-det">Sådan virker det</Link>
-          <Link href="/brancher">Brancher</Link>
-          <Link href="/priser">Priser</Link>
-          <Link href="/hvorfor-birdly">Hvorfor Birdly</Link>
-          <Link href="/viden">Viden</Link>
-        </nav>
+        {visNav && (
+          <nav className="sg-nav">
+            <Link href="/sadan-virker-det">Sådan virker det</Link>
+            <Link href="/brancher">Brancher</Link>
+            <Link href="/priser">Priser</Link>
+            <Link href="/hvorfor-birdly">Hvorfor Birdly</Link>
+            <Link href="/viden">Viden</Link>
+          </nav>
+        )}
         <div className="sg-hoejre">
-          {OPRET_OPGAVE_I_NAV && (
+          {visNav && OPRET_OPGAVE_I_NAV && (
             <Link href="/opret-opgave" className="sg-navcta-2">Opret opgave</Link>
           )}
           {/* Variant "nav": samme tekst og samme klik-sporing som sidens øvrige
               CTA'er, men den kompakte header-stil. */}
-          <Cta href={funnelHref} placering="header" variant="nav" />
+          <Cta href={funnelHref} placering="header" variant="nav" marked={marked} />
         </div>
       </div>
     </header>

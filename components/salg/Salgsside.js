@@ -58,7 +58,7 @@ import "../../app/salg.css";
 // knap hver 100 px: en CTA uden et argument foran sig er støj, og støj lærer
 // øjet at springe knappen over.
 // ══════════════════════════════════════════════════════════════════════════
-export default function Salgsside({ tal, funnelHref, fag = null }) {
+export default function Salgsside({ tal, funnelHref, fag = null, marked = "DK" }) {
   // ---------------------------------------------------------------------
   // MESSAGE-MATCH. Kommer en besøgende fra en rengørings-annonce
   // (?fag=rengoring), skal overskriften, beviset, SMS-eksemplet og regnestykket
@@ -74,7 +74,10 @@ export default function Salgsside({ tal, funnelHref, fag = null }) {
   // ⚠️ Opslaget sker på fagKey, ikke slug. Det er fagKey annoncerne og
   // fag-siderne fører videre (?fag=tomrer, ikke ?fag=toemrer).
   // ---------------------------------------------------------------------
-  const b = fag ? getBrancheByFagKey(String(fag)) : null;
+  // ⚠️ MESSAGE-MATCH ER DK-ONLY INDTIL VIDERE. `getBrancheByFagKey` slaar op i
+  // DK's brancheliste, og GB er cleaning-only uden ?fag=-trafik. Uden det her
+  // ville en britisk besoegende med ?fag=tomrer faa en DANSK overskrift.
+  const b = fag && marked === "DK" ? getBrancheByFagKey(String(fag)) : null;
   // Ukendt fag ⇒ rengøring, som er den nuværende primære målgruppe.
   const fagNoegle = b ? b.fagKey : "rengoring";
 
@@ -131,34 +134,35 @@ export default function Salgsside({ tal, funnelHref, fag = null }) {
     // Provideren deler det valgte fag mellem bevis-fanerne (7) og
     // værdi-ankeret (11). Alt derimellem forbliver server-renderet.
     <FagProvider start={fagNoegle}>
-      <div className="sg">
-        <SalgHeader funnelHref={funnelHref} />
+      <div className="sg" lang={marked === "DK" ? undefined : "en-GB"}>
+        <SalgHeader funnelHref={funnelHref} marked={marked} />
 
-        <Hero funnelHref={funnelHref} overskrift={overskrift} under={under} eyebrow={eyebrow} chips={chips} />
-        <BevisBjaelke tal={tal} />
+        <Hero funnelHref={funnelHref} overskrift={overskrift} under={under} eyebrow={eyebrow} chips={chips}
+              marked={marked} sekundaerHref={marked === "DK" ? undefined : "#hvordan"} />
+        <BevisBjaelke tal={tal} marked={marked} />
         {/* ⚠️ DET ØKONOMISKE ARGUMENT LIGGER HØJT. Kold trafik scroller ikke ned
             til en prissektion for at finde ud af hvad en opgave kan være værd. */}
-        <RigtigeOpgaver funnelHref={funnelHref} />
-        <OffentligeOpgaver funnelHref={funnelHref} />
-        <RisikoFjernet funnelHref={funnelHref} />
-        <Problemet />
-        <ProblemPris fag={fagNoegle} />
-        <Loesningen funnelHref={funnelHref} />
-        <FagBevis funnelHref={funnelHref} />
-        <Motoren funnelHref={funnelHref} />
-        <SmsDemo fag={fagNoegle} />
-        <FagVaelgerKort />
-        <Vaerdi funnelHref={funnelHref} />
-        <Kundebevis />
-        <IkkePortal />
-        <Overgang funnelHref={funnelHref} />
-        <Priser funnelHref={funnelHref} />
-        <SlutCta funnelHref={funnelHref} />
-        <SalgFaq funnelHref={funnelHref} />
-        <EfterspoergselsLink />
+        <RigtigeOpgaver funnelHref={funnelHref} marked={marked} />
+        <OffentligeOpgaver funnelHref={funnelHref} marked={marked} />
+        <RisikoFjernet funnelHref={funnelHref} marked={marked} />
+        <Problemet marked={marked} />
+        <ProblemPris fag={fagNoegle} marked={marked} />
+        <Loesningen funnelHref={funnelHref} marked={marked} />
+        <FagBevis funnelHref={funnelHref} marked={marked} />
+        <Motoren funnelHref={funnelHref} marked={marked} />
+        <SmsDemo fag={fagNoegle} marked={marked} />
+        <FagVaelgerKort marked={marked} />
+        <Vaerdi funnelHref={funnelHref} marked={marked} />
+        <Kundebevis marked={marked} />
+        <IkkePortal marked={marked} />
+        <Overgang funnelHref={funnelHref} marked={marked} />
+        <Priser funnelHref={funnelHref} marked={marked} />
+        <SlutCta funnelHref={funnelHref} marked={marked} />
+        <SalgFaq funnelHref={funnelHref} marked={marked} />
+        <EfterspoergselsLink marked={marked} />
 
-        <Footer />
-        <StickyCtaMobil funnelHref={funnelHref} />
+        <Footer marked={marked} />
+        <StickyCtaMobil funnelHref={funnelHref} marked={marked} />
       </div>
     </FagProvider>
   );

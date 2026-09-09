@@ -45,6 +45,20 @@ const proever = [
    (s) => s.replace("Birdly arbejder allerede", "Birdly arbejder maaske")],
   ["et PRISTAL aendres (maa ALDRIG normaliseres vaek)",
    (s) => s.replace(/499/g, "599")],
+
+  // ⚠️ HVER GANG NORMALISERINGEN LØSNES, SKAL DEN HER LISTE VOKSE.
+  // 09-09-2026 blev to former mere blanket: live-tallene som React-props i
+  // RSC-strømmen, og `/start`s egen `st-stat`-markup. De tre prøver herunder
+  // findes fordi de former nu er usynlige for diffen — og så skal det bevises
+  // at det kun er TALLENE der er usynlige, ikke teksten omkring dem.
+  ["sg-tal: ETIKETTEN aendres (tallet er blanket, teksten er ikke)",
+   (s) => s.replace("nye de seneste 7 dage", "nye de sidste 7 dage")],
+  ["st-stat: ETIKETTEN aendres",
+   (s) => s.replace("åbne opgaver lige nu", "aabne opgaver lige nu")],
+  // "2×" staar i SAMME boks som live-tallene, men den er en KONSTANT.
+  // Blankede vi den med, kunne "2×" blive til "3×" uden at nogen saa det.
+  ["st-stat: KONSTANTEN 2x aendres (den er IKKE et live-tal)",
+   (s) => s.replace("<b>2×</b>", "<b>3×</b>")],
 ];
 
 let fejl = 0;
@@ -52,11 +66,17 @@ for (const [navn, muter] of proever) {
   rmSync(T, { recursive: true, force: true });
   mkdirSync(`${T}/foer2`, { recursive: true });
   mkdirSync(`${T}/efter2`, { recursive: true });
-  cpSync(`${KILDE}/foer2/forside.html`, `${T}/foer2/forside.html`);
-  const raa = readFileSync(`${KILDE}/foer2/forside.html`, "utf8");
-  const aendret = muter(raa);
-  if (aendret === raa) { console.log(`  ? ${navn}\n      (proeven aendrede intet - moensteret findes ikke i siden)`); continue; }
-  writeFileSync(`${T}/efter2/forside.html`, aendret, "utf8");
+  // ⚠️ MOD BEGGE SIDER. Forsiden bærer `sg-tal`, `/start` bærer `st-stat` —
+  // en prøve der kun så på forsiden ville aldrig nå /start's egne former.
+  let ramte = false;
+  for (const side of ["forside", "start"]) {
+    const raa = readFileSync(`${KILDE}/foer2/${side}.html`, "utf8");
+    const aendret = muter(raa);
+    cpSync(`${KILDE}/foer2/${side}.html`, `${T}/foer2/${side}.html`);
+    writeFileSync(`${T}/efter2/${side}.html`, aendret, "utf8");
+    if (aendret !== raa) ramte = true;
+  }
+  if (!ramte) { console.log(`  ? ${navn}\n      (proeven aendrede intet — moensteret findes ikke)`); continue; }
 
   let opdaget = false;
   try {

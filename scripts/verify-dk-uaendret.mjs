@@ -66,6 +66,22 @@ const norm = (s) =>
     // siden, ville vi også skjule priser og garanti-tal. Her rammes kun
     // `sg-tal` inde i bevis-bjælken og live-svarets egen payload.
     .replace(/<div class="sg-tal">[^<]*<\/div>/g, "LIVETAL")
+    // ⚠️ SAMME TAL, TRE FORMER — OG JEG FANGEDE KUN ÉN.
+    // Live-tallene står ikke kun som HTML. De står OGSÅ som React-props inde i
+    // RSC-strømmen, og `/start` har sin helt egen markup til dem:
+    //
+    //   HTML      <div class="sg-tal">401</div>              ← fanget fra starten
+    //   RSC-props {"className":"sg-tal","children":"401"}    ← slap forbi
+    //   /start    <div class="st-stat"><b>401</b>…           ← slap forbi
+    //
+    // Opdaget 09-09-2026: fire sider afveg på 401 mod 400, fordi ÉN frist
+    // udløb mellem de to byg. Det var ikke en ændring — det var uret.
+    //
+    // ⚠️ KUN RENE CIFRE I st-stat. Samme boks rummer også "2×"
+    // ("opdateres dagligt"), og DET er en konstant, ikke et live-tal. Ville vi
+    // også blanke den, kunne "2×" blive til "3×" uden at nogen opdagede det.
+    .replace(/\\"className\\":\\"sg-tal\\",\\"children\\":\\"\d+\\"/g, "LIVETAL")
+    .replace(/<div class="st-stat"><b>\d+<\/b>/g, "LIVETAL")
     .replace(/\\"(alle|bydbare|bydbare_aabne|nye_7_dage)\\":\d+/g, "LIVETAL")
     // `seneste` er de tre nyeste udbuds titler og hentetidspunkter — de skifter
     // når motoren henter noget nyt, altså to gange dagligt.
