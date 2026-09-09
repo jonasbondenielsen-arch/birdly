@@ -35,7 +35,17 @@ const norm = (s) =>
     // udgave var graadig og aad forskellige maengder tekst i de to filer - saa
     // meldte den forskel hvor der ingen var. En normaliser der er for bred,
     // skjuler ikke stoej; den skaber den.
-    .replace(/<p class="sg-bevis-opd">[^<]*<\/p>/g, "TIDSSTEMPEL")
+    // ⚠️ `[\s\S]*?` OG IKKE `[^<]*` — OG DET ER EN RETTELSE, IKKE EN SMAGSSAG.
+    // React indsætter en hydreringsmarkør `<!-- -->` mellem to nabo-tekstnoder,
+    // og den står MIDT i det her element:
+    //   <p class="sg-bevis-opd">Sidst opdateret <!-- -->9. sep. kl. 11:00</p>
+    // `[^<]*` stopper ved det første `<`, så mønsteret matchede aldrig, og
+    // tidsstemplet blev aldrig normaliseret. Det opdagedes først 09-09-2026,
+    // da de to byg landede på hver sin side af en ingest-kørsel og fik hvert
+    // sit klokkeslæt. Indtil da havde begge byg tilfældigvis SAMME tidsstempel,
+    // så normaliseringen havde aldrig haft noget at lave — den så ud til at
+    // virke, fordi den aldrig blev brugt.
+    .replace(/<p class="sg-bevis-opd">[\s\S]*?<\/p>/g, "TIDSSTEMPEL")
     .replace(/opdateret\\":\\"[^\\]*/g, "TIDSSTEMPEL")
     // ⚠️ LIVE-STRIBENS TAL ER TIDSAFHÆNGIGE — IKKE KODEAFHÆNGIGE.
     // Målt 09-09-2026: to byg få minutter fra hinanden gav 401 mod 397 i

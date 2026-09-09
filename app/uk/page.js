@@ -4,6 +4,19 @@ import {
 } from "../../components/salg/Sektioner";
 import { hentOpgaveTal } from "../../lib/opgaveTal";
 import { baseUrl, MARKEDER } from "../../lib/markets";
+// ⚠️ DEN HER LINJE MANGLEDE, OG SIDEN STOD HELT USTYLET.
+// `salg.css` bærer alle `.sg-*`-klasserne som salg/Sektioner bruger — hero,
+// chips, telefon-mockup, trust-række, knapper, trin. Den er IKKE nested (til
+// forskel fra forside.css, der ligger inde i `.birdly-home`), så den virker
+// hvor som helst — men den skal IMPORTERES. Hver dansk side der bruger de
+// samme sektioner gør det eksplicit: /hvorfor-birdly, /priser,
+// /sadan-virker-det og components/Forside.js.
+//
+// ⚠️ HVORFOR DET SLAP IGENNEM: mine beviser målte INDHOLD (HTML-diff, curl,
+// "ingen danske tegn"). En manglende stylesheet-import ændrer ikke ét tegn i
+// teksten — kun hvordan den ser ud. Målt på det deployede preview bagefter:
+// /hvorfor-birdly hentede TO stylesheets, /uk kun ét.
+import "../salg.css";
 
 // ============================================================================
 // DET ENGELSKE BIRDLY — getbirdly.co.uk (UK Fase A, del 2)

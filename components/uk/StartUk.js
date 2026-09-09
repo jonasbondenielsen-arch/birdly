@@ -152,139 +152,152 @@ export default function StartUk({ katalog, pris, hjem }) {
   const navn = SKAERME[skaerm];
 
   return (
-    <div className="st" lang="en-GB">
+    // ⚠️ SAMME STRUKTUR SOM DK's FUNNEL, og det er ikke kosmetik.
+    // `start.css` styler knapperne med DESCENDANT-selektorer: `.st-wrap .btn`
+    // og `.st-wrap .btn-teal`. Ligger noget uden for `.st-wrap`, har det ingen
+    // knapstil overhovedet. Min foerste udgave havde en ydre `.st`-div (som
+    // slet ikke findes i CSS'en) med `st-top` UDEN for `st-wrap` - saa toppen
+    // stod ustylet. DK wrapper i <main className="st-wrap"> med toppen INDENI.
+    <main className="st-wrap" lang="en-GB">
       <div className="st-top">
         <Logo height={30} />
         <a className="st-tilbage-link" href={hjem}>{T.tilbage}</a>
       </div>
 
-      <div className="st-wrap">
-        <div className="st-kort">
-          {fejl && <p className="st-fejl">{fejl}</p>}
-          {besked && <p className="st-info">{besked}</p>}
+      <div className="st-kort">
+        {fejl && <p className="st-fejl">{fejl}</p>}
+        {besked && <p className="st-info">{besked}</p>}
 
-          {navn === "firma" && (
-            <>
-              <span className="st-lab">{T.firma.label}</span>
-              <input
-                className="st-felt"
-                value={nummer}
-                onChange={(e) => setNummer(e.target.value)}
-                autoComplete="off"
-                inputMode="text"
-              />
-              <button className="btn btn-teal st-bred" onClick={slaaOp} disabled={soeger}>
-                {T.cta}
-              </button>
-              {/* ⚠️ IKKE EN FAGVÆLGER — se hovednoten. Med ét fag er det en
-                  bekræftelse, ikke et valg. */}
-              <p className="st-hj">{T.firma.udenNummer}</p>
-              <button className="st-tilbage" onClick={fortsaetSomRengoering}>
-                {T.firma.soleTrader}
-              </button>
-            </>
-          )}
+        {navn === "firma" && (
+          <>
+            <span className="st-lab">{T.firma.label}</span>
+            <input
+              className="st-felt"
+              value={nummer}
+              onChange={(e) => setNummer(e.target.value)}
+              autoComplete="off"
+              inputMode="text"
+            />
+            <button className="btn btn-teal st-bred" onClick={slaaOp} disabled={soeger}>
+              {T.cta}
+            </button>
+            {/* ⚠️ IKKE EN FAGVAELGER — se hovednoten. Med eet fag er det en
+                bekraeftelse, ikke et valg. */}
+            <p className="st-hj">{T.firma.udenNummer}</p>
+            <button className="st-tilbage" onClick={fortsaetSomRengoering}>
+              {T.firma.soleTrader}
+            </button>
+          </>
+        )}
 
-          {navn === "omraade" && (
-            <>
-              <span className="st-lab">{T.omraade.label}</span>
-              <div className="st-chips">
-                {regioner.map((r) => (
-                  <button
-                    key={r.key}
-                    className={"st-chip" + (omraader.includes(r.key) ? " st-aktiv" : "")}
-                    onClick={() =>
+        {/* ⚠️ HUSETS EGNE VALG-KOMPONENTER, ikke `st-chip`.
+            `.st-chip` er en STATISK visnings-chip med en fjern-knap; den har
+            ingen valgt-tilstand. DK bruger `.st-omrk` (flervalg, med
+            checkbox) og `.st-valgkort-item` (enkeltvalg) - og den valgte
+            tilstand hedder `on`, ikke noget jeg fandt paa. */}
+        {navn === "omraade" && (
+          <>
+            <span className="st-lab">{T.omraade.label}</span>
+            <div className="st-omr">
+              {regioner.map((r) => (
+                <label key={r.key} className={"st-omrk" + (omraader.includes(r.key) ? " on" : "")}>
+                  <input
+                    type="checkbox"
+                    checked={omraader.includes(r.key)}
+                    onChange={() =>
                       setOmraader((v) =>
                         v.includes(r.key) ? v.filter((x) => x !== r.key) : [...v, r.key]
                       )
                     }
-                  >
-                    {r.label_da}
-                  </button>
-                ))}
-              </div>
-              <button className="btn btn-teal st-bred" onClick={naeste}>{T.cta}</button>
-            </>
-          )}
+                  />
+                  <span><b>{r.label_da}</b></span>
+                </label>
+              ))}
+            </div>
+            <button className="btn btn-teal st-bred" onClick={naeste}>{T.cta}</button>
+          </>
+        )}
 
-          {navn === "stoerrelse" && (
-            <>
-              <span className="st-lab">{T.stoerrelse.label}</span>
-              <div className="st-chips">
-                {T.stoerrelse.baand.map((b) => (
+        {navn === "stoerrelse" && (
+          <>
+            <span className="st-lab">{T.stoerrelse.label}</span>
+            <div className="st-valgkort">
+              {T.stoerrelse.baand.map((b) => (
+                <button
+                  key={b.key}
+                  type="button"
+                  className={"st-valgkort-item" + (baand === b.key ? " on" : "")}
+                  aria-pressed={baand === b.key}
+                  onClick={() => setBaand(b.key)}
+                >
+                  <b>{b.label}</b>
+                </button>
+              ))}
+            </div>
+            <button className="btn btn-teal st-bred" onClick={naeste}>{T.cta}</button>
+          </>
+        )}
+
+        {navn === "type" && (
+          <>
+            <div className="st-valgkort">
+              {[["offentlig", T.type.offentlig], ["privat", T.type.privat], ["begge", T.type.begge]]
+                .map(([k, l]) => (
                   <button
-                    key={b.key}
-                    className={"st-chip" + (baand === b.key ? " st-aktiv" : "")}
-                    onClick={() => setBaand(b.key)}
+                    key={k}
+                    type="button"
+                    className={"st-valgkort-item" + (type === k ? " on" : "")}
+                    aria-pressed={type === k}
+                    onClick={() => setType(k)}
                   >
-                    {b.label}
+                    <b>{l}</b>
                   </button>
                 ))}
-              </div>
-              <button className="btn btn-teal st-bred" onClick={naeste}>{T.cta}</button>
-            </>
-          )}
+            </div>
+            <button className="btn btn-teal st-bred" onClick={naeste}>{T.cta}</button>
+          </>
+        )}
 
-          {navn === "type" && (
-            <>
-              <div className="st-chips">
-                {[["offentlig", T.type.offentlig], ["privat", T.type.privat], ["begge", T.type.begge]]
-                  .map(([k, l]) => (
-                    <button
-                      key={k}
-                      className={"st-chip" + (type === k ? " st-aktiv" : "")}
-                      onClick={() => setType(k)}
-                    >
-                      {l}
-                    </button>
-                  ))}
-              </div>
-              <button className="btn btn-teal st-bred" onClick={naeste}>{T.cta}</button>
-            </>
-          )}
+        {navn === "kontakt" && (
+          <>
+            <span className="st-lab">{T.kontakt.firmanavn}</span>
+            <input className="st-felt" value={firmanavn} onChange={(e) => setFirmanavn(e.target.value)} />
+            <span className="st-lab">{T.kontakt.email}</span>
+            <input className="st-felt" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+            <span className="st-lab">{T.kontakt.mobil}</span>
+            <input className="st-felt" type="tel" value={mobil} onChange={(e) => setMobil(e.target.value)} />
+            <p className="st-hj">{T.kontakt.mobilHjaelp}</p>
+            <button className="btn btn-teal st-bred" onClick={naeste}>{T.cta}</button>
+          </>
+        )}
 
-          {navn === "kontakt" && (
-            <>
-              <span className="st-lab">{T.kontakt.firmanavn}</span>
-              <input className="st-felt" value={firmanavn} onChange={(e) => setFirmanavn(e.target.value)} />
-              <span className="st-lab">{T.kontakt.email}</span>
-              <input className="st-felt" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-              <span className="st-lab">{T.kontakt.mobil}</span>
-              <input className="st-felt" type="tel" value={mobil} onChange={(e) => setMobil(e.target.value)} />
-              <p className="st-hj">{T.kontakt.mobilHjaelp}</p>
-              <button className="btn btn-teal st-bred" onClick={naeste}>{T.cta}</button>
-            </>
-          )}
+        {navn === "betaling" && (
+          <>
+            {/* ⚠️ KORT-GATEN STOPPER HER, OG DET ER MED VILJE.
+                Der er ingen GBP-plan i Frisbii endnu (prices for GB = 0), og
+                Frisbii er den AUTORITATIVE priskilde — ikke koden. Prisen
+                herunder kommer fra markedsmodellen og er Jonas' beslutning,
+                ikke en kurs-omregning. Der traekkes ingen penge, og der
+                gemmes ingen tilmelding: `signup` er en skrivesti, og den har
+                bevidst ikke preview-doeren. GB er DRAFT. */}
+            <p className="st-stat">
+              £{pris.maaned}/month · £{pris.aar}/year · {T.betaling.exVat}
+            </p>
+            <p className="st-hj">{T.trust}</p>
+            <p className="st-note">{T.betaling.foersteBetaling}</p>
+          </>
+        )}
 
-          {navn === "betaling" && (
-            <>
-              {/* ⚠️ KORT-GATEN STOPPER HER, OG DET ER MED VILJE.
-                  Der er ingen GBP-plan i Frisbii endnu (prices for GB = 0), og
-                  Frisbii er den AUTORITATIVE priskilde — ikke koden. Prisen
-                  herunder kommer fra markedsmodellen og er Jonas' beslutning,
-                  ikke en kurs-omregning. Der trækkes ingen penge, og der
-                  gemmes ingen tilmelding: `signup` er en skrivesti, og den har
-                  bevidst ikke preview-døren. GB er DRAFT. */}
-              <p className="st-stat">
-                £{pris.maaned}/month · £{pris.aar}/year · {T.betaling.exVat}
-              </p>
-              <p className="st-hj">{T.trust}</p>
-              <p className="st-note">{T.betaling.foersteBetaling}</p>
-            </>
-          )}
-
-          {skaerm > 0 && navn !== "betaling" && (
-            <button className="st-tilbage" onClick={tilbage}>{T.tilbage}</button>
-          )}
-        </div>
-
-        {/* Kontekstlinjen: hvad hun har valgt indtil nu. Delene samles og
-            adskilles FØRST når der er mere end én — ellers stod der en løs
-            prik før det første ord. */}
-        <p className="st-hj">
-          {[firma?.name, valgtBaand?.label, fag[0]?.label_da].filter(Boolean).join(" · ")}
-        </p>
+        {skaerm > 0 && navn !== "betaling" && (
+          <button className="st-tilbage" onClick={tilbage}>{T.tilbage}</button>
+        )}
       </div>
-    </div>
+
+      {/* Kontekstlinjen: hvad hun har valgt indtil nu. Delene samles og
+          adskilles FOERST naar der er mere end een. */}
+      <p className="st-hj">
+        {[firma?.name, valgtBaand?.label, fag[0]?.label_da].filter(Boolean).join(" · ")}
+      </p>
+    </main>
   );
 }
