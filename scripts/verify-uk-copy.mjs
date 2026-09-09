@@ -185,6 +185,18 @@ const UNDTAGET = new Map([
   // Sektioner.js som id'er og deles med DK; copy-filen har naturligvis ingen
   // URL'er. Etiketterne ved siden af ER fra filen (§27) og tjekkes normalt.
   ["href", "Anker-adresse (#hvordan, #priser, #problem, #faq), ikke synlig tekst."],
+  ["jurahref", "Rute til jura-hub'en (/terms), ikke synlig tekst."],
+
+  // ── Juraside-chrome. ──
+  // ⚠️ DET ER IKKE JURA-TEKST. Selve juraen kommer ordret fra
+  // jura-pakken via lib/uk/jura.js og tjekkes af scripts/verify-uk-jura.mjs.
+  // De her fire strenge er sidens ramme - DRAFT-banner og en tilbage-linje -
+  // og copy-filen daekker ikke juraside overhovedet.
+  ["tilbage", "Juraside-navigation: 'All terms & policies'. Ramme, ikke jura."],
+  ["draftitel", "DRAFT-bannerets overskrift. Ramme, ikke jura."],
+  ["drafttitel", "DRAFT-bannerets overskrift. Ramme, ikke jura."],
+  ["draftbrod", "DRAFT-bannerets forklaring. Ramme, ikke jura."],
+  ["todolabel", "DRAFT-bannerets etiket foran de uudfyldte placeholders."],
 ]);
 
 const { en } = await import("../lib/tekster/en.js").catch(() => import("./lib/tekster/en.js"));

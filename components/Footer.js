@@ -72,6 +72,16 @@ export default function Footer({ supportMail = null, ord = null }) {
                 <BirdMark size={30} />
                 <span>{ord.brand}</span>
               </Link>
+              {/* ⚠️ EET LINK, IKKE TI. Den danske footer har ogsaa kun
+                  eet (/betingelser); hub'en linker videre. Ti jura-links i
+                  footeren ville drukne de fire der handler om produktet.
+                  ⚠️ SIDERNE ER DRAFT + noindex - se JuraSide.js. */}
+              {ord.juraHref && (
+                <div className="fjur">
+                  <b>{ord.juraTitel}</b>
+                  <Link href={ord.juraHref}>{ord.juraLink}</Link>
+                </div>
+              )}
             </div>
 
             {/* ⚠️ JURIDISK LINJE, IKKE MARKETING. Den maa aldrig antyde et

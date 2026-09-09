@@ -67,6 +67,21 @@ const RUTER = [
   // ── UK ──
   ["/uk", "Salgsside marked=GB"],
   ["/uk/start", "StartUk"],
+  // ── UK, de ti juraside (Fase B) ──
+  // ⚠️ ALLE TI, IKKE EN STIKPROEVE. De deler een dynamisk rute, saa en
+  // fejl i den faelder dem alle - men de har hver sin markdown, og en enkelt
+  // side kan have et tabel- eller tegn-problem de andre ikke har.
+  // De er DRAFT + noindex; at de RENDRER er stadig et krav.
+  ["/uk/terms", "jura-hub"],
+  ["/uk/terms-and-conditions", "B2B-betingelser"],
+  ["/uk/subscription-terms", "abonnement"],
+  ["/uk/terms-of-use", "website-vilkaar"],
+  ["/uk/private-job-terms", "private opgaver"],
+  ["/uk/privacy-policy", "privatliv"],
+  ["/uk/cookie-policy", "cookies"],
+  ["/uk/security", "sikkerhed"],
+  ["/uk/sub-processors", "underdatabehandlere"],
+  ["/uk/data-processing-agreement", "DPA"],
 ];
 
 // ⚠️ FEJLFRASERNE SOEGES I DEN VISTE TEKST, IKKE I KILDEN.
@@ -82,9 +97,12 @@ const FEJLSPOR = [
   "500: Internal Server Error",
 ];
 
+// ⚠️ GULVET ER SAENKET TIL 3000 for juraside: /sub-processors er en kort
+// side med en tabel, og et gulv paa 5000 ville have faeldet den uden grund.
+// En Next-fejlside er stadig langt under.
 // En fejlside er kort. En rigtig side har en <main>, en <section> eller en
 // <footer> — mindst ét af dem, plus et gulv på antal tegn.
-const GULV = 5000;
+const GULV = 3000;
 
 let fejl = 0;
 console.log(`RENDER-TJEK mod ${BASE}\n`);

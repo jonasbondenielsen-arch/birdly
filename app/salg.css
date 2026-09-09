@@ -950,10 +950,3 @@
   .sg-stort-anker { padding: 24px 18px 22px; }
   .sg-vind { margin-top: 26px; }
 }
-
-/* ⚠️ TEKST-ORDMAERKE — kun paa ikke-danske markeder.
-   Det fulde logo er en SVG med ".dk" bagt ind, saa et marked der ikke hedder
-   Birdly.dk kan ikke bruge den. Her saettes fuglemaerket og navnet ved siden
-   af hinanden i stedet, i samme proportioner som SVG'en. Klassen bruges IKKE
-   af nogen dansk side — se noten i components/Logo.js. */
-.sg-wordmark{display:inline-flex;align-items:center;gap:9px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:20px;letter-spacing:-.03em;color:var(--navy)}

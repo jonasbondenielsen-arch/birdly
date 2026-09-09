@@ -37,10 +37,11 @@ export function proxy(request) {
   // ⚠️ OVERRIDEN GAELDER KUN NAAR VAERTEN ER UKENDT (se markets.js). Den
   // saettes paa preview-deploymentet, saa UK-sitet kan ses foer DNS peges - og
   // den kan ALDRIG flytte www.birdly.dk, fordi en kendt vaert altid vinder.
-  const marked = markedForHostMedOverride(
+  const fundet = markedForHostMedOverride(
     request.headers.get("host"),
     process.env.NEXT_PUBLIC_FORCE_MARKED,
-  )?.id || STANDARD_MARKED;
+  );
+  const marked = fundet?.id || STANDARD_MARKED;
 
   const headers = new Headers(request.headers);
   headers.set(MARKED_HEADER, marked);
@@ -62,7 +63,12 @@ export function proxy(request) {
   // eet tegn - saa kan et uheld her ikke ramme Danmark.
   if (marked !== STANDARD_MARKED) {
     const sti = request.nextUrl.pathname;
-    const praefiks = "/" + marked.toLowerCase();
+    // ⚠️ PRAEFIKSET LAESES, DET GAETTES IKKE. Det stod som
+    // `"/" + marked.toLowerCase()`, altsaa "/gb" for markedet GB - men de
+    // britiske sider ligger i app/uk/. Hver side paa getbirdly.co.uk ville
+    // have svaret 404. `sti` i lib/markets.js siger det nu eksplicit, og
+    // id'et bruges kun som fallback for markeder hvor de to er ens.
+    const praefiks = "/" + (fundet?.sti || marked.toLowerCase());
     if (!sti.startsWith(praefiks)) {
       const url = request.nextUrl.clone();
       url.pathname = praefiks + (sti === "/" ? "" : sti);

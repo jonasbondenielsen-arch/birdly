@@ -206,7 +206,13 @@ export default function Salgsside({ tal, funnelHref, fag = null, marked = "DK" }
     nav: O.nav,
     // Footeren faar linkene fra nav-blokken: det er de SAMME fire ankre, og to
     // lister ville kunne skride fra hinanden.
-    footer: O.footer && { ...O.footer, punkter: O.nav?.punkter || [] },
+    footer: O.footer && {
+      ...O.footer,
+      punkter: O.nav?.punkter || [],
+      // Hub'ens PUBLIKE adresse. Internt hedder den /uk/terms, men proxy'en
+      // rewriter getbirdly.co.uk/terms dertil - kunden ser aldrig /uk.
+      juraHref: "/terms",
+    },
   };
 
   // ⚠️ SAMLET HÉR, IKKE INDE I KOMPONENTEN. Vaerdi er klient-kode; alt hvad
