@@ -59,6 +59,25 @@ const KILDE = norm(readFileSync(sti, "utf8"));
 
 // ⚠️ HVER UNDTAGELSE HAR EN GRUND. Uden grunden er listen bare et sted at
 // gemme det der ikke passede.
+// ⚠️ COPY-FILEN ER IKKE DEN ENESTE GODKENDTE KILDE — MEN DEN ANDEN SKAL
+// NAVNGIVES. Jonas skriver undertiden ordlyd direkte i en brief, og den er lige
+// så godkendt som filen. Forskellen er at filen kan slås op af enhver, mens en
+// brief kun findes i samtalen. Derfor står ordlyden HER med sin kilde, så den
+// ikke bare forsvinder ind i koden som noget nogen "vist" har godkendt.
+//
+// ⚠️ DEN HER LISTE ER IKKE ET STED AT PARKERE TEKST MAN SELV HAR SKREVET.
+// Står en streng her uden at Jonas har skrevet den ordret, er den smuglet ind.
+const FRA_BRIEF = new Map([
+  ["Don't have a company number?",
+   "Jonas' brief 09-09-2026: 'under firmanummer-feltet en boks \"Don't have a " +
+   "company number?\"'. Copy-filen §26 siger kun HVAD der skal ske (\"Do not force " +
+   "Companies House registration. Provide a suitable alternate path\") - ikke hvad der skal staa."],
+  ["Continue as a cleaning business",
+   "Jonas' brief 09-09-2026: 'Erstat den med en simpel bekraeftelse (\"Continue as " +
+   "a cleaning business\")'. Erstatter copy-filens trade-picker, som ikke giver " +
+   "mening med eet fag."],
+]);
+
 const UNDTAGET = new Map([
   ["chipslabel", "Skjult aria-label, ikke synlig copy. Copy-filen lister kun chippene selv."],
   ["opdateret", "Feltnavn i live-striben; copy-filen skriver 'Last updated' som label uden kolon."],
@@ -76,7 +95,7 @@ const fladt = [];
   if (o && typeof o === "object") return Object.entries(o).forEach(([k, v]) => gaa(v, sti ? `${sti}.${k}` : k));
 })(en, "");
 
-let fejl = 0, ok = 0, sprunget = 0;
+let fejl = 0, ok = 0, sprunget = 0, fraBrief = 0;
 for (const [noegle, vaerdi] of fladt) {
   const sidste = noegle.split(".").pop().replace(/\[\d+\]$/, "").toLowerCase();
   if (UNDTAGET.has(sidste)) {
@@ -87,13 +106,19 @@ for (const [noegle, vaerdi] of fladt) {
     ok++;
     continue;
   }
+  if (FRA_BRIEF.has(vaerdi)) {
+    fraBrief++;
+    continue;
+  }
   fejl++;
   console.log(`✖ ${noegle}`);
   console.log(`    ikke fundet i copy-filen: ${JSON.stringify(vaerdi)}`);
 }
 
 console.log(`\ncopy-fil: ${sti}`);
-console.log(`strenge: ${fladt.length}   fundet: ${ok}   undtaget: ${sprunget}   MANGLER: ${fejl}`);
+console.log(`strenge: ${fladt.length}   i copy-filen: ${ok}   fra brief: ${fraBrief}   undtaget: ${sprunget}   MANGLER: ${fejl}`);
+for (const [t, kilde] of FRA_BRIEF) console.log(`  · fra brief: ${JSON.stringify(t)}
+      ${kilde}`);
 if (fejl) {
   console.error("\n✖ En eller flere engelske strenge staar ikke i copy-filen.");
   console.error("  Enten er den skrevet frit - og saa skal den slaas op i filen i stedet -");

@@ -36,7 +36,30 @@ const norm = (s) =>
     // meldte den forskel hvor der ingen var. En normaliser der er for bred,
     // skjuler ikke stoej; den skaber den.
     .replace(/<p class="sg-bevis-opd">[^<]*<\/p>/g, "TIDSSTEMPEL")
-    .replace(/opdateret\\":\\"[^\\]*/g, "TIDSSTEMPEL");
+    .replace(/opdateret\\":\\"[^\\]*/g, "TIDSSTEMPEL")
+    // ⚠️ LIVE-STRIBENS TAL ER TIDSAFHÆNGIGE — IKKE KODEAFHÆNGIGE.
+    // Målt 09-09-2026: to byg få minutter fra hinanden gav 401 mod 397 i
+    // "opgaver med åben frist". Ikke en ændring: FIRE danske frister udløb
+    // kl. 08:00 UTC, og de to byg lå på hver sin side af det. Tallet tæller
+    // `deadline > now()` og falder derfor af sig selv, hele dagen.
+    //
+    // Tidsstemplet blev normaliseret fra starten af præcis samme grund. Tallene
+    // kommer fra SAMME kald og er lige så tidsafhængige — de manglede bare.
+    //
+    // ⚠️ KUN TALLENE, ALDRIG STRUKTUREN. Kortene, etiketterne ("opgaver med
+    // åben frist") og hele bjælkens markup sammenlignes uændret. Derfor fanger
+    // vagten stadig den fejl den blev bygget for: at bevis-bjælken FORSVINDER
+    // fra en dansk side, som den gjorde 08-09-2026. Et forsvundet kort er en
+    // forsvundet `sg-bevis-kort`-div, ikke et ændret tal.
+    //
+    // ⚠️ EN BREDERE NORMALISERING VILLE VÆRE FARLIG. Blankede vi alle tal på
+    // siden, ville vi også skjule priser og garanti-tal. Her rammes kun
+    // `sg-tal` inde i bevis-bjælken og live-svarets egen payload.
+    .replace(/<div class="sg-tal">[^<]*<\/div>/g, "LIVETAL")
+    .replace(/\\"(alle|bydbare|bydbare_aabne|nye_7_dage)\\":\d+/g, "LIVETAL")
+    // `seneste` er de tre nyeste udbuds titler og hentetidspunkter — de skifter
+    // når motoren henter noget nyt, altså to gange dagligt.
+    .replace(/\\"seneste\\":\[[\s\S]*?\]/g, "LIVESENESTE");
 
 let ens = 0, afvig = 0;
 for (const f of readdirSync(join(SC, "foer2"))) {
