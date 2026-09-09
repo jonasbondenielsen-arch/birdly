@@ -6,6 +6,7 @@ import VaerdiKort from "./VaerdiKort";
 import { Flueben } from "./Ikoner";
 import { priceText } from "../../lib/pakke";
 import { byggAnker } from "../../lib/vaerdiAnker";
+import { tekster, t } from "../../lib/tekster";
 import { VIND_EN } from "../../lib/salgTekst";
 import { useFag } from "./FagKontekst";
 import { sporFunnel } from "../../lib/ctaSporing";
@@ -43,9 +44,7 @@ import { sporFunnel } from "../../lib/ctaSporing";
  *                      (rengøring/service) eller et enkeltprojekt.
  */
 export function Vaerdi({ funnelHref, fag = null, valgt = null, marked = "DK" }) {
-  // ⚠️ ENDNU IKKE OVERSAT — UDELADER SIG SELV PAA ANDRE MARKEDER.
-  // Hellere en manglende sektion end en dansk. Se noten i Salgsside.js.
-  if (marked !== "DK") return null;
+  const T = tekster(marked).regnestykket;
 
   // ⚠️ FAGET FØLGER FANEN I BEVIS-SEKTIONEN. Klikker den besøgende "VVS"
   // deroppe, skifter regnestykket hernede med — ellers ser en VVS'er sit eget
@@ -54,7 +53,14 @@ export function Vaerdi({ funnelHref, fag = null, valgt = null, marked = "DK" }) 
   // faner at følge). Se components/salg/FagKontekst.js.
   const { fag: fraKontekst } = useFag("rengoring");
   const brugtFag = fag || fraKontekst;
-  const a = byggAnker(brugtFag, valgt);
+  // ⚠️ ANKERET ER DANSK INDTIL DER ER GODKENDTE BRITISKE KONTRAKTBELOEB.
+  // byggAnker regner paa DKK fra lib/vaerdiAnker.js, og den fil siger selv at
+  // et beloeb her SKAL komme fra en rigtig opgave med oplyst vaerdi.
+  // GB viser derfor copy-filens beloeb-frie udgave: samme pointe, ingen
+  // opdigtet sum, intet dansk tal. De fem GB-rengoeringsopgaver HAR faktisk
+  // beloeb i basen (£200k-£4,7 mio.), men de ligger bag paywall-graensen fra
+  // 30-07-2026 - se den fulde note i Sektioner.js' ProblemPris.
+  const a = marked === "DK" ? byggAnker(brugtFag, valgt) : null;
 
   // ⚠️ INTERN HÆNDELSE, ingen Meta. Fortæller om ankeret faktisk blev SET —
   // det er sidens stærkeste argument, og vi skal kunne se om folk når ned til det.
@@ -95,19 +101,24 @@ export function Vaerdi({ funnelHref, fag = null, valgt = null, marked = "DK" }) 
     <section className="sg-sek sg-graa" id="vaerdi" ref={ref}>
       <div className="sg-wrap">
         <div className="sg-midt">
-          <span className="sg-kick">Regnestykket</span>
+          <span className="sg-kick">{T.kick}</span>
           {/* ⚠️ OVERSKRIFTEN SÆLGER POINTEN, IKKE SPØRGSMÅLET. "Hvad er én fast
               kunde værd?" er en overskrift man skal svare på selv; den her
               siger konklusionen først og lader kortene nedenunder vise
               regnestykket. Fremhævningen ligger på "vinde én". */}
           <h2 className="sg-big">
-            {VIND_EN.over}
-            <span className="sg-big-em">{VIND_EN.underDel1}<b>{VIND_EN.underDel2}</b></span>
+            {marked === "DK" ? VIND_EN.over : (t(marked, "vaerdi.vindOver") || "")}
+            <span className="sg-big-em">
+              {marked === "DK" ? VIND_EN.underDel1 : (t(marked, "vaerdi.vindUnder1") || "")}
+              <b>{marked === "DK" ? VIND_EN.underDel2 : (t(marked, "vaerdi.vindUnder2") || "")}</b>
+            </span>
           </h2>
           <p className="sg-lead">
-            {a.loebende
-              ? <>En enkelt god rengøringsaftale kan være mange gange mere værd end et helt års Birdly.</>
-              : <>En enkelt god opgave kan være mange gange mere værd end et helt års Birdly.</>}
+            {!a
+              ? T.lead
+              : a.loebende
+                ? <>En enkelt god rengøringsaftale kan være mange gange mere værd end et helt års Birdly.</>
+                : <>En enkelt god opgave kan være mange gange mere værd end et helt års Birdly.</>}
           </p>
         </div>
 
@@ -115,7 +126,8 @@ export function Vaerdi({ funnelHref, fag = null, valgt = null, marked = "DK" }) 
             hver sit sæt klasser, og derfor stod de justeret forskelligt på
             forsiden og i funnelen. Nu findes markup og styling ét sted —
             components/salg/VaerdiKort.js. */}
-        <VaerdiKort anker={a} />
+        {/* ⚠️ REGNESTYKKE-KORTET RENDERES KUN MED ET AEGTE ANKER. */}
+        {a && <VaerdiKort anker={a} />}
 
         {/* ⚠️ KUN DE TO FORBEHOLD HER. Den betingede afslutning ("Vinder I bare
             én relevant opgave…") stod også her, men sammenligningen bor nu inde
@@ -123,8 +135,8 @@ export function Vaerdi({ funnelHref, fag = null, valgt = null, marked = "DK" }) 
             tyve pixels mellemrum. Forbeholdene bliver: `kilde` siger at beløbet
             er et eksempel, `forbehold` at vi ikke garanterer en vundet opgave.
             Begge er obligatoriske. */}
-        {a.kilde && <p className="sg-forbehold">{a.kilde}</p>}
-        <p className="sg-forbehold">{a.forbehold}</p>
+        {a?.kilde && <p className="sg-forbehold">{a.kilde}</p>}
+        {a && <p className="sg-forbehold">{a.forbehold}</p>}
 
         {/* ══════════════════════════════════════════════════════════════════
             DET STØRRE ANKER — offentlige opgaver.
@@ -138,7 +150,7 @@ export function Vaerdi({ funnelHref, fag = null, valgt = null, marked = "DK" }) 
             ⚠️ KUN PÅ LØBENDE FAG. Projektfagene har allerede deres eget anker i
             kortet ovenfor, og to beløbsargumenter i træk ville udvande begge.
             ══════════════════════════════════════════════════════════════════ */}
-        {a.loebende && (
+        {a?.loebende && (
           <div className="sg-stort-anker">
             <span className="sg-kick">Og det kan være langt større</span>
             <h3>Offentlige rengøringsopgaver kan være flere hundredetusinde kroner værd.</h3>

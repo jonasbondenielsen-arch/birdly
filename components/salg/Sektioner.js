@@ -607,16 +607,21 @@ export function Overgang({ funnelHref, marked = "DK" }) {
  * opgave man ikke ser, ikke kan bydes på. Det er sandt uanset udfaldet.
  */
 export function ProblemPris({ fag = "rengoring", marked = "DK" }) {
-  // ⚠️ ENDNU IKKE OVERSAT — SEKTIONEN UDELADER SIG SELV PAA ANDRE MARKEDER.
-  // Hellere en manglende sektion end en dansk. Det er samme regel som
-  // lib/tekster/index.js: en dansk saetning paa en britisk side er VAERRE end
-  // en manglende, for den ser ud som om den hoerer til.
-  // Naar sektionens engelske copy findes, flyttes strengene til ordbogen og
-  // den her linje ryger. Indtil da er DK bit-for-bit uroert: `marked` er "DK",
-  // og resten af funktionen er ikke aendret med eet tegn.
-  if (marked !== "DK") return null;
-
-  const a = byggAnker(fag);
+  const T = tekster(marked).koster;
+  // ⚠️ VAERDI-ANKERET ER DANSK, OG DET BLIVER DET INDTIL DER ER BRITISKE TAL.
+  // byggAnker regner paa DKK-belob fra lib/vaerdiAnker.js. Den fil siger selv:
+  // "INGEN OPDIGTET UDBUDSSUM ... skal komme fra en RIGTIG opgave i basen med
+  // oplyst vaerdi og vaere maerket som saadan."
+  //
+  // ⚠️ DE FEM GB-RENGOERINGSOPGAVER HAR FAKTISK BELOEB (£200k-£4,7 mio.), men
+  // den offentlige side kan ikke laese `notices` - RLS spaerrer anon - og
+  // get-opgave-tal returnerer bevidst KUN titel, koeber og tidspunkt. Det er
+  // paywall-graensen fra 30-07-2026. At vise et beloeb her er derfor en
+  // PRODUKTBESLUTNING, ikke en teknikalitet.
+  //
+  // Indtil da viser GB copy-filens belob-frie udgave. Den er sand uanset, og
+  // det rigtige tal kan taendes senere uden at roere resten af sektionen.
+  const a = marked === "DK" ? byggAnker(fag) : null;
   return (
     /* ⚠️ NAVY, IKKE HVID. Sektionen er sidens vigtigste direkte-respons-moment,
        og den stod før som endnu en hvid sektion mellem to andre hvide — nem at
@@ -625,15 +630,21 @@ export function ProblemPris({ fag = "rengoring", marked = "DK" }) {
     <section className="sg-sek sg-navy sg-koster-sek">
       <div className="sg-wrap">
         <div className="sg-midt">
-          <span className="sg-kick">Hvad det kan koste</span>
-          <h2 className="sg-big">Den opgave, I ikke ser,<br />kan I heller ikke byde på.</h2>
+          <span className="sg-kick">{T.kick}</span>
+          <h2 className="sg-big">{T.overskrift}<br />{T.overskrift2}</h2>
           <p className="sg-lead sg-lead-lys">
-            {a.loebende
-              ? "Et fast rengøringsjob kan være mange gange mere værd end et helt års Birdly."
-              : "En enkelt relevant opgave kan være mange gange mere værd end et helt års Birdly."}
+            {a
+              ? (a.loebende
+                  ? "Et fast rengøringsjob kan være mange gange mere værd end et helt års Birdly."
+                  : "En enkelt relevant opgave kan være mange gange mere værd end et helt års Birdly.")
+              : T.lead}
           </p>
         </div>
 
+        {/* ⚠️ BELOEB-KORTET RENDERES KUN NAAR DER ER ET AEGTE ANKER.
+            GB har ingen godkendte britiske kontraktbeloeb endnu, og et tomt
+            eller dansk kort ville vaere vaerre end intet. */}
+        {a && (
         <div className="sg-koster">
           <div className="sg-koster-kort">
             {/* Samme delte badge som værdi-sektionen — se .sg-badge i salg.css. */}
@@ -654,13 +665,16 @@ export function ProblemPris({ fag = "rengoring", marked = "DK" }) {
             )}
           </div>
         </div>
+        )}
 
         {/* ⚠️ INGEN TABT-OMSÆTNING-PÅSTAND. Der står ikke "I går glip af
             120.000 kr." — det ville forudsætte at kunden ville have vundet
             opgaven. Der står at en opgave man ikke ser, ikke kan bydes på. Det
-            er sandt uanset udfaldet. */}
-        {a.kilde && <p className="sg-forbehold sg-forbehold-lys">{a.kilde}</p>}
-        <p className="sg-forbehold sg-forbehold-lys">{FORBEHOLD}</p>
+            er sandt uanset udfaldet.
+            ⚠️ GB's forbehold siger det samme med copy-filens egne ord:
+            "Birdly doesn't promise you'll win the contract." */}
+        {a?.kilde && <p className="sg-forbehold sg-forbehold-lys">{a.kilde}</p>}
+        <p className="sg-forbehold sg-forbehold-lys">{a ? FORBEHOLD : T.forbehold}</p>
       </div>
     </section>
   );
