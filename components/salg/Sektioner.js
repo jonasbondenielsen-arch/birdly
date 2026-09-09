@@ -85,6 +85,7 @@ export function Hero({
   under,
   eyebrow,
   chips,
+  sekundaerHref = "/sadan-virker-det",
   // ⚠️ MARKEDET ER EN PROP MED DK SOM DEFAULT. Laeste komponenten selv
   // headers(), ville forsiden blive DYNAMISK og miste sin cache - og DK's
   // statiske forside er praecis det der ikke maa roeres. Den danske rute
@@ -133,13 +134,19 @@ export function Hero({
                 Birdly dækker 20 fag, og huset har ÉN primær CTA. En
                 fag-specifik knap ville splitte det genkendelige klik op i lige
                 så mange varianter som vi har fag. */}
-            <Cta href={funnelHref} placering="hero" stor />
-            <CtaSekundaer href="/sadan-virker-det" placering="hero-sekundaer" />
+            <Cta href={funnelHref} placering="hero" stor marked={marked} />
+            {/* ⚠️ SEKUNDÆRENS MÅL ER EN PROP, FORDI /sadan-virker-det ER EN
+                DANSK SIDE. Uden den ville den britiske hero have sendt en
+                britisk besøgende til dansk tekst — et dødt spor midt i
+                løftet. DK's default er uændret. */}
+            <CtaSekundaer href={sekundaerHref} placering="hero-sekundaer" marked={marked} />
           </div>
           <TrustRaekke marked={marked} />
         </div>
         <div>
-          <SmsTelefon />
+          {/* ⚠️ MARKEDET SKAL MED HERTIL. Uden det stod telefonen på dansk midt
+              i den britiske hero — se noten i SmsTelefon.js. */}
+          <SmsTelefon marked={marked} />
         </div>
       </div>
     </section>
@@ -212,39 +219,45 @@ export function BevisBjaelke({ tal, marked = "DK" }) {
 
 // ------------------------------------------------------------ 3 · PROBLEMET
 
-export function Problemet() {
+export function Problemet({ marked = "DK" }) {
+  const T = tekster(marked).problemet;
   return (
     <section className="sg-sek" id="problem">
       <div className="sg-wrap">
         <div className="sg-midt">
-          <span className="sg-kick">Problemet</span>
-          <h2 className="sg-big">Opgaverne er der.<br />Problemet er at finde de rigtige.</h2>
+          <span className="sg-kick">{T.kick}</span>
+          <h2 className="sg-big">{T.overskrift}<br />{T.overskrift2}</h2>
         </div>
 
         {/* ⚠️ ÉN LINJE PR. KORT. Sektionen skal kunne læses på fem sekunder på en
             telefon; den lange version stod i vejen for beviset længere nede.
             Ingen skræmmekampagne — tre nøgterne konstateringer om en hverdag
             kunden kender. */}
+        {/* ⚠️ TRE UDSKREVNE KORT, IKKE ET .map(). Hvert kort har sit EGET ikon,
+            og de tre ikoner er ikke tekst — de kan ikke bo i ordbogen. Et map
+            ville kræve en parallel ikon-liste, hvor rækkefølgen af tekst og
+            ikon kunne skride fra hinanden uden at nogen opdagede det. Med tre
+            faste kort står ikonet ved siden af sin egen tekst. */}
         <div className="sg-tre">
           <div className="sg-kort">
             <div className="sg-kort-ic"><Oeje /></div>
-            <h3>Vi finder de rigtige.</h3>
-            <p>Vi sorterer støjen fra og finder de opgaver, der faktisk passer til jer.</p>
+            <h3>{T.kort[0].titel}</h3>
+            <p>{T.kort[0].tekst}</p>
           </div>
           <div className="sg-kort">
             <div className="sg-kort-ic"><Bunke /></div>
-            <h3>Vi sender dem direkte til jer.</h3>
-            <p>Ingen daglig jagt i udbudsportaler. Når noget passer, får I besked.</p>
+            <h3>{T.kort[1].titel}</h3>
+            <p>{T.kort[1].tekst}</p>
           </div>
           <div className="sg-kort">
             <div className="sg-kort-ic"><Ur /></div>
-            <h3>De store skal ikke have det hele.</h3>
-            <p>Offentlige kontrakter er også for mindre virksomheder. Birdly gør det lettere at komme med i spillet.</p>
+            <h3>{T.kort[2].titel}</h3>
+            <p>{T.kort[2].tekst}</p>
           </div>
         </div>
 
         <p className="sg-afslut">
-          Flere relevante opgaver. Mindre jagt. Mere forretning.
+          {T.afslut}
         </p>
       </div>
     </section>
@@ -253,13 +266,14 @@ export function Problemet() {
 
 // -------------------------------------------------------------- 4 · MOTOREN
 
-export function Motoren({ funnelHref }) {
+export function Motoren({ funnelHref, marked = "DK" }) {
+  const T = tekster(marked).motoren;
   return (
     <section className="sg-sek sg-graa" id="hvordan">
       <div className="sg-wrap">
         <div className="sg-midt">
-          <span className="sg-kick">Sådan virker det</span>
-          <h2 className="sg-big">Du fortæller os én gang, hvad I leder efter.<br />Birdly gør resten.</h2>
+          <span className="sg-kick">{T.kick}</span>
+          <h2 className="sg-big">{T.overskrift}<br />{T.overskrift2}</h2>
         </div>
 
         {/* ⚠️ TRE TRIN, IKKE FIRE, og ingen teknisk forklaring. Bud-skabelonen er
@@ -267,39 +281,42 @@ export function Motoren({ funnelHref }) {
             netop dér hvor det skal virke enkelt. Den bor i SMS-sektionen. */}
         <div className="sg-trin">
           <div className="sg-trin-kort">
-            <div className="sg-trin-nr">01</div>
-            <h3>Fortæl hvad I vil have</h3>
-            <p>Vælg fag, område og størrelsen på de opgaver, I vil høre om.</p>
+            <div className="sg-trin-nr">{T.trin[0].nr}</div>
+            <h3>{T.trin[0].titel}</h3>
+            <p>{T.trin[0].tekst}</p>
           </div>
           <div className="sg-trin-kort">
-            <div className="sg-trin-nr">02</div>
-            <h3>Birdly holder øje</h3>
-            <p>Vi finder relevante offentlige og private muligheder og sorterer resten fra.</p>
+            <div className="sg-trin-nr">{T.trin[1].nr}</div>
+            <h3>{T.trin[1].titel}</h3>
+            <p>{T.trin[1].tekst}</p>
           </div>
           <div className="sg-trin-kort">
-            <div className="sg-trin-nr">03</div>
-            <h3>Få besked</h3>
-            <p>Når noget passer, får I det direkte på SMS og mail.</p>
+            <div className="sg-trin-nr">{T.trin[2].nr}</div>
+            <h3>{T.trin[2].titel}</h3>
+            <p>{T.trin[2].tekst}</p>
           </div>
         </div>
 
+        {/* ⚠️ PILENE ER MARKUP, IKKE TEKST. De har deres egen klasse og er en
+            del af figuren; ordbogen bærer kun de tre knuder. Hele rækken er
+            aria-hidden, fordi den gentager de tre trin ovenfor visuelt. */}
         <div className="sg-flow" aria-hidden="true">
-          <span className="sg-flow-node">Jeres kriterier</span>
+          <span className="sg-flow-node">{T.flow[0]}</span>
           <span className="sg-flow-pil">→</span>
-          <span className="sg-flow-node sg-flow-midt">Birdly holder øje</span>
+          <span className="sg-flow-node sg-flow-midt">{T.flow[1]}</span>
           <span className="sg-flow-pil">→</span>
-          <span className="sg-flow-node">SMS til jer</span>
+          <span className="sg-flow-node">{T.flow[2]}</span>
         </div>
 
         {/* ⚠️ EN RESULTAT-LINJE, IKKE ET FJERDE TRIN. Tre trin forklarer
             mekanikken; det her er hvad den giver kunden. Et fjerde trin ville
             gøre produktet sværere at forstå netop dér hvor det skal virke enkelt. */}
-        <p className="sg-resultatlinje">Og så gør I kun noget, når opgaven er interessant.</p>
+        <p className="sg-resultatlinje">{T.resultatlinje}</p>
 
-        <p className="sg-afslut">Ingen daglig søgning. Ingen portal. Ingen støj.</p>
+        <p className="sg-afslut">{T.afslut}</p>
 
         <div className="sg-cta-row" style={{ justifyContent: "center" }}>
-          <Cta href={funnelHref} placering="motor" />
+          <Cta href={funnelHref} placering="motor" marked={marked} />
         </div>
       </div>
     </section>

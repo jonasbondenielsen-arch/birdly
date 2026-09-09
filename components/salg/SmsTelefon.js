@@ -1,4 +1,5 @@
 import { Fugl } from "./Ikoner";
+import { tekster } from "../../lib/tekster";
 
 // ============================================================================
 // TELEFONEN MED BESKEDEN — produktet på ét blik.
@@ -18,15 +19,37 @@ import { Fugl } from "./Ikoner";
 // der hverken hentes en fil eller sker layout-shift. Meta-trafik er mobil; det
 // her er den tungeste ting over folden, og den vejer nul.
 // ============================================================================
+// ⚠️ TELEFONEN VAR HELT DANSK PÅ DEN BRITISKE FORSIDE (fundet 09-09-2026).
+// Den står MIDT I HERO'EN, så en britisk besøgende læste "Nyt opgavematch ·
+// Rengøring · Roskilde · Frist: 18. sept." lige under et engelsk løfte. Det er
+// præcis den fejl lib/tekster/index.js advarer om — bare værre, for her faldt
+// intet tilbage: komponenten var aldrig koblet til ordbogen, så der var ingen
+// manglende nøgle at opdage. Copy-filen §4 "PHONE MOCK-UP" havde teksten hele
+// tiden.
+//
+// ⚠️ HVER STRENG ER STADIG EN PROP FØRST. SmsDemo sender sine egne værdier ind
+// (fag, sted, hvad pr. kunde-fag), og de skal blive ved med at vinde over
+// ordbogen. Ordbogen er defaulten, ikke en overstyring.
 export default function SmsTelefon({
-  titel = "Nyt opgavematch",
-  fag = "Rengøring",
-  sted = "Roskilde",
-  hvad = "Fast rengøringsaftale",
-  frist = "18. sept.",
+  titel,
+  fag,
+  sted,
+  hvad,
+  frist,
   animer = true,
-  note = "Eksempel på en besked. Sådan ser et match ud, når det lander.",
+  note,
+  marked = "DK",
 }) {
+  const T = tekster(marked).telefon;
+  titel = titel ?? T.titel;
+  fag = fag ?? T.fag;
+  sted = sted ?? T.sted;
+  hvad = hvad ?? T.hvad;
+  frist = frist ?? T.frist;
+  // ⚠️ `undefined` OG `null` ER IKKE DET SAMME HER. Ingen kalder gør det i dag,
+  // men `note={null}` er den måde man skjuler noten på — og et `??` ville have
+  // sat husets note tilbage og gjort skjul umuligt.
+  note = note === undefined ? T.note : note;
   return (
     <div>
       <div className="sg-telefon">
@@ -41,16 +64,16 @@ export default function SmsTelefon({
             <div className="sg-sms-hd">
               <span className="sg-sms-ic"><Fugl /></span>
               <span className="sg-sms-nm">BIRDLY</span>
-              <span className="sg-sms-tm">nu</span>
+              <span className="sg-sms-tm">{T.nu}</span>
             </div>
             <div className="sg-sms-t">{titel}</div>
             <div className="sg-sms-krop">
               <b>{fag}</b> · {sted}<br />
               {hvad}<br />
-              Frist: {frist}<br />
-              <span className="sg-sms-lnk">Se opgaven →</span>
+              {T.fristLabel}{frist}<br />
+              <span className="sg-sms-lnk">{T.link}</span>
             </div>
-            <div className="sg-sms-stop">Svar STOP for at afmelde</div>
+            <div className="sg-sms-stop">{T.stop}</div>
           </div>
 
           {/* Anden boble: kvitteringen for at man ikke skal gøre noget. Den
@@ -58,8 +81,7 @@ export default function SmsTelefon({
               beskeden før forklaringen dukker op. */}
           <div className={"sg-sms" + (animer ? " sg-anim sg-anim-2" : "")} style={{ marginTop: 12, background: "#fff", borderColor: "var(--line)" }}>
             <div className="sg-sms-krop" style={{ color: "var(--navy-soft)" }}>
-              Du skal ikke søge, logge ind eller holde øje.
-              Vi sender den næste, når den kommer.
+              {T.kvittering}
             </div>
           </div>
         </div>

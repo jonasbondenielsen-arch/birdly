@@ -1,4 +1,4 @@
-import { Hero, BevisBjaelke } from "../../components/salg/Sektioner";
+import { Hero, BevisBjaelke, Problemet, Motoren } from "../../components/salg/Sektioner";
 import { hentOpgaveTal } from "../../lib/opgaveTal";
 import { baseUrl, MARKEDER } from "../../lib/markets";
 
@@ -45,8 +45,15 @@ export default async function UkForside() {
 
   return (
     <div className="sg" lang="en-GB">
-      <Hero marked="GB" funnelHref="/uk/start" />
+      {/* ⚠️ SEKUNDÆREN PEGER PÅ SIDENS EGEN "HOW IT WORKS", ikke på
+          /sadan-virker-det. Den danske støtteside findes ikke på engelsk, og
+          en britisk besøgende der trykker "See how it works" skal ikke lande i
+          dansk tekst. Ankeret virker, fordi Motoren står længere nede på
+          samme side. Den dag UK får sin egen støtteside, er det den ene prop. */}
+      <Hero marked="GB" funnelHref="/uk/start" sekundaerHref="#hvordan" />
       <BevisBjaelke marked="GB" tal={tal} />
+      <Problemet marked="GB" />
+      <Motoren marked="GB" funnelHref="/uk/start" />
     </div>
   );
 }
