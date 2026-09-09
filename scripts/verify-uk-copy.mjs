@@ -118,6 +118,19 @@ const UNDTAGET = new Map([
   ["nr", "Trinnumre 01/02/03 - tal, ikke ordlyd."],
   ["key", "Interne noegler (fx baand-id'er som 'u25k'), ikke synlig tekst. De maa " +
           "ALDRIG vises til en kunde - etiketten staar ved siden af i 'label'."],
+
+  // ── FAQ'ens foldeknap. UI-chrome, ikke salgscopy. ──
+  // ⚠️ DET ER TRE STRENGE JEG SELV HAR SKREVET, OG DE STAAR HER FOR AT DET SKAL
+  // VAERE SYNLIGT. Copy-filen beskriver ikke at FAQ'en foldes - foldningen er
+  // husets egen loesning (lib/faq.js: seks synlige, resten foldet men stadig i
+  // HTML'en saa den kan crawles), og filen har derfor ingen ordlyd til knappen.
+  // Alternativet var at vise alle fjorten spoergsmaal og lade FAQ'en blive
+  // sidens hoejeste sektion - praecis det DK foldede sig ud af 06-09-2026.
+  // Skal Jonas rette dem, er det tre strenge i en.js' faq-blok.
+  ["mereprefix", "FAQ'ens foldeknap: 'See all questions'. UI-chrome, ikke copy - " +
+                 "copy-filen beskriver ikke foldningen. Skrevet af CC, flagget til Jonas 09-09-2026."],
+  ["meresuffix", "FAQ'ens foldeknap: ordet 'more' i '(8 more)'. Samme grund som mereprefix."],
+  ["skjul", "FAQ'ens foldeknap i aaben tilstand: 'Show fewer questions'. Samme grund som mereprefix."],
 ]);
 
 const { en } = await import("../lib/tekster/en.js").catch(() => import("./lib/tekster/en.js"));

@@ -6,7 +6,6 @@ import VaerdiKort from "./VaerdiKort";
 import { Flueben } from "./Ikoner";
 import { priceText } from "../../lib/pakke";
 import { byggAnker } from "../../lib/vaerdiAnker";
-import { tekster, t } from "../../lib/tekster";
 import { VIND_EN } from "../../lib/salgTekst";
 import { useFag } from "./FagKontekst";
 import { sporFunnel } from "../../lib/ctaSporing";
@@ -43,8 +42,16 @@ import { sporFunnel } from "../../lib/ctaSporing";
  * @param {string} fag  fagnøgle — afgør om ankeret er en løbende aftale
  *                      (rengøring/service) eller et enkeltprojekt.
  */
-export function Vaerdi({ funnelHref, fag = null, valgt = null, marked = "DK" }) {
-  const T = tekster(marked).regnestykket;
+// ⚠️ INGEN ORDBOG I DEN HER KLIENT-KOMPONENT. Den importerede `tekster` og
+// `t`, og det trak lib/tekster/da.js + en.js + markets.js ned i klient-bundtet
+// på HVER dansk side der viser regnestykket — to ekstra <script src=…> på
+// /priser og /sadan-virker-det, målt 09-09-2026. Og `marked="DK"` blev
+// serialiseret ind i RSC-strømmen oveni.
+//
+// Teksten kommer nu ind som `ord` fra Salgsside (server). INGEN `ord` = dansk:
+// husets egne VIND_EN og byggAnker, præcis som før ordbogen fandtes. Se den
+// fulde note i Cta.js.
+export function Vaerdi({ funnelHref, fag = null, valgt = null, ord = null }) {
 
   // ⚠️ FAGET FØLGER FANEN I BEVIS-SEKTIONEN. Klikker den besøgende "VVS"
   // deroppe, skifter regnestykket hernede med — ellers ser en VVS'er sit eget
@@ -60,7 +67,7 @@ export function Vaerdi({ funnelHref, fag = null, valgt = null, marked = "DK" }) 
   // opdigtet sum, intet dansk tal. De fem GB-rengoeringsopgaver HAR faktisk
   // beloeb i basen (£200k-£4,7 mio.), men de ligger bag paywall-graensen fra
   // 30-07-2026 - se den fulde note i Sektioner.js' ProblemPris.
-  const a = marked === "DK" ? byggAnker(brugtFag, valgt) : null;
+  const a = ord ? null : byggAnker(brugtFag, valgt);
 
   // ⚠️ INTERN HÆNDELSE, ingen Meta. Fortæller om ankeret faktisk blev SET —
   // det er sidens stærkeste argument, og vi skal kunne se om folk når ned til det.
@@ -101,21 +108,21 @@ export function Vaerdi({ funnelHref, fag = null, valgt = null, marked = "DK" }) 
     <section className="sg-sek sg-graa" id="vaerdi" ref={ref}>
       <div className="sg-wrap">
         <div className="sg-midt">
-          <span className="sg-kick">{T.kick}</span>
+          <span className="sg-kick">{ord ? ord.kick : "Regnestykket"}</span>
           {/* ⚠️ OVERSKRIFTEN SÆLGER POINTEN, IKKE SPØRGSMÅLET. "Hvad er én fast
               kunde værd?" er en overskrift man skal svare på selv; den her
               siger konklusionen først og lader kortene nedenunder vise
               regnestykket. Fremhævningen ligger på "vinde én". */}
           <h2 className="sg-big">
-            {marked === "DK" ? VIND_EN.over : (t(marked, "vaerdi.vindOver") || "")}
+            {ord ? ord.vindOver : VIND_EN.over}
             <span className="sg-big-em">
-              {marked === "DK" ? VIND_EN.underDel1 : (t(marked, "vaerdi.vindUnder1") || "")}
-              <b>{marked === "DK" ? VIND_EN.underDel2 : (t(marked, "vaerdi.vindUnder2") || "")}</b>
+              {ord ? ord.vindUnder1 : VIND_EN.underDel1}
+              <b>{ord ? ord.vindUnder2 : VIND_EN.underDel2}</b>
             </span>
           </h2>
           <p className="sg-lead">
             {!a
-              ? T.lead
+              ? ord.lead
               : a.loebende
                 ? <>En enkelt god rengøringsaftale kan være mange gange mere værd end et helt års Birdly.</>
                 : <>En enkelt god opgave kan være mange gange mere værd end et helt års Birdly.</>}
@@ -173,7 +180,10 @@ export function Vaerdi({ funnelHref, fag = null, valgt = null, marked = "DK" }) 
         )}
 
         <div className="sg-cta-row" style={{ justifyContent: "center" }}>
-          <Cta href={funnelHref} placering="vaerdi" />
+          {/* ⚠️ KNAPPEN MANGLEDE MARKEDET HELT og stod dermed på DANSK på /uk
+              (målt 09-09-2026: to "Find opgaver nu" på den britiske side).
+              Ingen `ord` = dansk, som før. */}
+          <Cta href={funnelHref} placering="vaerdi" {...(ord?.cta ? { tekst: ord.cta } : null)} />
         </div>
       </div>
     </section>

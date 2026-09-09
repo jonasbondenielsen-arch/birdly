@@ -10,6 +10,7 @@ import {
   Motoren, SmsDemo, FagVaelgerKort, Kundebevis, IkkePortal, Priser,
   SlutCta, SalgFaq, EfterspoergselsLink,
 } from "./Sektioner";
+import { tekster, t } from "../../lib/tekster";
 import { getBrancheByFagKey } from "../../lib/branche";
 import "../../app/salg.css";
 
@@ -130,12 +131,38 @@ export default function Salgsside({ tal, funnelHref, fag = null, marked = "DK" }
   // til rengøring og service, ingen chips til de øvrige fag.
   const chips = saerlig ? saerlig.chips : b ? [] : undefined;
 
+  // ⚠️ SAMLET HÉR, IKKE INDE I KOMPONENTEN. Vaerdi er klient-kode; alt hvad
+  // den skal bruge fra ordbogen, slås op på serveren og sendes med som data.
+  // DK får `null` og dermed præcis de props sektionen havde før ordbogen fandtes.
+  const vaerdiOrd =
+    marked === "DK"
+      ? null
+      : {
+          kick: tekster(marked)?.regnestykket?.kick,
+          lead: tekster(marked)?.regnestykket?.lead,
+          vindOver: t(marked, "vaerdi.vindOver") || "",
+          vindUnder1: t(marked, "vaerdi.vindUnder1") || "",
+          vindUnder2: t(marked, "vaerdi.vindUnder2") || "",
+          cta: tekster(marked)?.cta?.primaer,
+        };
+
   return (
     // Provideren deler det valgte fag mellem bevis-fanerne (7) og
     // værdi-ankeret (11). Alt derimellem forbliver server-renderet.
     <FagProvider start={fagNoegle}>
-      <div className="sg" lang={marked === "DK" ? undefined : "en-GB"}>
-        <SalgHeader funnelHref={funnelHref} marked={marked} />
+      {/* ⚠️ `lang={undefined}` ER IKKE DET SAMME SOM INGEN `lang`.
+          En prop med værdien undefined bliver stadig skrevet ind i
+          RSC-strømmen — som "lang":"$undefined" — hvor baseline slet ikke har
+          attributten. /kom-i-gang flyttede sig på præcis det, målt 09-09-2026.
+          Spreder vi null, findes prop'en ikke. Samme greb som ctaTekst(). */}
+      <div className="sg" {...(marked === "DK" ? null : { lang: "en-GB" })}>
+        {/* Headeren slår ikke selv op i ordbogen — se noten i SalgHeader.js.
+            DK sender ingen tekst og får husets egen CTA. */}
+        <SalgHeader
+          funnelHref={funnelHref}
+          marked={marked}
+          {...(marked === "DK" ? null : { ctaTekst: tekster(marked)?.cta?.primaer })}
+        />
 
         <Hero funnelHref={funnelHref} overskrift={overskrift} under={under} eyebrow={eyebrow} chips={chips}
               marked={marked} sekundaerHref={marked === "DK" ? undefined : "#hvordan"} />
@@ -148,11 +175,23 @@ export default function Salgsside({ tal, funnelHref, fag = null, marked = "DK" }
         <Problemet marked={marked} />
         <ProblemPris fag={fagNoegle} marked={marked} />
         <Loesningen funnelHref={funnelHref} marked={marked} />
-        <FagBevis funnelHref={funnelHref} marked={marked} />
+        {/* ⚠️ FagBevis ER EN KLIENT-KOMPONENT, og hver prop den får,
+            serialiseres ind i RSC-strømmen. `marked="DK"` flyttede altså danske
+            sider uden at ændre noget synligt. Sektionen er alligevel kun
+            dansk (den venter på FTS), så valget hører hjemme HER på serveren —
+            ikke som en prop den selv skal læse. Se noten i Cta.js. */}
+        {marked === "DK" && <FagBevis funnelHref={funnelHref} />}
         <Motoren funnelHref={funnelHref} marked={marked} />
         <SmsDemo fag={fagNoegle} marked={marked} />
         <FagVaelgerKort marked={marked} />
-        <Vaerdi funnelHref={funnelHref} marked={marked} />
+        {/* ⚠️ ORDBOGSOPSLAGET SKER HER, PÅ SERVEREN. Vaerdi er en
+            klient-komponent; læste den selv ordbogen, havnede både den danske
+            og den engelske ned i klient-bundtet på hver dansk side. `ord` =
+            null for DK, og så bruger sektionen husets egne konstanter. */}
+        {/* ⚠️ OGSÅ `ord={null}` SERIALISERES — som "ord":null i RSC-strømmen.
+            Det er ikke nok at værdien er tom; prop'en må slet ikke findes på DK.
+            /kom-i-gang flyttede sig på præcis det. Derfor spread, ikke prop. */}
+        <Vaerdi funnelHref={funnelHref} {...(vaerdiOrd ? { ord: vaerdiOrd } : null)} />
         <Kundebevis marked={marked} />
         <IkkePortal marked={marked} />
         <Overgang funnelHref={funnelHref} marked={marked} />
@@ -162,7 +201,15 @@ export default function Salgsside({ tal, funnelHref, fag = null, marked = "DK" }
         <EfterspoergselsLink marked={marked} />
 
         <Footer marked={marked} />
-        <StickyCtaMobil funnelHref={funnelHref} marked={marked} />
+        {/* Samme regel: DK får NØJAGTIG de props komponenten fik før ordbogen
+            fandtes — kun funnelHref. Både teksten og "vis opret-opgave" har
+            danske standardværdier inde i komponenten. */}
+        <StickyCtaMobil
+          funnelHref={funnelHref}
+          {...(marked === "DK"
+            ? null
+            : { tekst: tekster(marked)?.cta?.primaer, visOpretOpgave: false })}
+        />
       </div>
     </FagProvider>
   );

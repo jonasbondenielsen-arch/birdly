@@ -34,7 +34,8 @@
 //      og den beviste kun `/kom-i-gang` en ekstra gang.
 //   2. Alt hentes én gang FØR vi gemmer, så hver gemt side er en varm render.
 // ============================================================================
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, writeFileSync, statSync, readdirSync, existsSync } from "node:fs";
+import { join } from "node:path";
 
 const UD = process.argv[2];
 if (!UD) {
@@ -42,6 +43,60 @@ if (!UD) {
   process.exit(2);
 }
 const PORT = process.env.PORT || 3101;
+
+// ============================================================================
+// ⚠️ ER BUILDET OVERHOVEDET DET VI TROR VI MÅLER? (tilføjet 09-09-2026)
+//
+// Den her vagt findes fordi DK-beviset var GRØNT TRE GANGE PÅ EN REGRESSION.
+// `<li><Kryds /> Log ind</li>` var blevet til `<li><Kryds /> {x}</li>` da
+// portal-sektionen blev lagt om til ordbogen — to nabo-tekstnoder i stedet for
+// én, så React skød et `<!-- -->` ind på tre danske sider. Diffen fangede det
+// ikke, for serveren kørte et `.next` der var ældre end kildefilerne. Vagten
+// målte altså et build uden ændringen og meldte "identisk".
+//
+// En vagt der kan melde grønt på kode den ikke har set, er værre end ingen
+// vagt: den giver netop den tryghed man ikke skal have. Derfor NÆGTER
+// scriptet nu at måle, hvis en kildefil er nyere end buildet.
+//
+// Sammenligningen er mod .next/BUILD_ID, som skrives til sidst i et build.
+// ============================================================================
+const BUILD_ID = ".next/BUILD_ID";
+if (!existsSync(BUILD_ID)) {
+  console.error("✖ Der er ikke bygget (.next/BUILD_ID mangler). Kør `npm run build` foerst.");
+  process.exit(2);
+}
+const bygget = statSync(BUILD_ID).mtimeMs;
+const SPRING_OVER = new Set(["node_modules", ".next", ".git", ".vercel"]);
+let nyeste = { sti: null, tid: 0 };
+(function gaa(mappe) {
+  for (const post of readdirSync(mappe, { withFileTypes: true })) {
+    if (SPRING_OVER.has(post.name)) continue;
+    const sti = join(mappe, post.name);
+    if (post.isDirectory()) { gaa(sti); continue; }
+    if (!/\.(js|jsx|mjs|css|json)$/.test(post.name)) continue;
+    const t = statSync(sti).mtimeMs;
+    if (t > nyeste.tid) nyeste = { sti, tid: t };
+  }
+})("app");
+for (const rod of ["components", "lib"]) if (existsSync(rod)) (function gaa(mappe) {
+  for (const post of readdirSync(mappe, { withFileTypes: true })) {
+    if (SPRING_OVER.has(post.name)) continue;
+    const sti = join(mappe, post.name);
+    if (post.isDirectory()) { gaa(sti); continue; }
+    if (!/\.(js|jsx|mjs|css|json)$/.test(post.name)) continue;
+    const t = statSync(sti).mtimeMs;
+    if (t > nyeste.tid) nyeste = { sti, tid: t };
+  }
+})(rod);
+
+if (nyeste.tid > bygget) {
+  const min = Math.round((nyeste.tid - bygget) / 60000);
+  console.error("✖ BUILDET ER FORAELDET — maalingen ville vaere vaerdiloes.");
+  console.error(`    nyeste kildefil : ${nyeste.sti}`);
+  console.error(`    den er ${min} min. nyere end .next/BUILD_ID`);
+  console.error("  Koer `npm run build` og start serveren igen foer du maaler.");
+  process.exit(2);
+}
 
 export const SIDER = [
   ["forside", "/"],

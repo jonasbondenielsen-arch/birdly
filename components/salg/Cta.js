@@ -3,19 +3,28 @@
 import Link from "next/link";
 import { sporCta } from "../../lib/ctaSporing";
 import { CTA } from "../../lib/salgTekst";
-import { tekster } from "../../lib/tekster";
 
-// ⚠️ DANMARK LÆSER STADIG `CTA` FRA salgTekst.js — IKKE ORDBOGEN.
-// Knappen står i dag ~40 steder: headeren, forsiden, /brancher og 36 fag-sider.
-// Havde jeg lagt DK's ordlyd om til et ordbogsopslag, ville hver af dem afhænge
-// af at ordbogens streng er identisk med salgTekst's — og de to ville kunne
-// skride fra hinanden uden at nogen så det. Med den her funktion er DK
-// bogstaveligt talt den samme kode som før: `marked` er "DK", og vi rører
-// aldrig ordbogen. Kun et ANDET marked slår op.
-function ctaTekst(marked, noegle) {
-  if (marked === "DK") return CTA[noegle];
-  return tekster(marked)?.cta?.[noegle] ?? CTA[noegle];
-}
+// ============================================================================
+// ⚠️ DEN HER KLIENT-KOMPONENT MÅ IKKE IMPORTERE ORDBOGEN. Den gjorde det
+// kortvarigt, og det kostede to ting på HVER dansk side — målt 09-09-2026,
+// ikke gættet:
+//
+//   1. lib/tekster/da.js + en.js + markets.js havnede i KLIENT-bundtet. En
+//      dansk besøgende hentede altså hele den engelske ordbog med. Det gav to
+//      ekstra <script src=…> på /priser og /sadan-virker-det.
+//   2. `marked="DK"` blev skrevet ind i RSC-strømmen, fordi HVER prop til en
+//      klient-komponent serialiseres. Danske sider flyttede sig af en prop
+//      hvis værdi var den samme som standarden.
+//
+// Løsningen er den samme som for FaqListe: TEKSTEN KOMMER IND SOM DATA.
+// Serverkomponenten slår op i ordbogen — den kører alligevel på serveren — og
+// sender resultatet med som `tekst`. Sender den ingenting, bruger knappen
+// husets danske CTA fra salgTekst.js, præcis som før ordbogen fandtes.
+//
+// ⚠️ SEND ALDRIG tekst="Find opgaver nu" FRA ET DANSK KALDESTED. Prop'en ville
+// lande i RSC-strømmen og flytte DK's bytes, selv med den rigtige streng.
+// Dansk = INGEN prop. Se ctaTekst() i Sektioner.js.
+// ============================================================================
 
 // ============================================================================
 // DEN PRIMÆRE CTA — ét sted, så ordlyden ikke kan drive fra hinanden.
@@ -35,14 +44,14 @@ function ctaTekst(marked, noegle) {
 // Klienten er kun til klik-registreringen. Selve navigationen er et almindeligt
 // <Link>, så prefetch og hurtig rutning virker som alle andre steder.
 // ============================================================================
-export default function Cta({ href, placering, variant = "teal", stor = false, bred = false, children, marked = "DK" }) {
+export default function Cta({ href, placering, variant = "teal", stor = false, bred = false, children, tekst = null }) {
   // ⚠️ "nav" er IKKE en .sg-btn. Header-knappen har sin egen kompakte stil, fordi
   // en fuld knap gør baren for høj på mobil — og den bærer ingen pil, så den ikke
   // konkurrerer visuelt med sidens egentlige CTA'er længere nede.
   if (variant === "nav") {
     return (
       <Link href={href} className="sg-navcta" onClick={() => sporCta(placering, href)}>
-        {children || ctaTekst(marked, "primaer")}
+        {children || tekst || CTA.primaer}
       </Link>
     );
   }
@@ -56,7 +65,7 @@ export default function Cta({ href, placering, variant = "teal", stor = false, b
 
   return (
     <Link href={href} className={klasse} onClick={() => sporCta(placering, href)}>
-      {children || ctaTekst(marked, "primaer")} <span aria-hidden="true">→</span>
+      {children || tekst || CTA.primaer} <span aria-hidden="true">→</span>
     </Link>
   );
 }
@@ -66,10 +75,10 @@ export default function Cta({ href, placering, variant = "teal", stor = false, b
  * ikke ind i funnelen, og må aldrig laves om til en teal knap — så konkurrerer
  * to knapper om det samme klik, og den primære taber halvdelen af opmærksomheden.
  */
-export function CtaSekundaer({ href = "#hvordan", placering, children, marked = "DK" }) {
+export function CtaSekundaer({ href = "#hvordan", placering, children, tekst = null }) {
   return (
     <Link href={href} className="sg-btn sg-btn-ghost" onClick={() => sporCta(placering, href)}>
-      {children || ctaTekst(marked, "sekundaer")}
+      {children || tekst || CTA.sekundaer}
     </Link>
   );
 }

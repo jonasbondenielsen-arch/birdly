@@ -3,6 +3,17 @@ import { Logo } from "../Logo";
 import Cta from "./Cta";
 import { OPRET_OPGAVE_I_NAV } from "../../lib/opretOpgave";
 
+// ⚠️ HEADEREN MÅ HELLER IKKE IMPORTERE ORDBOGEN — OG DET ER IKKE INDLYSENDE.
+// SalgHeader er selv en serverkomponent, men den importeres AF components/
+// Forside.js, som er "use client". Dermed havner headeren og alt hvad den
+// importerer i forsidens KLIENT-bundt. Da jeg lagde `tekster` ind her, kom
+// både den danske og den engelske ordbog med tilbage — og forsiden var den
+// eneste side der flyttede sig af det (målt 09-09-2026: RSC-rækkerne blev
+// nummereret om fra række `f`).
+//
+// Teksten kommer derfor ind som `ctaTekst` fra den der bruger headeren.
+// Ingen prop = husets danske CTA. Se den fulde note i Cta.js.
+
 // ============================================================================
 // HEADEREN — sticky, ren, én primær handling.
 //
@@ -24,7 +35,7 @@ import { OPRET_OPGAVE_I_NAV } from "../../lib/opretOpgave";
 // handlinger bliver stående — det er dem der betyder noget på en telefon, og
 // resten af sitet nås fra footeren. En menu ingen kan åbne er værre end ingen menu.
 // ============================================================================
-export default function SalgHeader({ funnelHref, marked = "DK" }) {
+export default function SalgHeader({ funnelHref, marked = "DK", ctaTekst = null }) {
   // ⚠️ GB FAAR INGEN NAV-LINKS, OG DET ER ET VALG - ikke en forglemmelse.
   // Alle fem punkter peger paa DANSKE sider (/sadan-virker-det, /brancher,
   // /priser, /hvorfor-birdly, /viden), og "Opret opgave" ogsaa. Et britisk
@@ -59,7 +70,7 @@ export default function SalgHeader({ funnelHref, marked = "DK" }) {
           )}
           {/* Variant "nav": samme tekst og samme klik-sporing som sidens øvrige
               CTA'er, men den kompakte header-stil. */}
-          <Cta href={funnelHref} placering="header" variant="nav" marked={marked} />
+          <Cta href={funnelHref} placering="header" variant="nav" {...(ctaTekst ? { tekst: ctaTekst } : null)} />
         </div>
       </div>
     </header>

@@ -8,7 +8,7 @@ import { MARKEDER } from "../../lib/markets";
 import { daTal, fmtOpdateret } from "../../lib/opgaveTal";
 import { PLAN, priceText, YEARLY_SAVING, TRIAL_DAYS } from "../../lib/pakke";
 import {
-  GARANTI, GARANTI_LINK, TRUST, VAERDI_ANKER, EJER_LINJE,
+  CTA, GARANTI, GARANTI_LINK, TRUST, VAERDI_ANKER, EJER_LINJE,
   VIND_EN, STOERRELSE_LINJE, OFFENTLIGE, SMS_LINJE, SMS_UNDER, IKKE_HOLDE_OEJE,
 } from "../../lib/salgTekst";
 import { byggAnker, BETINGET_LINJE, FORBEHOLD } from "../../lib/vaerdiAnker";
@@ -86,6 +86,27 @@ function prisFor(marked) {
     maanederBetalt: Math.round(p.aar / p.maaned),
     proeveDage: p.proeveDage,
   };
+}
+
+/**
+ * CTA-knappens tekst som PROPS — og INTET for Danmark.
+ *
+ * ⚠️ DEN HER FUNKTION FINDES FOR AT DK IKKE SKAL FLYTTE SIG. Cta er en
+ * klient-komponent, og hver prop den får, bliver skrevet ind i RSC-strømmen.
+ * `marked={marked}` lagde altså "marked":"DK" ind i hver eneste danske side —
+ * målt 09-09-2026 på forsiden, /hvorfor-birdly og /kom-i-gang. Prop'ens værdi
+ * var korrekt; problemet var at den overhovedet var der.
+ *
+ * Returnerer `null` for DK, så `{...ctaTekst("DK", "primaer")}` spreder
+ * ingenting og knappen får nøjagtig de props den fik før ordbogen fandtes.
+ *
+ * ⚠️ OPSLAGET SKER HER, PÅ SERVEREN. Cta må ikke selv læse ordbogen — så
+ * havner både den danske og den engelske ordbog i klient-bundtet på danske
+ * sider. Se den fulde note i Cta.js.
+ */
+function ctaTekst(marked, noegle) {
+  if (marked === "DK") return null;
+  return { tekst: tekster(marked)?.cta?.[noegle] ?? CTA[noegle] };
 }
 
 function TrustRaekke({ mork = false, marked = "DK" }) {
@@ -206,12 +227,12 @@ export function Hero({
                 Birdly dækker 20 fag, og huset har ÉN primær CTA. En
                 fag-specifik knap ville splitte det genkendelige klik op i lige
                 så mange varianter som vi har fag. */}
-            <Cta href={funnelHref} placering="hero" stor marked={marked} />
+            <Cta href={funnelHref} placering="hero" stor {...ctaTekst(marked, "primaer")} />
             {/* ⚠️ SEKUNDÆRENS MÅL ER EN PROP, FORDI /sadan-virker-det ER EN
                 DANSK SIDE. Uden den ville den britiske hero have sendt en
                 britisk besøgende til dansk tekst — et dødt spor midt i
                 løftet. DK's default er uændret. */}
-            <CtaSekundaer href={sekundaerHref} placering="hero-sekundaer" marked={marked} />
+            <CtaSekundaer href={sekundaerHref} placering="hero-sekundaer" {...ctaTekst(marked, "sekundaer")} />
           </div>
           <TrustRaekke marked={marked} />
         </div>
@@ -388,7 +409,7 @@ export function Motoren({ funnelHref, marked = "DK" }) {
         <p className="sg-afslut">{T.afslut}</p>
 
         <div className="sg-cta-row" style={{ justifyContent: "center" }}>
-          <Cta href={funnelHref} placering="motor" marked={marked} />
+          <Cta href={funnelHref} placering="motor" {...ctaTekst(marked, "primaer")} />
         </div>
       </div>
     </section>
@@ -446,9 +467,24 @@ export function SmsDemo({ fag = "rengoring", marked = "DK" }) {
           <p className="sg-afslut" style={{ textAlign: "left", margin: "18px 0 0", maxWidth: "34ch" }}>
             {hus(marked, IKKE_HOLDE_OEJE, "sms.ikkeHoldeOeje")}
           </p>
-          <ul className="sg-punkter">
-            {T.punkter.map((x) => <li key={x}><Flueben size={20} />{" " + x}</li>)}
-          </ul>
+          {/* ⚠️ DANMARK RENDERER LISTEN LITTERALT, som før ordbogen fandtes.
+              Et `.map()` sætter en `key` på hvert <li>, og key'en skrives ind i
+              RSC-strømmen — baseline har `null`, en map har strengen. Danske
+              sider flyttede sig altså af en ændring der ikke var synlig.
+              Målt 09-09-2026. Grenen ligger om HELE <ul>, ikke om børnene:
+              et fragment ville selv lægge et lag ind i strømmen. */}
+          {marked === "DK" ? (
+            <ul className="sg-punkter">
+              <li><Flueben size={20} /> Kort resumé</li>
+              <li><Flueben size={20} /> Frist</li>
+              <li><Flueben size={20} /> Direkte link</li>
+              <li><Flueben size={20} /> Bud-skabelon hvor relevant</li>
+            </ul>
+          ) : (
+            <ul className="sg-punkter">
+              {T.punkter.map((x) => <li key={x}><Flueben size={20} />{" " + x}</li>)}
+            </ul>
+          )}
         </div>
       </div>
     </section>
@@ -499,7 +535,7 @@ export function RigtigeOpgaver({ funnelHref, marked = "DK" }) {
         </div>
 
         <div className="sg-cta-row" style={{ justifyContent: "center" }}>
-          <Cta href={funnelHref} placering="vaerd" marked={marked} />
+          <Cta href={funnelHref} placering="vaerd" {...ctaTekst(marked, "primaer")} />
         </div>
       </div>
     </section>
@@ -550,7 +586,7 @@ export function OffentligeOpgaver({ funnelHref, marked = "DK" }) {
         </p>
 
         <div className="sg-cta-row" style={{ justifyContent: "center" }}>
-          <Cta href={funnelHref} placering="offentlige" marked={marked} />
+          <Cta href={funnelHref} placering="offentlige" {...ctaTekst(marked, "primaer")} />
         </div>
       </div>
     </section>
@@ -581,7 +617,7 @@ export function Overgang({ funnelHref, marked = "DK" }) {
           {G.stor1}<b>{G.stor2}</b>{G.stor3}
         </p>
         <div className="sg-cta-row" style={{ justifyContent: "center" }}>
-          <Cta href={funnelHref} placering="overgang" variant="hvid" stor marked={marked} />
+          <Cta href={funnelHref} placering="overgang" variant="hvid" stor {...ctaTekst(marked, "primaer")} />
         </div>
       </div>
     </section>
@@ -697,9 +733,24 @@ export function Loesningen({ funnelHref, marked = "DK" }) {
         <span className="sg-kick">{T.kick}</span>
         <h2 className="sg-big">{T.overskrift}<br /><span style={{ color: "var(--teal)" }}>{T.overskrift2}</span></h2>
 
-        <ul className="sg-fix">
-          {T.punkter.map((x) => <li key={x}><Flueben size={19} />{" " + x}</li>)}
-        </ul>
+        {/* ⚠️ DANMARK RENDERER LISTEN LITTERALT, som før ordbogen fandtes.
+              Et `.map()` sætter en `key` på hvert <li>, og key'en skrives ind i
+              RSC-strømmen — baseline har `null`, en map har strengen. Danske
+              sider flyttede sig altså af en ændring der ikke var synlig.
+              Målt 09-09-2026. Grenen ligger om HELE <ul>, ikke om børnene:
+              et fragment ville selv lægge et lag ind i strømmen. */}
+        {marked === "DK" ? (
+          <ul className="sg-fix">
+            <li><Flueben size={19} /> Jeres fag</li>
+            <li><Flueben size={19} /> Jeres område</li>
+            <li><Flueben size={19} /> Jeres ønskede opgavestørrelse</li>
+            <li><Flueben size={19} /> Private og offentlige muligheder</li>
+          </ul>
+        ) : (
+          <ul className="sg-fix">
+            {T.punkter.map((x) => <li key={x}><Flueben size={19} />{" " + x}</li>)}
+          </ul>
+        )}
 
         <p className="sg-lead">
           {T.lead}
@@ -707,7 +758,7 @@ export function Loesningen({ funnelHref, marked = "DK" }) {
         <p className="sg-afslut">{T.afslut}</p>
 
         <div className="sg-cta-row" style={{ justifyContent: "center" }}>
-          <Cta href={funnelHref} placering="loesning" marked={marked} />
+          <Cta href={funnelHref} placering="loesning" {...ctaTekst(marked, "primaer")} />
         </div>
       </div>
     </section>
@@ -792,26 +843,34 @@ export function RisikoFjernet({ funnelHref, marked = "DK" }) {
             {T.lead}
           </p>
 
-          <div className="sg-fire">
-            {/* ⚠️ FOERSTE PUNKT ER DK's EGET UDTRYK, UROERT. Det bygges af
-                TRIAL_DAYS fra lib/pakke.js, og dets nodestruktur (ikon +
-                mellemrum + tal + tekst) maa ikke aendres. Andre markeder faar
-                punktet som EEN streng fra ordbogen. */}
-            {marked === "DK" ? (
+          {/* ⚠️ HELE BLOKKEN ER GRENEN, IKKE BØRNENE. DK's fire punkter er de
+              samme fire elementer i samme fire slots som før ordbogen fandtes.
+              To fejl blev fanget her 09-09-2026, og begge var usynlige:
+                1. et `.map()` sætter en `key`, og key'en skrives ind i
+                   RSC-strømmen — baseline har `null`.
+                2. et `<>…</>` omkring børnene ville selv lægge et lag ind, så
+                   fire søskende blev til ét fragment. Derfor ligger grenen om
+                   <div className="sg-fire"> og ikke inde i den.
+              ⚠️ `{" " + x}` OG IKKE `" {x}"` i GB-grenen: to nabo-tekstnoder
+              giver React's <!-- -->-markør. */}
+          {marked === "DK" ? (
+            <div className="sg-fire">
               <div className="sg-fire-item"><Flueben size={18} /> {TRIAL_DAYS} dage gratis</div>
-            ) : (
+              <div className="sg-fire-item"><Flueben size={18} /> Ingen binding</div>
+              <div className="sg-fire-item"><Flueben size={18} /> Ingen portal</div>
+              <div className="sg-fire-item"><Flueben size={18} /> Opsætning på få minutter</div>
+            </div>
+          ) : (
+            <div className="sg-fire">
               <div className="sg-fire-item"><Flueben size={18} />{" " + T.proeveDage}</div>
-            )}
-            {/* ⚠️ {" " + x} OG IKKE " {x}". Originalen havde EEN tekstnode
-                (" Ingen binding"); to nabo-noder ville give React's
-                <!-- -->-markoer og flytte DK's bytes. */}
-            {T.punkter.map((x) => (
-              <div className="sg-fire-item" key={x}><Flueben size={18} />{" " + x}</div>
-            ))}
-          </div>
+              {T.punkter.map((x) => (
+                <div className="sg-fire-item" key={x}><Flueben size={18} />{" " + x}</div>
+              ))}
+            </div>
+          )}
 
           <div className="sg-cta-row" style={{ justifyContent: "center" }}>
-            <Cta href={funnelHref} placering="risiko" marked={marked} />
+            <Cta href={funnelHref} placering="risiko" {...ctaTekst(marked, "primaer")} />
           </div>
 
           <GarantiFin marked={marked} />
@@ -891,9 +950,23 @@ export function IkkePortal({ marked = "DK" }) {
             {/* ⚠️ HER ER ET .map() DET RIGTIGE. Alle syv punkter deler det
                 SAMME ikon, så der findes ingen parallel liste der kan skride —
                 modsat de tre kort i Problemet, hvor hvert kort har sit eget. */}
-            <ul className="sg-vs-liste">
-              {P.gammel.punkter.map((x) => <li key={x}><Kryds /> {x}</li>)}
-            </ul>
+            {/* ⚠️ DK LITTERALT: en `key` fra et .map() lander i RSC-strømmen, hvor
+                baseline har `null`. Se den fulde note i SmsDemo. */}
+            {marked === "DK" ? (
+              <ul className="sg-vs-liste">
+                <li><Kryds /> Log ind</li>
+                <li><Kryds /> Søg</li>
+                <li><Kryds /> Vælg filtre</li>
+                <li><Kryds /> Gennemgå opgaver</li>
+                <li><Kryds /> Læs</li>
+                <li><Kryds /> Sortér</li>
+                <li><Kryds /> Gentag</li>
+              </ul>
+            ) : (
+              <ul className="sg-vs-liste">
+                {P.gammel.punkter.map((x) => <li key={x}><Kryds />{" " + x}</li>)}
+              </ul>
+            )}
           </div>
 
           {/* Kun på desktop — på mobil stables kortene, og et "vs." midt imellem
@@ -906,9 +979,20 @@ export function IkkePortal({ marked = "DK" }) {
             {/* ⚠️ HANDLINGERNE ER BIRDLYS, IKKE KUNDENS. Venstre side er syv ting
                 kunden selv skal gøre; her gør Birdly tre af fire. Det er hele
                 sammenligningen — ikke at vi har flere funktioner. */}
-            <ul className="sg-vs-liste">
-              {P.ny.punkter.map((x) => <li key={x}><Flueben size={18} /> {x}</li>)}
-            </ul>
+            {/* ⚠️ DK LITTERALT: en `key` fra et .map() lander i RSC-strømmen, hvor
+                baseline har `null`. Se den fulde note i SmsDemo. */}
+            {marked === "DK" ? (
+              <ul className="sg-vs-liste">
+                <li><Flueben size={18} /> Birdly holder øje</li>
+                <li><Flueben size={18} /> Birdly finder relevante opgaver</li>
+                <li><Flueben size={18} /> I får dem direkte på SMS</li>
+                <li><Flueben size={18} /> I vælger, hvilke I vil gå videre med</li>
+              </ul>
+            ) : (
+              <ul className="sg-vs-liste">
+                {P.ny.punkter.map((x) => <li key={x}><Flueben size={18} />{" " + x}</li>)}
+              </ul>
+            )}
             {/* ⚠️ DEN KORTE LINJE BÆRER SEKTIONEN. Den lange ejer-sætning stod
                 før som konklusion og druknede pointen; nu er den sekundær. */}
             <p className="sg-vs-payoff">{P.payoff}</p>
@@ -968,15 +1052,34 @@ export function Priser({ funnelHref, medOverskrift = true, marked = "DK" }) {
             <span className="sg-plan-navn">{T.planNavn}</span>
             <div className="sg-pris-beloeb">{p ? p.aar : priceText.yearly}</div>
             {/* ⚠️ DK's linje er UÆNDRET; GB's samles af regnede tal. */}
-            <small>{p ? `${T.exVat} · ${T.omkring} ${p.prMaaned}` : `ekskl. moms · ca. ${prMaaned} kr./md.`}</small>
+            {/* ⚠️ DK's <small> HAR TRE BØRN, IKKE ÉN STRENG. Baseline er
+                `ekskl. moms · ca. {prMaaned} kr./md.` — tekst, udtryk, tekst — og
+                React sætter derfor `<!-- -->` omkring tallet. Skrev vi det som
+                én template-streng, forsvandt markørerne og forsiden, /kom-i-gang
+                og /priser flyttede sig. Målt 09-09-2026. */}
+            {p ? (
+              <small>{`${T.exVat} · ${T.omkring} ${p.prMaaned}`}</small>
+            ) : (
+              <small>ekskl. moms · ca. {prMaaned} kr./md.</small>
+            )}
 
             {/* "Betal for 10 måneder — få 12" er bogstaveligt sandt: 4.990 ÷ 499
                 er præcis 10. Besparelsen kommer fra YEARLY_SAVING. */}
-            <div className="sg-plan-spar">
-              {p
-                ? `Pay for ${p.maanederBetalt} months. Get 12. Save ${p.spar}.`
-                : `Betal for 10 måneder — få 12. Spar ${YEARLY_SAVING.amount.toLocaleString("da-DK")} kr.`}
-            </div>
+            {/* ⚠️ DK's <div> HAR TRE BØRN, IKKE ÉN STRENG. Baseline skriver
+                beløbet som et udtryk mellem to tekststykker, så React sætter
+                `<!-- -->` omkring det. En template-streng slugte markørerne og
+                flyttede forsiden, /kom-i-gang og /priser. Målt 09-09-2026.
+                Grenen ligger om hele <div>, ikke om børnene — et fragment
+                ville selv lægge et lag ind i strømmen. */}
+            {p ? (
+              <div className="sg-plan-spar">
+                {`Pay for ${p.maanederBetalt} months. Get 12. Save ${p.spar}.`}
+              </div>
+            ) : (
+              <div className="sg-plan-spar">
+                Betal for 10 måneder — få 12. Spar {YEARLY_SAVING.amount.toLocaleString("da-DK")} kr.
+              </div>
+            )}
 
             {/* ⚠️ DK's SEKS LINJER ER UROERT. GB's samme seks bygges af
                 ordbogen plus de to der har EEN kilde: proeveperioden og
@@ -999,7 +1102,7 @@ export function Priser({ funnelHref, medOverskrift = true, marked = "DK" }) {
               </ul>
             )}
 
-            <Cta href={funnelHref} placering="priser-aar" bred stor marked={marked}>
+            <Cta href={funnelHref} placering="priser-aar" bred stor>
               {p ? T.ctaAar : <>Start {TRIAL_DAYS} dage gratis</>}
             </Cta>
             <p className="sg-plan-fin">{hus(marked, VAERDI_ANKER, "priser.vaerdiAnker")}</p>
@@ -1009,13 +1112,20 @@ export function Priser({ funnelHref, medOverskrift = true, marked = "DK" }) {
           <div className="sg-maaned">
             <div>
               <b>{T.maanedSpm}</b>
-              <span>
-                {p
-                  ? `${p.maaned} ${T.exVat} · ${tekster(marked).risiko.proeveDage} · ${T.ingenBinding}`
-                  : `${priceText.monthly} ekskl. moms · ${TRIAL_DAYS} dage gratis · ingen binding`}
-              </span>
+              {/* ⚠️ DK's <span> HAR FEM BØRN, IKKE ÉN STRENG: pris, tekst, tal,
+                  tekst — og React sætter `<!-- -->` mellem hver nabo-tekstnode.
+                  En template-streng slugte markørerne og flyttede forsiden,
+                  /kom-i-gang og /priser. Målt 09-09-2026. Sidste led i en
+                  række: se også sg-plan-spar og <small> ovenfor. */}
+              {p ? (
+                <span>
+                  {`${p.maaned} ${T.exVat} · ${tekster(marked).risiko.proeveDage} · ${T.ingenBinding}`}
+                </span>
+              ) : (
+                <span>{priceText.monthly} ekskl. moms · {TRIAL_DAYS} dage gratis · ingen binding</span>
+              )}
             </div>
-            <Cta href={funnelHref} placering="priser-maaned" variant="ghost" marked={marked}>
+            <Cta href={funnelHref} placering="priser-maaned" variant="ghost">
               {T.ctaMaaned}
             </Cta>
           </div>
@@ -1040,7 +1150,7 @@ export function SlutCta({ funnelHref, marked = "DK" }) {
         <h2>{S.overskrift}</h2>
         <p>{S.under}</p>
         <div className="sg-cta-row" style={{ justifyContent: "center" }}>
-          <Cta href={funnelHref} placering="slut" variant="hvid" stor marked={marked} />
+          <Cta href={funnelHref} placering="slut" variant="hvid" stor {...ctaTekst(marked, "primaer")} />
         </div>
         <div style={{ display: "flex", justifyContent: "center" }}>
           <TrustRaekke mork marked={marked} />
@@ -1063,28 +1173,49 @@ export function SlutCta({ funnelHref, marked = "DK" }) {
  * de står i HTML'en uanset om detaljen er åben. De er stadig crawlbare.
  */
 export function SalgFaq({ funnelHref, marked = "DK" }) {
-  // ⚠️ ENDNU IKKE OVERSAT — SEKTIONEN UDELADER SIG SELV PAA ANDRE MARKEDER.
-  // Hellere en manglende sektion end en dansk. Det er samme regel som
-  // lib/tekster/index.js: en dansk saetning paa en britisk side er VAERRE end
-  // en manglende, for den ser ud som om den hoerer til.
-  // Naar sektionens engelske copy findes, flyttes strengene til ordbogen og
-  // den her linje ryger. Indtil da er DK bit-for-bit uroert: `marked` er "DK",
-  // og resten af funktionen er ikke aendret med eet tegn.
-  if (marked !== "DK") return null;
+  // ⚠️ TO GRENE, IKKE EN OVERSAT KOMPONENT. Den danske sti er ikke ændret med
+  // ét tegn: samme kick, samme overskrift, samme <FaqListe /> uden props.
+  // Den britiske sender sine egne lister ind i den SAMME komponent — se noten
+  // i FaqListe.js om hvorfor en egen britisk komponent ikke gik.
+  //
+  // ⚠️ MANGLER ET MARKED SIN FAQ I ORDBOGEN, UDELADER SEKTIONEN SIG SELV.
+  // Hellere en manglende sektion end en dansk. Samme regel som
+  // lib/tekster/index.js: en dansk sætning på en britisk side er VÆRRE end en
+  // manglende, for den ser ud som om den hører til.
+  const T = marked === "DK" ? null : tekster(marked)?.faq;
+  if (marked !== "DK" && !T?.top?.length) return null;
 
   return (
     <section className="sg-sek" id="faq">
       <div className="sg-wrap">
         <div className="sg-midt">
-          <span className="sg-kick">Spørgsmål</span>
-          <h2 className="sg-big">Det, du tænker lige nu.</h2>
+          {/* ⚠️ INGEN FRAGMENT-GREN OMKRING DE TO ELEMENTER. Et <>…</> her ville
+              lægge et array ind hvor der før stod to elementer, og det flytter
+              RSC-rækkerne på danske sider — samme klasse af fejl som den nye
+              eksport i lib/markets.js. Valget ligger derfor INDE i hvert
+              element, hvor det kun er en streng der skifter. */}
+          <span className="sg-kick">{marked === "DK" ? "Spørgsmål" : T.kick}</span>
+          <h2 className="sg-big">{marked === "DK" ? "Det, du tænker lige nu." : T.overskrift}</h2>
         </div>
 
-        <FaqListe />
+        {/* ⚠️ SAMME KOMPONENT, ANDEN DATA. Den britiske FAQ laa foerst i sin
+            egen fil, og den statiske import af den KLIENT-komponent lagde en
+            ekstra chunk paa /priser og /sadan-virker-det - danske sider der
+            aldrig renderer den. Se den fulde note i FaqListe.js.
+            DK kalder fortsat uden props og faar husets egne lister. */}
+        {marked === "DK" ? (
+          <FaqListe />
+        ) : (
+          <FaqListe
+            top={T.top}
+            rest={T.rest}
+            etiketter={{ merePrefix: T.merePrefix, mereSuffix: T.mereSuffix, skjul: T.skjul }}
+          />
+        )}
 
         {funnelHref && (
           <div className="sg-cta-row" style={{ justifyContent: "center" }}>
-            <Cta href={funnelHref} placering="faq" />
+            <Cta href={funnelHref} placering="faq" {...ctaTekst(marked, "primaer")} />
           </div>
         )}
       </div>
