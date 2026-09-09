@@ -39,12 +39,34 @@ export const metadata = {
 };
 
 export default async function UkForside() {
-  // ⚠️ TALLENE HENTES FOR GB, OG VERIFICERES. Er GB-domænerne slukkede (som nu),
-  // svarer Edge Function'en DK, `hentOpgaveTal` opdager uenigheden og returnerer
-  // null — og bevis-bjælken renderer sig selv væk frem for at vise danske tal
-  // på en britisk side. Copy-filen §4: "hide the numbers rather than showing
-  // Danish numbers."
-  const tal = await hentOpgaveTal("GB", baseUrl("GB"));
+  // ⚠️ BEVIS-BJÆLKEN ER SLUKKET FOR GB, OG DET ER EN BESLUTNING (09-09-2026).
+  //
+  // Bjælken er ikke bare tal — den er en AKTIVITETS-PÅSTAND: "Birdly is already
+  // keeping watch", "2× a day", "new in the last 7 days". For GB har ingesten
+  // kørt NUL gange og kilden (FTS) er slukket, så hver af de påstande er usand
+  // i dag. Selv de sande snapshot-tal forfalder: de 301 britiske udbud kom ind
+  // i ét backfill, så "new in the last 7 days" ville svare 301 og derefter
+  // falde til 0 uden at noget var gået galt.
+  //
+  // ⚠️ HVORFOR EN EKSPLICIT GATE OG IKKE BARE `hentOpgaveTal`s selvkontrol.
+  // Den kontrol virker ved et TILFÆLDE i dag: GB-domænerne er slukkede, så
+  // funktionen svarer DK, uenigheden opdages, og bjælken forsvinder. Men den
+  // dag DNS peges og domænerne tændes, ville bjælken TÆNDE AF SIG SELV med
+  // frosne tal — uden at nogen havde besluttet det. Gaten skal hænge på om
+  // motoren kører, ikke på om domænet svarer.
+  //
+  // `GB.dataLever` sættes til true når FTS kører live. Så bliver bjælken
+  // ægte af sig selv, og der er ingen kode at huske at ændre.
+  // ⚠️ LÆSES SOM DATA, IKKE GENNEM EN NY EKSPORTERET FUNKTION.
+  // Første forsøg lagde en `dataLever()`-hjælper i lib/markets.js — og DA
+  // FLYTTEDE DEN DANSKE FORSIDE SIG. Ikke indholdet: titel, tal og FAQ-schema
+  // var identiske, men RSC-strømmens række-id'er blev nummereret om (FAQ-
+  // schemaet gik fra række "f" til "10", IconMark modsat). En ny eksport
+  // ændrer modulets form, og bundleren grupperer chunks anderledes.
+  // Kontrolprøven main-mod-main var ren, så det var ikke byggestøj.
+  // Nøglen aflæses derfor direkte på markedet — samme oplysning, ingen ny
+  // eksport, DK uberørt.
+  const tal = GB.dataLever ? await hentOpgaveTal("GB", baseUrl("GB")) : null;
 
   return (
     <div className="sg" lang="en-GB">
@@ -54,6 +76,7 @@ export default async function UkForside() {
           dansk tekst. Ankeret virker, fordi Motoren står længere nede på
           samme side. Den dag UK får sin egen støtteside, er det den ene prop. */}
       <Hero marked="GB" funnelHref="/uk/start" sekundaerHref="#hvordan" />
+      {/* Renderer sig selv væk når `tal` er null — se noten ovenfor. */}
       <BevisBjaelke marked="GB" tal={tal} />
       <Problemet marked="GB" />
       <Motoren marked="GB" funnelHref="/uk/start" />
