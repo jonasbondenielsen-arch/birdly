@@ -54,6 +54,8 @@ const IKKE_I_TEKSTEN = new Map([
   ["Show fewer questions",
    "FAQ-foldeknappens ANDEN tilstand. Den findes foerst i DOM'en efter et " +
    "klik; ved foerste visning staar der 'See all questions (N more)'."],
+  ["#hvordan", "Anker-ADRESSE, ikke tekst. Den staar i href-attributten."],
+  ["#problem", "Anker-adresse. Samme grund."],
   ["£0 today · 14 days free · No long-term lock-in",
    "Hoerer til BETALINGS-trinnet, ikke foerste skaerm. DK viser en trust-raekke " +
    "paa foerste skaerm (st-pre-trust); UK's tilsvarende er ikke bygget endnu - " +
@@ -110,7 +112,8 @@ const SIDER = [
   { sti: "/uk", regel: "alt-eller-intet",
     blokke: ["hero", "bevis", "trust", "telefon", "problemet", "motoren", "vaerdi",
              "offentlige", "overgang", "portal", "slut", "loesningen", "sms",
-             "koster", "regnestykket", "priser", "risiko", "faq"] },
+             "koster", "regnestykket", "priser", "risiko", "faq",
+             "nav", "footer"] },
   { sti: "/uk/start", regel: "skal-findes",
     skal: [
       en.funnel?.eyebrow,

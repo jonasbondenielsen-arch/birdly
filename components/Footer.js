@@ -28,7 +28,7 @@ const VIDEN_KLAR = KLARE_GUIDES.length > 0;
 // sig af det (09-09-2026). Support-adressen kommer nu ind som prop fra
 // serveren; ingen prop = den danske footer, praecis som foer.
 // Se den fulde note i Cta.js.
-export default function Footer({ supportMail = null }) {
+export default function Footer({ supportMail = null, ord = null }) {
   // ⚠️ GB FAAR IKKE DEN DANSKE FOOTER. Hvert eneste link herunder peger paa en
   // DANSK side (/priser, /viden, /brancher, betingelserne). Et britisk klik paa
   // "Priser" ville lande i dansk tekst - et doedt spor i bunden af siden.
@@ -38,13 +38,61 @@ export default function Footer({ supportMail = null }) {
   // "Report a problem". Indtil da staar der det ENESTE der er sandt og
   // nyttigt: hvor man skriver til os. Adressen kommer fra markedsmodellen,
   // ikke fra en streng her.
-  if (supportMail) {
+  // ══ IKKE-DANSK MARKED ══
+  //
+  // ⚠️ SAMME STRUKTUR OG SAMME KLASSER SOM DEN DANSKE. Foerste udgave var
+  // en enkelt mailadresse i en tom <footer className="ft"> - sandt, men ikke
+  // 1:1. Hele footer.css er scopet under `.birdly-footer`, saa den britiske
+  // footer faar den danske styling gratis ved at bruge de samme klasser:
+  // flinks → fdiv → fbottom (fleft / fcompany / fsocial).
+  //
+  // ⚠️ LINKENE ER ANKRE, IKKE RUTER. De danske punkter peger paa danske
+  // sider; de findes ikke paa engelsk. Fire ankre der ALLE findes paa /uk er
+  // bedre end ti links hvoraf seks er 404. "For your trade" er aldrig med:
+  // cleaning-only.
+  //
+  // ⚠️ JURA-BLOKKEN (.fjur) MANGLER MED VILJE I DETTE SKRIDT. De ti
+  // engelske juraside bygges i Fase B; indtil de findes, ville "Terms &
+  // Security" vaere et doedt link. Den tilfoejes naar siderne er der.
+  if (ord) {
     return (
-      <footer className="ft">
-        <div className="ft-wrap">
-          <p className="ft-fin">
-            <a href={`mailto:${supportMail}`}>{supportMail}</a>
-          </p>
+      <footer className="birdly-footer">
+        <div className="finner">
+          <nav className="flinks">
+            {ord.punkter.map((n) => <a key={n.href} href={n.href}>{n.label}</a>)}
+          </nav>
+
+          <div className="fdiv" />
+
+          <div className="fbottom">
+            <div className="fleft">
+              {/* ⚠️ "Birdly", IKKE "Birdly.dk" - copy-filen §27. Den danske
+                  footer saetter ".dk" i sit eget span; her er der ingen. */}
+              <Link href="/" className="fmark" aria-label={ord.brand}>
+                <BirdMark size={30} />
+                <span>{ord.brand}</span>
+              </Link>
+            </div>
+
+            {/* ⚠️ JURIDISK LINJE, IKKE MARKETING. Den maa aldrig antyde et
+                britisk selskab - copy-filen: "Do not show the Danish
+                CVR/address blindly as if it is a UK company." */}
+            <div className="fcompany">
+              {ord.firma}<br />
+              <a href={`mailto:${supportMail}`}>{supportMail}</a>
+            </div>
+
+            {SOCIALE.length > 0 && (
+              <div className="fsocial">
+                {SOCIALE.map((s) => (
+                  <a key={s.key} href={s.url} target="_blank" rel="noopener noreferrer"
+                    aria-label={`Birdly ${s.navn}`}>
+                    {IKON[s.key]}
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </footer>
     );

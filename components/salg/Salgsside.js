@@ -203,6 +203,10 @@ export default function Salgsside({ tal, funnelHref, fag = null, marked = "DK" }
     },
     slut: { ...O.slut, trust: O.trust, ctaPrimaer: cta },
     faq: O.faq && { ...O.faq, ctaPrimaer: cta },
+    nav: O.nav,
+    // Footeren faar linkene fra nav-blokken: det er de SAMME fire ankre, og to
+    // lister ville kunne skride fra hinanden.
+    footer: O.footer && { ...O.footer, punkter: O.nav?.punkter || [] },
   };
 
   // ⚠️ SAMLET HÉR, IKKE INDE I KOMPONENTEN. Vaerdi er klient-kode; alt hvad
@@ -236,6 +240,7 @@ export default function Salgsside({ tal, funnelHref, fag = null, marked = "DK" }
           funnelHref={funnelHref}
           marked={marked}
           {...(cta ? { ctaTekst: cta } : null)}
+          {...(ord ? { ord: ord.nav, wordmark: ord.footer?.brand } : null)}
         />
 
         <Hero funnelHref={funnelHref} overskrift={overskrift} under={under} eyebrow={eyebrow} chips={chips}
@@ -276,7 +281,7 @@ export default function Salgsside({ tal, funnelHref, fag = null, marked = "DK" }
 
         {/* Footeren faar adressen, ikke markedet - se noten i Footer.js.
             DK sender ingenting og faar husets egen footer. */}
-        <Footer {...(O ? { supportMail: MARKEDER[marked]?.supportMail } : null)} />
+        <Footer {...(O ? { supportMail: MARKEDER[marked]?.supportMail, ord: ord.footer } : null)} />
         {/* Samme regel: DK får NØJAGTIG de props komponenten fik før ordbogen
             fandtes — kun funnelHref. Både teksten og "vis opret-opgave" har
             danske standardværdier inde i komponenten. */}

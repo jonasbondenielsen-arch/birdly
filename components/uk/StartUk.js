@@ -175,7 +175,7 @@ export default function StartUk({ katalog, pris, hjem }) {
     // stod ustylet. DK wrapper i <main className="st-wrap"> med toppen INDENI.
     <main className="st-wrap" lang="en-GB">
       <div className="st-top">
-        <Logo height={30} />
+        <Logo height={30} wordmark={tekster("GB").footer.brand} />
         <a className="st-tilbage-link" href={hjem}>{T.tilbage}</a>
       </div>
 

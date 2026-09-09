@@ -114,6 +114,17 @@ const FRA_BRIEF = new Map([
    "'\"across England\" -> \"across the UK\"'. Bruges som og:description og " +
    "twitter:description paa /uk, saa et delt link ikke viser den arvede danske."],
 
+  // ── Footerens juridiske firmalinje. ──
+  // ⚠️ IKKE MARKETING - OG IKKE COPY-FILENS. Filen naegter bevidst at skrive
+  // den: "Do not show the Danish CVR/address blindly as if it is a UK company
+  // ... Confirm with legal/accounting advice before publication."
+  // Ordlyden kommer fra Jonas' brief 09-09-2026 og fra jura-pakkens note 3,
+  // ordret: den siger at Birdly DRIVES AF det danske selskab, og antyder
+  // dermed netop ikke et britisk.
+  ["Birdly is operated by Birdly.dk, CVR no. 35764283, Denmark.",
+   "Jonas' brief 09-09-2026: 'Base-linje: \"Birdly is operated by Birdly.dk, " +
+   "CVR no. 35764283, Denmark.\"' - identisk med jura-pakkens note 3."],
+
   // ── GBP-baandene. Jonas' brief 09-09-2026, punkt 4. ──
   // ⚠️ IKKE BARE ETIKETTER. Taersklerne bindes til max_amount i match-reglen,
   // praecis som DK's baand. Aendrer nogen et tal her, aendrer de hvad kunden
@@ -168,6 +179,12 @@ const UNDTAGET = new Map([
              "frem for 'Step 3 of 6' (se noten i components/Start.js)."],
   ["etapeord", "Skjult skaermlaeser-label: ordet 'Stage' i 'Stage 2 of 3'. UI-chrome."],
   ["etapeaf", "Skjult skaermlaeser-label: ordet 'of'. UI-chrome."],
+
+  // ── Nav- og footer-ankre. ──
+  // Href'erne er ADRESSER (#hvordan, #priser), ikke tekst. De staar i
+  // Sektioner.js som id'er og deles med DK; copy-filen har naturligvis ingen
+  // URL'er. Etiketterne ved siden af ER fra filen (§27) og tjekkes normalt.
+  ["href", "Anker-adresse (#hvordan, #priser, #problem, #faq), ikke synlig tekst."],
 ]);
 
 const { en } = await import("../lib/tekster/en.js").catch(() => import("./lib/tekster/en.js"));

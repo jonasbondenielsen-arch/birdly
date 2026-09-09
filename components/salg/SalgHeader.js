@@ -35,27 +35,29 @@ import { OPRET_OPGAVE_I_NAV } from "../../lib/opretOpgave";
 // handlinger bliver stående — det er dem der betyder noget på en telefon, og
 // resten af sitet nås fra footeren. En menu ingen kan åbne er værre end ingen menu.
 // ============================================================================
-export default function SalgHeader({ funnelHref, marked = "DK", ctaTekst = null }) {
-  // ⚠️ GB FAAR INGEN NAV-LINKS, OG DET ER ET VALG - ikke en forglemmelse.
-  // Alle fem punkter peger paa DANSKE sider (/sadan-virker-det, /brancher,
-  // /priser, /hvorfor-birdly, /viden), og "Opret opgave" ogsaa. Et britisk
-  // klik paa "Priser" ville lande i dansk tekst.
+export default function SalgHeader({ funnelHref, marked = "DK", ctaTekst = null, ord = null, wordmark = null }) {
+  // ⚠️ GB HAR NU SIT EGET NAV (09-09-2026). Det havde ingen indtil da, og
+  // det var rigtigt paa det tidspunkt: alle fem danske punkter peger paa
+  // DANSKE sider, og et britisk klik paa "Priser" ville lande i dansk tekst.
   //
-  // ⚠️ OG DE MAA HELLER IKKE BARE OVERSAETTES. Copy-filen §3 har labels
-  // ("How it works", "Pricing", "Guides"), men SIDERNE findes ikke paa
-  // engelsk endnu - et link til en 404 er vaerre end intet link.
-  // ⚠️ "For your trade" skal desuden ALDRIG med paa UK: markedet er
-  // cleaning-only, og en brancheoversigt ville love 20 fag vi ikke har.
-  //
-  // Headeren beholder logo og CTA, saa siden faar sin topbar og hero'en ikke
-  // starter i y=0. Fase B giver UK sine egne sider - og saa sin egen nav.
-  const visNav = marked === "DK";
+  // Nu peger de britiske punkter paa ANKRE paa /uk i stedet - fire punkter der
+  // alle findes. Ingen doede links, og ingen "For your trade": markedet er
+  // cleaning-only, og en brancheoversigt ville love tyve fag vi ikke har.
+  // Listen bor i ordbogen (lib/tekster/en.js → nav.punkter).
+  const navPunkter = ord?.punkter || null;
 
   return (
     <header className="sg-top">
       <div className="sg-wrap sg-bar">
-        <Logo height={32} />
-        {visNav && (
+        <Logo height={32} {...(wordmark ? { wordmark } : null)} />
+        {/* ⚠️ ÉT UDTRYK, IKKE TO SØSKENDE. Første udgave havde den danske nav
+            og den britiske som hver sit `{cond && …}`. For DK gav det
+            ét <nav> OG et `null` — og et null optager stadig en plads i
+            RSC-strømmen. Fire danske sider flyttede sig af det (målt
+            09-09-2026), uden at noget synligt ændrede sig.
+            Samme lektie som `ord={null}`: en tom værdi er ikke ingen værdi.
+            Med én ternary har DK nøjagtig det ene barn den havde før. */}
+        {marked === "DK" ? (
           <nav className="sg-nav">
             <Link href="/sadan-virker-det">Sådan virker det</Link>
             <Link href="/brancher">Brancher</Link>
@@ -63,9 +65,14 @@ export default function SalgHeader({ funnelHref, marked = "DK", ctaTekst = null 
             <Link href="/hvorfor-birdly">Hvorfor Birdly</Link>
             <Link href="/viden">Viden</Link>
           </nav>
-        )}
+        ) : navPunkter ? (
+          /* Britisk nav: samme plads, samme klasse, ankre i stedet for ruter. */
+          <nav className="sg-nav">
+            {navPunkter.map((n) => <a key={n.href} href={n.href}>{n.label}</a>)}
+          </nav>
+        ) : null}
         <div className="sg-hoejre">
-          {visNav && OPRET_OPGAVE_I_NAV && (
+          {marked === "DK" && OPRET_OPGAVE_I_NAV && (
             <Link href="/opret-opgave" className="sg-navcta-2">Opret opgave</Link>
           )}
           {/* Variant "nav": samme tekst og samme klik-sporing som sidens øvrige
