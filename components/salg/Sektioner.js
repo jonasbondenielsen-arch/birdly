@@ -4,6 +4,7 @@ import SmsTelefon from "./SmsTelefon";
 import FaqListe from "./FaqListe";
 import { Flueben, Kryds, Oeje, Bunke, Ur } from "./Ikoner";
 import { tekster, t } from "../../lib/tekster";
+import { MARKEDER } from "../../lib/markets";
 import { daTal, fmtOpdateret } from "../../lib/opgaveTal";
 import { PLAN, priceText, YEARLY_SAVING, TRIAL_DAYS } from "../../lib/pakke";
 import {
@@ -54,6 +55,39 @@ function hus(marked, husets, sti) {
   return marked === "DK" ? husets : t(marked, sti);
 }
 
+/**
+ * Markedets pris-tekster — REGNET, ikke skrevet.
+ *
+ * ⚠️ DANMARK RØRES IKKE. DK's beløb kommer fortsat fra lib/pakke.js, som er
+ * husets enekilde og bundet til Frisbii. Den her funktion kaldes kun for
+ * ANDRE markeder, og den regner det samme som pakke.js gør for DK:
+ * månedsækvivalent, besparelse og hvor mange måneder året svarer til.
+ *
+ * ⚠️ LOKAL FUNKTION, IKKE EN NY EKSPORT. En ny eksport i et delt modul er
+ * ikke gratis her: 09-09-2026 flyttede netop det DK-forsidens bytes, fordi
+ * bundleren grupperede chunks anderledes. Se noten i app/uk/page.js.
+ *
+ * ⚠️ ALDRIG KURS-KONVERTERET. £59/£590 er Jonas' beslutning, ikke 499 kr.
+ * omregnet — se lib/markets.js.
+ */
+function prisFor(marked) {
+  const p = MARKEDER[marked]?.pris;
+  if (!p) return null;
+  const sym = MARKEDER[marked].valutaSymbol;
+  const maanedsTotal = p.maaned * 12;
+  const spar = maanedsTotal - p.aar;
+  return {
+    aar: `${sym}${p.aar}/year`,
+    maaned: `${sym}${p.maaned}/month`,
+    // Regnet: 590/12 = 49,17 → "around £49/month".
+    prMaaned: `${sym}${Math.round(p.aar / 12)}/month`,
+    spar: `${sym}${spar}`,
+    // Betal for N måneder, få 12. 590/59 = 10 præcis.
+    maanederBetalt: Math.round(p.aar / p.maaned),
+    proeveDage: p.proeveDage,
+  };
+}
+
 function TrustRaekke({ mork = false, marked = "DK" }) {
   // DK bruger husets TRUST fra salgTekst.js UAENDRET; andre markeder har deres
   // egen raekke i ordbogen. Der oversaettes ikke i koden.
@@ -78,11 +112,25 @@ function TrustRaekke({ mork = false, marked = "DK" }) {
  * REFUSION, ikke om en fire gange længere prøveperiode. Se noten i
  * lib/salgTekst.js: det er den letteste og dyreste fejl at lave her.
  */
-export function GarantiFin({ klasse = "sg-fin" }) {
+export function GarantiFin({ klasse = "sg-fin", marked = "DK" }) {
+  // ⚠️ DANMARKS GARANTI-TEKST KOMMER FORTSAT FRA salgTekst.js, UROERT.
+  // CLAUDE.md: al garanti-tekst har EEN kilde. En kopi i ordbogen ville vaere
+  // et andet sted den kunne komme til at staa anderledes - og netop den
+  // saetning er den dyreste at tage fejl af.
+  //
+  // ⚠️ GB's UDGAVE ER COPY-FILENS EGEN "Working marketing version" (§4).
+  // Den er MED efter Jonas' beslutning 09-09-2026: garantien er et rigtigt
+  // UK-loefte, praecis som DK, og er ikke gated paa faerdig jura.
+  // ⚠️ LINKET peger paa en britisk betingelses-side der endnu er DRAFT. Teksten
+  // maa vises, men den skal kunne slaas op - se pre-live-tjeklisten.
+  const praecis = hus(marked, GARANTI.praecis, "risiko.garantiPraecis");
+  const forbehold = hus(marked, GARANTI.forbehold, "risiko.garantiForbehold");
+  const linkTekst = hus(marked, GARANTI.linkTekst, "risiko.garantiLink");
+  if (!praecis) return null;
   return (
     <p className={klasse}>
-      {GARANTI.praecis} {GARANTI.forbehold}{" "}
-      <a href={GARANTI_LINK} target="_blank" rel="noreferrer">{GARANTI.linkTekst}</a>
+      {praecis} {forbehold}{" "}
+      <a href={GARANTI_LINK} target="_blank" rel="noreferrer">{linkTekst}</a>
     </p>
   );
 }
@@ -364,45 +412,42 @@ const SMS_EKSEMPEL = {
 };
 
 export function SmsDemo({ fag = "rengoring", marked = "DK" }) {
-  // ⚠️ ENDNU IKKE OVERSAT — SEKTIONEN UDELADER SIG SELV PAA ANDRE MARKEDER.
-  // Hellere en manglende sektion end en dansk. Det er samme regel som
-  // lib/tekster/index.js: en dansk saetning paa en britisk side er VAERRE end
-  // en manglende, for den ser ud som om den hoerer til.
-  // Naar sektionens engelske copy findes, flyttes strengene til ordbogen og
-  // den her linje ryger. Indtil da er DK bit-for-bit uroert: `marked` er "DK",
-  // og resten af funktionen er ikke aendret med eet tegn.
-  if (marked !== "DK") return null;
-
-  const e = SMS_EKSEMPEL[fag] || SMS_EKSEMPEL.rengoring;
+  const T = tekster(marked).sms;
+  // ⚠️ TELEFONENS INDHOLD FOELGER MARKEDET, IKKE FAGET, PAA GB.
+  // SMS_EKSEMPEL er DK's 20 fag; GB har eet. Paa andre markeder tages
+  // eksemplet derfor fra ordbogens `telefon`-blok, som SmsTelefon selv
+  // slaar op naar den ikke faar props.
+  const e = marked === "DK" ? (SMS_EKSEMPEL[fag] || SMS_EKSEMPEL.rengoring) : null;
   return (
     <section className="sg-sek">
       <div className="sg-wrap sg-demogrid">
         <div>
           <SmsTelefon
-            titel="Nyt Birdly-match"
-            fag={e.fag}
-            sted={e.sted}
-            hvad={e.hvad}
-            frist="18/09"
+            marked={marked}
+            titel={T.telefonTitel}
+            fag={e?.fag}
+            sted={e?.sted}
+            hvad={e?.hvad}
+            frist={T.telefonFrist}
           />
         </div>
         <div>
-          <span className="sg-kick">Beskeden</span>
-          <h2 className="sg-big">{SMS_LINJE}</h2>
+          <span className="sg-kick">{T.kick}</span>
+          <h2 className="sg-big">{hus(marked, SMS_LINJE, "sms.linje")}</h2>
+          {/* ⚠️ TO TEKSTNODER, PRAECIS SOM FOER. Literalen bar selv sit
+              afsluttende mellemrum foran udtrykket; `+ " "` bevarer baade
+              mellemrummet og nodestrukturen. React saetter <!-- --> mellem to
+              nabo-tekstnoder, og et ekstra {" "} ville have givet tre. */}
           <p className="sg-lead">
-            Birdly finder automatisk relevante offentlige og private opgaver til jeres
-            virksomhed. {SMS_UNDER}
+            {T.lead1 + " "}{hus(marked, SMS_UNDER, "sms.lead2")}
           </p>
           {/* ⚠️ ÉN GANG PÅ HELE SIDEN. Sætningen er stærk netop fordi den er
               sjælden; står den tre steder, bliver den en talemåde. */}
           <p className="sg-afslut" style={{ textAlign: "left", margin: "18px 0 0", maxWidth: "34ch" }}>
-            {IKKE_HOLDE_OEJE}
+            {hus(marked, IKKE_HOLDE_OEJE, "sms.ikkeHoldeOeje")}
           </p>
           <ul className="sg-punkter">
-            <li><Flueben size={20} /> Kort resumé</li>
-            <li><Flueben size={20} /> Frist</li>
-            <li><Flueben size={20} /> Direkte link</li>
-            <li><Flueben size={20} /> Bud-skabelon hvor relevant</li>
+            {T.punkter.map((x) => <li key={x}><Flueben size={20} />{" " + x}</li>)}
           </ul>
         </div>
       </div>
@@ -631,35 +676,24 @@ export function ProblemPris({ fag = "rengoring", marked = "DK" }) {
  * på "her er hvad vi kan" og "her er hvad I bestemmer".
  */
 export function Loesningen({ funnelHref, marked = "DK" }) {
-  // ⚠️ ENDNU IKKE OVERSAT — SEKTIONEN UDELADER SIG SELV PAA ANDRE MARKEDER.
-  // Hellere en manglende sektion end en dansk. Det er samme regel som
-  // lib/tekster/index.js: en dansk saetning paa en britisk side er VAERRE end
-  // en manglende, for den ser ud som om den hoerer til.
-  // Naar sektionens engelske copy findes, flyttes strengene til ordbogen og
-  // den her linje ryger. Indtil da er DK bit-for-bit uroert: `marked` er "DK",
-  // og resten af funktionen er ikke aendret med eet tegn.
-  if (marked !== "DK") return null;
-
+  const T = tekster(marked).loesningen;
   return (
     <section className="sg-sek sg-blaa">
       <div className="sg-wrap sg-midt">
-        <span className="sg-kick">Løsningen</span>
-        <h2 className="sg-big">Birdly leder.<br /><span style={{ color: "var(--teal)" }}>I får besked.</span></h2>
+        <span className="sg-kick">{T.kick}</span>
+        <h2 className="sg-big">{T.overskrift}<br /><span style={{ color: "var(--teal)" }}>{T.overskrift2}</span></h2>
 
         <ul className="sg-fix">
-          <li><Flueben size={19} /> Jeres fag</li>
-          <li><Flueben size={19} /> Jeres område</li>
-          <li><Flueben size={19} /> Jeres ønskede opgavestørrelse</li>
-          <li><Flueben size={19} /> Private og offentlige muligheder</li>
+          {T.punkter.map((x) => <li key={x}><Flueben size={19} />{" " + x}</li>)}
         </ul>
 
         <p className="sg-lead">
-          Når noget passer, sender Birdly det direkte på SMS og mail.
+          {T.lead}
         </p>
-        <p className="sg-afslut">Mindre søgning. Flere relevante muligheder.</p>
+        <p className="sg-afslut">{T.afslut}</p>
 
         <div className="sg-cta-row" style={{ justifyContent: "center" }}>
-          <Cta href={funnelHref} placering="loesning" />
+          <Cta href={funnelHref} placering="loesning" marked={marked} />
         </div>
       </div>
     </section>
@@ -729,41 +763,44 @@ export function FagVaelgerKort({ marked = "DK" } = {}) {
 // ---------------------------------------------------- 7 · RISIKO FJERNET
 
 export function RisikoFjernet({ funnelHref, marked = "DK" }) {
-  // ⚠️ ENDNU IKKE OVERSAT — SEKTIONEN UDELADER SIG SELV PAA ANDRE MARKEDER.
-  // Hellere en manglende sektion end en dansk. Det er samme regel som
-  // lib/tekster/index.js: en dansk saetning paa en britisk side er VAERRE end
-  // en manglende, for den ser ud som om den hoerer til.
-  // Naar sektionens engelske copy findes, flyttes strengene til ordbogen og
-  // den her linje ryger. Indtil da er DK bit-for-bit uroert: `marked` er "DK",
-  // og resten af funktionen er ikke aendret med eet tegn.
-  if (marked !== "DK") return null;
-
+  const T = tekster(marked).risiko;
   return (
     <section className="sg-sek sg-blaa" id="risiko">
       <div className="sg-wrap">
         <div className="sg-risiko-kort">
-          <span className="sg-kick">Prøv det uden risiko</span>
+          <span className="sg-kick">{T.kick}</span>
           {/* ⚠️ OVERSKRIFTEN NÆVNER DE 14 DAGE, IKKE DE 60. Prøveperioden er 14
               dage; matchgarantiens 60 dage handler om refusion og står i
               <GarantiFin> lige nedenfor. Smelter de sammen, lover overskriften
               en prøveperiode der er fire gange længere end den er. */}
-          <h2>{GARANTI.overskrift}</h2>
+          <h2>{hus(marked, GARANTI.overskrift, "risiko.overskrift")}</h2>
           <p className="sg-lead" style={{ margin: "14px auto 0" }}>
-            Se først, hvad Birdly finder til jeres virksomhed. 0 kr. i dag.
+            {T.lead}
           </p>
 
           <div className="sg-fire">
-            <div className="sg-fire-item"><Flueben size={18} /> {TRIAL_DAYS} dage gratis</div>
-            <div className="sg-fire-item"><Flueben size={18} /> Ingen binding</div>
-            <div className="sg-fire-item"><Flueben size={18} /> Ingen portal</div>
-            <div className="sg-fire-item"><Flueben size={18} /> Opsætning på få minutter</div>
+            {/* ⚠️ FOERSTE PUNKT ER DK's EGET UDTRYK, UROERT. Det bygges af
+                TRIAL_DAYS fra lib/pakke.js, og dets nodestruktur (ikon +
+                mellemrum + tal + tekst) maa ikke aendres. Andre markeder faar
+                punktet som EEN streng fra ordbogen. */}
+            {marked === "DK" ? (
+              <div className="sg-fire-item"><Flueben size={18} /> {TRIAL_DAYS} dage gratis</div>
+            ) : (
+              <div className="sg-fire-item"><Flueben size={18} />{" " + T.proeveDage}</div>
+            )}
+            {/* ⚠️ {" " + x} OG IKKE " {x}". Originalen havde EEN tekstnode
+                (" Ingen binding"); to nabo-noder ville give React's
+                <!-- -->-markoer og flytte DK's bytes. */}
+            {T.punkter.map((x) => (
+              <div className="sg-fire-item" key={x}><Flueben size={18} />{" " + x}</div>
+            ))}
           </div>
 
           <div className="sg-cta-row" style={{ justifyContent: "center" }}>
-            <Cta href={funnelHref} placering="risiko" />
+            <Cta href={funnelHref} placering="risiko" marked={marked} />
           </div>
 
-          <GarantiFin />
+          <GarantiFin marked={marked} />
         </div>
       </div>
     </section>
@@ -876,26 +913,26 @@ export function IkkePortal({ marked = "DK" }) {
 // -------------------------------------------------------------- 10 · PRISER
 
 export function Priser({ funnelHref, medOverskrift = true, marked = "DK" }) {
-  // ⚠️ ENDNU IKKE OVERSAT — SEKTIONEN UDELADER SIG SELV PAA ANDRE MARKEDER.
-  // Hellere en manglende sektion end en dansk. Det er samme regel som
-  // lib/tekster/index.js: en dansk saetning paa en britisk side er VAERRE end
-  // en manglende, for den ser ud som om den hoerer til.
-  // Naar sektionens engelske copy findes, flyttes strengene til ordbogen og
-  // den her linje ryger. Indtil da er DK bit-for-bit uroert: `marked` er "DK",
-  // og resten af funktionen er ikke aendret med eet tegn.
-  if (marked !== "DK") return null;
+  const T = tekster(marked).priser;
+  // ⚠️ TO PRIS-KILDER, OG DE MÅ IKKE BLANDES.
+  //   DK  lib/pakke.js  — husets enekilde, bundet til Frisbii. RØRES IKKE.
+  //   GB  markets.js    — £59/£590, Jonas' beslutning, aldrig kurs-konverteret.
+  // `p` er null for DK, og hver DK-linje nedenfor er derfor ord for ord den
+  // samme som før.
+  const p = marked === "DK" ? null : prisFor(marked);
+  if (marked !== "DK" && !p) return null;
 
   // ⚠️ REGNET, IKKE SKREVET: 4.990 / 12 = 415,83 → "ca. 416 kr./md.". Et
   // håndskrevet tal ville stå forkert dagen efter en prisændring.
-  const prMaaned = Math.round(PLAN.yearly / 12).toLocaleString("da-DK");
+  const prMaaned = Math.round(PLAN.yearly / 12).toLocaleString("da-DK");  // kun DK
 
   return (
     <section className="sg-sek sg-graa" id="priser">
       <div className="sg-wrap">
         {medOverskrift && (
           <div className="sg-midt">
-            <span className="sg-kick">Én pakke. Alt inkluderet.</span>
-            <h2 className="sg-big">Prøv gratis. Behold Birdly, hvis det giver mening.</h2>
+            <span className="sg-kick">{T.kick}</span>
+            <h2 className="sg-big">{T.overskrift}</h2>
           </div>
         )}
 
@@ -913,47 +950,66 @@ export function Priser({ funnelHref, medOverskrift = true, marked = "DK" }) {
             ══════════════════════════════════════════════════════════════════ */}
         <div className="sg-tilbud">
           <div className="sg-plan sg-plan-frem">
-            <span className="sg-plan-badge">Bedst værdi</span>
-            <span className="sg-plan-navn">Årligt</span>
-            <div className="sg-pris-beloeb">{priceText.yearly}</div>
-            <small>ekskl. moms · ca. {prMaaned} kr./md.</small>
+            <span className="sg-plan-badge">{T.badge}</span>
+            <span className="sg-plan-navn">{T.planNavn}</span>
+            <div className="sg-pris-beloeb">{p ? p.aar : priceText.yearly}</div>
+            {/* ⚠️ DK's linje er UÆNDRET; GB's samles af regnede tal. */}
+            <small>{p ? `${T.exVat} · ${T.omkring} ${p.prMaaned}` : `ekskl. moms · ca. ${prMaaned} kr./md.`}</small>
 
             {/* "Betal for 10 måneder — få 12" er bogstaveligt sandt: 4.990 ÷ 499
                 er præcis 10. Besparelsen kommer fra YEARLY_SAVING. */}
             <div className="sg-plan-spar">
-              Betal for 10 måneder — få 12. Spar {YEARLY_SAVING.amount.toLocaleString("da-DK")} kr.
+              {p
+                ? `Pay for ${p.maanederBetalt} months. Get 12. Save ${p.spar}.`
+                : `Betal for 10 måneder — få 12. Spar ${YEARLY_SAVING.amount.toLocaleString("da-DK")} kr.`}
             </div>
 
-            <ul className="sg-plan-liste">
-              <li><Flueben size={17} /> {TRIAL_DAYS} dage gratis</li>
-              <li><Flueben size={17} /> Offentlige + private opgaver</li>
-              <li><Flueben size={17} /> SMS + mail ved match</li>
-              <li><Flueben size={17} /> Alle relevante kriterier</li>
-              <li><Flueben size={17} /> {GARANTI.kort}</li>
-              <li><Flueben size={17} /> Ingen binding</li>
-            </ul>
+            {/* ⚠️ DK's SEKS LINJER ER UROERT. GB's samme seks bygges af
+                ordbogen plus de to der har EEN kilde: proeveperioden og
+                garantiens korte navn. */}
+            {p ? (
+              <ul className="sg-plan-liste">
+                <li><Flueben size={17} />{" " + tekster(marked).risiko.proeveDage}</li>
+                {T.punkter.map((x) => <li key={x}><Flueben size={17} />{" " + x}</li>)}
+                <li><Flueben size={17} />{" " + (t(marked, "trust.3") || "")}</li>
+                <li><Flueben size={17} />{" " + tekster(marked).risiko.punkter[0]}</li>
+              </ul>
+            ) : (
+              <ul className="sg-plan-liste">
+                <li><Flueben size={17} /> {TRIAL_DAYS} dage gratis</li>
+                <li><Flueben size={17} /> Offentlige + private opgaver</li>
+                <li><Flueben size={17} /> SMS + mail ved match</li>
+                <li><Flueben size={17} /> Alle relevante kriterier</li>
+                <li><Flueben size={17} /> {GARANTI.kort}</li>
+                <li><Flueben size={17} /> Ingen binding</li>
+              </ul>
+            )}
 
-            <Cta href={funnelHref} placering="priser-aar" bred stor>
-              Start {TRIAL_DAYS} dage gratis
+            <Cta href={funnelHref} placering="priser-aar" bred stor marked={marked}>
+              {p ? T.ctaAar : <>Start {TRIAL_DAYS} dage gratis</>}
             </Cta>
-            <p className="sg-plan-fin">{VAERDI_ANKER}</p>
+            <p className="sg-plan-fin">{hus(marked, VAERDI_ANKER, "priser.vaerdiAnker")}</p>
           </div>
 
           {/* Måneden: tydeligt tilgængelig, visuelt sekundær. */}
           <div className="sg-maaned">
             <div>
-              <b>Foretrækker I månedlig betaling?</b>
-              <span>{priceText.monthly} ekskl. moms · {TRIAL_DAYS} dage gratis · ingen binding</span>
+              <b>{T.maanedSpm}</b>
+              <span>
+                {p
+                  ? `${p.maaned} ${T.exVat} · ${tekster(marked).risiko.proeveDage} · ${T.ingenBinding}`
+                  : `${priceText.monthly} ekskl. moms · ${TRIAL_DAYS} dage gratis · ingen binding`}
+              </span>
             </div>
-            <Cta href={funnelHref} placering="priser-maaned" variant="ghost">
-              Vælg månedsbetaling
+            <Cta href={funnelHref} placering="priser-maaned" variant="ghost" marked={marked}>
+              {T.ctaMaaned}
             </Cta>
           </div>
         </div>
 
         <div className="sg-garantiboks">
-          <p><b>{GARANTI.overskrift}</b></p>
-          <GarantiFin klasse="sg-fin sg-fin-midt" />
+          <p><b>{hus(marked, GARANTI.overskrift, "risiko.overskrift")}</b></p>
+          <GarantiFin klasse="sg-fin sg-fin-midt" marked={marked} />
         </div>
       </div>
     </section>
