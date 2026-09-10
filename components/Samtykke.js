@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { KATEGORIER, hentSamtykke, gemSamtykke } from "../lib/samtykke";
+import { ukKontekst } from "../lib/uk/samtykkeTekst";
 
 // Kundens egne sider holdes fri. Samlesiden er live for betalende kunder, og en bjælke
 // i bunden dér ville være en ændring af noget der virker — uden at vinde noget: vi
@@ -25,6 +26,11 @@ const KUNDESIDER = ["/mine-opgaver/", "/udbud/", "/u/"];
 
 export default function Samtykke() {
   const [vis, setVis] = useState(false);
+  // ⚠️ MARKEDET AFGOERES EFTER MOUNT, ikke under render. Banneret
+  // renderer intet paa serveren, saa der er ingen hydreringsforskel at frygte
+  // - og DK's HTML kan derfor slet ikke paavirkes af det her. Se noten i
+  // lib/uk/samtykkeTekst.js om hvorfor markedet ikke laeses i rod-layoutet.
+  const [uk, setUk] = useState(null);
   const [detaljer, setDetaljer] = useState(false);
   const [valg, setValg] = useState({ statistik: false, marketing: false });
   const boksRef = useRef(null);
@@ -36,6 +42,7 @@ export default function Samtykke() {
     // klienten ikke renderer forskelligt.
     // Navigerer man fra en offentlig side ind på sin egen opgaveliste, skal bjælken væk
     // igen — ellers ville den følge med over, fordi layoutet ikke remounter.
+    setUk(ukKontekst());
     if (paaKundeside) { setVis(false); return; }
     if (hentSamtykke() === null) setVis(true);
     const igen = () => setVis(hentSamtykke() === null);
@@ -84,7 +91,7 @@ export default function Samtykke() {
       padding: "26px 18px 16px",
       pointerEvents: "none",
     }}>
-      <div ref={boksRef} role="region" aria-label="Samtykke til cookies" style={{
+      <div ref={boksRef} role="region" aria-label={uk ? uk.t.regionLabel : "Samtykke til cookies"} style={{
         pointerEvents: "auto",
         maxWidth: 980, margin: "0 auto",
         background: "var(--white)",
@@ -95,27 +102,27 @@ export default function Samtykke() {
       }}>
         <div style={{ display: "flex", gap: 18, alignItems: "center", flexWrap: "wrap" }}>
           <p style={{ margin: 0, flex: "1 1 380px", fontSize: 14.5, lineHeight: 1.6, color: "var(--navy)" }}>
-            Vi bruger cookies til at få siden til at virke, og — hvis du siger ja — til at måle om
-            vores annoncer rammer rigtigt. Du bestemmer selv.{" "}
-            <Link href="/cookiepolitik" style={{ color: "var(--teal)", fontWeight: 600, textDecoration: "underline" }}>Cookiepolitik</Link>
+            {uk ? uk.t.brod : <>Vi bruger cookies til at få siden til at virke, og — hvis du siger ja — til at måle om
+            vores annoncer rammer rigtigt. Du bestemmer selv.</>}{" "}
+            <Link href={uk ? uk.cookieHref : "/cookiepolitik"} style={{ color: "var(--teal)", fontWeight: 600, textDecoration: "underline" }}>{uk ? uk.t.cookieLink : "Cookiepolitik"}</Link>
             {" · "}
-            <Link href="/privatlivspolitik" style={{ color: "var(--teal)", fontWeight: 600, textDecoration: "underline" }}>Privatlivspolitik</Link>
+            <Link href={uk ? uk.privatlivHref : "/privatlivspolitik"} style={{ color: "var(--teal)", fontWeight: 600, textDecoration: "underline" }}>{uk ? uk.t.privatlivLink : "Privatlivspolitik"}</Link>
           </p>
 
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
             <button type="button" onClick={() => setDetaljer((d) => !d)}
               style={{ background: "none", border: "none", color: "var(--navy-soft)", fontSize: 13.5, fontWeight: 600, cursor: "pointer", textDecoration: "underline", padding: "10px 4px", fontFamily: "inherit" }}>
-              {detaljer ? "Skjul valg" : "Tilpas"}
+              {detaljer ? (uk ? uk.t.skjul : "Skjul valg") : (uk ? uk.t.tilpas : "Tilpas")}
             </button>
             {/* Afvis står FØR accepter og har samme vægt. Et "kun nødvendige" der er
                 gemt væk som et gråt link gør samtykket mindre frit end det ser ud. */}
             <button type="button" onClick={() => gem({ statistik: false, marketing: false })}
               style={{ background: "var(--white)", color: "var(--navy)", border: "1.5px solid var(--line)", borderRadius: 12, padding: "11px 18px", fontSize: 14.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
-              Kun nødvendige
+              {uk ? uk.t.kunNoedvendige : "Kun nødvendige"}
             </button>
             <button type="button" onClick={() => gem({ statistik: true, marketing: true })}
               style={{ background: "var(--teal)", color: "var(--white)", border: 0, borderRadius: 12, padding: "11px 20px", fontSize: 14.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
-              Accepter alle
+              {uk ? uk.t.accepterAlle : "Accepter alle"}
             </button>
           </div>
         </div>
@@ -132,15 +139,15 @@ export default function Samtykke() {
                   style={{ marginTop: 3, width: 17, height: 17, accentColor: "var(--teal)" }}
                 />
                 <span>
-                  <b style={{ fontSize: 14.5, color: "var(--navy)" }}>{k.navn}</b>
-                  {k.laast && <span style={{ fontSize: 12.5, color: "var(--navy-soft)" }}> · altid aktiv</span>}
-                  <div style={{ fontSize: 13.5, color: "var(--navy-soft)", lineHeight: 1.55 }}>{k.tekst}</div>
+                  <b style={{ fontSize: 14.5, color: "var(--navy)" }}>{uk ? uk.t.kategorier[k.id]?.navn ?? k.navn : k.navn}</b>
+                  {k.laast && <span style={{ fontSize: 12.5, color: "var(--navy-soft)" }}>{uk ? uk.t.altidAktiv : " · altid aktiv"}</span>}
+                  <div style={{ fontSize: 13.5, color: "var(--navy-soft)", lineHeight: 1.55 }}>{uk ? uk.t.kategorier[k.id]?.tekst ?? k.tekst : k.tekst}</div>
                 </span>
               </label>
             ))}
             <button type="button" onClick={() => gem(valg)}
               style={{ marginTop: 10, background: "var(--navy)", color: "var(--white)", border: 0, borderRadius: 12, padding: "10px 18px", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
-              Gem mit valg
+              {uk ? uk.t.gem : "Gem mit valg"}
             </button>
           </div>
         )}

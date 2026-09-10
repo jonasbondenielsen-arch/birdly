@@ -197,6 +197,22 @@ const UNDTAGET = new Map([
   ["drafttitel", "DRAFT-bannerets overskrift. Ramme, ikke jura."],
   ["draftbrod", "DRAFT-bannerets forklaring. Ramme, ikke jura."],
   ["todolabel", "DRAFT-bannerets etiket foran de uudfyldte placeholders."],
+  ["rapporter", "Jura-pakkens note 11: 'Add a visible Report a problem route'. " +
+                "Notens egen ordlyd; selve indholdet er Private Job Terms §12."],
+  ["rapporterhref", "Rute, ikke synlig tekst."],
+  ["rapporterlink", "Navigation videre til de fulde Private Job Terms. Ramme, ikke jura."],
+
+  // ── Cookie-bannerets knapper. ──
+  // ⚠️ Copy-filen §29 skriver banner-teksten og de to link-navne, men om
+  // knapperne kun: "Buttons should use standard UK consent wording" - en
+  // instruks, ikke ordlyd. De seks strenge er derfor britisk standardsprog
+  // skrevet af CC, samme kategori som FAQ-foldeknappen.
+  ["tilpas", "Cookie-banner: 'Customise'. UI-chrome, se §29."],
+  ["kunnoedvendige", "Cookie-banner: 'Necessary only'. UI-chrome."],
+  ["accepteralle", "Cookie-banner: 'Accept all'. UI-chrome."],
+  ["gem", "Cookie-banner: 'Save my choices'. UI-chrome."],
+  ["altidaktiv", "Cookie-banner: ' · always on' ved den laaste kategori. UI-chrome."],
+  ["regionlabel", "Skjult aria-label paa banneret. Ikke synlig copy."],
 ]);
 
 const { en } = await import("../lib/tekster/en.js").catch(() => import("./lib/tekster/en.js"));

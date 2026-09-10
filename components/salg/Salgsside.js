@@ -212,6 +212,9 @@ export default function Salgsside({ tal, funnelHref, fag = null, marked = "DK" }
       // Hub'ens PUBLIKE adresse. Internt hedder den /uk/terms, men proxy'en
       // rewriter getbirdly.co.uk/terms dertil - kunden ser aldrig /uk.
       juraHref: "/terms",
+      // Note 11: synlig "Report a problem"-vej for private opgaver.
+      rapporterHref: "/report-a-problem",
+      rapporter: O.jura?.rapporter,
     },
   };
 

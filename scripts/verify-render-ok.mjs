@@ -82,6 +82,7 @@ const RUTER = [
   ["/uk/security", "sikkerhed"],
   ["/uk/sub-processors", "underdatabehandlere"],
   ["/uk/data-processing-agreement", "DPA"],
+  ["/uk/report-a-problem", "note 11: synlig rapporter-vej"],
 ];
 
 // ⚠️ FEJLFRASERNE SOEGES I DEN VISTE TEKST, IKKE I KILDEN.

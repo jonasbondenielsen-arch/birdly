@@ -80,6 +80,12 @@ export default function Footer({ supportMail = null, ord = null }) {
                 <div className="fjur">
                   <b>{ord.juraTitel}</b>
                   <Link href={ord.juraHref}>{ord.juraLink}</Link>
+                  {/* ⚠️ JURA-PAKKENS NOTE 11 KRAEVER AT DEN ER SYNLIG.
+                      Et link begravet inde i Private Job Terms er ikke synligt;
+                      footeren staar paa hver side. */}
+                  {ord.rapporterHref && (
+                    <Link href={ord.rapporterHref}>{ord.rapporter}</Link>
+                  )}
                 </div>
               )}
             </div>
