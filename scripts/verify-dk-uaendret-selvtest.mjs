@@ -77,6 +77,12 @@ const proever = [
    (s) => s.replace('\\"marked\\":\\"DK\\"', '\\"marked\\":\\"GB\\"')],
   ["RSC: en KLIENT-REFERENCE forsvinder (en komponent er faldet ud)",
    (s) => s.replace(/\\n[0-9a-f]+:I\[\d+,\[[^\]]*\],\\"IconMark\\"\]/, "")],
+  // ⚠️ HVER GANG EN NORMALISERING LOESNES, VOKSER LISTEN. 10-09-2026
+  // blev bevis-stribens tidsstempel blanket i en fjerde form (RSC-stroemmens
+  // to soeskende-noder). Proeven her beviser at det kun er TIDSPUNKTET der
+  // blev usynligt - etiketten ved siden af sammenlignes stadig.
+  ["RSC: 'Sidst opdateret'-ETIKETTEN aendres (tidspunktet er blanket, teksten er ikke)",
+   (s) => s.replace(/Sidst opdateret /g, "Sidst opdat. ")],
   ["RSC: en TEKST i stroemmen aendres",
    (s) => s.replace('\\"Hvilke opgaver finder Birdly?\\"', '\\"Hvilke opgaver finder I?\\"')],
 ];

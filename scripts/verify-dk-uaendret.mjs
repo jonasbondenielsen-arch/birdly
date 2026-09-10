@@ -87,7 +87,13 @@ const norm = (s) =>
     // sit klokkeslæt. Indtil da havde begge byg tilfældigvis SAMME tidsstempel,
     // så normaliseringen havde aldrig haft noget at lave — den så ud til at
     // virke, fordi den aldrig blev brugt.
-    .replace(/<p class="sg-bevis-opd">[\s\S]*?<\/p>/g, "TIDSSTEMPEL")
+    // ⚠️ KUN SELVE KLOKKESLAETTET, IKKE HELE ELEMENTET.
+    // Reglen var `<p class="sg-bevis-opd">[\s\S]*?</p>` -> "TIDSSTEMPEL", altsaa
+    // blev BAADE etiketten og tidspunktet blanket. "Sidst opdateret" kunne
+    // dermed aendres til hvad som helst uden at nogen saa det. Nu rammes kun
+    // datoformatet - og saa er det ligegyldigt hvilken af de fire former
+    // tidsstemplet staar i (HTML, escaped, afkodet, RSC-soeskende).
+    .replace(/\d{1,2}\. [a-zæøå]{3}\.? kl\. \d{1,2}[:.]\d{2}/g, "TIDSSTEMPEL")
     .replace(/opdateret\\":\\"[^\\]*/g, "TIDSSTEMPEL")
     // ⚠️ SAMME FELT, AFKODET FORM. RSC-stroemmen bliver JSON-afkodet foer den
     // sammenlignes, saa `\"opdateret\":\"…\"` staar dér som `"opdateret":"…"`.
@@ -95,6 +101,14 @@ const norm = (s) =>
     // kontrolproeven (9dc2ccd mod sig selv) faldt derfor paa hentetidspunktet
     // - to byg to timer fra hinanden. Det er tid, ikke kode.
     .replace(/"(sidst_)?opdateret":"[^"]*"/g, "TIDSSTEMPEL")
+    // ⚠️ FJERDE FORM AF SAMME TIDSSTEMPEL - og den dukkede foerst op da
+    // de to byg landede paa hver sin DAG (10-09-2026). I RSC-stroemmen staar
+    // bevis-stribens "Sidst opdateret" som to soeskende-tekstnoder:
+    //   "className":"sg-bevis-opd","children":["Sidst opdateret ","9. sep. kl. 16:01"]
+    // HTML-formen var normaliseret fra starten; den her slap forbi, praecis
+    // som live-TALLENE gjorde i tre former. Kun tidspunktet blankes -
+    // etiketten "Sidst opdateret " staar tilbage og sammenlignes.
+    .replace(/("sg-bevis-opd","children":\["Sidst opdateret ",")[^"]*"/g, "$1TIDSSTEMPEL\"")
     // ⚠️ LIVE-STRIBENS TAL ER TIDSAFHÆNGIGE — IKKE KODEAFHÆNGIGE.
     // Målt 09-09-2026: to byg få minutter fra hinanden gav 401 mod 397 i
     // "opgaver med åben frist". Ikke en ændring: FIRE danske frister udløb

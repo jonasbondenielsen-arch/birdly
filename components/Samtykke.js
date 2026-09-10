@@ -129,7 +129,11 @@ export default function Samtykke() {
 
         {detaljer && (
           <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid var(--line)" }}>
-            {KATEGORIER.map((k) => (
+            {/* ⚠️ FILTRERET PAA MARKED. En kategori uden `markeder` vises alle
+                steder; `funktionel` er indtil videre GB-only, fordi begge
+                politikker beskriver den, men kun den britiske uoverensstemmelse
+                er besluttet rettet. Se den fulde note i lib/samtykke.js. */}
+            {KATEGORIER.filter((k) => !k.markeder || k.markeder.includes(uk ? "GB" : "DK")).map((k) => (
               <label key={k.id} style={{ display: "flex", gap: 11, alignItems: "flex-start", padding: "8px 0", cursor: k.laast ? "default" : "pointer" }}>
                 <input
                   type="checkbox"
