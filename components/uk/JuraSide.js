@@ -2,7 +2,9 @@ import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Logo } from "../Logo";
+import SaetLang from "./SaetLang";
 import { tekster } from "../../lib/tekster";
+import { ukSti } from "../../lib/uk/jura";
 import "../../app/legaldoc.css";
 import "./jura.css";
 
@@ -32,9 +34,10 @@ export default function JuraSide({ side, marked = "GB" }) {
 
   return (
     <main className="birdly-legaldoc uk-jura" lang="en-GB">
+      <SaetLang lang="en-GB" />
       <header className="uk-jura-top">
         <Logo height={30} wordmark={T.footer.brand} />
-        <Link href="/terms" className="uk-jura-tilbage">
+        <Link href={ukSti("/terms")} className="uk-jura-tilbage">
           {T.jura.tilbage}
         </Link>
       </header>

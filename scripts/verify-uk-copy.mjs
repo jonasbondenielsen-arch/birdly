@@ -213,6 +213,14 @@ const UNDTAGET = new Map([
   ["gem", "Cookie-banner: 'Save my choices'. UI-chrome."],
   ["altidaktiv", "Cookie-banner: ' · always on' ved den laaste kategori. UI-chrome."],
   ["regionlabel", "Skjult aria-label paa banneret. Ikke synlig copy."],
+
+  // ── Jura-hub'ens ramme. ──
+  ["dokumenter", "Hub'ens sektions-overskrift. Pakkens eget ord ('## Documents') " +
+                 "- men for kort til at kunne slaas op meningsfuldt i filen."],
+  ["tilbageforside", "Hub'ens tilbage-link, spejler DK's '← Tilbage til forsiden'. UI-chrome."],
+  ["cookiehref", "Rute til cookie-politikken, ikke synlig tekst."],
+  ["cookievalg", "Footerens samtykke-link. Cookie-politikkens §3 kalder den selv " +
+                 "'Cookie Settings'; her i saetningsform som DK's 'Skift dit cookievalg'."],
 ]);
 
 const { en } = await import("../lib/tekster/en.js").catch(() => import("./lib/tekster/en.js"));

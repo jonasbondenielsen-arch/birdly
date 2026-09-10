@@ -22,8 +22,11 @@ const GB = MARKEDER.GB;
 // ville invitere til at bruge ruten til noget andet end jura.
 // ============================================================================
 
+// ⚠️ "terms" ER IKKE MED. Hub'en har sin egen rute (app/uk/terms) med
+// DK's kort-layout; genererede vi den ogsaa her, ville to filer kappes om den
+// samme adresse. Dokumenterne er de OEVRIGE ni.
 export function generateStaticParams() {
-  return UK_JURA_SLUGS.map((jura) => ({ jura }));
+  return UK_JURA_SLUGS.filter((jura) => jura !== "terms").map((jura) => ({ jura }));
 }
 
 export async function generateMetadata({ params }) {

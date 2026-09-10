@@ -1,4 +1,5 @@
 import Footer from "../Footer";
+import FooterUk from "../uk/FooterUk";
 import SalgHeader from "./SalgHeader";
 import FagBevis from "./FagBevis";
 import StickyCtaMobil from "./StickyCtaMobil";
@@ -13,6 +14,7 @@ import {
 import { tekster, t } from "../../lib/tekster";
 import { MARKEDER } from "../../lib/markets";
 import { getBrancheByFagKey } from "../../lib/branche";
+import { ukSti } from "../../lib/uk/jura";
 import "../../app/salg.css";
 
 // ============================================================================
@@ -211,10 +213,12 @@ export default function Salgsside({ tal, funnelHref, fag = null, marked = "DK" }
       punkter: O.nav?.punkter || [],
       // Hub'ens PUBLIKE adresse. Internt hedder den /uk/terms, men proxy'en
       // rewriter getbirdly.co.uk/terms dertil - kunden ser aldrig /uk.
-      juraHref: "/terms",
+      juraHref: ukSti("/terms"),
       // Note 11: synlig "Report a problem"-vej for private opgaver.
-      rapporterHref: "/report-a-problem",
+      rapporterHref: ukSti("/report-a-problem"),
       rapporter: O.jura?.rapporter,
+      cookieValg: O.jura?.cookieValg,
+      cookieHref: ukSti("/cookie-policy"),
     },
   };
 
@@ -290,7 +294,15 @@ export default function Salgsside({ tal, funnelHref, fag = null, marked = "DK" }
 
         {/* Footeren faar adressen, ikke markedet - se noten i Footer.js.
             DK sender ingenting og faar husets egen footer. */}
-        <Footer {...(O ? { supportMail: MARKEDER[marked]?.supportMail, ord: ord.footer } : null)} />
+        {/* ⚠️ TO FOOTERE, IKKE EN MED EN GREN. Se noten i uk/FooterUk.js:
+            en ny importoer af den DELTE Footer aendrede chunk-grupperingen og
+            lagde et ekstra <script> paa to danske sider. DK's footer er
+            uroert; UK's har sin egen fil. */}
+        {O ? (
+          <FooterUk supportMail={MARKEDER[marked]?.supportMail} ord={ord.footer} />
+        ) : (
+          <Footer />
+        )}
         {/* Samme regel: DK får NØJAGTIG de props komponenten fik før ordbogen
             fandtes — kun funnelHref. Både teksten og "vis opret-opgave" har
             danske standardværdier inde i komponenten. */}

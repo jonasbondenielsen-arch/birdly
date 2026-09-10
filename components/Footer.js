@@ -54,66 +54,16 @@ export default function Footer({ supportMail = null, ord = null }) {
   // ⚠️ JURA-BLOKKEN (.fjur) MANGLER MED VILJE I DETTE SKRIDT. De ti
   // engelske juraside bygges i Fase B; indtil de findes, ville "Terms &
   // Security" vaere et doedt link. Den tilfoejes naar siderne er der.
-  if (ord) {
-    return (
-      <footer className="birdly-footer">
-        <div className="finner">
-          <nav className="flinks">
-            {ord.punkter.map((n) => <a key={n.href} href={n.href}>{n.label}</a>)}
-          </nav>
-
-          <div className="fdiv" />
-
-          <div className="fbottom">
-            <div className="fleft">
-              {/* ⚠️ "Birdly", IKKE "Birdly.dk" - copy-filen §27. Den danske
-                  footer saetter ".dk" i sit eget span; her er der ingen. */}
-              <Link href="/" className="fmark" aria-label={ord.brand}>
-                <BirdMark size={30} />
-                <span>{ord.brand}</span>
-              </Link>
-              {/* ⚠️ EET LINK, IKKE TI. Den danske footer har ogsaa kun
-                  eet (/betingelser); hub'en linker videre. Ti jura-links i
-                  footeren ville drukne de fire der handler om produktet.
-                  ⚠️ SIDERNE ER DRAFT + noindex - se JuraSide.js. */}
-              {ord.juraHref && (
-                <div className="fjur">
-                  <b>{ord.juraTitel}</b>
-                  <Link href={ord.juraHref}>{ord.juraLink}</Link>
-                  {/* ⚠️ JURA-PAKKENS NOTE 11 KRAEVER AT DEN ER SYNLIG.
-                      Et link begravet inde i Private Job Terms er ikke synligt;
-                      footeren staar paa hver side. */}
-                  {ord.rapporterHref && (
-                    <Link href={ord.rapporterHref}>{ord.rapporter}</Link>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* ⚠️ JURIDISK LINJE, IKKE MARKETING. Den maa aldrig antyde et
-                britisk selskab - copy-filen: "Do not show the Danish
-                CVR/address blindly as if it is a UK company." */}
-            <div className="fcompany">
-              {ord.firma}<br />
-              <a href={`mailto:${supportMail}`}>{supportMail}</a>
-            </div>
-
-            {SOCIALE.length > 0 && (
-              <div className="fsocial">
-                {SOCIALE.map((s) => (
-                  <a key={s.key} href={s.url} target="_blank" rel="noopener noreferrer"
-                    aria-label={`Birdly ${s.navn}`}>
-                    {IKON[s.key]}
-                  </a>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      </footer>
-    );
-  }
-
+  // ⚠️ DEN BRITISKE FOOTER BOR I components/uk/FooterUk.js, IKKE HER.
+  // Den laa i den her fil som en `ord`-gren, og det virkede - lige indtil
+  // jura-hub'en ogsaa skulle bruge en footer. En NY IMPORTOER af Footer
+  // aendrede Turbopacks chunk-gruppering og skilte SamtykkeLink ud som sin
+  // egen 331-byte chunk: et ekstra <script> paa /priser og /sadan-virker-det.
+  // Maalt ved isolation 10-09-2026 - fjern hub'ens import, og DK er 8/8 igen.
+  //
+  // Footer importerer SamtykkeLink, og den er dansk. En britisk side har intet
+  // brug for nogen af delene. De to footere er derfor adskilt: DK's bliver
+  // liggende uroert her, UK's har sin egen fil uden den kobling.
   return (
     <footer className="birdly-footer">
       <div className="finner">

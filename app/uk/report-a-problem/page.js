@@ -3,7 +3,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Logo } from "../../../components/Logo";
 import { tekster } from "../../../lib/tekster";
-import { juraAfsnit } from "../../../lib/uk/jura";
+import { juraAfsnit, ukSti } from "../../../lib/uk/jura";
 import { baseUrl, MARKEDER } from "../../../lib/markets";
 import "../../legaldoc.css";
 import "../../../components/uk/jura.css";
@@ -44,7 +44,7 @@ export default function Side() {
     <main className="birdly-legaldoc uk-jura" lang="en-GB">
       <header className="uk-jura-top">
         <Logo height={30} wordmark={T.footer.brand} />
-        <Link href="/terms" className="uk-jura-tilbage">{T.jura.tilbage}</Link>
+        <Link href={ukSti("/terms")} className="uk-jura-tilbage">{T.jura.tilbage}</Link>
       </header>
 
       <div className="uk-jura-draft" role="note">
@@ -58,7 +58,7 @@ export default function Side() {
           <ReactMarkdown remarkPlugins={[remarkGfm]}>{md}</ReactMarkdown>
         ) : null}
         <p>
-          <Link href="/private-job-terms">{T.jura.rapporterLink}</Link>
+          <Link href={ukSti("/private-job-terms")}>{T.jura.rapporterLink}</Link>
         </p>
       </article>
     </main>

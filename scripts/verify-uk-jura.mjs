@@ -23,7 +23,7 @@
 import { readFileSync, existsSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
-import { UK_JURA } from "../lib/uk/jura.js";
+import { UK_JURA, hubKort } from "../lib/uk/jura.js";
 
 const KANDIDATER = [
   process.argv[2],
@@ -75,6 +75,37 @@ for (const side of UK_JURA) {
   console.log(`      I PAKKEN: ${JSON.stringify(kandidat.slice(Math.max(0, i - 40), i + 60))}`);
   fejl++;
 }
+
+// ══ DAEKNING: HVERT DOKUMENT SKAL HAVE SIN PLADS PAA HUB'EN ══
+//
+// ⚠️ EN FORAELDRELOES JURASIDE ER VAERRE END EN DER MANGLER. Findes
+// /uk/data-processing-agreement, men linker hverken hub eller footer til den,
+// har vi et dokument der er "offentliggjort" og alligevel usynligt - og
+// ingen opdager det, for siden svarer 200. Render-vagten ville vaere groen.
+//
+// Omvendt: et kort der peger paa en rute vi ikke har, er et doedt link i
+// selve betingelses-oversigten.
+console.log("\nHUB-DAEKNING");
+const kort = hubKort();
+const iHub = new Set(kort.map((k) => k.rute));
+const dokumenter = UK_JURA.filter((s) => s.rute !== "/terms");
+
+for (const d of dokumenter) {
+  if (iHub.has(d.rute)) console.log(`  ✓ ${d.rute.padEnd(28)} har et kort`);
+  else { console.log(`  ✖ ${d.rute.padEnd(28)} MANGLER paa hub'en - foraeldreloes side`); fejl++; }
+}
+for (const k of kort) {
+  if (!k.rute) { console.log(`  ✖ kortet "${k.titel}" er ikke parret med en rute`); fejl++; continue; }
+  if (!UK_JURA.some((s) => s.rute === k.rute)) {
+    console.log(`  ✖ kortet "${k.titel}" peger paa ${k.rute} - den rute findes ikke`);
+    fejl++;
+  }
+  if (!k.titel || !k.beskrivelse || !k.knap) {
+    console.log(`  ✖ kortet ${k.rute} mangler titel/beskrivelse/knap`);
+    fejl++;
+  }
+}
+console.log(`  → ${kort.length} kort, ${dokumenter.length} dokumenter`);
 
 const aabneIalt = UK_JURA.reduce((n, s) => n + s.aabne.length, 0);
 console.log(
