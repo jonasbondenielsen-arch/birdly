@@ -6,6 +6,7 @@ import { hubKort, hubIndledning, ukSti, UK_BASE } from "../../../lib/uk/jura";
 import { tekster } from "../../../lib/tekster";
 import { baseUrl, MARKEDER } from "../../../lib/markets";
 import "../../betingelser.css";
+import "../../../components/uk/jura.css";
 
 const GB = MARKEDER.GB;
 
@@ -126,6 +127,15 @@ export default function Side() {
       </div>
 
       <div className="wrap">
+        {/* ⚠️ OGSAA PAA HUB'EN. Den er en oversigt og ikke et dokument, men
+            den er indgangen til dem alle - og en oversigt der ser faerdig ud,
+            faar hele sektionen til at se faerdig ud. DK har ingen banner her,
+            fordi DK's jura ER gaeldende; UK's er DRAFT indtil jura-review. */}
+        <div className="uk-jura-draft" role="note">
+          <b>{T.jura.draftTitel}</b>
+          <p>{T.jura.draftBrod}</p>
+        </div>
+
         <div className="section-title">{T.jura.dokumenter}</div>
         <div className="cards">
           {kort.map((k) => (

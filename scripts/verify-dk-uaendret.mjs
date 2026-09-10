@@ -87,13 +87,27 @@ const norm = (s) =>
     // sit klokkeslæt. Indtil da havde begge byg tilfældigvis SAMME tidsstempel,
     // så normaliseringen havde aldrig haft noget at lave — den så ud til at
     // virke, fordi den aldrig blev brugt.
-    // ⚠️ KUN SELVE KLOKKESLAETTET, IKKE HELE ELEMENTET.
-    // Reglen var `<p class="sg-bevis-opd">[\s\S]*?</p>` -> "TIDSSTEMPEL", altsaa
-    // blev BAADE etiketten og tidspunktet blanket. "Sidst opdateret" kunne
-    // dermed aendres til hvad som helst uden at nogen saa det. Nu rammes kun
-    // datoformatet - og saa er det ligegyldigt hvilken af de fire former
-    // tidsstemplet staar i (HTML, escaped, afkodet, RSC-soeskende).
-    .replace(/\d{1,2}\. [a-zæøå]{3}\.? kl\. \d{1,2}[:.]\d{2}/g, "TIDSSTEMPEL")
+    // ⚠️ KUN SELVE KLOKKESLAETTET, OG KUN DÉR HVOR DET STÅR.
+    //
+    // To rettelser i én, og de trækker hver sin vej — med vilje:
+    //
+    //   1. SMALLERE I HVAD DER BLANKES. Reglen var
+    //      `<p class="sg-bevis-opd">[\s\S]*?</p>` -> "TIDSSTEMPEL", altså blev
+    //      BÅDE etiketten og tidspunktet blanket. "Sidst opdateret" kunne
+    //      dermed ændres til hvad som helst uden at nogen så det.
+    //
+    //   2. SMALLERE I HVOR DEN GÆLDER. Mit første forsøg på at rette (1) var
+    //      et frit datomønster — `\d{1,2}\. [a-zæøå]{3}\. kl\. \d{2}:\d{2}` —
+    //      der ramte HVOR SOM HELST i dokumentet. Det er præcis den slags
+    //      grådighed der kan skjule en ægte ændring bag "det er bare
+    //      tidsstemplet", og det er samme fejltype som de tre bevis-huller vi
+    //      har lukket. Mønsteret er derfor forankret til bevis-stribens egen
+    //      klasse OG dens egen etiket; ændrer en af delene sig, matcher det
+    //      ikke længere, og forskellen bliver synlig.
+    //
+    // To former, fordi teksten står to steder: som HTML i den synlige side, og
+    // som to søskende-tekstnoder i RSC-strømmen. Begge er forankrede.
+    .replace(/(<p class="sg-bevis-opd">Sidst opdateret (?:<!-- -->)?)[^<]*/g, "$1TIDSSTEMPEL")
     .replace(/opdateret\\":\\"[^\\]*/g, "TIDSSTEMPEL")
     // ⚠️ SAMME FELT, AFKODET FORM. RSC-stroemmen bliver JSON-afkodet foer den
     // sammenlignes, saa `\"opdateret\":\"…\"` staar dér som `"opdateret":"…"`.
