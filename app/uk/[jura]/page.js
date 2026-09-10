@@ -25,6 +25,18 @@ const GB = MARKEDER.GB;
 // ⚠️ "terms" ER IKKE MED. Hub'en har sin egen rute (app/uk/terms) med
 // DK's kort-layout; genererede vi den ogsaa her, ville to filer kappes om den
 // samme adresse. Dokumenterne er de OEVRIGE ni.
+// ⚠️ SKREVET UD SELV OM DET ER STANDARDVAERDIEN — den er en forudsaetning
+// for den engelske fejlside, ikke en detalje. Er den false, 404'er routeren en
+// ukendt slug FOER komponenten koerer; saa kaldes notFound() aldrig, og
+// boundary'en i app/uk/[jura]/not-found.js faar aldrig ordet. Linjen goer den
+// afhaengighed synlig for den der en dag vil praeg-generere ruten haardere.
+//
+// ⚠️ DEN VAR IKKE AARSAGEN TIL AT FEJLSIDEN IKKE VIRKEDE. Jagten 10-09-2026
+// gik paa en foraeldet server: `next start` laeser .next ved opstart, og seks
+// builds i traek blev maalt mod en proces der stadig svarede fra det gamle.
+// Konklusionerne undervejs var derfor forkerte. Se scripts/start-server.mjs.
+export const dynamicParams = true;
+
 export function generateStaticParams() {
   return UK_JURA_SLUGS.filter((jura) => jura !== "terms").map((jura) => ({ jura }));
 }

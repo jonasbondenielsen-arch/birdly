@@ -7,9 +7,12 @@
 //
 //   node scripts/render-dk.mjs <mappe>/foer2
 //
-// Forudsætter at `npm run build:kun` er kørt og at serveren kører på PORT
-// (default 3101). Den starter ikke serveren selv — det gør kalderen, så en
-// fejlet build ikke bliver til en tom mappe der ser ud som et bestået bevis.
+// Forudsætter at `npm run build:kun` er kørt og at serveren er startet med
+//   node scripts/start-server.mjs <port>
+// Den starter ikke serveren selv — det gør kalderen, så en fejlet build ikke
+// bliver til en tom mappe der ser ud som et bestået bevis. Men den KRÆVER at
+// starten gik gennem scriptet ovenfor, så den kan se om serveren er ældre end
+// buildet. Se noten ved SERVER_BOOTED længere nede.
 //
 // ⚠️ SIDERNE ER IKKE ET TILFÆLDIGT UDVALG. Det er hver DK-rute der rører
 // enten `components/salg/Sektioner` eller `hentOpgaveTal` — altså præcis den
@@ -34,7 +37,7 @@
 //      og den beviste kun `/kom-i-gang` en ekstra gang.
 //   2. Alt hentes én gang FØR vi gemmer, så hver gemt side er en varm render.
 // ============================================================================
-import { mkdirSync, writeFileSync, statSync, readdirSync, existsSync } from "node:fs";
+import { mkdirSync, writeFileSync, readFileSync, statSync, readdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
 
 const UD = process.argv[2];
@@ -108,6 +111,59 @@ export const SIDER = [
   ["brancher", "/brancher"],
   ["udbud-for-alle", "/udbud-for-alle"],
 ];
+
+// ============================================================================
+// ⚠️ KOERER SERVEREN OVERHOVEDET DET BUILD VI LIGE LAVEDE? (tilføjet 10-09-2026)
+//
+// Vagten ovenfor tjekker KILDE mod BUILD. Den siger intet om SERVEREN — og
+// det var det næste hul. `next start` læser .next ÉN gang ved opstart; bygger
+// man bagefter, bliver processen ved med at svare fra det gamle build. Den
+// kombination kostede en hel fejlsøgning 10-09-2026: en fejlside blev bygget
+// og målt seks gange i træk uden at ændre sig, fordi et `Stop-Process`-filter
+// ikke ramte selve serverprocessen. Alle seks konklusioner var forkerte.
+//
+// ⚠️ DET KAN IKKE AFGØRES PÅ SVARET, OG DET BLEV PRØVET FØRST.
+// To oplagte probes fejler begge: chunk-navnene er indholds-hashede og
+// genbruges når filen er uændret, og `.next/BUILD_ID` er deterministisk — det
+// var IDENTISK på tværs af to builds. En gammel server svarer altså med
+// præcis de samme markører som en frisk. Derfor måles på LIVSCYKLUSSEN:
+// `scripts/start-server.mjs` skriver hvornår serveren startede, og her nægter
+// vi at måle hvis det tidspunkt ligger før buildet.
+// ============================================================================
+{
+  const r = await fetch(`http://127.0.0.1:${PORT}/`, { headers: { Host: "www.birdly.dk" } }).catch(() => null);
+  if (!r || !r.ok) {
+    console.error(`✖ Ingen server paa port ${PORT}. Start den med:`);
+    console.error(`    node scripts/start-server.mjs ${PORT}`);
+    process.exit(2);
+  }
+
+  // ⚠️ DER MAALES PAA LIVSCYKLUSSEN, IKKE PAA SVARET. Baade chunk-navne og
+  // .next/BUILD_ID er deterministiske og var IDENTISKE paa tvaers af builds —
+  // en gammel server svarer altsaa praecis som en frisk. Det eneste der
+  // skiller dem, er hvornaar processen startede, og det ved kun starteren.
+  const MARK = ".next/SERVER_BOOTED";
+  if (!existsSync(MARK)) {
+    console.error("✖ Serveren blev ikke startet med scripts/start-server.mjs.");
+    console.error("  Uden startmarkoeren kan det ikke afgoeres om den koerer det build vi lige lavede,");
+    console.error("  og en maaling mod et foraeldet build er praecis den fejl beviset skal udelukke.");
+    console.error(`  Stop serveren og start den med: node scripts/start-server.mjs ${PORT}`);
+    process.exit(2);
+  }
+  const mark = JSON.parse(readFileSync(MARK, "utf8"));
+  if (mark.port !== Number(PORT)) {
+    console.error(`✖ Startmarkoeren gaelder port ${mark.port}, men der maales paa ${PORT}.`);
+    process.exit(2);
+  }
+  if (mark.tid < bygget) {
+    const min = Math.round((bygget - mark.tid) / 60000);
+    console.error("✖ SERVEREN ER AELDRE END BUILDET — maalingen ville vaere vaerdiloes.");
+    console.error(`    serveren startede ${min} min. FOER .next/BUILD_ID blev skrevet`);
+    console.error("  `next start` laeser .next ved opstart; den svarer stadig fra det gamle build.");
+    console.error(`  Stop den og start igen: node scripts/start-server.mjs ${PORT}`);
+    process.exit(2);
+  }
+}
 
 mkdirSync(UD, { recursive: true });
 

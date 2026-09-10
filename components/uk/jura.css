@@ -26,3 +26,14 @@
 .uk-jura-krop table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14.5px;display:block;overflow-x:auto}
 .uk-jura-krop th,.uk-jura-krop td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
 .uk-jura-krop th{background:var(--sky-soft);color:var(--navy);font-weight:700}
+
+/* ── 404 ────────────────────────────────────────────────────────────────────
+   To knapper under hero'en. Farverne er husets tokens, formen er den samme
+   som jura-hub'ens .btn (10px radius, Plus Jakarta 700) — en fejlside skal
+   ikke introducere et nyt formsprog. Se noten i app/uk/not-found.js. */
+.uk-404{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;padding-top:6px}
+.uk-404 a{border-radius:10px;padding:12px 24px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:14.5px;text-decoration:none;transition:background .18s,color .18s}
+.uk-404-primaer{background:var(--sky);color:#fff}
+.uk-404-primaer:hover{background:var(--navy)}
+.uk-404-sekundaer{background:var(--sky-soft);color:var(--teal-dk)}
+.uk-404-sekundaer:hover{background:var(--sky);color:#fff}

@@ -221,6 +221,24 @@ const UNDTAGET = new Map([
   ["cookiehref", "Rute til cookie-politikken, ikke synlig tekst."],
   ["cookievalg", "Footerens samtykke-link. Cookie-politikkens §3 kalder den selv " +
                  "'Cookie Settings'; her i saetningsform som DK's 'Skift dit cookievalg'."],
+
+  // ── 404-siden. ──
+  // ⚠️ COPY-FILEN DAEKKER IKKE 404. Den beskriver forside, funnel, FAQ,
+  // footer og jura - ikke en fejlside. De fire strenge er derfor britisk
+  // standardsprog skrevet af CC, samme kategori som FAQ-foldeknappen og
+  // juraside-rammen, og de er med vilje uden en eneste salgssaetning: en
+  // fejlside siger hvad der skete og peger tilbage.
+  //
+  // ⚠️ NOEGLERNE HAR "fejl"-PRAEFIKS MED VILJE. Undtagelsen slaar op paa det
+  // sidste noeglesegment, saa en generisk noegle (`titel`, `brod`) her ville
+  // fritage hver eneste `titel` og `brod` i hele ordbogen - altsaa lukke et
+  // hul langt stoerre end fejlsiden. Praefikset holder undtagelsen paa fire
+  // strenge. Skal Jonas rette dem, er det fejl404-blokken i en.js.
+  ["fejltitel", "404: 'Page not found'. Fejlside-chrome, ikke copy."],
+  ["fejlbrod", "404: forklaringen under overskriften. Fejlside-chrome, ikke copy."],
+  ["fejlforside", "404: knappen tilbage til /uk. Navigation, ikke copy."],
+  ["fejljura", "404: knappen til /uk/terms. Samme ordlyd som jurasidernes " +
+               "tilbage-link, saa de to veje hedder det samme."],
 ]);
 
 const { en } = await import("../lib/tekster/en.js").catch(() => import("./lib/tekster/en.js"));
