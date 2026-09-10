@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { markedForHostMedOverride, STANDARD_MARKED } from "./lib/markets";
+import { markedForHostMedOverride, STANDARD_MARKED, MARKEDER, primaerHost } from "./lib/markets";
 
 // ============================================================================
 // HVILKET MARKED ER DENNE REQUEST? (multimarket Fase 6, 08-09-2026)
@@ -42,6 +42,30 @@ export function proxy(request) {
     process.env.NEXT_PUBLIC_FORCE_MARKED,
   );
   const marked = fundet?.id || STANDARD_MARKED;
+
+  // ══ 301: ALTERNATIVE DOMAENER → MARKEDETS PRIMAERE ══
+  //
+  // ⚠️ DEN SKAL LIGGE FOER REWRITE'EN. getbirdly.uk er et KENDT
+  // GB-vaertsnavn, saa uden det her ville proxy'en opfatte den som markedets
+  // adresse og servere hele sitet paa den — maalt 10-09-2026: HTTP 200 paa
+  // baade .uk og .co.uk med samme indhold. To adresser med samme side er
+  // duplikeret indhold, og et canonical-tag er en henstilling, ikke en
+  // omdirigering.
+  //
+  // ⚠️ 301, IKKE 302. Adressen flytter permanent; en midlertidig
+  // omdirigering ville lade soegemaskiner beholde .uk som den kanoniske.
+  //
+  // ⚠️ DANMARK HAR INGEN SAADANNE DOMAENER. Ingen DK-vaert baerer
+  // `viderestil`, saa den her gren fyrer aldrig paa birdly.dk.
+  const vaert = (request.headers.get("host") || "").toLowerCase().split(":")[0];
+  const domaene = MARKEDER[marked]?.domaener?.find((d) => d.host === vaert);
+  if (domaene?.viderestil) {
+    const maal = request.nextUrl.clone();
+    maal.protocol = "https:";
+    maal.host = primaerHost(marked);
+    maal.port = "";
+    return NextResponse.redirect(maal, 301);
+  }
 
   const headers = new Headers(request.headers);
   headers.set(MARKED_HEADER, marked);
