@@ -7,8 +7,19 @@
 .birdly-betingelser{background:#fff;color:var(--navy);min-height:100vh;display:flex;flex-direction:column}
 
 /* sub-side-header (identisk med legal-siderne) */
-.birdly-betingelser header{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:30}
-.birdly-betingelser .bar{max-width:1100px;margin:0 auto;padding:14px 22px;display:flex;align-items:center;justify-content:space-between}
+/* ⚠️ FLYDENDE KORT — samme greb som .sg-top i salg.css, se noten der.
+   Den kom med FORDI FOOTEREN BLEV ET KORT. Jura-siderne (DK /betingelser,
+   UK /uk/terms og den britiske 404) deler .birdly-footer, saa de fik det
+   svaevende footerkort automatisk — og saa stod en flad, fuldbredde header
+   over det. Halvt gennemfoert ser vaerre ud end slet ikke gennemfoert. */
+.birdly-betingelser header{background:transparent;padding:14px 22px 0;position:sticky;top:0;z-index:30}
+.birdly-betingelser .bar{max-width:1100px;margin:0 auto;padding:11px 22px;display:flex;align-items:center;justify-content:space-between;
+  border-radius:20px;
+  background:linear-gradient(180deg, rgba(255,255,255,.86), rgba(0,179,166,.07));
+  -webkit-backdrop-filter:saturate(1.4) blur(14px);
+  backdrop-filter:saturate(1.4) blur(14px);
+  border:1px solid rgba(0,179,166,.16);
+  box-shadow:0 12px 34px rgba(13,27,42,.10), inset 0 1px 0 rgba(255,255,255,.5)}
 .birdly-betingelser .logo{display:flex;align-items:center;gap:9px;font-family:'Plus Jakarta Sans';font-weight:800;font-size:21px;letter-spacing:-.03em;color:var(--navy)}
 .birdly-betingelser .logo .dk{color:var(--sky)}
 .birdly-betingelser .back{font-size:14px;font-weight:600;color:var(--navy-soft)}

@@ -20,8 +20,21 @@
   .btn-sky:hover{transform:translateY(-2px)}
 
   /* header */
-  header{position:sticky;top:0;z-index:80;background:rgba(255,255,255,.82);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+  /* ⚠️ FLYDENDE KORT — samme greb som .sg-top i salg.css, se noten der.
+     Den her header bærer /brancher, /viden og /viden/[slug]; forsiden og
+     salgssiderne bruger SalgHeader. De to skal se ens ud, så reglerne er
+     holdt identiske. Farverne er repoets tokens, ikke mockuppens. */
+  header{position:sticky;top:0;z-index:80;padding:14px 22px 0;background:transparent}
   .bar{display:flex;align-items:center;gap:30px;padding:14px 0}
+  header .bar{
+    padding:11px 22px;
+    border-radius:20px;
+    background:linear-gradient(180deg, rgba(255,255,255,.86), rgba(0,179,166,.07));
+    -webkit-backdrop-filter:saturate(1.4) blur(14px);
+    backdrop-filter:saturate(1.4) blur(14px);
+    border:1px solid rgba(0,179,166,.16);
+    box-shadow:0 12px 34px rgba(13,27,42,.10), inset 0 1px 0 rgba(255,255,255,.5);
+  }
   .logo{display:flex;align-items:center;gap:10px;font-family:'Plus Jakarta Sans';font-weight:800;font-size:23px;letter-spacing:-.03em}
   .logo .dk{color:var(--sky);font-weight:700}
   nav.menu{display:flex;gap:26px;margin-left:14px}

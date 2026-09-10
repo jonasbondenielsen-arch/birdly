@@ -4,7 +4,37 @@
    Skillelinje. Nederst: logo+Juridisk venstre · firma midt · sociale højre.
    Scoped under .birdly-footer.
    ============================================================ */
-.birdly-footer{background:var(--navy);color:#9FB2C9;padding:48px 0 36px}
+/* ⚠️ FLYDENDE KORT, IKKE EN FULDBREDDE-BJÆLKE (10-09-2026, Jonas).
+   Footeren svæver nu på siden i stedet for at ligge som en sokkel.
+
+   ⚠️ INGEN MARKUP-ÆNDRING, OG DET ER MED VILJE. Kortet er selve
+   <footer class="birdly-footer">; luften rundt om kommer fra `width` +
+   `margin` i stedet for en ny wrapper-div. En ekstra div ville være et nyt
+   lag i RSC-strømmen på hver eneste side i huset — netop den slags der før
+   har flyttet danske sider uden at noget synligt ændrede sig.
+
+   ⚠️ HELE FILEN ER SCOPET UNDER .birdly-footer, OG DEN ER DELT.
+   components/Footer.js (DK) og components/uk/FooterUk.js (UK) bruger begge
+   de samme klasser, så det her kort slår igennem på begge markeder uden en
+   britisk kopi. Det var hele grunden til at UK's footer genbrugte klasserne.
+
+   ⚠️ NAVYEN ER UÆNDRET. Dybden kommer fra to lag OVENPÅ var(--navy): et
+   teal-skær i øverste venstre hjørne og en svag hvid tone ned over kortet.
+   Mockuppen bruger #0e2f3b/#08222c, som er andre navy-nuancer end husets;
+   de er bevidst ikke kopieret ind. rgba(0,179,166,…) ER var(--teal). */
+.birdly-footer{
+  background:
+    radial-gradient(120% 140% at 0% 0%, rgba(0,179,166,.16), rgba(0,179,166,0) 42%),
+    linear-gradient(160deg, rgba(255,255,255,.055), rgba(255,255,255,0) 60%),
+    var(--navy);
+  color:#9FB2C9;
+  padding:48px 0 36px;
+  width:min(1180px, 100% - 44px);
+  margin:20px auto 34px;
+  border-radius:28px;
+  border:1px solid rgba(255,255,255,.06);
+  box-shadow:0 24px 60px rgba(13,27,42,.20), inset 0 1px 0 rgba(255,255,255,.06);
+}
 .birdly-footer .finner{max-width:1100px;margin:0 auto;padding:0 26px}
 
 /* Øverst: vandrette, centrerede links (wrapper med god luft) */
@@ -40,4 +70,12 @@
   .birdly-footer .fleft{align-items:center}
   .birdly-footer .fcompany{min-width:0}
   .birdly-footer .fsocial{justify-content:center}
+}
+
+/* ⚠️ FOOTERKORTET SKAL FLUGTE MED HEADERKORTET. salg.css skruer .sg-wrap op
+   til 1320px ved >=1500px (se noten der om at indholdet ellers svoemmer i et
+   hvidt laerred). Uden den her regel stod headerkortet 1320 bredt og
+   footerkortet 1180 paa samme skaerm - 140px forskudt, maalt 10-09-2026. */
+@media (min-width: 1500px) {
+  .birdly-footer{width:min(1320px, 100% - 44px)}
 }
