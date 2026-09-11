@@ -185,6 +185,10 @@ export default function StartUk({ katalog, pris, hjem, aaben = false, tal = null
     [baand, T.stoerrelse.baand]
   );
 
+  // Kontekstlinjens dele. Staar EFTER valgtBaand, ellers laeses den foer den
+  // er defineret.
+  const kontekst = [firma?.name, valgtBaand?.label, fag[0]?.label_da].filter(Boolean);
+
   // ── SKRIVESTIEN ────────────────────────────────────────────────────────────
   //
   // ⚠️ SAMME `signup` SOM DANMARK, IKKE EN BRITISK GENVEJ. Alle værn bor i
@@ -289,7 +293,22 @@ export default function StartUk({ katalog, pris, hjem, aaben = false, tal = null
     // knapstil overhovedet. Min foerste udgave havde en ydre `.st`-div (som
     // slet ikke findes i CSS'en) med `st-top` UDEN for `st-wrap` - saa toppen
     // stod ustylet. DK wrapper i <main className="st-wrap"> med toppen INDENI.
-    <main className="st-wrap" lang="en-GB">
+    // ⚠️ BREDDEN SAETTES PR. TRIN, PRAECIS SOM DK. `.st-wrap` er 520px, fordi
+    // de smalle spoergsmaalsskaermene skal vaere smalle. DK laegger derfor
+    // `st-wrap-bred` (1120px) paa to-kolonne-skaermen og paa betalingen, og
+    // `st-wrap-mellem` (720px) paa spoergsmaalene imellem.
+    //
+    // ⚠️ DET VAR DEN HER LINJE DER GJORDE UK "TRYKKET SAMMEN". Uden modifieren
+    // blev to-kolonne-skaermen klemt ned i 520px midt paa siden med store tomme
+    // marginer, mens DK fyldte 1120px. De samme start.css-klasser var ikke nok:
+    // forskellen laa i den ydre shell, ikke i kortene.
+    <main
+      className={
+        "st-wrap" +
+        (navn === "firma" || navn === "betaling" ? " st-wrap-bred" : " st-wrap-mellem")
+      }
+      lang="en-GB"
+    >
       <div className="st-top">
         <Logo height={30} wordmark={tekster("GB").footer.brand} />
         <a className="st-tilbage-link" href={hjem}>{T.tilbage}</a>
@@ -466,6 +485,10 @@ export default function StartUk({ katalog, pris, hjem, aaben = false, tal = null
         </div>
       )}
 
+      {/* ⚠️ KORTET RENDERES IKKE PAA TRIN 1. Da firma-kortet flyttede op i
+          hoejre kolonne, blev den her boks staaende TOM - en hvid kasse uden
+          indhold midt paa siden. Den hoerer til de oevrige skaermene. */}
+      {navn !== "firma" && (
       <div className="st-kort">
         {fejl && <p className="st-fejl">{fejl}</p>}
         {besked && <p className="st-info">{besked}</p>}
@@ -636,12 +659,16 @@ export default function StartUk({ katalog, pris, hjem, aaben = false, tal = null
           <button className="st-tilbage" onClick={tilbage}>{T.tilbage}</button>
         )}
       </div>
+      )}
 
-      {/* Kontekstlinjen: hvad hun har valgt indtil nu. Delene samles og
-          adskilles FOERST naar der er mere end een. */}
-      <p className="st-hj">
-        {[firma?.name, valgtBaand?.label, fag[0]?.label_da].filter(Boolean).join(" · ")}
-      </p>
+      {/* Kontekstlinjen: hvad hun har valgt indtil nu.
+          ⚠️ IKKE PAA TRIN 1, og ikke naar der kun er faget. Paa foerste skaerm
+          har kunden ikke valgt noget endnu, saa linjen viste bare ordet
+          "Cleaning" alene under siden - et loest ord uden sammenhaeng. Den
+          skal kun staa naar den faktisk opsummerer et valg. */}
+      {navn !== "firma" && kontekst.length > 1 && (
+        <p className="st-hj">{kontekst.join(" · ")}</p>
+      )}
     </main>
   );
 }
