@@ -114,6 +114,19 @@ const FRA_BRIEF = new Map([
    "'\"across England\" -> \"across the UK\"'. Bruges som og:description og " +
    "twitter:description paa /uk, saa et delt link ikke viser den arvede danske."],
 
+  // ── Frekvenssvaret. Jonas' UK-brief 11-09-2026, punkt 7. ──
+  // ⚠️ ERSTATTER FILENS EGET SVAR, FORDI FILENS VAR USANDT OM MOTOREN.
+  // Copy-filen skrev "Usually as soon as Birdly processes a new relevant
+  // notice" og tilfoejede selv instruksen "Use wording that matches the actual
+  // UK ingestion frequency". Motoren er den samme for begge markeder, og DK's
+  // FAQ siger hvad den goer: dagens match samles i EEN besked. Jonas skrev den
+  // britiske ordlyd ordret i briefen; kun hans anden saetning om private
+  // opgaver er udeladt, fordi den funktion ikke findes for GB.
+  ["We group your public contract matches into one daily message, so you get the opportunities without constant notifications.",
+   "Jonas' UK-brief 11-09-2026, punkt 7: 'We group your public contract matches " +
+   "into one daily message, so you get the opportunities without constant " +
+   "notifications.' Anden saetning om private opgaver udeladt - ingen GB-funktion."],
+
   // ── Footerens juridiske firmalinje. ──
   // ⚠️ IKKE MARKETING - OG IKKE COPY-FILENS. Filen naegter bevidst at skrive
   // den: "Do not show the Danish CVR/address blindly as if it is a UK company
