@@ -3,7 +3,33 @@
 import { useMemo, useState } from "react";
 import { Logo } from "../Logo";
 import { tekster } from "../../lib/tekster";
+import { submitSignup, createSubscriptionSession } from "../../lib/catalog";
 import "../../app/start.css";
+
+// ── BÅNDENES LOFT I MATCH-REGLEN ───────────────────────────────────────────
+//
+// ⚠️ FIRE TAL DER IKKE FINDES ENDNU — OG DE MÅ IKKE GÆTTES.
+// Båndet er ikke en etiket: det bliver til `max_amount` på kunden, og
+// max_amount er dét matchmotoren filtrerer på. Vælger hun "Under £25,000" og
+// vi sætter loftet forkert, får hun en anden liste end den hun bad om — og
+// intet på skærmen ville afsløre det.
+//
+// ⚠️ LOFTET ER IKKE ETIKETTENS EGEN GRÆNSE. Det er fristelsen, og DK gør
+// bevidst det modsatte: "Under 100.000 kr." har maks 1.000.000 (se
+// PROJEKT_VALG i components/Start.js). Loftet er med vilje rummeligere end
+// spændet, fordi et udbuds beløb sjældent er det kunden ender med. At læse
+// tallene ud af de britiske etiketter ville derfor give GB en ANDEN
+// matchsemantik end DK — ikke den samme regel i en anden valuta.
+//
+// Jonas' brief 09-09-2026 fastlagde båndenes NAVNE. Tallene er en
+// produktbeslutning der mangler. Indtil de fire står her, afviser funnelen at
+// gemme en tilmelding frem for at gemme et gæt.
+const GB_BAAND_MAKS = {
+  "u25k": null,
+  "25k-100k": null,
+  "100k-500k": null,
+  "500k+": null,
+};
 
 // ============================================================================
 // DEN BRITISKE FUNNEL — /uk/start
@@ -68,10 +94,12 @@ function tilE164Uk(raa) {
   return null;
 }
 
-export default function StartUk({ katalog, pris, hjem }) {
+export default function StartUk({ katalog, pris, hjem, aaben = false }) {
   const T = tekster("GB").funnel;
   const [skaerm, setSkaerm] = useState(0);
   const [fejl, setFejl] = useState(null);
+  const [sender, setSender] = useState(false);
+  const [kvittering, setKvittering] = useState(null);
 
   const [nummer, setNummer] = useState("");
   const [firma, setFirma] = useState(null);      // svaret fra Companies House
@@ -149,6 +177,87 @@ export default function StartUk({ katalog, pris, hjem }) {
     () => T.stoerrelse.baand.find((b) => b.key === baand) || null,
     [baand, T.stoerrelse.baand]
   );
+
+  // ── SKRIVESTIEN ────────────────────────────────────────────────────────────
+  //
+  // ⚠️ SAMME `signup` SOM DANMARK, IKKE EN BRITISK GENVEJ. Alle værn bor i
+  // Edge Function'en — dublet-firmanummer/telefon, nul-dækning, min>max, gate 2
+  // (ingen adgang før kortet binder). En separat britisk skrivesti ville betyde
+  // at de værn kun gjaldt det halve af huset. Markedet udleder serveren selv af
+  // værten; klienten kan ikke vælge det.
+  //
+  // ⚠️ TRE TING KAN SPÆRRE, OG DE ER ALLE SANDE-TILSTANDE:
+  //   1. markedet er kommercielt lukket (GB.lanceret === false)
+  //   2. bandets loft er ikke besluttet (GB_BAAND_MAKS)
+  //   3. sole trader-vejen har intet firmanummer, og signup kræver et
+  // Ingen af dem omgås med et gæt. De vises som det de er.
+  async function tilmeld() {
+    setFejl(null);
+
+    // ⚠️ DEN KOMMERCIELLE LUK-GATE. GB er DRAFT og noindex; der oprettes ingen
+    // kunder før markedet åbnes. Flaget kommer fra markedsmodellen som en prop —
+    // ikke fra en import af lib/markets her, fordi det her er en KLIENT-
+    // komponent og en ny importør af den fil har før flyttet danske sider.
+    if (!aaben) { setKvittering("lukket"); return; }
+
+    // ⚠️ SOLE TRADER-VEJEN KAN IKKE GEMMES ENDNU. `signup` bruger firmanummeret
+    // som identitetsnøgle: dublet-værnet, historikken og Frisbii-koblingen
+    // hænger alle på den. Uden et nummer er der ingen nøgle — og at opfinde en
+    // ville betyde to konti for samme virksomhed uden at nogen kunne se det.
+    const firmanummer = normaliserFirmanummer(nummer);
+    if (!firmanummer) { setKvittering("uden-nummer"); return; }
+
+    const maks = GB_BAAND_MAKS[baand];
+    if (maks === null || maks === undefined) { setKvittering("mangler-baand"); return; }
+
+    setSender(true);
+    try {
+      // ⚠️ FELTET HEDDER `cvr` HELE VEJEN. Det er husets navn på virksomhedens
+      // identitetsnøgle, og kolonnen bærer nu markedets eget nummer. At døbe
+      // det om her ville betyde at klient og server talte om to ting.
+      const svar = await submitSignup({
+        company_name: firmanavn.trim(),
+        cvr: firmanummer,
+        contact_name: firmanavn.trim(),
+        email: email.trim().toLowerCase(),
+        phone: tilE164Uk(mobil),
+        fag_keys: fag.map((f) => f.key),
+        cpv_selections: fag.flatMap((f) => f.codes || []),
+        bredde: "alle",
+        region_keys: omraader,
+        min_amount: null,
+        max_amount: maks,
+        notify_email: true,
+        notify_sms: true,
+        marketing_consent: false,
+        terms_accepted: true,
+        package: "monthly",
+      });
+
+      // ⚠️ CHECKOUT FORSØGES, OG DEN FORVENTES AT AFVISE. Der findes ingen
+      // GBP-plan i Frisbii endnu (Clearhaus sætter GBP op), og
+      // create-subscription-session falder ALDRIG tilbage på den danske plan —
+      // det ville trække en britisk kunde i DKK. Afvisningen er det rigtige
+      // svar, og den vises som en ventetilstand, ikke som en fejl kunden har
+      // lavet.
+      try {
+        const sess = await createSubscriptionSession({
+          subscriber_id: svar.id,
+          email: email.trim().toLowerCase(),
+          contact_name: firmanavn.trim(),
+          phone: tilE164Uk(mobil),
+          billing: "monthly",
+        });
+        setKvittering({ type: "checkout", session: sess.session_id, id: svar.id });
+      } catch (e) {
+        setKvittering({ type: "venter-paa-plan", id: svar.id, grund: String(e?.message || e) });
+      }
+    } catch (e) {
+      setFejl(String(e?.message || e));
+    } finally {
+      setSender(false);
+    }
+  }
 
   function naeste() {
     setFejl(null);
@@ -358,6 +467,53 @@ export default function StartUk({ katalog, pris, hjem }) {
             </p>
             <p className="st-hj">{T.trust}</p>
             <p className="st-note">{T.betaling.foersteBetaling}</p>
+
+            {/* ⚠️ KNAPPEN ER STIENS ENDE, IKKE ET LØFTE OM ET TRÆK.
+                Den kalder den samme `signup` som Danmark og derefter checkout.
+                Begge kan sige nej, og hvert nej har sin egen ærlige tekst
+                herunder — ingen af dem er en fejl kunden har lavet. Teksterne
+                står IKKE i ordbogen: de beskriver en midlertidig
+                driftstilstand, ikke sidens copy, og de forsvinder den dag GB
+                åbner. En streng i en.js ville skulle igennem copy-vagten som
+                om den var salgstekst. */}
+            {!kvittering && (
+              <button type="button" className="btn btn-teal" disabled={sender} onClick={tilmeld}>
+                {sender ? "Just a moment…" : "Start Birdly"}
+              </button>
+            )}
+
+            {kvittering === "lukket" && (
+              <p className="st-note">
+                Birdly is not open for sign-ups in the UK yet. Nothing has been saved
+                and you have not been charged.
+              </p>
+            )}
+
+            {kvittering === "uden-nummer" && (
+              <p className="st-note">
+                We can&apos;t complete sign-up without a company number yet. If you
+                trade without one, email support@getbirdly.co.uk and we&apos;ll sort
+                it out with you.
+              </p>
+            )}
+
+            {kvittering === "mangler-baand" && (
+              <p className="st-note">
+                We can&apos;t set your contract-size filter yet. Nothing has been
+                saved — please try again later.
+              </p>
+            )}
+
+            {kvittering?.type === "venter-paa-plan" && (
+              <p className="st-note">
+                Your details are saved. Card payment for the UK isn&apos;t switched on
+                yet, so there is nothing to pay today — we&apos;ll email you when it is.
+              </p>
+            )}
+
+            {kvittering?.type === "checkout" && (
+              <p className="st-note">Opening secure checkout…</p>
+            )}
           </>
         )}
 

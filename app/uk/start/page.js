@@ -26,6 +26,11 @@ export const metadata = {
   robots: { index: false, follow: false },
 };
 
+// ⚠️ LUK-GATEN SENDES SOM EN PROP, IKKE IMPORTERET I KOMPONENTEN.
+// StartUk er en klientkomponent, og en ny importør af lib/markets ville lægge
+// markedsmodellen i klientbundtet — præcis den slags chunk-ændring der før har
+// flyttet danske sider uden at noget synligt ændrede sig. Serveren kender
+// allerede GB; den sender bare svaret med.
 export default async function UkStart() {
   const katalog = await katalogFor("GB");
 
@@ -52,6 +57,7 @@ export default async function UkStart() {
       katalog={katalog}
       pris={GB.pris}
       hjem={baseUrl("GB") || "/uk"}
+      aaben={GB.lanceret === true}
     />
   );
 }
