@@ -52,10 +52,37 @@ if (!sti) {
 // sammenligningen mod kilden bliver ved med at vaere tegn for tegn: pakken er
 // stadig sandhedskilden, og afvigelsen er een dokumenteret linje i stedet for
 // atten usporede haandrettelser.
+// ⚠️ UK-REPRAESENTANTEN: JONAS HAR BESLUTTET AT DER IKKE UDPEGES EN (11-09-2026).
+// Pakken efterlod fire placeholders og en redaktoer-note ("DO NOT PUBLISH WITH
+// PLACEHOLDERS") midt i en offentlig privatlivspolitik. De to ting der IKKE maa
+// ske, er at opfinde en repraesentant og at lade som om spoergsmaalet ikke
+// findes. Ordlyden herunder er derfor den sande, minimale: den siger at ingen
+// er udpeget, og den PAASTAAR INGEN undtagelses-begrundelse — hvilken
+// undtagelse der maatte gaelde, er UK-juristens kald foer launch, ikke vores.
+//
+// ⚠️ KONTAKT-AFSNITTETS "UK representative:"-linje fjernes HELT, ikke blot dens
+// vaerdi. En etiket uden indhold er en lovet oplysning der mangler; §2 svarer nu
+// paa spoergsmaalet direkte.
+//
+// ⚠️ STAAR HER OG IKKE SOM EN HAANDRETTELSE, af samme grund som de oevrige:
+// pakken bliver ved med at vaere sandhedskilden, og afvigelsen er een
+// dokumenteret beslutning man kan finde, i stedet for en stille tekstaendring.
+const AFSNIT2_PAKKEN =
+  "## 2. UK representative\n\n" +
+  "Where Article 27 UK GDPR requires Birdly to appoint a representative in the UK, Birdly's representative is:\n\n" +
+  "**[UK_REPRESENTATIVE_NAME]**  \n[UK_REPRESENTATIVE_ADDRESS]  \n[UK_REPRESENTATIVE_EMAIL]\n\n" +
+  "**DO NOT PUBLISH WITH PLACEHOLDERS.** If specialist advice confirms an exemption, replace with reviewed wording.";
+const AFSNIT2_NU =
+  "## 2. UK representative\n\n" +
+  "Birdly has not appointed a representative in the United Kingdom under Article 27 UK GDPR.\n\n" +
+  "If you have a question about how Birdly handles your personal information, contact support@getbirdly.co.uk.";
+
 const LAAST = [
   ["[UK_MONTHLY_PRICE]", "59"],
   ["[UK_ANNUAL_PRICE]", "590"],
   ["support@birdly.dk", "support@getbirdly.co.uk"],
+  [AFSNIT2_PAKKEN, AFSNIT2_NU],
+  ["\n\nUK representative: `[UK_REPRESENTATIVE_DETAILS]`", ""],
 ];
 
 const STOP = "# IMPLEMENTATION NOTES FOR CLAUDE CODE";
