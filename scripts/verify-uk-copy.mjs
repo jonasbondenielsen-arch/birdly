@@ -191,6 +191,16 @@ const UNDTAGET = new Map([
              "Copy-filen har ingen etape-navne; huset kraever navngivne etaper " +
              "frem for 'Step 3 of 6' (se noten i components/Start.js)."],
   ["etapeord", "Skjult skaermlaeser-label: ordet 'Stage' i 'Stage 2 of 3'. UI-chrome."],
+
+  // ── Match-trinnets to strenge. ──
+  // ⚠️ COPY-FILEN HAR INTET MATCH-TRIN. Den beskriver funnelen som tre trin;
+  // DK's har fire, og "Dine match" er det trin der goer de to til den samme
+  // oplevelse. De to strenge er derfor husets egne - og de er skrevet som en
+  // AERLIG TOM tilstand, ikke som et loefte: motoren leverer endnu ikke GB-data
+  // (markets.js dataLever), og et opdigtet match ville vaere det vaerste vi
+  // kunne vise. FLAGET TIL JONAS: skal de have en anden ordlyd, er det her.
+  ["matchoverskrift", "Match-trinnets overskrift. Copy-filen daekker ikke trinnet - skrevet af CC, flagget."],
+  ["leder", "Match-trinnets tomme tilstand. Copy-filen daekker ikke trinnet - skrevet af CC, flagget."],
   ["etapeaf", "Skjult skaermlaeser-label: ordet 'of'. UI-chrome."],
 
   // ── Nav- og footer-ankre. ──

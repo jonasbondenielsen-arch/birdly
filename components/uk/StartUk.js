@@ -56,7 +56,7 @@ const GB_BAAND_MAKS = {
 // stopper. Ingen rigtige træk, GB er DRAFT.
 // ============================================================================
 
-const SKAERME = ["firma", "omraade", "stoerrelse", "type", "kontakt", "betaling"];
+const SKAERME = ["firma", "omraade", "stoerrelse", "type", "match", "kontakt", "betaling"];
 
 // ⚠️ SEKS INTERNE SKAERME, TRE SYNLIGE ETAPER - og kunden ser aldrig de
 // seks. Husets regel fra components/Start.js: et taelleværk ("Step 3 of 6")
@@ -70,7 +70,8 @@ const SKAERME = ["firma", "omraade", "stoerrelse", "type", "kontakt", "betaling"
 //   type        -> Work
 //   kontakt     -> Start Birdly
 //   betaling    -> Start Birdly
-const SKAERM_ETAPE = [0, 1, 1, 1, 2, 2];
+//   match       -> Your matches
+const SKAERM_ETAPE = [0, 1, 1, 1, 2, 3, 3];
 
 // ⚠️ SPEJLER app/api/company/route.js. Samme regel, to steder — Edge/route og
 // klient kan ikke dele kode her uden at trække serverkoden ind i bundtet.
@@ -95,7 +96,11 @@ function tilE164Uk(raa) {
 }
 
 export default function StartUk({ katalog, pris, hjem, aaben = false }) {
-  const T = tekster("GB").funnel;
+  const ORD = tekster("GB");
+  const T = ORD.funnel;
+  // ⚠️ SAMME STRENG SOM FORSIDEN, praecis som DK genbruger sin. Der er ikke
+  // skrevet ny copy til funnelen.
+  const VIND = { over: ORD.vaerdi.vindOver, under1: ORD.vaerdi.vindUnder1, under2: ORD.vaerdi.vindUnder2 };
   const [skaerm, setSkaerm] = useState(0);
   const [fejl, setFejl] = useState(null);
   const [sender, setSender] = useState(false);
@@ -342,6 +347,48 @@ export default function StartUk({ katalog, pris, hjem, aaben = false }) {
                 <li key={t}><span>✓</span> {t.trim()}</li>
               ))}
             </ul>
+
+            {/* ⚠️ "YOU JUST NEED TO WIN ONE" ER IKKE ET LOEFTE, og den er DK's
+                egen konstruktion (st-vind i components/Start.js). Den siger at
+                der ikke skal MANGE vundne kontrakter til, foer aarsprisen er
+                lille i sammenligning. Skriv den aldrig om til "you will win one".
+                ⚠️ STRENGEN GENBRUGES FRA FORSIDEN, praecis som DK genbruger sin.
+                Ingen ny copy er opfundet til funnelen. */}
+            <div className="st-vind">
+              <span className="st-vind-over">{VIND.over}</span>
+              <span className="st-vind-under">{VIND.under1}<b>{VIND.under2}</b></span>
+            </div>
+          </div>
+
+          {/* ─────────── HOEJRE: ACTION-KORTET ───────────
+              ⚠️ KORTET LAA FOER UDEN FOR to-kolonnen og faldt derfor ned under
+              argumentet i stedet for at staa ved siden af det. DK's /start har
+              det i hoejre kolonne, og det er hele grunden til at skaermen
+              foeles som eet valg frem for en side man scroller igennem. */}
+          <div className="st-pre-hoejre">
+            <div className="st-kort">
+              <h2 className="st-pre-h2">{T.intro}</h2>
+              {fejl && <p className="st-fejl">{fejl}</p>}
+              {besked && <p className="st-info">{besked}</p>}
+                <span className="st-lab">{T.firma.label}</span>
+                <input
+                  className="st-felt"
+                  value={nummer}
+                  onChange={(e) => setNummer(e.target.value)}
+                  autoComplete="off"
+                  inputMode="text"
+                />
+                <button className="btn btn-teal st-bred" onClick={slaaOp} disabled={soeger}>
+                  {T.cta}
+                </button>
+                {/* ⚠️ IKKE EN FAGVAELGER — se hovednoten. Med eet fag er det en
+                    bekraeftelse, ikke et valg. */}
+                <p className="st-hj">{T.firma.udenNummer}</p>
+                <button className="st-tilbage" onClick={fortsaetSomRengoering}>
+                  {T.firma.soleTrader}
+                </button>
+              <p className="st-under-knap">{T.trust}</p>
+            </div>
           </div>
         </div>
       )}
@@ -349,28 +396,6 @@ export default function StartUk({ katalog, pris, hjem, aaben = false }) {
       <div className="st-kort">
         {fejl && <p className="st-fejl">{fejl}</p>}
         {besked && <p className="st-info">{besked}</p>}
-
-        {navn === "firma" && (
-          <>
-            <span className="st-lab">{T.firma.label}</span>
-            <input
-              className="st-felt"
-              value={nummer}
-              onChange={(e) => setNummer(e.target.value)}
-              autoComplete="off"
-              inputMode="text"
-            />
-            <button className="btn btn-teal st-bred" onClick={slaaOp} disabled={soeger}>
-              {T.cta}
-            </button>
-            {/* ⚠️ IKKE EN FAGVAELGER — se hovednoten. Med eet fag er det en
-                bekraeftelse, ikke et valg. */}
-            <p className="st-hj">{T.firma.udenNummer}</p>
-            <button className="st-tilbage" onClick={fortsaetSomRengoering}>
-              {T.firma.soleTrader}
-            </button>
-          </>
-        )}
 
         {/* ⚠️ HUSETS EGNE VALG-KOMPONENTER, ikke `st-chip`.
             `.st-chip` er en STATISK visnings-chip med en fjern-knap; den har
@@ -449,6 +474,23 @@ export default function StartUk({ katalog, pris, hjem, aaben = false }) {
             <span className="st-lab">{T.kontakt.mobil}</span>
             <input className="st-felt" type="tel" value={mobil} onChange={(e) => setMobil(e.target.value)} />
             <p className="st-hj">{T.kontakt.mobilHjaelp}</p>
+            <button className="btn btn-teal st-bred" onClick={naeste}>{T.cta}</button>
+          </>
+        )}
+
+        {/* ══ TRIN 3: YOUR MATCHES ══
+            ⚠️ AERLIG TOM, IKKE ET OPDIGTET MATCH. Motoren henter nu britiske
+            udbud, men GB's `dataLever` er stadig false: bevis-bjaelkens
+            paastande ("2x dagligt", "nye de seneste 7 dage") er foerst sande
+            naar cron'en har koert af sig selv. Indtil da viser trinnet hvad
+            der faktisk sker - at Birdly leder - frem for et tal eller en liste
+            vi ikke kan staa inde for. Samme regel som bevis-bjaelken paa
+            forsiden: hellere ingenting end noget der ser rigtigt ud.
+            Naar dataLever taendes, er det HER de aegte matches skal ind. */}
+        {navn === "match" && (
+          <>
+            <h2 className="st-pre-h2">{T.match.matchOverskrift}</h2>
+            <p className="st-hj">{T.match.leder}</p>
             <button className="btn btn-teal st-bred" onClick={naeste}>{T.cta}</button>
           </>
         )}
