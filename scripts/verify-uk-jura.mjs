@@ -38,9 +38,24 @@ if (!sti) {
   process.exit(2);
 }
 
+// ⚠️ PLACEHOLDEREN HOLDER TALLET, IKKE VALUTATEGNET. Pakken skriver selv
+// "£[UK_MONTHLY_PRICE]", saa en substitution til "£59" gav "££59" — fire steder
+// i renderet produktion (Terms & Conditions §3.2 og Subscription Terms §1).
+// Rettet 11-09-2026: der indsaettes nu kun tallet, og pakkens eget £ staar
+// tilbage praecis hvor det altid har staaet.
+//
+// ⚠️ SUPPORT-ADRESSEN ER JONAS' BESLUTNING, IKKE EN RETTELSE AF PAKKEN.
+// Pakken blev skrevet med support@birdly.dk. Jonas' UK-brief (11-09-2026) goer
+// support@getbirdly.co.uk til den primaere britiske adresse paa ALLE britiske
+// sider, jura inklusive — og MARKEDER.GB.supportMail sagde det allerede.
+// Substitutionen staar her frem for at blive rettet i teksten, saa
+// sammenligningen mod kilden bliver ved med at vaere tegn for tegn: pakken er
+// stadig sandhedskilden, og afvigelsen er een dokumenteret linje i stedet for
+// atten usporede haandrettelser.
 const LAAST = [
-  ["[UK_MONTHLY_PRICE]", "£59"],
-  ["[UK_ANNUAL_PRICE]", "£590"],
+  ["[UK_MONTHLY_PRICE]", "59"],
+  ["[UK_ANNUAL_PRICE]", "590"],
+  ["support@birdly.dk", "support@getbirdly.co.uk"],
 ];
 
 const STOP = "# IMPLEMENTATION NOTES FOR CLAUDE CODE";

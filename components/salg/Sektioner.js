@@ -454,10 +454,16 @@ export function Hero({
  */
 export function BevisBjaelke({ tal, ord = null }) {
   const T = ord || DA_BEVIS;
+  // ⚠️ SPROGET KOMMER FRA ORDBOGEN, IKKE FRA EN NY PROP. `marked={marked}` paa
+  // en delt komponent flyttede fire danske sider 09-09-2026 — enhver ny prop
+  // skrives ind i RSC-stroemmen, ogsaa naar den er ens. `ord` findes allerede
+  // og er null for DK, saa `ord?.sprog` er undefined og formatterne falder
+  // tilbage paa deres danske standard. Danmark kan ikke flytte sig af det her.
+  const sprog = ord?.sprog;
   const bydbare = typeof tal?.bydbare === "number" ? tal.bydbare : null;
   const aabne = typeof tal?.bydbare_aabne === "number" ? tal.bydbare_aabne : null;
   const nye = typeof tal?.nye_7_dage === "number" ? tal.nye_7_dage : null;
-  const opdateret = fmtOpdateret(tal?.sidst_opdateret);
+  const opdateret = fmtOpdateret(tal?.sidst_opdateret, sprog);
 
   if (bydbare == null && aabne == null && nye == null) return null;
 
@@ -474,19 +480,19 @@ export function BevisBjaelke({ tal, ord = null }) {
         <div className="sg-bevis-grid">
           {aabne != null && (
             <div className="sg-bevis-kort">
-              <div className="sg-tal">{daTal(aabne)}</div>
+              <div className="sg-tal">{daTal(aabne, sprog)}</div>
               <small>{T.aabne}</small>
             </div>
           )}
           {bydbare != null && (
             <div className="sg-bevis-kort">
-              <div className="sg-tal">{daTal(bydbare)}</div>
+              <div className="sg-tal">{daTal(bydbare, sprog)}</div>
               <small>{T.bydbare}</small>
             </div>
           )}
           {nye != null && (
             <div className="sg-bevis-kort">
-              <div className="sg-tal">{daTal(nye)}</div>
+              <div className="sg-tal">{daTal(nye, sprog)}</div>
               <small>{T.nye}</small>
             </div>
           )}

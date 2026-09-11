@@ -219,6 +219,11 @@ const UNDTAGET = new Map([
                  "- men for kort til at kunne slaas op meningsfuldt i filen."],
   ["tilbageforside", "Hub'ens tilbage-link, spejler DK's '← Tilbage til forsiden'. UI-chrome."],
   ["cookiehref", "Rute til cookie-politikken, ikke synlig tekst."],
+  // ⚠️ IKKE EN STRENG KUNDEN LAESER. "en-GB" er en locale-kode der styrer
+  // tal- og tidsformat i bevis-bjaelken (se lib/opgaveTal.js). Copy-filen
+  // indeholder naturligvis ingen locale-koder.
+  ["sprog", "Locale-kode (en-GB) til tal- og datoformat. Ikke synlig tekst."],
+
   ["cookievalg", "Footerens samtykke-link. Cookie-politikkens §3 kalder den selv " +
                  "'Cookie Settings'; her i saetningsform som DK's 'Skift dit cookievalg'."],
 

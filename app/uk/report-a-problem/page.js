@@ -24,10 +24,11 @@ const AFSNIT = "## 12. Problems with a business";
 // Afsnittet hentes derfor fra lib/uk/jura.js og er dækket af
 // scripts/verify-uk-jura.mjs som alt andet jura.
 //
-// ⚠️ ADRESSEN ER §12's EGEN (support@birdly.dk), ikke den britiske support.
-// Jonas' regel er britiske adresser i UK-vendt tekst — men §12 bruger
-// bevidst den danske entitet, og en anden adresse HER end i betingelserne
-// ville betyde at siden og aftalen sagde to forskellige ting. Flagget.
+// ⚠️ ADRESSEN ER §12's EGEN, OG DEN ER NU BRITISK. Siden skriver ikke sin
+// egen support-adresse; den arver §12's, saa siden og aftalen aldrig kan sige
+// to forskellige ting. Da hele jura-pakken blev standardiseret til
+// support@getbirdly.co.uk (11-09-2026, Jonas' UK-brief) fulgte den her side
+// med af sig selv — praecis derfor er teksten ikke skrevet om lokalt.
 // ============================================================================
 
 export const metadata = {
