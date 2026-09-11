@@ -1,5 +1,6 @@
 import StartUk from "../../../components/uk/StartUk";
 import { katalogFor } from "../../../lib/katalogFor";
+import { hentOpgaveTal } from "../../../lib/opgaveTal";
 import { baseUrl, MARKEDER } from "../../../lib/markets";
 
 const GB = MARKEDER.GB;
@@ -33,6 +34,10 @@ export const metadata = {
 // allerede GB; den sender bare svaret med.
 export default async function UkStart() {
   const katalog = await katalogFor("GB");
+  // ⚠️ KUN NAAR MOTOREN LEVERER. Samme gate som /uk's bevis-bjaelke: er
+  // dataLever false, hentes der intet, `tal` er null, og stats-boksen staar der
+  // slet ikke. Den dag GB's ingest koerer af sig selv, taender boksen sig selv.
+  const tal = GB.dataLever ? await hentOpgaveTal("GB", baseUrl("GB")) : null;
 
   // ⚠️ INGEN FUNNEL UDEN BRITISKE DATA. Kan vi ikke få GB's katalog, viser vi
   // ikke en formular med danske fag og danske regioner — vi siger det ligeud.
@@ -58,6 +63,7 @@ export default async function UkStart() {
       pris={GB.pris}
       hjem={baseUrl("GB") || "/uk"}
       aaben={GB.lanceret === true}
+      tal={tal}
     />
   );
 }

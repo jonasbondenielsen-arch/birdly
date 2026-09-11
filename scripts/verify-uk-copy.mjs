@@ -127,6 +127,28 @@ const FRA_BRIEF = new Map([
    "into one daily message, so you get the opportunities without constant " +
    "notifications.' Anden saetning om private opgaver udeladt - ingen GB-funktion."],
 
+  // ── /uk/start's manglende sektioner. Jonas' brief 11-09-2026. ──
+  // ⚠️ HELE BRIEFEN ER ORDLYD, IKKE EN INSTRUKS. Jonas skrev hver af de her
+  // strenge ordret ("Brug denne version:", "Brug:"), saa de er godkendt copy
+  // paa linje med copy-filen - men de findes ikke I filen, og derfor staar de
+  // her med deres kilde i stedet for at forsvinde ind i koden.
+  ["No portal", "Jonas' brief 11-09-2026, trust points: 'No portal'."],
+  ["No daily searching", "Jonas' brief 11-09-2026, trust points."],
+  ["No complicated setup", "Jonas' brief 11-09-2026, trust points."],
+  ["Public contracts are also for smaller businesses.",
+   "Jonas' brief 11-09-2026, info card: 'Headline: Public contracts are also for smaller businesses.'"],
+  ["It doesn't have to be complicated. Birdly finds them. You choose which ones to go for.",
+   "Jonas' brief 11-09-2026, info card body, ordret."],
+  ["A relevant contract", "Jonas' brief 11-09-2026, vaerdikort 1: 'overline/small text: A relevant contract'."],
+  ["can be", "Jonas' brief 11-09-2026, vaerdikort 1: 'highlight text: can be'."],
+  // ⚠️ STOERRELSESORDENER, IKKE ET KONKRET UDBUD. Jonas skrev dem selv som
+  // eksempelstruktur, og de staar bag "can be" - samme forbehold som DK's.
+  ["£100,000 · £300,000 · or more", "Jonas' brief 11-09-2026, vaerdikort 1, eksempelstruktur."],
+  ["Birdly for a full year", "Jonas' brief 11-09-2026, vaerdikort 2: 'overline: Birdly for a full year'."],
+  ["Birdly is already watching", "Jonas' brief 11-09-2026, stats-boks: 'BIRDLY IS ALREADY WATCHING'. Versalerne saettes af CSS."],
+  ["Enter your company number. Birdly will identify your business and start looking for relevant contracts.",
+   "Jonas' brief 11-09-2026, form card intro, ordret."],
+
   // ── Footerens juridiske firmalinje. ──
   // ⚠️ IKKE MARKETING - OG IKKE COPY-FILENS. Filen naegter bevidst at skrive
   // den: "Do not show the Danish CVR/address blindly as if it is a UK company

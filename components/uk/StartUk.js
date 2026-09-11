@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { Logo } from "../Logo";
 import { tekster } from "../../lib/tekster";
 import { submitSignup, createSubscriptionSession } from "../../lib/catalog";
+import { daTal } from "../../lib/opgaveTal";
 import "../../app/start.css";
 
 // ── BÅNDENES LOFT I MATCH-REGLEN ───────────────────────────────────────────
@@ -95,11 +96,12 @@ function tilE164Uk(raa) {
   return null;
 }
 
-export default function StartUk({ katalog, pris, hjem, aaben = false }) {
+export default function StartUk({ katalog, pris, hjem, aaben = false, tal = null }) {
   const ORD = tekster("GB");
   const T = ORD.funnel;
   // ⚠️ SAMME STRENG SOM FORSIDEN, praecis som DK genbruger sin. Der er ikke
   // skrevet ny copy til funnelen.
+  const SPROG = ORD.bevis.sprog;
   const VIND = { over: ORD.vaerdi.vindOver, under1: ORD.vaerdi.vindUnder1, under2: ORD.vaerdi.vindUnder2 };
   const [skaerm, setSkaerm] = useState(0);
   const [fejl, setFejl] = useState(null);
@@ -342,9 +344,13 @@ export default function StartUk({ katalog, pris, hjem, aaben = false }) {
                 funnelen. Den stod indtil nu kun paa betalings-trinnet, hvor
                 den kom for sent. Punkterne er filens egen liste, delt paa
                 dens egen "·"-separator: samme ord, husets struktur. */}
+            {/* ⚠️ DK'S TRE PUNKTER, IKKE TRUST-LINJENS. De besvarer en anden
+                indvending - at det bliver besvaerligt - og Trust-linjen
+                (£0/14 days/lock-in) staar under knappen, hvor DK ogsaa har den.
+                Begge findes paa DK's skaerm; begge findes nu her. */}
             <ul className="st-pre-trust">
-              {T.trust.split("·").map((t) => (
-                <li key={t}><span>✓</span> {t.trim()}</li>
+              {T.punkter.map((t) => (
+                <li key={t}><span>✓</span> {t}</li>
               ))}
             </ul>
 
@@ -358,6 +364,32 @@ export default function StartUk({ katalog, pris, hjem, aaben = false }) {
               <span className="st-vind-over">{VIND.over}</span>
               <span className="st-vind-under">{VIND.under1}<b>{VIND.under2}</b></span>
             </div>
+
+            {/* ⚠️ INDVENDINGEN STAAR FOER FELTET, ikke efter. DK's begrundelse,
+                ordret: "det er kun for de store" er den grund folk lukker fanen
+                med - den skal vaere besvaret inden de bliver bedt om noget. */}
+            <div className="st-smaa">
+              <b>{T.smaa.smaaOverskrift}</b>
+              <p>{T.smaa.smaaBrod}</p>
+            </div>
+
+            {/* ⚠️ KOMPAKT SAMMENLIGNING, IKKE EN PRISSEKTION. Den skal kun goere
+                det foerste klik oekonomisk indlysende. Beloebene til venstre er
+                stoerrelsesordener med "can be" foran - ikke et konkret udbud, og
+                aldrig et tal vi har fundet paa. Prisen til hoejre kommer fra
+                markedsmodellen, ikke fra en kurs-omregning. */}
+            <div className="st-minianker">
+              <div className="st-minianker-side">
+                <span>{T.anker.ankerVenstre}</span>
+                <b>{T.anker.ankerKanVaere}</b>
+                <i>{T.anker.ankerBeloeb}</i>
+              </div>
+              <div className="st-minianker-side st-minianker-pris">
+                <span>{T.anker.ankerHoejre}</span>
+                <b>£{pris.aar}</b>
+                <i>{T.betaling.exVat}</i>
+              </div>
+            </div>
           </div>
 
           {/* ─────────── HOEJRE: ACTION-KORTET ───────────
@@ -368,6 +400,7 @@ export default function StartUk({ katalog, pris, hjem, aaben = false }) {
           <div className="st-pre-hoejre">
             <div className="st-kort">
               <h2 className="st-pre-h2">{T.intro}</h2>
+              <p className="st-hj">{T.firmaIntro}</p>
               {fejl && <p className="st-fejl">{fejl}</p>}
               {besked && <p className="st-info">{besked}</p>}
                 <span className="st-lab">{T.firma.label}</span>
@@ -389,6 +422,46 @@ export default function StartUk({ katalog, pris, hjem, aaben = false }) {
                 </button>
               <p className="st-under-knap">{T.trust}</p>
             </div>
+
+            {/* ⚠️ RENDERES KUN NAAR DER ER AEGTE TAL. `tal` er null saa laenge
+                GB's dataLever er false - og saa staar blokken der slet ikke.
+                Samme regel som forsidens bevis-bjaelke og som DK's egen:
+                hellere et hul end et gaettet tal. Hver flise har desuden sin
+                egen null-test, saa et manglende felt ikke tager de oevrige med.
+                ⚠️ FREKVENS-FLISEN HAENGER MED PAA DE SAMME DATA. "2x a day" er
+                sandt om motoren, men den maa ikke staa alene og antyde at der
+                koeres paa noget vi ikke har. */}
+            {tal && (
+              <div className="st-pre-bevis">
+                <span className="st-pre-kick">
+                  <span className="st-prik" aria-hidden="true" /> {T.bevis.bevisKick}
+                </span>
+                <div className="st-stats">
+                  {tal.bydbare_aabne != null && (
+                    <div className="st-stat">
+                      <b>{daTal(tal.bydbare_aabne, SPROG)}</b>
+                      <span>{ORD.bevis.aabne}</span>
+                    </div>
+                  )}
+                  {tal.nye_7_dage != null && (
+                    <div className="st-stat">
+                      <b>{daTal(tal.nye_7_dage, SPROG)}</b>
+                      <span>{ORD.bevis.nye}</span>
+                    </div>
+                  )}
+                  {tal.bydbare != null && (
+                    <div className="st-stat">
+                      <b>{daTal(tal.bydbare, SPROG)}</b>
+                      <span>{ORD.bevis.bydbare}</span>
+                    </div>
+                  )}
+                  <div className="st-stat">
+                    <b>{ORD.bevis.frekvensTal}</b>
+                    <span>{ORD.bevis.frekvens}</span>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
