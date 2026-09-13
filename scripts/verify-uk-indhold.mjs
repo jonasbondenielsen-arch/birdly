@@ -47,6 +47,25 @@ const SPRINGES_OVER = new Map([
 // Listen er per STRENG, ikke per blok - saa resten af blokken stadig maales.
 // En blok-undtagelse ville slukke for hele sektionen; det er praecis den
 // bagdoer den her vagt blev bygget for at lukke.
+// ⚠️ BETINGEDE STRENGE — DEN TREDJE TILSTAND.
+// Vagtens regel er "alt eller intet": en halvt udfyldt sektion er altid en
+// fejl. Men bevis-bjaelken har en flise der med VILJE kan mangle, og den
+// findes fordi tallet ellers ville lyve. `nye_7_dage` taeller paa VORES
+// created_at, saa et marked hvor ingesten netop er taendt, har alt som "nyt" -
+// GB stod med 370 nye ud af 370 i alt (13-09-2026). Serveren udelader derfor
+// feltet indtil markedets aeldste raekke er aeldre end vinduet, og flisen
+// taender sig selv den dag tallet bliver sandt.
+//
+// ⚠️ DEN MAA IKKE BARE STAA I IKKE_I_TEKSTEN. Det ville sige "den staar aldrig
+// paa siden", og saa ville vagten tie den dag flisen ER der og de OEVRIGE
+// mangler. Den staar her som BETINGET: den maa mangle, men hvis den er der,
+// skal resten ogsaa vaere det.
+const BETINGET = new Map([
+  ["new in the last 7 days",
+   "Bevis-bjaelkens 7-dages-flise. Serveren udelader feltet indtil ingesten er " +
+   "aeldre end vinduet - se noten i get-opgave-tal (birdly-admin 7874f54)."],
+]);
+
 const IKKE_I_TEKSTEN = new Map([
   ["Examples of the work we find",
    "aria-label paa chip-listen. Den staar i markup'en som ATTRIBUT, ikke som " +
@@ -54,6 +73,9 @@ const IKKE_I_TEKSTEN = new Map([
   ["Show fewer questions",
    "FAQ-foldeknappens ANDEN tilstand. Den findes foerst i DOM'en efter et " +
    "klik; ved foerste visning staar der 'See all questions (N more)'."],
+  ["en-GB",
+   "Locale-kode i bevis-blokken, ikke tekst. Den styrer tal- og datoformat " +
+   "(lib/opgaveTal.js) og staar aldrig paa skaermen."],
   ["#hvordan", "Anker-ADRESSE, ikke tekst. Den staar i href-attributten."],
   ["#problem", "Anker-adresse. Samme grund."],
   ["£0 today · 14 days free · No long-term lock-in",
@@ -160,7 +182,10 @@ for (const side of SIDER) {
     if (maalte.length === 0) continue;
 
     const fundet = maalte.filter((v) => html.includes(norm(v)));
-    const mangler = maalte.filter((v) => !html.includes(norm(v)));
+    // Betingede strenge taeller ikke som "manglende" - se noten ved BETINGET.
+    const mangler = maalte.filter((v) => !html.includes(norm(v)) && !BETINGET.has(v));
+    const udeladt = maalte.filter((v) => !html.includes(norm(v)) && BETINGET.has(v));
+    for (const u of udeladt) console.log(`        · betinget, udeladt: ${JSON.stringify(u.slice(0, 60))}`);
 
     if (fundet.length === 0) {
       // Sektionen udelader sig selv - det er husets regel, ikke en fejl.
