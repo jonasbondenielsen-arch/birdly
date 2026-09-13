@@ -5,6 +5,7 @@ import { Logo } from "../Logo";
 import { tekster } from "../../lib/tekster";
 import { submitSignup, createSubscriptionSession } from "../../lib/catalog";
 import { daTal } from "../../lib/opgaveTal";
+import { hentKandidater } from "../../lib/kandidater";
 import "../../app/start.css";
 
 // ── BÅNDENES LOFT I MATCH-REGLEN ───────────────────────────────────────────
@@ -57,7 +58,7 @@ const GB_BAAND_MAKS = {
 // stopper. Ingen rigtige træk, GB er DRAFT.
 // ============================================================================
 
-const SKAERME = ["firma", "omraade", "stoerrelse", "type", "match", "kontakt", "betaling"];
+const SKAERME = ["firma", "beloenning", "omraade", "stoerrelse", "type", "match", "kontakt", "betaling"];
 
 // ⚠️ SEKS INTERNE SKAERME, TRE SYNLIGE ETAPER - og kunden ser aldrig de
 // seks. Husets regel fra components/Start.js: et taelleværk ("Step 3 of 6")
@@ -72,7 +73,8 @@ const SKAERME = ["firma", "omraade", "stoerrelse", "type", "match", "kontakt", "
 //   kontakt     -> Start Birdly
 //   betaling    -> Start Birdly
 //   match       -> Your matches
-const SKAERM_ETAPE = [0, 1, 1, 1, 2, 3, 3];
+//   beloenning  -> Contracts (DK's trin 2: beloenningen FOER spoergsmaalene)
+const SKAERM_ETAPE = [0, 1, 1, 1, 1, 2, 3, 3];
 
 // ⚠️ SPEJLER app/api/company/route.js. Samme regel, to steder — Edge/route og
 // klient kan ikke dele kode her uden at trække serverkoden ind i bundtet.
@@ -106,6 +108,17 @@ export default function StartUk({ katalog, pris, hjem, aaben = false, tal = null
   const [skaerm, setSkaerm] = useState(0);
   const [fejl, setFejl] = useState(null);
   const [sender, setSender] = useState(false);
+  // ⚠️ TALLET KOMMER FRA MATCH-REGLEN, ikke fra et markedstotal.
+  // preview-kandidater er den SAMME funktion DK's funnel bruger til sin "42",
+  // saa tallet i funnelen kan ikke afvige fra det kunden bagefter faar.
+  //
+  // ⚠️ MARKEDET UDLEDES AF VAERTEN, ikke af os. Funktionen laeser Origin mod
+  // market_domains - praecis saa en klient ikke kan vaelge sit eget marked.
+  // I produktion sender browseren den selv fra getbirdly.co.uk. Lokalt er
+  // vaerten ukendt, og saa svarer den DK: et tal maalt paa localhost siger
+  // derfor intet om GB. Verificeret mod GB-vaerten 13-09-2026: 13 i omraadet,
+  // 15 paa landsplan for hele UK.
+  const [kandidater, setKandidater] = useState(null);
   const [kvittering, setKvittering] = useState(null);
 
   const [nummer, setNummer] = useState("");
@@ -125,8 +138,27 @@ export default function StartUk({ katalog, pris, hjem, aaben = false, tal = null
   const fag = katalog.fag;
   const regioner = katalog.regions || [];
 
-  const videre = () => { setFejl(null); setSkaerm((s) => Math.min(s + 1, SKAERME.length - 1)); };
-  const tilbage = () => { setFejl(null); setSkaerm((s) => Math.max(s - 1, 0)); };
+  const videre = () => {
+    setFejl(null);
+    // Forlader vi firma-skaermen, hentes beloenningens tal med det samme.
+    if (SKAERME[skaerm] === "firma") hentBeloenning();
+    setSkaerm((s) => {
+      const naeste = Math.min(s + 1, SKAERME.length - 1);
+      // ⚠️ INTET TAL ⇒ INGEN SKAERM. Jonas' regel: vis aldrig 0 og aldrig en
+      // placeholder. Springet sker HER frem for at rendre en tom skaerm, saa
+      // kunden aldrig ser en overskrift uden sit tal.
+      if (SKAERME[naeste] === "beloenning" && !harBeloenning) return Math.min(naeste + 1, SKAERME.length - 1);
+      return naeste;
+    });
+  };
+  const tilbage = () => {
+    setFejl(null);
+    setSkaerm((s) => {
+      const forrige = Math.max(s - 1, 0);
+      if (SKAERME[forrige] === "beloenning" && !harBeloenning) return Math.max(forrige - 1, 0);
+      return forrige;
+    });
+  };
 
   // ── Companies House ────────────────────────────────────────────────────────
   // ⚠️ ASYMMETRIEN ER HELE POINTEN, og den er DK's CVR-gates:
@@ -174,6 +206,22 @@ export default function StartUk({ katalog, pris, hjem, aaben = false, tal = null
   // kunde hvis selskab står som dissolved. Ingen firmanummer opdigtes: `firma`
   // forbliver null, og det er i sig selv provenance — vi kan bagefter se
   // forskel på et navn Companies House gav os og et kunden selv skrev.
+  // Hentes naar kunden forlader firma-skaermen - foer beloenningen vises.
+  async function hentBeloenning() {
+    if (!aaben && !tal) { /* ingen motor-data: skaermen springes over nedenfor */ }
+    try {
+      const k = await hentKandidater({
+        fag_keys: fag.map((f) => f.key),
+        cpv_selections: fag.flatMap((f) => f.codes || []),
+        bredde: "alle",
+        region_keys: [],
+        min_amount: null,
+        max_amount: null,
+      });
+      setKandidater(k?.fejlede ? null : k);
+    } catch { setKandidater(null); }
+  }
+
   function fortsaetSomRengoering() {
     setFejl(null);
     setFirma(null);
@@ -187,6 +235,12 @@ export default function StartUk({ katalog, pris, hjem, aaben = false, tal = null
 
   // Kontekstlinjens dele. Staar EFTER valgtBaand, ellers laeses den foer den
   // er defineret.
+  // ⚠️ KUN ET AEGTE TAL TAELLER. Er dataLever slukket, er kaldet fejlet, eller
+  // er tallet 0, findes skaermen ikke. Et "0 open contracts that match you"
+  // ville vaere sandt og samtidig det vaerste vi kunne vise.
+  const beloenningsTal = kandidater?.i_omraade || kandidater?.paa_landsplan || 0;
+  const harBeloenning = beloenningsTal > 0;
+
   const kontekst = [firma?.name, valgtBaand?.label, fag[0]?.label_da].filter(Boolean);
 
   // ── SKRIVESTIEN ────────────────────────────────────────────────────────────
@@ -583,6 +637,22 @@ export default function StartUk({ katalog, pris, hjem, aaben = false, tal = null
             vi ikke kan staa inde for. Samme regel som bevis-bjaelken paa
             forsiden: hellere ingenting end noget der ser rigtigt ud.
             Naar dataLever taendes, er det HER de aegte matches skal ind. */}
+        {/* ══ SKAERM A: BELOENNINGEN, FOER SPOERGSMAALENE ══
+            DK's trin 2. Tallet kommer fra preview-kandidater - samme regel som
+            kunden bagefter matches paa - og skaermen findes kun naar det er
+            aegte og stoerre end nul. */}
+        {navn === "beloenning" && harBeloenning && (
+          <>
+            <h1 className="st-res">
+              {daTal(beloenningsTal, SPROG)} {T.beloenning.beloenningSuffix}
+            </h1>
+            <p className="st-hj">{T.beloenning.beloenningUnder}</p>
+            <button className="btn btn-teal st-bred" onClick={naeste}>
+              {T.beloenning.beloenningVidere}
+            </button>
+          </>
+        )}
+
         {navn === "match" && (
           <>
             <h2 className="st-pre-h2">{T.match.matchOverskrift}</h2>

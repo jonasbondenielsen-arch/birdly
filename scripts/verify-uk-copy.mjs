@@ -149,6 +149,17 @@ const FRA_BRIEF = new Map([
   ["Enter your company number. Birdly will identify your business and start looking for relevant contracts.",
    "Jonas' brief 11-09-2026, form card intro, ordret."],
 
+  // ── Trin 2's beloenningsskaerm. Jonas' brief 13-09-2026. ──
+  // ⚠️ ORDRET FRA BRIEFEN, og briefen er selv utvetydig om at TALLET ikke er
+  // copy: "{N} kommer fra motoren ... Skriv aldrig et fast tal ind."
+  ["open contracts that match you",
+   "Jonas' brief 13-09-2026, skaerm A: '{N} open contracts that match you'. " +
+   "Kun etiketten staar her - tallet kommer fra preview-kandidater."],
+  ["These are the kind of contracts Birdly can keep an eye on for you.",
+   "Jonas' brief 13-09-2026, skaerm A, undertekst, ordret."],
+  ["Let's make your matches even sharper",
+   "Jonas' brief 13-09-2026, skaerm A, overgang til spoergsmaalene, ordret."],
+
   // ── Footerens juridiske firmalinje. ──
   // ⚠️ IKKE MARKETING - OG IKKE COPY-FILENS. Filen naegter bevidst at skrive
   // den: "Do not show the Danish CVR/address blindly as if it is a UK company
