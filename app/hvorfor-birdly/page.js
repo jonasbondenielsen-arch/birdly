@@ -29,7 +29,14 @@ export const metadata = {
 
 export default async function Page({ searchParams }) {
   const sp = (await searchParams) || {};
-  const funnelHref = medQuery("/kom-i-gang", sp);
+  // ⚠️ SALGSSIDEN ER IKKE LÆNGERE ET MELLEMLED (14-09-2026, Jonas).
+  // Her stod "/kom-i-gang". Kaeden var organisk → / → salgssiden → /start, altså
+  // to sider mellem "jeg vil i gang" og det første felt. /start har siden 06-09
+  // sit eget salg indbygget — CVR-opslaget viser ÆGTE match på kundens egen
+  // virksomhed, hvilket er stærkere bevis end nogen sektion på vejen derhen.
+  // /kom-i-gang lever videre som landingsside for betalt trafik (noindex, ikke
+  // i sitemap) og sender selv videre til /start.
+  const funnelHref = medQuery("/start", sp);
 
   return (
     <div className="sg">

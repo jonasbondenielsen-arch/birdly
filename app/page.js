@@ -11,7 +11,14 @@ import { FAQ_SCHEMA } from "../lib/faq";
 // Salgssiden lå kortvarigt her; det var forkert. Kæden er:
 //
 //   organisk / brand-søgning  →  `/` (denne side, forklarer og rangerer)
-//   annonce / CTA             →  /kom-i-gang (salgssiden)  →  /start (CVR)  →  betaling
+//   CTA fra en hvilken som helst side  →  /start (CVR)  →  betaling
+//   annonce                   →  /kom-i-gang (salgssiden)  →  /start
+//
+// ⚠️ KÆDEN BLEV KORTET NED 14-09-2026 (Jonas). Salgssiden lå før mellem hver
+// CTA og funnelen. Den lever videre som landingsside for betalt trafik — hvor
+// den hører hjemme, fordi en annonce ikke har forklaret noget endnu — men en
+// besoegende der allerede har læst roden og trykker "Find opgaver nu", skal
+// ikke få forklaringen igen. Hun skal se sine egne opgaver.
 //
 // Roden bærer hele forklaringslaget og alle 12 FAQ-svar. Det er dét indhold der
 // gør den til den stærkeste URL i huset, og derfor må den ikke skiftes ud med en

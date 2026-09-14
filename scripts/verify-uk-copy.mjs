@@ -109,7 +109,7 @@ const FRA_BRIEF = new Map([
    "resten staar ordret i filen."],
 
   // ── §30's homepage-description MED samme geografi-rettelse. ──
-  ["Birdly finds relevant public and private cleaning work across the UK and sends the right matches straight to your phone. 14 days free.",
+  ["Birdly finds relevant public and private cleaning work across the UK and sends the right matches straight to your phone. 7 days free.",
    "Copy-filen §30's homepage-description, med Jonas' rettelse 09-09-2026: " +
    "'\"across England\" -> \"across the UK\"'. Bruges som og:description og " +
    "twitter:description paa /uk, saa et delt link ikke viser den arvede danske."],
@@ -183,6 +183,27 @@ const FRA_BRIEF = new Map([
    "Jonas' brief 09-09-2026, punkt 4 - samme baand-liste."],
   ["£500,000+",
    "Jonas' brief 09-09-2026, punkt 4 - samme baand-liste."],
+
+  // ── PRØVELÆNGDEN: 7 DAGE, IKKE 14 (Jonas, 14-09-2026). ──
+  // ⚠️ COPY-FILEN ER STADIG SANDHEDSKILDEN FOR ORDENE, MEN IKKE FOR VILKÅRET.
+  // Filen blev skrevet 08-09-2026, da prøven var 14 dage. Vilkåret er ændret;
+  // sætningerne er ikke. Tallet kommer nu fra lib/pakke.js — samme kilde som
+  // DK og som de britiske betingelser — og hver af de fem strenge står ordret
+  // som i filen bortset fra cifret.
+  //
+  // ⚠️ DE STÅR HER ÉN AD GANGEN FREM FOR SOM EN REGEL. En generel "ignorér
+  // tal"-undtagelse ville også lukke en ændret pris, en ændret frist og et
+  // opdigtet opgavetal igennem. Fem linjer er billigere end et hul i vagten.
+  ["7 days free",
+   "Copy-filens trust point, med Jonas' beslutning 14-09-2026: prøven er 7 dage. " +
+   "Filen skriver '14 days free'; kun cifret afviger, og det kommer fra TRIAL_DAYS."],
+  ["£0 today · 7 days free · No long-term lock-in",
+   "Copy-filens trust-linje under funnel-knappen. Samme ændring: 14 → 7."],
+  ["Start 7 days free",
+   "Copy-filens årsplan-CTA. Samme ændring: 14 → 7."],
+  ["7 days free. No relevant matches? You don't pay.",
+   "Copy-filens risiko-overskrift. Samme ændring: 14 → 7. ⚠️ Ordet 'relevant' " +
+   "står bevidst uroert her — det er flaget til Jonas, ikke rettet af os."],
 ]);
 
 const UNDTAGET = new Map([
