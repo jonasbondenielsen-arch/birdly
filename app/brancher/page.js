@@ -4,6 +4,7 @@ import { Logo } from "../../components/Logo";
 import OpretOpgaveCta from "../../components/OpretOpgaveCta";
 import { OPRET_OPGAVE_I_NAV } from "../../lib/opretOpgave";
 import { BRANCHER, getBranche } from "../../lib/branche";
+import { TRIAL_DAYS } from "../../lib/pakke";
 import { FAG_GEO, getRegion } from "../../lib/regioner";
 import { abs } from "../../lib/site";
 import "../forside.css";
@@ -15,7 +16,7 @@ import "../forside.css";
 export const metadata = {
   title: "Brancher — opgaver for dit fag | Birdly",
   description:
-    "Vælg din branche og se, hvordan Birdly finder de offentlige opgaver, der passer til dit fag og dit område. Gratis i 14 dage.",
+    `Vælg din branche og se, hvordan Birdly finder de offentlige opgaver, der passer til dit fag og dit område. Gratis i ${TRIAL_DAYS} dage.`,
   alternates: { canonical: "/brancher" },
   openGraph: {
     title: "Brancher — opgaver for dit fag | Birdly",
@@ -73,7 +74,7 @@ export default function BrancherPage() {
             <Link href="/viden">Viden</Link>
           </nav>
           <div className="right">
-            <Link href="/kom-i-gang" className="nav-cta">Find opgaver nu</Link>
+            <Link href="/start" className="nav-cta">Find opgaver nu</Link>
             <OpretOpgaveCta />
           </div>
         </div>
@@ -157,7 +158,7 @@ export default function BrancherPage() {
         <div className="wrap">
           <h2>Kan I ikke finde jeres fag?</h2>
           <p>Fortæl os hvad I laver, så finder vi ud af, hvad vi kan holde øje med for jer.</p>
-          <Link href="/kom-i-gang" className="btn btn-teal">Find opgaver nu</Link>
+          <Link href="/start" className="btn btn-teal">Find opgaver nu</Link>
         </div>
       </section>
 

@@ -24,6 +24,7 @@ import { readFileSync, existsSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { UK_JURA, hubKort } from "../lib/uk/jura.js";
+import { TRIAL_DAYS, TRIAL_DAYS_FOER, PROEVE7_FRA_DATO_EN } from "../lib/pakke.js";
 
 const KANDIDATER = [
   process.argv[2],
@@ -77,11 +78,52 @@ const AFSNIT2_NU =
   "Birdly has not appointed a representative in the United Kingdom under Article 27 UK GDPR.\n\n" +
   "If you have a question about how Birdly handles your personal information, contact support@getbirdly.co.uk.";
 
+// ⚠️ PRØVELÆNGDEN: 14 → 7 (Jonas, 14-09-2026).
+//
+// ⚠️ BYGGET AF lib/pakke.js, IKKE SKREVET AF. Erstatningsteksten herunder
+// interpolerer TRIAL_DAYS og ikrafttrædelsesdatoen. Det betyder at vagten
+// FEJLER hvis nogen sætter prøven til 5 dage i koden uden også at rette den
+// britiske betingelsestekst — og det er den rigtige opførsel. En juridisk tekst
+// må ikke følge en konstant af sig selv (så kunne et talskift ændre et løfte
+// uden at nogen læste sætningen igen), men den må heller ikke stille og
+// roligt komme til at sige noget andet end det vi opkræver efter. Vagten er
+// stedet hvor de to tvinges til at mødes.
+//
+// ⚠️ OVERSKRIFTEN MISTER SIT TAL. Pakken skrev "## 2. 14-day free trial".
+// En overskrift med et tal i skal rettes hver gang vilkåret ændrer sig, og
+// bliver glemt; teksten under siger nu tallet — to gange, med dato.
+//
+// ⚠️ PAKKEFILEN SELV ER IKKE RETTET. Den er stadig sandhedskilden for alt
+// andet, og afvigelsen står her som én dokumenteret beslutning. Skal pakken
+// opdateres permanent, er det Jonas' kald sammen med UK-juristen.
+const PROEVE_TC_PAKKEN =
+  "### 3.3\nNew Customers receive a 14-day free trial, subject to the Subscription Terms.";
+const PROEVE_TC_NU =
+  `### 3.3\nNew Customers receive a ${TRIAL_DAYS}-day free trial, subject to the Subscription Terms.`;
+
+const PROEVE_ST_PAKKEN =
+  "## 2. 14-day free trial\n\n" +
+  "New Customers receive a 14-day free trial beginning on sign-up. No Subscription fee is charged during the trial.\n\n" +
+  "If you cancel before the trial ends:\n" +
+  "- no Subscription fee is charged; and\n" +
+  "- the Subscription ends when the 14-day trial expires.";
+const PROEVE_ST_NU =
+  "## 2. Free trial\n\n" +
+  `New Customers receive a ${TRIAL_DAYS}-day free trial beginning on sign-up. No Subscription fee is charged during the trial.\n\n` +
+  `The trial period is ${TRIAL_DAYS} days for agreements entered into on or after ${PROEVE7_FRA_DATO_EN}. ` +
+  `For agreements entered into before that date, the trial period is ${TRIAL_DAYS_FOER} days. ` +
+  "Your own trial period was fixed when you signed up and is not changed by later changes to this clause." +
+  "\n\nIf you cancel before the trial ends:\n" +
+  "- no Subscription fee is charged; and\n" +
+  "- the Subscription ends when the free trial expires.";
+
 const LAAST = [
   ["[UK_MONTHLY_PRICE]", "59"],
   ["[UK_ANNUAL_PRICE]", "590"],
   ["support@birdly.dk", "support@getbirdly.co.uk"],
   [AFSNIT2_PAKKEN, AFSNIT2_NU],
+  [PROEVE_TC_PAKKEN, PROEVE_TC_NU],
+  [PROEVE_ST_PAKKEN, PROEVE_ST_NU],
   ["\n\nUK representative: `[UK_REPRESENTATIVE_DETAILS]`", ""],
 ];
 

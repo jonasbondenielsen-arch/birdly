@@ -37,7 +37,7 @@
 ## 3. Abonnement, pris og opsigelse
 3.1 Vilkårene for selve abonnementet — pris, prøveperiode, betalingstidspunkt, automatisk fornyelse og opsigelse — står samlet i vores [abonnementsbetingelser](/abonnementsbetingelser), som du accepterer sammen med disse betingelser ved tilmelding.
 
-3.2 Kort fortalt: Birdly koster **499 kr./md.** eller **4.990 kr./år** ekskl. moms, du får 14 dages gratis prøveperiode, og abonnementet fornyes automatisk, indtil du siger op.
+3.2 Kort fortalt: Birdly koster **499 kr./md.** eller **4.990 kr./år** ekskl. moms, du får [PROEVE_DAGE] dages gratis prøveperiode, og abonnementet fornyes automatisk, indtil du siger op.
 
 3.3 **Matchgaranti — finder vi ingen opgave, betaler du ikke.** Finder vi ingen opgave, der passer til din virksomhed, refunderer vi din betaling for perioden. Garantien dækker både offentlige udbud og private opgaver.
 

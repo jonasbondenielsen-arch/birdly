@@ -33,7 +33,7 @@ import "../../app/salg.css";
 //
 //   1  RESULTAT              hero
 //   2  LEVENDE BEVIS         bevis-bjælke (ægte tal)
-//   3  RISIKO FJERNET        14 dage gratis + matchgaranti
+//   3  RISIKO FJERNET        gratis prøveperiode + matchgaranti
 //   4  PROBLEMET             tre nøgterne kort
 //   5  HVAD DET KAN KOSTE    mærket eksempel på en aftales årsværdi
 //   6  LØSNINGEN             "Birdly leder. I får besked."
@@ -48,7 +48,7 @@ import "../../app/salg.css";
 //  15  FAQ                   seks synlige
 //
 // ⚠️ RISIKOEN LIGGER TIDLIGT (3), OG DET ER MED VILJE. Kold trafik fra Meta har
-// ikke besluttet sig for at læse videre; "14 dage gratis, 0 kr. i dag" fjerner
+// ikke besluttet sig for at læse videre; "gratis prøve, 0 kr. i dag" fjerner
 // grunden til at lukke fanen, før argumentet overhovedet er begyndt. Den står
 // også ved prisen, hvor den besvarer en anden indvending.
 //

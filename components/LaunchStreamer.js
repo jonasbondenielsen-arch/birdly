@@ -2,7 +2,7 @@
 
 import { useLaunch } from "./useLaunch";
 import Countdown from "./Countdown";
-import { PLAN } from "../lib/pakke";
+import { PLAN, TRIAL_DAYS } from "../lib/pakke";
 
 // Pris-banner ved pris-sektionen — samme deadline-kilde (useLaunch → samme env) som
 // topbanneret, så de to ure er synkrone. Ligger ovenpå de normale pris-bokse uden at
@@ -13,7 +13,7 @@ export default function LaunchStreamer() {
   return (
     <div className="launch-streamer">
       <div className="ls-main">🎉 <b>Lige nu: Birdly er gratis</b> så længe nedtællingen kører — <Countdown deadline={deadline} /></div>
-      <div className="ls-sub">Når den udløber, gælder de almindelige vilkår: 14 dages gratis prøve, derefter {PLAN.monthly} kr/md (eller {PLAN.yearly.toLocaleString("da-DK")} kr/år).</div>
+      <div className="ls-sub">Når den udløber, gælder de almindelige vilkår: {TRIAL_DAYS} dages gratis prøve, derefter {PLAN.monthly} kr/md (eller {PLAN.yearly.toLocaleString("da-DK")} kr/år).</div>
     </div>
   );
 }

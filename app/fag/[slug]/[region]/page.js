@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { getBranche } from "../../../../lib/branche";
 import { getRegion, alleFagGeo } from "../../../../lib/regioner";
+import { TRIAL_DAYS } from "../../../../lib/pakke";
 import BrancheSide from "../../../../components/BrancheSide";
 import { abs } from "../../../../lib/site";
 import { hentOpgaveTal } from "../../../../lib/opgaveTal";
@@ -27,7 +28,7 @@ export async function generateMetadata({ params }) {
   // description bærer "udbud" — det er dét folk faktisk googler. Begge dele er sande;
   // de rammer bare hver sin læser.
   const title = `Offentlige udbud og opgaver for ${b.nounPlural} ${r.praep} ${r.navn} | Birdly`;
-  const description = `Få besked på SMS når der er en offentlig opgave for ${b.nounPlural} ${r.praep} ${r.navn}. Birdly holder øje med kommunernes udbud — gratis i 14 dage.`;
+  const description = `Få besked på SMS når der er en offentlig opgave for ${b.nounPlural} ${r.praep} ${r.navn}. Birdly holder øje med kommunernes udbud — gratis i ${TRIAL_DAYS} dage.`;
   const sti = `/fag/${b.slug}/${r.slug}`;
 
   return {

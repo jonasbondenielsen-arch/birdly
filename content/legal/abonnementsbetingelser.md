@@ -29,11 +29,13 @@ Betingelserne er gældende mellem Birdly.dk, CVR-nr. 35764283, Fjordvej 4, 4300 
 
 ## 2. Gratis prøveperiode
 
-2.1 Nye kunder får **14 dages gratis prøveperiode** regnet fra tilmeldingen. I prøveperioden opkræves der ingenting.
+2.1 Nye kunder får **[PROEVE_DAGE] dages gratis prøveperiode** regnet fra tilmeldingen. I prøveperioden opkræves der ingenting.
 
-2.2 Siger du op inden prøveperioden udløber, bliver du ikke opkrævet, og abonnementet ophører, når de 14 dage er gået. Opsigelse i prøveperioden udløser ikke opsigelsesvarslet i pkt. 4.2.
+2.1.1 **Prøveperioden er [PROEVE_DAGE] dage for aftaler indgået fra og med [PROEVE_FRA_DATO].** For aftaler indgået før denne dato er prøveperioden [PROEVE_DAGE_FOER] dage. Din egen prøveperiode blev låst, da du tilmeldte dig, og ændres ikke af senere ændringer i dette punkt.
 
-2.3 Siger du ikke op, fortsætter abonnementet automatisk som et betalt abonnement. **Den første opkrævning sker dagen efter de 14 gratis dage** — månedligt eller årligt, alt efter hvad du har valgt.
+2.2 Siger du op inden prøveperioden udløber, bliver du ikke opkrævet, og abonnementet ophører, når prøveperioden er gået. Opsigelse i prøveperioden udløser ikke opsigelsesvarslet i pkt. 4.2.
+
+2.3 Siger du ikke op, fortsætter abonnementet automatisk som et betalt abonnement. **Den første opkrævning sker dagen efter de [PROEVE_DAGE] gratis dage** — månedligt eller årligt, alt efter hvad du har valgt.
 
 2.4 **Vi siger til, før du bliver trukket.** Tre dage før prøveperioden udløber, sender vi dig en påmindelse på e-mail — og typisk også på SMS — så du ved, at abonnementet om tre dage går fra gratis til betalt. Du skal ikke lede efter den besked; den kommer af sig selv. Vil du ikke fortsætte, kan du nå at sige op inden.
 

@@ -173,7 +173,7 @@ export default async function GuidePage({ params }) {
           )}
 
           <div className="cta" style={{ marginTop: 28 }}>
-            <Link href="/kom-i-gang" className="btn btn-teal">Find opgaver nu</Link>
+            <Link href="/start" className="btn btn-teal">Find opgaver nu</Link>
           </div>
         </div>
       </article>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { TRIAL_DAYS } from "../lib/pakke";
 import Footer from "./Footer";
 import { Logo } from "./Logo";
 import StickyCta from "./StickyCta";
@@ -145,7 +146,7 @@ export default function BrancheSide({ data, region = null, opgaveTal = null }) {
       {/* HERO */}
       <section className="hero">
         <div className="wrap center" style={{ position: "relative", zIndex: 2 }}>
-          <span className="pill">🐦 Gratis i 14 dage — ingen binding</span>
+          <span className="pill">🐦 Gratis i {TRIAL_DAYS} dage — ingen binding</span>
           {/* ⚠️ RESULTAT FØRST — MEN SØGEORDET BLIVER STÅENDE. "opgaver til
               tømrere i Nordjylland" er præcis den streng siden rangerer på, og den
               står stadig i H1. Det eneste der er byttet om, er at sætningen nu
@@ -388,7 +389,7 @@ export default function BrancheSide({ data, region = null, opgaveTal = null }) {
       <section className="ctaband">
         <div className="wrap">
           <h2>Klar til at fange din næste opgave?</h2>
-          <p>Gratis i 14 dage, ingen binding. Du kan altid ændre dine valg eller stoppe igen.</p>
+          <p>Gratis i {TRIAL_DAYS} dage, ingen binding. Du kan altid ændre dine valg eller stoppe igen.</p>
           <Link href={funnel} className="btn btn-teal">Find opgaver nu</Link>
         </div>
       </section>

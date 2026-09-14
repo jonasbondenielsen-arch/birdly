@@ -90,7 +90,12 @@ const ETAPER = ["Virksomhed", "Opgaver", "Dine match", "Start Birdly"];
 //   8  Værdi-anker + opsummering + risiko    → Dine match
 //   9  Plan + kontakt + samtykker            → Start Birdly
 //  10  Betaling (kortvindue)                 → Start Birdly
-const SKAERM_ETAPE = { 1: 0, 2: 0, 3: 1, 4: 1, 5: 1, 6: 1, 7: 2, 8: 2, 9: 3, 10: 3 };
+// ⚠️ SKAERM 6 ER UDGAAET (14-09-2026) og staar derfor ikke her. Nummereringen
+// er BEVIDST IKKE rykket sammen: trin-numrene er spredt ud over hele filen i
+// setTrin-kald og JSX-gates, og en renummerering ville roere husets pengekanal
+// for at spare et hul i et opslag. Hullet koster ingenting; en forkert gate
+// koster en tilmelding.
+const SKAERM_ETAPE = { 1: 0, 2: 0, 3: 1, 4: 1, 5: 1, 7: 2, 8: 2, 9: 3, 10: 3 };
 const SIDSTE_SKAERM = 10;
 
 // Samme SDK-indlæsning som /tilmeld. ⚠️ Bevidst duplikeret frem for at refaktorere
@@ -284,7 +289,6 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
   // "hele_dk" er sin EGEN nøgle i region_nuts_map — ikke en optælling af de fem.
   // Derfor er den et selvstændigt valg der udelukker de andre, præcis som i /tilmeld.
   const [heleDk, setHeleDk] = useState(true);
-  const [maks, setMaks] = useState("");
 
   // Trin 3 — arbejdsområder + bredde. Samme to valg som /tilmeld, samme datakilde
   // (katalogets fag.smal) og samme mapping til CPV. Ingen opfundne værdier.
@@ -338,7 +342,7 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
   // plan-intervallet siger intet om hvem hun er. Uden fag falder vi tilbage til
   // intervallet frem for at sende en tom streng.
   const pixelParams = () => ({
-    content_name: "Birdly 14 dages prøve",
+    content_name: `Birdly ${TRIAL_DAYS} dages prøve`,
     content_category: fagValgt.length ? fagValgt.join(",") : interval,
     currency: "DKK",
     value: 0,
@@ -365,7 +369,7 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
   //
   // ⚠️ ACCEPTERET UNØJAGTIGHED: accept_url betyder "Reepay sagde ja til kortet",
   // ikke "webhooken har aktiveret abonnementet". Men prøven ER startet — den blev
-  // sat af create_signup ved tilmeldingen — så betingelsen "de 14 dage er reelt
+  // sat af create_signup ved tilmeldingen — så betingelsen "prøven er reelt
   // begyndt" er opfyldt. Det er det tætteste klientsiden kan komme; at vente på
   // webhooken ville kræve en server-side pixel (Conversions API).
   //
@@ -382,7 +386,7 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
     } catch { /* ingen stash — så kan én-gang ikke garanteres, og vi springer over */ }
     if (!stash?.id || stash.udenProeve) return;
     sporEnGang(`starttrial_${stash.id}`, "StartTrial", {
-      content_name: "Birdly 14 dages prøve",
+      content_name: `Birdly ${TRIAL_DAYS} dages prøve`,
       content_category: Array.isArray(stash.fag) && stash.fag.length ? stash.fag.join(",") : stash.interval || "",
       currency: "DKK",
       value: 0,
@@ -682,7 +686,10 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
         bredde,
         region_keys: regionKeys,
         min_amount: null,
-        max_amount: maks ? Number(maks) : null,
+        // ⚠️ ALTID null (14-09-2026). Her stod kundens eget loft, sat paa den
+        // skaerm der nu er fjernet. Scanningen skal vise hvad der FINDES; et
+        // loft kunne kun goere tallet mindre.
+        max_amount: null,
         med_eksempler: true,
       }),
       // Kører PARALLELT med opslaget, ikke oveni. Svarer serveren på 900 ms, har
@@ -730,7 +737,10 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
           bredde,
           region_keys: regionKeys,
           min_amount: null,
-          max_amount: maks ? Number(maks) : null,
+          // ⚠️ NYE KUNDER FAAR INTET BELOEBSLOFT (14-09-2026). Kolonnen er
+          // bevaret, og EKSISTERENDE kunders vaerdi staar uroert - de har selv
+          // sat den. Vi holder bare op med at bede om den.
+          max_amount: null,
           notify_email: true,
           notify_sms: true,
           marketing_consent: false,
@@ -760,14 +770,14 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
           sporEnGang(`lead_${id}`, "Lead", pixelParams());
       }
       // ⚠️ KORTLØS: INGEN FRISBII-SESSION. Kunden er allerede oprettet med
-      // status='trial' og 14 dage (create_signup, migration 0010) — der mangler
+      // status='trial' og prøvelængden (create_signup, migration 0145) — der mangler
       // intet for at hun kan bruge produktet. Velkomsten fyres af signup-funktionen,
       // fordi Frisbii-webhooken aldrig kommer for hende.
       if (kortloes) {
         // ⚠️ STARTTRIAL FOR KORTLØSE FYRER HER. Alle tre betingelser er opfyldt:
         // onboardingen er gennemført (dette ER sidste trin — der er ingen betaling),
         // kunden er oprettet (vi har id'et fra signup), og prøven KØRER:
-        // create_signup sætter trial_ends_at = now() + 14 dage i samme transaktion
+        // create_signup sætter trial_ends_at = now() + TRIAL_DAYS i samme transaktion
         // som rækken (migration 0010). Der er intet at vente på.
         //
         // Står efter submitSignup, så et fejlet kald aldrig kan udløse den.
@@ -1631,7 +1641,7 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
             className="btn btn-teal st-bred"
             onClick={() => {
               if (!regionKeys.length) return setFejl("Vælg mindst én landsdel — eller hele Danmark.");
-              setFejl(""); setTrin(6); window.scrollTo({ top: 0, behavior: "smooth" });
+              setFejl(""); tilResultat();
             }}
           >
             Fortsæt →
@@ -1640,70 +1650,37 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
         </div>
       )}
 
-      {/* ═══════════════ SKÆRM 6 — VÆRDI ═══════════════
-          ⚠️ TO FORSKELLIGE SPØRGSMÅL, OG DE GØR IKKE DET SAMME:
-            · PROJEKTFAG (tømrer, VVS, entreprenør …): svaret ER kundens
-              max_amount og går til match-reglen. Det filtrerer.
-            · LØBENDE FAG (rengøring, service …): svaret er UDELUKKENDE ankeret
-              vi regner sammenligningen på. Det sendes ikke til signup og
-              filtrerer intet — en månedlig aftaleværdi er ikke det samme som en
-              udbudssum, og at bruge den som beløbsfilter ville skære opgaver væk
-              på et tal kunden troede var en illustration.
-          Se lib/vaerdiAnker.js. Blandes de to sammen, filtrerer vi forkert. */}
-      {trin === 6 && (
-        <div className="st-kort">
-          {loebendeFag ? (
-            <>
-              <h1>Hvad er en god fast kunde værd for jer pr. måned?</h1>
-              <p className="st-hj">Det bruger vi kun til at vise jer regnestykket bagefter.</p>
-            </>
-          ) : (
-            <>
-              <h1>Hvilken størrelse opgaver er interessante?</h1>
-              <p className="st-hj">Så sorterer Birdly de opgaver fra, der er for store eller for små.</p>
-            </>
-          )}
+      {/* =============== SKÆRM 6 — UDGÅET (14-09-2026) ===============
+          Her lå størrelsesspørgsmålet. Det er fjernet, ikke flyttet.
 
-          <div className="st-valgkort st-valgkort-2">
-            {vaerdiListe.map((v) => (
-              <button
-                key={v.key}
-                type="button"
-                className={"st-valgkort-item" + (vaerdiValg === v.key ? " on" : "")}
-                aria-pressed={vaerdiValg === v.key}
-                onClick={() => {
-                  setVaerdiValg(v.key);
-                  // ⚠️ KUN PROJEKTFAG SÆTTER max_amount. Se noten ovenfor.
-                  if (!loebendeFag) setMaks(v.maks == null ? "" : String(v.maks));
-                }}
-              >
-                <b>{v.label}</b>
-              </button>
-            ))}
-          </div>
+          ⚠️ HVORFOR. Det gjorde to forskellige ting alt efter faget, og ingen
+          af dem var gode. For løbende fag (rengøring, service …) sendte det
+          `null` — et helt trin der kostede frafald og ikke påvirkede matchningen
+          med et komma. For projektfag sendte det et LOFT, og loftet blev holdt op
+          mod udbuddets SAMLEDE kontraktsum: en fireårig aftale på 23 mio. kr. delt
+          i ti lots er 61.682 kr. om året pr. lot, men blev målt som 23 mio. Kunden
+          svarede i én enhed, matchreglen regnede i en anden — og spørgsmålet sagde
+          aldrig hvilken. Resultatet var tabte match, ikke skærpede.
 
-          {/* ⚠️ 3.5-ADVARSLEN. Handelsbetingelserne undtager matchgarantien hvis
-              kunden afgrænser opgavestørrelsen til under 2,5 mio. kr. Vælger hun
-              et snævert loft, skal hun kunne se det HER — ikke opdage det den dag
-              hun beder om refusion. */}
-          {!loebendeFag && vaerdiValg && vaerdiListe.find((v) => v.key === vaerdiValg)?.garantiUndtaget && (
-            <p className="st-advarsel">
-              Bemærk: vælger I et loft under 2,5 mio. kr., gælder matchgarantien ikke.
-              I kan stadig bruge Birdly på helt normale vilkår.{" "}
-              <a href={GARANTI_LINK} target="_blank" rel="noreferrer">Se betingelserne</a>
-            </p>
-          )}
+          ⚠️ DERFOR ER DET IKKE ERSTATTET AF ET BEDRE SPØRGSMÅL. Et loft kan kun
+          fjerne opgaver. Så længe vi ikke kan stille spørgsmålet i den enhed kunden
+          selv tænker i, er "ingen grænse" det ene svar der aldrig koster hende en
+          opgave hun ville have budt på.
 
-          <button
-            className="btn btn-teal st-bred"
-            disabled={!vaerdiValg}
-            onClick={tilResultat}
-          >
-            Find mine opgaver →
-          </button>
-          <button className="st-tilbage" onClick={() => setTrin(5)}>← Tilbage</button>
-        </div>
-      )}
+          ⚠️ EKSISTERENDE KUNDER RØRES IKKE. `max_amount` er stadig en kolonne, og
+          de 19 der har en værdi beholder den — også dem der satte den bagefter i
+          "Sortér i opgaver". Vi holder op med at SPØRGE; vi sletter ikke svar.
+
+          ⚠️ 3.5-ADVARSLEN STOD HER OG FØLGER MED SKÆRMEN UD. Den advarede om at
+          matchgarantien bortfalder ved et loft under 2,5 mio. kr. En ny kunde kan
+          ikke længere sætte et loft og kan derfor ikke ramme undtagelsen — men
+          handelsbetingelsernes §3.5 står stadig og gælder de eksisterende kunder.
+          Ordlyden er Jonas’ kald, ikke vores.
+
+          ⚠️ `vaerdiValg`, `PROJEKT_VALG` og `vaerdiListe` ER BEVARET. Værdi-ankeret
+          på skærm 7 og opsummeringen læser dem, og uden et valg falder byggAnker
+          tilbage på husets standard-eksempel — dokumenteret opførsel i
+          lib/vaerdiAnker.js. De er døde indgange i dag, ikke død kode. */}
 
       {/* ═══════════════ SKÆRM 7 — SKARPERE SCAN ═══════════════
           ⚠️ OVERGANGEN LYVER IKKE. Der står præcis hvad vi slår op på, og de tre
@@ -1786,7 +1763,7 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
               <button className="btn btn-ghost st-bred" onClick={() => setTrin(5)}>Udvid mine kriterier</button>
             </>
           )}
-          <button className="st-tilbage" onClick={() => setTrin(6)}>← Tilbage</button>
+          <button className="st-tilbage" onClick={() => setTrin(5)}>← Tilbage</button>
         </div>
       )}
 

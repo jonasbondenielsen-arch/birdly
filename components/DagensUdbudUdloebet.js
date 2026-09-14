@@ -25,8 +25,12 @@ export default function DagensUdbudUdloebet() {
         <Link href="/kom-i-gang" style={{ display: "inline-block", background: "#1E9E8A", color: "#fff", fontWeight: 700, borderRadius: 12, padding: "14px 24px", textDecoration: "none", fontSize: 16 }}>
           👉 Prøv Birdly gratis — så misser du aldrig en opgave igen →
         </Link>
+        {/* ⚠️ ADRESSEN SKREVET UD, FORDI SIDEN OGSÅ LÆSES SOM DELT BILLEDE/SKÆRMBILLEDE.
+            Her stod "birdly.dk/tilmeld" — en adresse der har 308'et til /kom-i-gang
+            siden 03-08-2026, på apex-værten, altså to hop for den der tastede den af.
+            Nu står den vi faktisk vil have folk til at taste. */}
         <p style={{ marginTop: 16 }}>
-          <Link href="https://birdly.dk/tilmeld" style={{ color: "#1E9E8A", fontWeight: 600 }}>birdly.dk/tilmeld</Link>
+          <Link href="https://www.birdly.dk/start" style={{ color: "#1E9E8A", fontWeight: 600 }}>birdly.dk/start</Link>
         </p>
       </div>
     </main>

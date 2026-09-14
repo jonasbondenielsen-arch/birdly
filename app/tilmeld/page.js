@@ -8,7 +8,7 @@ export const metadata = {
     // /kom-i-gang (next.config.mjs), saa Next naar aldrig at rendere siden. Teksten
     // staar rettet alligevel, saa den er sand den dag redirecten maatte forsvinde -
     // men forvent ikke at se den i Google. Den rigtige salgsside er /kom-i-gang.
-    "Opret din profil på to minutter, så finder Birdly de offentlige og private opgaver, der passer til dit fag og dit område. Gratis i 14 dage.",
+    "Opret din profil på to minutter, så finder Birdly de offentlige og private opgaver, der passer til dit fag og dit område. Gratis prøveperiode.",
 };
 
 export default async function Page({ searchParams }) {

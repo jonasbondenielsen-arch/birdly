@@ -44,9 +44,17 @@ export const metadata = {
   // paa SMS | Birdly" med dansk broedtekst. Siden er noindex, saa Google saa
   // det aldrig; et menneske der delte linket, gjorde.
   //
-  // ⚠️ INGEN `images`. Det danske OG-billede har dansk tekst braendt ind,
-  // og et britisk findes ikke endnu. Hellere intet billede end et forkert -
-  // Fase B, sammen med logo-assettet.
+  // ⚠️ BILLEDET KOMMER NU FRA app/uk/opengraph-image.js (14-09-2026).
+  // Her stod foer: "INGEN images - det danske OG-billede har dansk tekst
+  // braendt ind, og et britisk findes ikke endnu." Begrundelsen var rigtig;
+  // loesningen var midlertidig. Et britisk kort findes nu, og det saettes IKKE
+  // som en `images`-noegle her: Next's fil-konvention laegger selv
+  // /uk/opengraph-image paa baade openGraph og twitter, og skrev vi den ogsaa
+  // i haanden, ville der staa to billeder i markuppen.
+  //
+  // ⚠️ twitter.card er derfor ogsaa skiftet til summary_large_image. Med
+  // "summary" ville kortet blive beskaaret til en lille firkant, og hele den
+  // venstre halvdel - budskabet - ville falde ud af billedet.
   openGraph: {
     title: "Get more cleaning and service contracts | Birdly",
     description: tekster("GB").meta.ogBeskrivelse,
@@ -56,7 +64,7 @@ export const metadata = {
     type: "website",
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     title: "Get more cleaning and service contracts | Birdly",
     description: tekster("GB").meta.ogBeskrivelse,
   },

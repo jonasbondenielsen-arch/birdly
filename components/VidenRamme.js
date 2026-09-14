@@ -34,7 +34,7 @@ export default function VidenRamme({ children, broedkrumme = null }) {
             <Link href="/brancher">Brancher</Link>
           </nav>
           <div className="right">
-            <Link href="/kom-i-gang" className="nav-cta">Find opgaver nu</Link>
+            <Link href="/start" className="nav-cta">Find opgaver nu</Link>
             <OpretOpgaveCta />
           </div>
         </div>

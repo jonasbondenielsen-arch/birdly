@@ -419,7 +419,7 @@ export default function StartUk({ katalog, pris, hjem, aaben = false, tal = null
                 dens egen "·"-separator: samme ord, husets struktur. */}
             {/* ⚠️ DK'S TRE PUNKTER, IKKE TRUST-LINJENS. De besvarer en anden
                 indvending - at det bliver besvaerligt - og Trust-linjen
-                (£0/14 days/lock-in) staar under knappen, hvor DK ogsaa har den.
+                (£0/proevedage/lock-in) staar under knappen, hvor DK ogsaa har den.
                 Begge findes paa DK's skaerm; begge findes nu her. */}
             <ul className="st-pre-trust">
               {T.punkter.map((t) => (

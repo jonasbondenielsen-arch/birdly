@@ -82,7 +82,14 @@ export default async function OpengraphImage() {
               fontWeight: 700,
             }}
           >
-            Gratis i 14 dage · ingen binding
+            {/* ⚠️ INTET TAL I BADGET (14-09-2026). Her stod "Gratis i 14 dage".
+                Et delebillede er et PNG der caches hos Facebook, LinkedIn og X i
+                dagevis efter et vilkår er ændret — så da prøven gik fra 14 til 7
+                dage, var billedet forkert alle de steder linket allerede var delt,
+                og der er ingen deploy der kan hente det hjem. Prøvelængden står
+                nu kun på siden selv, hvor den renderes fra TRIAL_DAYS og altid er
+                sand. Badget siger det der ikke ændrer sig. */}
+            Gratis prøveperiode · ingen binding
           </div>
           <div style={{ display: "flex", fontSize: "29px", fontWeight: 700, color: "#7FD0FF" }}>birdly.dk</div>
         </div>

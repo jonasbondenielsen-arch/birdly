@@ -108,7 +108,7 @@ export default function VidenPage() {
           <h2 className="big">Slip for selv at lede efter opgaver.</h2>
           <p className="lead">Birdly finder relevante offentlige og private opgaver og sender dig besked, når der er et match.</p>
           <div className="cta" style={{ justifyContent: "center", marginTop: 18 }}>
-            <Link href="/kom-i-gang" className="btn btn-teal">Find opgaver nu</Link>
+            <Link href="/start" className="btn btn-teal">Find opgaver nu</Link>
           </div>
         </div>
       </section>

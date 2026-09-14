@@ -315,7 +315,7 @@ function TrustRaekke({ mork = false, raekke = TRUST }) {
  * Garantiens præcise mekanik med link til den fulde ordlyd.
  *
  * ⚠️ DEN SKAL FØLGE MED HVER GANG GARANTI-OVERSKRIFTEN VISES. Overskriften siger
- * "14 dage gratis. Ingen relevante match? Så betaler du ikke." — uden den her
+ * "{n} dage gratis. Ingen relevante match? Så betaler du ikke." — uden den her
  * linje står der ikke nogen steder at garantien løber 60 dage og handler om
  * REFUSION, ikke om en fire gange længere prøveperiode. Se noten i
  * lib/salgTekst.js: det er den letteste og dyreste fejl at lave her.

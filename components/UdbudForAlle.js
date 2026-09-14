@@ -19,7 +19,7 @@ export default function UdbudForAlle() {
             <Link href="/udbud-for-alle" className="on">Opgaver er for alle</Link>
           </nav>
           <div className="cta-par">
-            <Link href="/kom-i-gang" className="nav-cta">Find opgaver nu</Link>
+            <Link href="/start" className="nav-cta">Find opgaver nu</Link>
             <OpretOpgaveCta />
           </div>
         </div>
@@ -32,7 +32,7 @@ export default function UdbudForAlle() {
           <div className="psst">— hverken de offentlige eller de private</div>
           <p>Birdly finder både offentlige og private opgaver til virksomheder i alle størrelser. Du vælger selv, hvilke der passer til dig.</p>
           <div className="btns">
-            <Link href="/kom-i-gang" className="btn btn-teal">Find opgaver nu</Link>
+            <Link href="/start" className="btn btn-teal">Find opgaver nu</Link>
             <a href="/#hvordan" className="btn btn-ghost">Se hvordan det virker</a>
           </div>
         </div>
@@ -186,7 +186,7 @@ export default function UdbudForAlle() {
         <div className="wrap">
           <h2>Giv din virksomhed en fair chance</h2>
           <p>Det tager to minutter. Så holder Birdly øje med både offentlige og private opgaver — og du bruger tiden på at vinde dem.</p>
-          <Link href="/kom-i-gang" className="btn btn-teal">Find opgaver nu</Link>
+          <Link href="/start" className="btn btn-teal">Find opgaver nu</Link>
         </div>
       </section>
 

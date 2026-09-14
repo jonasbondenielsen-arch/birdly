@@ -7,7 +7,7 @@ import Footer from "./Footer";
 import OpsigPopup from "./OpsigPopup";
 import { Logo } from "./Logo";
 import { insertRow } from "../lib/supabase";
-import { PLAN, YEARLY_SAVING, priceText } from "../lib/pakke";
+import { PLAN, TRIAL_DAYS, YEARLY_SAVING, priceText } from "../lib/pakke";
 import LaunchBanner from "./LaunchBanner";
 import LaunchStreamer from "./LaunchStreamer";
 import OpgaveTaeller from "./OpgaveTaeller";
@@ -108,7 +108,7 @@ function botReply(text) {
 function answerFor(text) {
   const t = (text || "").toLowerCase();
   if (/(pris|koste|kr|betal|moms|gratis|prøve)/.test(t))
-    return `De første <b>14 dage er gratis</b>. Derefter koster Birdly <b>${priceText.monthly}</b> eller <b>${priceText.yearly}</b> (ekskl. moms) — alt inkluderet. Vælger du årligt, sparer du ~${YEARLY_SAVING.pct} % (svarer til ${YEARLY_SAVING.months} måneder gratis). Ingen binding — opsig med 30 dages varsel.`;
+    return `De første <b>${TRIAL_DAYS} dage er gratis</b>. Derefter koster Birdly <b>${priceText.monthly}</b> eller <b>${priceText.yearly}</b> (ekskl. moms) — alt inkluderet. Vælger du årligt, sparer du ~${YEARLY_SAVING.pct} % (svarer til ${YEARLY_SAVING.months} måneder gratis). Ingen binding — opsig med 30 dages varsel.`;
   if (/(pakke|spurv|falk|eagle|albatros|region|storebælt|dækning|hele danmark|tier)/.test(t))
     return `Der er <b>én pakke</b> med alt inkluderet — ${priceText.perMonthBoth} (ekskl. moms). Du vælger selv, om du vil dække <b>én region eller hele Danmark</b>, og det er den samme pris uanset.`;
   if (/(opsig|stop|afmeld|stoppe|fortryd)/.test(t))
@@ -449,10 +449,10 @@ export default function Forside({ opgaveTal, funnelHref = "/kom-i-gang" }) {
           <div className="su-grid">
             <div className="reveal">
               <span className="kick">Sådan starter du</span>
-              <h2>Få dit første match — gratis i 14 dage.</h2>
+              <h2>Få dit første match — gratis i {TRIAL_DAYS} dage.</h2>
               <p className="lead">Udfyld få oplysninger, så holder Birdly øje for dig. Du hører fra os, så snart der er en opgave, der passer.</p>
               <ul>
-                <li><svg width="22" viewBox="0 0 20 20"><circle cx="10" cy="10" r="10" fill="#00B3A6" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#fff" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg> 14 dage gratis — ingen binding</li>
+                <li><svg width="22" viewBox="0 0 20 20"><circle cx="10" cy="10" r="10" fill="#00B3A6" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#fff" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg> {TRIAL_DAYS} dage gratis — ingen binding</li>
                 <li><svg width="22" viewBox="0 0 20 20"><circle cx="10" cy="10" r="10" fill="#00B3A6" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#fff" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg> Intet login, ingen opsætning</li>
                 <li><svg width="22" viewBox="0 0 20 20"><circle cx="10" cy="10" r="10" fill="#00B3A6" /><path d="M6 10.5l2.5 2.5L14 7" stroke="#fff" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg> Stop når du vil</li>
               </ul>
@@ -462,9 +462,9 @@ export default function Forside({ opgaveTal, funnelHref = "/kom-i-gang" }) {
                 <svg width="30" viewBox="0 0 28 28" fill="none"><path d="M4 17C8 11 11 11 14 15" stroke="#2EB7FF" strokeWidth="2.6" strokeLinecap="round" /><path d="M14 15C17 11 20 11 24 17" stroke="#00B3A6" strokeWidth="2.6" strokeLinecap="round" /></svg>
               </div>
               <h3>Opret din profil på to minutter</h3>
-              <p className="ft" style={{ marginBottom: 20 }}>Du udfylder dit fag, område og opgavestørrelse — så finder vi de mest relevante opgaver til dig. Gratis i 14 dage. Ingen binding — opsig når du vil.</p>
-              <Link href="/kom-i-gang" className="submit" style={{ display: "block", textDecoration: "none", textAlign: "center" }}>Find opgaver nu</Link>
-              <p className="fnote">Gratis de første 14 dage · ingen binding</p>
+              <p className="ft" style={{ marginBottom: 20 }}>Du udfylder dit fag, område og opgavestørrelse — så finder vi de mest relevante opgaver til dig. Gratis i {TRIAL_DAYS} dage. Ingen binding — opsig når du vil.</p>
+              <Link href="/start" className="submit" style={{ display: "block", textDecoration: "none", textAlign: "center" }}>Find opgaver nu</Link>
+              <p className="fnote">Gratis de første {TRIAL_DAYS} dage · ingen binding</p>
             </div>
           </div>
         </div>
@@ -475,8 +475,8 @@ export default function Forside({ opgaveTal, funnelHref = "/kom-i-gang" }) {
         <div className="wrap">
           <h2 className="reveal">Klar til at få opgaver direkte på SMS?</h2>
           <p className="reveal">Lad Birdly holde øje, så du kan bruge tiden på det, du er god til.</p>
-          <Link href="/kom-i-gang" className="btn btn-teal reveal">Find opgaver nu</Link>
-          <p className="cta-note reveal">Gratis de første 14 dage · ingen binding</p>
+          <Link href="/start" className="btn btn-teal reveal">Find opgaver nu</Link>
+          <p className="cta-note reveal">Gratis de første {TRIAL_DAYS} dage · ingen binding</p>
         </div>
       </section>
 

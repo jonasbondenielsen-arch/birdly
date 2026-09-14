@@ -5,7 +5,7 @@ import { Vaerdi } from "../../components/salg/VaerdiSektion";
 import { hentOpgaveTal } from "../../lib/opgaveTal";
 import { medQuery } from "../../lib/funnelLink";
 import { abs } from "../../lib/site";
-import { priceText } from "../../lib/pakke";
+import { priceText, TRIAL_DAYS } from "../../lib/pakke";
 import "../salg.css";
 
 // ============================================================================
@@ -29,11 +29,11 @@ import "../salg.css";
 export const metadata = {
   title: `Hvad koster Birdly? ${priceText.perMonthBoth} ekskl. moms | Birdly`,
   description:
-    `Birdly koster ${priceText.monthlyLong} eller ${priceText.yearlyLong} ekskl. moms. 14 dages gratis prøve, ingen binding og matchgaranti. Se hvad der er inkluderet.`,
+    `Birdly koster ${priceText.monthlyLong} eller ${priceText.yearlyLong} ekskl. moms. ${TRIAL_DAYS} dages gratis prøve, ingen binding og matchgaranti. Se hvad der er inkluderet.`,
   alternates: { canonical: "/priser" },
   openGraph: {
     title: "Hvad koster Birdly? | Birdly",
-    description: `Én pakke med alt inkluderet: ${priceText.perMonthBoth} ekskl. moms. 14 dages gratis prøve.`,
+    description: `Én pakke med alt inkluderet: ${priceText.perMonthBoth} ekskl. moms. ${TRIAL_DAYS} dages gratis prøve.`,
     type: "website",
     locale: "da_DK",
     siteName: "Birdly",
