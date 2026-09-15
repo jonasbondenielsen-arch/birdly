@@ -881,7 +881,7 @@ export default function Tilmeld({ initialFag = null, initialRegion = null, opgav
                 {step < 3 && <button type="button" className="btn-next" onClick={next}>Videre →</button>}
                 {step === 3 && (
                   <button type="button" className="btn-next" onClick={startPayment} disabled={saving || !terms || !abonnement}>
-                    {saving ? "Forbereder betaling …" : "Prøv gratis i 14 dage →"}
+                    {saving ? "Forbereder betaling …" : `Prøv gratis i ${TRIAL_DAYS} dage →`}
                   </button>
                 )}
                 {step === 4 && <span />}

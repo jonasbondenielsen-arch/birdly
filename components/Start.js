@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Logo } from "./Logo";
 import { fetchCatalog, submitSignup, createSubscriptionSession } from "../lib/catalog";
 import { hentKandidater, visResultat } from "../lib/kandidater";
-import { PLAN, YEARLY_SAVING, planForInterval, priceText, TRIAL_DAYS } from "../lib/pakke";
+import { PLAN, YEARLY_SAVING, planForInterval, priceText, TRIAL_DAYS, VARSEL_DAGE } from "../lib/pakke";
 import { sporEnGang } from "../lib/pixel";
 // ⚠️ ATTRIBUTIONEN SENDES MED SIGNUP (06-09-2026, godkendt af Jonas).
 // fangAttribution() har hele tiden kørt i <Maaling> på hver eneste side og lagt
@@ -2091,7 +2091,7 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
                 ) : (
                   <p>
                     Abonnementet starter <b>i dag</b> med <b>{TRIAL_DAYS} dages gratis prøveperiode</b>.
-                    Du betaler <b>0 kr. i dag</b>. 3 dage før prøveperioden udløber, sender vi dig en
+                    Du betaler <b>0 kr. i dag</b>. {VARSEL_DAGE} dage før prøveperioden udløber, sender vi dig en
                     påmindelse. Herefter fortsætter medlemskabet automatisk til <b>{pris} ekskl. moms</b>{" "}
                     og fornyes løbende {interval === "yearly" ? "hvert år" : "hver måned"},{" "}
                     <b>indtil du opsiger</b>. Du kan til enhver tid opsige med virkning fra næste

@@ -37,7 +37,7 @@ Betingelserne er gældende mellem Birdly.dk, CVR-nr. 35764283, Fjordvej 4, 4300 
 
 2.3 Siger du ikke op, fortsætter abonnementet automatisk som et betalt abonnement. **Den første opkrævning sker dagen efter de [PROEVE_DAGE] gratis dage** — månedligt eller årligt, alt efter hvad du har valgt.
 
-2.4 **Vi siger til, før du bliver trukket.** Tre dage før prøveperioden udløber, sender vi dig en påmindelse på e-mail — og typisk også på SMS — så du ved, at abonnementet om tre dage går fra gratis til betalt. Du skal ikke lede efter den besked; den kommer af sig selv. Vil du ikke fortsætte, kan du nå at sige op inden.
+2.4 **Vi siger til, før du bliver trukket.** [VARSEL_DAGE] dage før prøveperioden udløber, sender vi dig en påmindelse på e-mail, så du ved, at abonnementet snart går fra gratis til betalt. Du skal ikke lede efter den besked; den kommer af sig selv. Vil du ikke fortsætte, kan du nå at sige op inden.
 
 ---
 

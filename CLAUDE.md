@@ -44,7 +44,8 @@ kundens samleside, deleside pr. udbud og bud-skabelonen. Deploy: Vercel-projekt 
 - **Ejer-sætningen** går igen to steder og skal blive stående:
   > Du fortæller os, hvilke opgaver du leder efter. Vi holder øje. Du får besked.
 - **Én CTA gennem hele funnelen:** hver knap der fører til `/tilmeld` hedder **"Kom i gang nu"**
-  (14 stk.). Under de fire store står noten *"Gratis de første 14 dage · ingen binding"*.
+  (14 stk.). Under de fire store står noten *"Gratis de første [TRIAL_DAYS] dage · ingen binding"* —
+  tallet interpoleres fra `lib/pakke.js`, står aldrig som ciffer i komponenten.
   Knapper med ANDEN funktion holdes tydeligt forskellige ("Se hvordan det virker",
   "Se opgaven", opsigelsen) — de må aldrig laves om til "Kom i gang nu".
 - **Tone:** rolig, ærlig, dansk, du-form. Ingen hype, ingen AI-/algoritme-jargon —

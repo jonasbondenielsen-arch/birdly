@@ -24,7 +24,7 @@ import { readFileSync, existsSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { UK_JURA, hubKort } from "../lib/uk/jura.js";
-import { TRIAL_DAYS, TRIAL_DAYS_FOER, PROEVE7_FRA_DATO_EN } from "../lib/pakke.js";
+import { TRIAL_DAYS, TRIAL_DAYS_FOER, PROEVE7_FRA_DATO_EN, VARSEL_DAGE } from "../lib/pakke.js";
 
 const KANDIDATER = [
   process.argv[2],
@@ -101,6 +101,18 @@ const PROEVE_TC_PAKKEN =
 const PROEVE_TC_NU =
   `### 3.3\nNew Customers receive a ${TRIAL_DAYS}-day free trial, subject to the Subscription Terms.`;
 
+// ⚠️ VARSLET: PAKKEN LOVER 3 DAGE OG EN SMS — BEGGE DELE ER USANDE NU.
+// Betalingsvarslet blev 15-09-2026 flyttet til 2 dage foer proeveslut og gjort
+// MAIL-ONLY (SMS'en fjernet fra reminder-stien). En jurapakke der lover en SMS
+// vi ikke sender, er et loefte vi bryder hver gang. Substitutionen staar her,
+// saa afvigelsen fra pakken er dokumenteret ET sted og vagten stadig beviser
+// resten ordret. Tallet kommer fra VARSEL_DAGE, saa teksten ikke kan skride
+// fra motoren igen.
+const VARSEL_PAKKEN =
+  "Birdly intends to send an email approximately 3 days before the trial becomes paid, and usually a text as well.";
+const VARSEL_NU =
+  `Birdly intends to send an email approximately ${VARSEL_DAGE} days before the trial becomes paid.`;
+
 const PROEVE_ST_PAKKEN =
   "## 2. 14-day free trial\n\n" +
   "New Customers receive a 14-day free trial beginning on sign-up. No Subscription fee is charged during the trial.\n\n" +
@@ -124,6 +136,7 @@ const LAAST = [
   [AFSNIT2_PAKKEN, AFSNIT2_NU],
   [PROEVE_TC_PAKKEN, PROEVE_TC_NU],
   [PROEVE_ST_PAKKEN, PROEVE_ST_NU],
+  [VARSEL_PAKKEN, VARSEL_NU],
   ["\n\nUK representative: `[UK_REPRESENTATIVE_DETAILS]`", ""],
 ];
 

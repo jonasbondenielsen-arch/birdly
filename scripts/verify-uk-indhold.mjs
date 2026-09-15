@@ -78,7 +78,7 @@ const IKKE_I_TEKSTEN = new Map([
    "(lib/opgaveTal.js) og staar aldrig paa skaermen."],
   ["#hvordan", "Anker-ADRESSE, ikke tekst. Den staar i href-attributten."],
   ["#problem", "Anker-adresse. Samme grund."],
-  ["£0 today · 14 days free · No long-term lock-in",
+  [`£0 today · ${TRIAL_DAYS} days free · No long-term lock-in`,
    "Hoerer til BETALINGS-trinnet, ikke foerste skaerm. DK viser en trust-raekke " +
    "paa foerste skaerm (st-pre-trust); UK's tilsvarende er ikke bygget endnu - " +
    "flagget til Jonas, ikke skjult her."],
