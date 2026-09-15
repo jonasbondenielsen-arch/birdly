@@ -113,6 +113,21 @@ const VARSEL_PAKKEN =
 const VARSEL_NU =
   `Birdly intends to send an email approximately ${VARSEL_DAGE} days before the trial becomes paid.`;
 
+// ⚠️ KATEGORIEN "FUNCTIONAL" ER FJERNET (15-09-2026, Jonas).
+// Pakken beskriver fire kategorier. Maalt 15-09: INGEN kode laeser
+// maa("funktionel") - hverken paa DK eller GB - og der blev aldrig sat en
+// funktionel cookie. En kategori man kan give eller naegte samtykke til, men
+// som ikke findes, er en usandhed i et dokument hvis hele formaal er at vaere
+// sandt. Den er fjernet fra banner OG politik paa begge markeder i samme
+// aendring, saa de to ikke kan drive fra hinanden.
+//
+// ⚠️ "Analytics" BLEV STAAENDE - og det er en ANDEN sag. Dér ER der noget
+// (birdly_funnel via ctaSporing); den er bare blevet gated bag samtykket
+// samme dag. Se lib/ctaSporing.js.
+const FUNKTIONEL_PAKKEN =
+  "### Functional\nOptional preferences not strictly necessary.\n\n";
+const FUNKTIONEL_NU = "";
+
 const PROEVE_ST_PAKKEN =
   "## 2. 14-day free trial\n\n" +
   "New Customers receive a 14-day free trial beginning on sign-up. No Subscription fee is charged during the trial.\n\n" +
@@ -136,6 +151,7 @@ const LAAST = [
   [AFSNIT2_PAKKEN, AFSNIT2_NU],
   [PROEVE_TC_PAKKEN, PROEVE_TC_NU],
   [PROEVE_ST_PAKKEN, PROEVE_ST_NU],
+  [FUNKTIONEL_PAKKEN, FUNKTIONEL_NU],
   [VARSEL_PAKKEN, VARSEL_NU],
   ["\n\nUK representative: `[UK_REPRESENTATIVE_DETAILS]`", ""],
 ];

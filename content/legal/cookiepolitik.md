@@ -7,7 +7,7 @@ Birdly bruger cookies til løbende at forbedre din oplevelse af hjemmesiden og t
 ## Hvad er en cookie?
 Cookies er små tekstfiler, der lagres på din enhed, og som blandt andet hjælper os med anonymiserede statistikker over, hvordan du bruger hjemmesiden. Cookies gør det også muligt at skelne mellem besøgende og vise et mere relevant indhold, når du besøger siden.
 
-Med undtagelse af de mest nødvendige cookies sætter vi ingen cookies uden din forudgående accept. Første gang du besøger hjemmesiden, beder vi dig i vores cookie-banner om samtykke til funktionelle, statistiske og markedsføringscookies. For at kunne huske dit valg sætter vi en nødvendig cookie, der gemmer dine cookiepræferencer — den sættes uden samtykke, da den er nødvendig for, at vi kan efterleve dit valg.
+Med undtagelse af de mest nødvendige cookies sætter vi ingen cookies uden din forudgående accept. Første gang du besøger hjemmesiden, beder vi dig i vores cookie-banner om samtykke til statistiske og markedsføringscookies. For at kunne huske dit valg sætter vi en nødvendig cookie, der gemmer dine cookiepræferencer — den sættes uden samtykke, da den er nødvendig for, at vi kan efterleve dit valg.
 
 ## Sådan giver og ændrer du dit samtykke
 Du giver dit samtykke i cookie-banneret, når du besøger siden. Statistik- og markedsføringscookies sættes først, når du aktivt har accepteret, og de aktiveres ikke, hvis du afviser. Du kan til enhver tid ændre eller tilbagekalde dit samtykke ved at åbne cookie-indstillingerne på siden igen eller ved at slette cookies i din browser. Bruger du flere browsere, skal du ændre/slette i dem alle.
@@ -15,8 +15,6 @@ Du giver dit samtykke i cookie-banneret, når du besøger siden. Statistik- og m
 ## Kategorier af cookies
 
 **Nødvendige** — Gør hjemmesiden brugbar ved at aktivere grundlæggende funktioner som side-navigation, tilmeldings- og loginflow samt at huske dit cookievalg. Hjemmesiden fungerer ikke optimalt uden disse. Kræver ikke samtykke og indeholder ikke sporing.
-
-**Funktionelle** — Vi indsamler oplysninger om dine foretrukne indstillinger og valg, så vi kan vise dig den version af hjemmesiden, der passer til dine præferencer. Kræver samtykke.
 
 **Statistiske** — Vi indsamler oplysninger om, hvordan du interagerer med hjemmesiden, herunder hvor ofte du besøger den, og hvilke sider du ser, så vi kan optimere design, brugervenlighed og effektivitet. Kræver samtykke.
 
