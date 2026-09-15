@@ -2,6 +2,7 @@ import StartUk from "../../../../components/uk/StartUk";
 import { katalogFor } from "../../../../lib/katalogFor";
 import { hentOpgaveTal } from "../../../../lib/opgaveTal";
 import { baseUrl, MARKEDER } from "../../../../lib/markets";
+import { hreflangFor } from "../../../../lib/site";
 
 const GB = MARKEDER.GB;
 
@@ -20,10 +21,23 @@ const GB = MARKEDER.GB;
 // Indgangen er salgssiden; det her er flowet BAG CTA'en. Og GB er DRAFT.
 // ============================================================================
 
+// ⚠️ CANONICAL MANGLEDE HELT (15-09-2026). /uk og /uk/terms havde en; /uk/start
+// havde ingen. Siden serveres paa getbirdly.co.uk/start via proxy'en, saa uden
+// canonical er der to adresser til samme side (birdly.dk/uk/start og
+// getbirdly.co.uk/start) og ingen af dem udpeget. `ukAbs` bygger den paa
+// GB-vaerten, ikke paa den danske - metadataBase er DK's.
+//
+// ⚠️ hreflang KOMMER FRA hreflangFor, IKKE SKREVET I HAANDEN. Den er gated paa
+// `lanceret`, saa den returnerer null saa laenge GB er DRAFT - og Next udelader
+// feltet. Den dag GB taendes, taendes hreflang samme sted for begge markeder.
 export const metadata = {
   title: "Get started | Birdly",
   description:
-    "Tell Birdly what you do. We'll look for relevant public and private work across the UK.",
+    "Tell Birdly what you do. We'll look for relevant public work across the UK.",
+  alternates: {
+    canonical: baseUrl("GB") + "/start",
+    languages: hreflangFor("/start") || undefined,
+  },
   robots: { index: false, follow: false },
 };
 

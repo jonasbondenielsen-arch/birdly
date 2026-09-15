@@ -30,11 +30,37 @@ if (!existsSync(".next/BUILD_ID")) {
   process.exit(2);
 }
 
-writeFileSync(
-  ".next/SERVER_BOOTED",
-  JSON.stringify({ port: PORT, tid: Date.now(), byggetTid: statSync(".next/BUILD_ID").mtimeMs }),
-  "utf8"
-);
-
+// ⚠️ MARKOEREN SKRIVES FOERST NAAR PORTEN FAKTISK SVARER (15-09-2026).
+//
+// Her blev den skrevet FOER spawn. Det aabnede praecis det hul den skulle lukke:
+// startede serveren ikke - fx fordi en gammel proces stadig holdt porten
+// (EADDRINUSE) - laa der alligevel en frisk markoer, og render-dk.mjs maalte
+// videre paa DEN GAMLE SERVERS svar og kaldte det det nye byg.
+//
+// Maalt 15-09-2026: en hel DK-regression kom ud som "0 hunks - byte-identisk",
+// fordi baade foer og efter blev renderet af den samme gamle proces. Det er
+// samme fejlklasse som 10-09, hvor seks konklusioner i traek var forkerte.
+//
+// Derfor: spawn foerst, vent paa at porten svarer, og skriv foerst derefter.
+// Svarer den ikke inden for fristen, skrives der INTET - og den naeste maaling
+// naegter at koere i stedet for at lyve.
 const barn = spawn("npx", ["next", "start", "-p", String(PORT)], { stdio: "inherit", shell: true });
 barn.on("exit", (kode) => process.exit(kode ?? 0));
+
+const FRIST_MS = 60000;
+const start = Date.now();
+while (Date.now() - start < FRIST_MS) {
+  const svar = await fetch(`http://127.0.0.1:${PORT}/`, { headers: { Host: "www.birdly.dk" } })
+    .then((r) => r.ok)
+    .catch(() => false);
+  if (svar) {
+    writeFileSync(
+      ".next/SERVER_BOOTED",
+      JSON.stringify({ port: PORT, tid: Date.now(), byggetTid: statSync(".next/BUILD_ID").mtimeMs }),
+      "utf8"
+    );
+    console.log(`[start-server] port ${PORT} svarer - markoer skrevet`);
+    break;
+  }
+  await new Promise((r) => setTimeout(r, 500));
+}

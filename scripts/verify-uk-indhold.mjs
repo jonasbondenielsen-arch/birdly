@@ -26,6 +26,7 @@
 // Exit 0 = ingen halvt udfyldte sektioner.
 // ============================================================================
 import { en } from "../lib/tekster/en.js";
+import { TRIAL_DAYS } from "../lib/pakke.js";
 
 const BASE = (process.argv[2] || "").replace(/\/+$/, "");
 if (!BASE) {

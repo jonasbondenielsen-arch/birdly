@@ -1,6 +1,7 @@
 import Salgsside from "../../../components/salg/Salgsside";
 import { hentOpgaveTal } from "../../../lib/opgaveTal";
 import { baseUrl, MARKEDER } from "../../../lib/markets";
+import { hreflangFor } from "../../../lib/site";
 import { tekster } from "../../../lib/tekster";
 
 const GB = MARKEDER.GB;
@@ -34,10 +35,14 @@ const GB = MARKEDER.GB;
 export const metadata = {
   title: "Get more cleaning and service contracts | Birdly",
   description:
-    "Birdly finds public and private work that fits your business — and sends new matches straight to your phone.",
+    "Birdly finds public work that fits your business — and sends new matches straight to your phone.",
   // ⚠️ CANONICAL PEGER PAA getbirdly.co.uk, ikke paa /uk. Stien er intern; det
   // er vaerten kunden ser, og den Google skal indeksere.
-  alternates: { canonical: baseUrl("GB") + "/" },
+  alternates: {
+    canonical: baseUrl("GB") + "/",
+    // hreflang er gated paa `lanceret` og er derfor null indtil GB aabner.
+    languages: hreflangFor("/") || undefined,
+  },
   // ⚠️ OG-TAGGENE SKAL OVERSKRIVES, IKKE ARVES. Uden det her blok arver
   // /uk rodlayoutets DANSKE openGraph og twitter - maalt 09-09-2026: et delt
   // link til den britiske side viste "Offentlige og private opgaver direkte

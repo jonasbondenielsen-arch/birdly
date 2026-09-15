@@ -68,6 +68,42 @@ const KILDE = norm(readFileSync(sti, "utf8"));
 // ⚠️ DEN HER LISTE ER IKKE ET STED AT PARKERE TEKST MAN SELV HAR SKREVET.
 // Står en streng her uden at Jonas har skrevet den ordret, er den smuglet ind.
 const FRA_BRIEF = new Map([
+  ["Birdly finds public work that fits your business — and sends new matches straight to your phone.",
+   "Jonas' beslutning 14-09-2026: \"public + private work\" UD af UK-copy, indtil GB " +
+   "private opgaver er live som fuldt flow. Copy-filen lover begge dele; kun den " +
+   "halvdel vi ikke leverer er fjernet, saetningen er ikke omskrevet. Saettes den " +
+   "tilbage, sker det her og i lib/tekster/en.js - se listen i rapporten 15-09-2026."],
+  ["We find relevant public work and filter out the rest.",
+   "Jonas' beslutning 14-09-2026: \"public + private work\" UD af UK-copy, indtil GB " +
+   "private opgaver er live som fuldt flow. Copy-filen lover begge dele; kun den " +
+   "halvdel vi ikke leverer er fjernet, saetningen er ikke omskrevet. Saettes den " +
+   "tilbage, sker det her og i lib/tekster/en.js - se listen i rapporten 15-09-2026."],
+  ["Birdly finds relevant public cleaning work. You decide which contracts are worth going for.",
+   "Jonas' beslutning 14-09-2026: \"public + private work\" UD af UK-copy, indtil GB " +
+   "private opgaver er live som fuldt flow. Copy-filen lover begge dele; kun den " +
+   "halvdel vi ikke leverer er fjernet, saetningen er ikke omskrevet. Saettes den " +
+   "tilbage, sker det her og i lib/tekster/en.js - se listen i rapporten 15-09-2026."],
+  ["Tell Birdly what you do. We'll look for relevant public work across the UK and send the right matches straight to your phone.",
+   "Jonas' beslutning 14-09-2026: \"public + private work\" UD af UK-copy, indtil GB " +
+   "private opgaver er live som fuldt flow. Copy-filen lover begge dele; kun den " +
+   "halvdel vi ikke leverer er fjernet, saetningen er ikke omskrevet. Saettes den " +
+   "tilbage, sker det her og i lib/tekster/en.js - se listen i rapporten 15-09-2026."],
+  ["Birdly automatically finds public work that fits your business.",
+   "Jonas' beslutning 14-09-2026: \"public + private work\" UD af UK-copy, indtil GB " +
+   "private opgaver er live som fuldt flow. Copy-filen lover begge dele; kun den " +
+   "halvdel vi ikke leverer er fjernet, saetningen er ikke omskrevet. Saettes den " +
+   "tilbage, sker det her og i lib/tekster/en.js - se listen i rapporten 15-09-2026."],
+  ["Public work",
+   "Jonas' beslutning 14-09-2026: \"public + private work\" UD af UK-copy, indtil GB " +
+   "private opgaver er live som fuldt flow. Copy-filen lover begge dele; kun den " +
+   "halvdel vi ikke leverer er fjernet, saetningen er ikke omskrevet. Saettes den " +
+   "tilbage, sker det her og i lib/tekster/en.js - se listen i rapporten 15-09-2026."],
+  ["Birdly finds relevant public cleaning work across the UK and sends the right matches straight to your phone. 7 days free.",
+   "Samme fjernelse som ovenfor, plus proevelaengden fra TRIAL_DAYS. Bruges som " +
+   "og:description paa /uk, saa et delt link ikke lover private opgaver."],
+  ["What happens after the 7-day free trial?",
+   "Copy-filen blev skrevet 08-09-2026, da proeven var 14 dage. Kun cifret afviger, " +
+   "og det kommer fra TRIAL_DAYS. Samme aendring som de oevrige proeve-strenge."],
   ["Don't have a company number?",
    "Jonas' brief 09-09-2026: 'under firmanummer-feltet en boks \"Don't have a " +
    "company number?\"'. Copy-filen §26 siger kun HVAD der skal ske (\"Do not force " +
