@@ -20,9 +20,10 @@
 // Vagten regner derfor den samme substitution ind i kilden før den sammenligner.
 // Alt andet skal være tegn for tegn.
 // ============================================================================
-import { readFileSync, existsSync } from "node:fs";
+import { readFileSync, existsSync, readdirSync, statSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { UK_JURA, hubKort, aabnePladsholdere } from "../lib/uk/jura.js";
 import { TRIAL_DAYS, TRIAL_DAYS_FOER, PROEVE7_FRA_DATO_EN, VARSEL_DAGE } from "../lib/pakke.js";
 
@@ -137,10 +138,7 @@ const PROEVE_ST_PAKKEN =
 const PROEVE_ST_NU =
   "## 2. Free trial\n\n" +
   `New Customers receive a ${TRIAL_DAYS}-day free trial beginning on sign-up. No Subscription fee is charged during the trial.\n\n` +
-  `The trial period is ${TRIAL_DAYS} days for agreements entered into on or after ${PROEVE7_FRA_DATO_EN}. ` +
-  `For agreements entered into before that date, the trial period is ${TRIAL_DAYS_FOER} days. ` +
-  "Your own trial period was fixed when you signed up and is not changed by later changes to this clause." +
-  "\n\nIf you cancel before the trial ends:\n" +
+  "If you cancel before the trial ends:\n" +
   "- no Subscription fee is charged; and\n" +
   "- the Subscription ends when the free trial expires.";
 
@@ -152,6 +150,39 @@ const LAAST = [
   [PROEVE_TC_PAKKEN, PROEVE_TC_NU],
   [PROEVE_ST_PAKKEN, PROEVE_ST_NU],
   [FUNKTIONEL_PAKKEN, FUNKTIONEL_NU],
+
+  // C · DPA'ens revisionsadgang: skriftligt/fjernadgang foerst, fysisk kun
+  //     hvis det ikke raekker. Klausulen tillod i praksis et fysisk besoeg som
+  //     foerste skridt, og det er ude af proportion for et enkeltmandsfirma.
+  ["If insufficient, Customer may request an audit.",
+   "If insufficient, Customer may request an audit. An audit is carried out by written response or remote access as the default. An on-site audit may take place only where that is not sufficient, and must be given reasonable notice, take place during normal business hours and be at the Customer's cost."],
+  // F(a) · Politikken sagde kun "cookies". Maalt: de eneste egentlige cookies
+  //        er Metas; alt vores eget ligger i browserens lokale lagring.
+  ["Birdly uses cookies/similar technologies to make the site work, remember choices, understand performance where you consent, and measure/optimise marketing where you consent.",
+   "Birdly uses cookies/similar technologies to make the site work, remember choices, understand performance where you consent, and measure/optimise marketing where you consent.\n\nThe rules are the same for cookies and for browser storage, and \"cookies\" below covers both. It is worth knowing that your cookie choice and your progress through sign-up are kept in browser storage rather than in a cookie, so clearing cookies alone does not clear them. The only true cookies Birdly sets are Meta's (`_fbp` and `_fbc`), and only after you accept Marketing."],
+  // ══ DE 14 TILPASNINGER (Jonas 15-09-2026) ══
+  // Pakken blev skrevet 08-09, foer disse beslutninger faldt. Hver afvigelse
+  // staar her - EET sted - saa vagten stadig beviser at alt ANDET er ordret.
+  // 3 · DK §8.4 har et loft paa 5.000 DKK. UK faar samme loft i GBP, rundet OP
+  //      saa det britiske aldrig bliver lavere end det danske.
+  ["subject to an overall maximum of the GBP equivalent of DKK 5,000 calculated at the exchange rate applicable on the date the claim arose.\n\n**Optional before launch:** replace with a fixed GBP cap if Jonas chooses one.",
+   "subject to an overall maximum of £600."],
+  // 13 · Matchgarantien har ingen beloebsgraense. Spoergsmaalet blev fjernet fra
+  //      funnelen 14-09; max_amount er altid null for nye kunder.
+  ["that falls within the criteria you selected, including the relevant trade/service, geography and contract-size criteria.",
+   "that falls within the criteria you selected — your trade/service and your geography."],
+  // 13 · ... og selve beloebsklausulen ud.
+  ["### 4.4 — Contract-size condition\nThe Match Guarantee only applies if your contract-size settings meet the **minimum guarantee threshold clearly shown in Birdly during sign-up/settings**.\n\nIf you deliberately restrict your settings below that threshold, you may still use Birdly, but the Match Guarantee does not apply.\n\n",
+   ""],
+  // 6 · "Verify ..." var en instruks til skribenten, der stod som kundevendt tekst.
+  ["| Resend | Transactional/system email | EU/US depending on service | Verify DPF/SCC/UK Addendum or other safeguard |",
+   "| Resend | Transactional/system email | EU/US depending on service | UK Addendum to the EU SCCs, or another approved safeguard |"],
+  // 4 · Regimet navngivet frem for omskrevet.
+  ["For processing subject to UK GDPR, Birdly also complies with applicable UK data protection rules.",
+   "For processing subject to UK GDPR, Birdly also complies with the UK GDPR and the Data Protection Act 2018."],
+  // 10 · Sprogklausul. Fandtes ikke i pakken.
+  ["### Severability\nIf part is held invalid/unenforceable, the rest continues.",
+   "### Language\nThese Terms are provided in English. For UK Customers, the English version is the governing version.\n\n### Severability\nIf part is held invalid/unenforceable, the rest continues."],
   // ⚠️ BESPARELSEN: pakken sagde "If annual billing gives a stated saving, the
   // saving shown must match the actual prices" - en instruks til skribenten,
   // ikke en oplysning til kunden, og den stod som gaeldende betingelsestekst.
@@ -231,6 +262,61 @@ for (const k of kort) {
   }
 }
 console.log(`  → ${kort.length} kort, ${dokumenter.length} dokumenter`);
+
+// ══ DEN ELLEVTE SIDE: HUB'EN ══
+//
+// ⚠️ HUB'EN SLAP FORBI TO GANGE I SAMME RUNDE (15-09-2026). Først som ni kort
+// mod otte, derefter som et DRAFT-banner der blev stående efter at alle 21
+// pladsholdere var udfyldt — og hub'en er den side Clearhaus åbner først.
+//
+// ⚠️ ÅRSAGEN VAR DEN SAMME BEGGE GANGE: hub'en er ikke et DOKUMENT, så den
+// faldt uden for enhver tælling der løb over UK_JURA's md-tekster. En vagt der
+// måler ti sider på et sted med elleve, er grøn af den forkerte grund.
+//
+// ⚠️ DER MÅLES PÅ KILDEN, IKKE PÅ ET RENDERET SVAR. Et banner der er udkommenteret
+// eller gated forkert, ville stadig kunne stå i HTML'en på en anden build. Her
+// bevises at BEGGE steder spørger juraErDraft() — altså at hub og dokument ikke
+// KAN komme til at sige hver sit.
+{
+  console.log("\nDEN ELLEVTE SIDE — HUB'EN");
+  // ⚠️ SCANNER ALLE UK-FILER, IKKE EN HAANDHOLDT LISTE. Tre gange i samme
+  // runde slap en side forbi, fordi taellingen loeb over UK_JURA eller over to
+  // navngivne filer: hub'ens kort, hub'ens banner og til sidst
+  // /report-a-problem. En vagt med en liste beskytter kun listen.
+  const ukFiler = [];
+  (function gaa(p) {
+    for (const n of readdirSync(p)) {
+      const sti = join(p, n);
+      if (statSync(sti).isDirectory()) { gaa(sti); continue; }
+      if (/\.jsx?$/.test(n)) ukFiler.push(sti);
+    }
+  })(fileURLToPath(new URL("../app/uk", import.meta.url)));
+  (function gaa(p) {
+    for (const n of readdirSync(p)) {
+      const sti = join(p, n);
+      if (statSync(sti).isDirectory()) { gaa(sti); continue; }
+      if (/\.jsx?$/.test(n)) ukFiler.push(sti);
+    }
+  })(fileURLToPath(new URL("../components/uk", import.meta.url)));
+
+  let medBanner = 0;
+  for (const sti of ukFiler) {
+    const kilde = readFileSync(sti, "utf8");
+    if (!kilde.includes('className="uk-jura-draft"')) continue;
+    medBanner++;
+    const gated = /\{\s*\(?[^}]*(juraErDraft\(\)|side\.draft|antalAabne)[^}]*\)?\s*&&\s*\(/.test(kilde);
+    const navn = sti.replace(/\\/g, "/").split("/").slice(-3).join("/");
+    if (gated) console.log(`  ✓ ${navn}: banneret er gated paa jura-status`);
+    else { console.log(`  ✖ ${navn}: DRAFT-banner UDEN gate - det ville staa uanset`); fejl++; }
+  }
+  console.log(`  → ${ukFiler.length} UK-filer scannet, ${medBanner} med banner`);
+
+  // Kortene skal daekke hvert dokument, og hub'en selv er ikke et dokument.
+  const dokumenter = UK_JURA.filter((x) => x.rute !== "/terms").length;
+  const kort = hubKort().length;
+  if (kort === dokumenter) console.log(`  ✓ hub'en har ${kort} kort til ${dokumenter} dokumenter`);
+  else { console.log(`  ✖ hub'en har ${kort} kort til ${dokumenter} dokumenter`); fejl++; }
+}
 
 const aabneIalt = UK_JURA.reduce((n, s) => n + aabnePladsholdere(s.md).length, 0);
 console.log(

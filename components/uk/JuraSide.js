@@ -53,7 +53,7 @@ export default function JuraSide({ side, marked = "GB" }) {
           pladsholder giver banneret tilbage uden at nogen skal huske det. Og
           `udfyldJura` kaster på en pladsholder den ikke kender, så en ukendt
           ét vælter builden i stedet for at blive publiceret. */}
-      {antalAabne > 0 && (
+      {(side.draft || antalAabne > 0) && (
         <div className="uk-jura-draft" role="note">
           <b>{T.jura.draftTitel}</b>
           <p>{T.jura.draftBrod}</p>

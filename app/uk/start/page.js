@@ -1,4 +1,5 @@
 import StartUk from "../../../components/uk/StartUk";
+import SaetLang from "../../../components/uk/SaetLang";
 import { katalogFor } from "../../../lib/katalogFor";
 import { hentOpgaveTal } from "../../../lib/opgaveTal";
 import { baseUrl, MARKEDER } from "../../../lib/markets";
@@ -72,12 +73,15 @@ export default async function UkStart() {
   }
 
   return (
-    <StartUk
+    <>
+      <SaetLang lang="en-GB" />
+      <StartUk
       katalog={katalog}
       pris={GB.pris}
       hjem={baseUrl("GB") || "/uk"}
       aaben={GB.lanceret === true}
-      tal={tal}
-    />
+        tal={tal}
+      />
+    </>
   );
 }

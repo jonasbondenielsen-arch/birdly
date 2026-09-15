@@ -7,7 +7,9 @@ Birdly bruger cookies til løbende at forbedre din oplevelse af hjemmesiden og t
 ## Hvad er en cookie?
 Cookies er små tekstfiler, der lagres på din enhed, og som blandt andet hjælper os med anonymiserede statistikker over, hvordan du bruger hjemmesiden. Cookies gør det også muligt at skelne mellem besøgende og vise et mere relevant indhold, når du besøger siden.
 
-Med undtagelse af de mest nødvendige cookies sætter vi ingen cookies uden din forudgående accept. Første gang du besøger hjemmesiden, beder vi dig i vores cookie-banner om samtykke til statistiske og markedsføringscookies. For at kunne huske dit valg sætter vi en nødvendig cookie, der gemmer dine cookiepræferencer — den sættes uden samtykke, da den er nødvendig for, at vi kan efterleve dit valg.
+Vi bruger både cookies og browserens lokale lagring (local storage og session storage). Reglerne er de samme, og vi bruger ordet "cookies" om begge dele nedenfor — men det er værd at vide, at dit samtykkevalg og dine funnel-trin gemmes i lokal lagring og ikke i en cookie. Rydder du kun cookies i browseren, ryddes de ikke med. De to eneste egentlige cookies vi sætter, er Metas (`_fbp` og `_fbc`), og de sættes først når du har sagt ja til markedsføring.
+
+Med undtagelse af de mest nødvendige sætter vi ingen af delene uden din forudgående accept. Første gang du besøger hjemmesiden, beder vi dig i vores cookie-banner om samtykke til statistiske og markedsføringscookies. For at kunne huske dit valg sætter vi en nødvendig cookie, der gemmer dine cookiepræferencer — den sættes uden samtykke, da den er nødvendig for, at vi kan efterleve dit valg.
 
 ## Sådan giver og ændrer du dit samtykke
 Du giver dit samtykke i cookie-banneret, når du besøger siden. Statistik- og markedsføringscookies sættes først, når du aktivt har accepteret, og de aktiveres ikke, hvis du afviser. Du kan til enhver tid ændre eller tilbagekalde dit samtykke ved at åbne cookie-indstillingerne på siden igen eller ved at slette cookies i din browser. Bruger du flere browsere, skal du ændre/slette i dem alle.

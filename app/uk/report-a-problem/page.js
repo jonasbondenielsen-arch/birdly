@@ -3,7 +3,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Logo } from "../../../components/Logo";
 import { tekster } from "../../../lib/tekster";
-import { juraAfsnit, ukSti } from "../../../lib/uk/jura";
+import { juraAfsnit, ukSti, juraErDraft } from "../../../lib/uk/jura";
 import { baseUrl, MARKEDER } from "../../../lib/markets";
 import "../../legaldoc.css";
 import "../../../components/uk/jura.css";
@@ -48,10 +48,12 @@ export default function Side() {
         <Link href={ukSti("/terms")} className="uk-jura-tilbage">{T.jura.tilbage}</Link>
       </header>
 
-      <div className="uk-jura-draft" role="note">
-        <b>{T.jura.draftTitel}</b>
-        <p>{T.jura.draftBrod}</p>
-      </div>
+      {juraErDraft() && (
+        <div className="uk-jura-draft" role="note">
+          <b>{T.jura.draftTitel}</b>
+          <p>{T.jura.draftBrod}</p>
+        </div>
+      )}
 
       <article className="uk-jura-krop">
         <h1>{T.jura.rapporter}</h1>

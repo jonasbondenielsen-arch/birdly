@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Logo, BirdMark } from "../../../components/Logo";
 import SaetLang from "../../../components/uk/SaetLang";
 import FooterUk from "../../../components/uk/FooterUk";
-import { hubKort, hubIndledning, ukSti, UK_BASE } from "../../../lib/uk/jura";
+import { hubKort, hubIndledning, ukSti, UK_BASE, juraErDraft } from "../../../lib/uk/jura";
 import { tekster } from "../../../lib/tekster";
 import { baseUrl, MARKEDER } from "../../../lib/markets";
 import "../../betingelser.css";
@@ -127,14 +127,19 @@ export default function Side() {
       </div>
 
       <div className="wrap">
-        {/* ⚠️ OGSAA PAA HUB'EN. Den er en oversigt og ikke et dokument, men
-            den er indgangen til dem alle - og en oversigt der ser faerdig ud,
-            faar hele sektionen til at se faerdig ud. DK har ingen banner her,
-            fordi DK's jura ER gaeldende; UK's er DRAFT indtil jura-review. */}
-        <div className="uk-jura-draft" role="note">
-          <b>{T.jura.draftTitel}</b>
-          <p>{T.jura.draftBrod}</p>
-        </div>
+        {/* ⚠️ OGSAA PAA HUB'EN - men nu STYRET SAMME STED som dokumenterne.
+            Den er en oversigt og ikke et dokument, og netop derfor faldt den
+            uden for tællingen af de ti: banneret blev staaende her efter at
+            alle 21 pladsholdere var udfyldt, og hub'en er den side Clearhaus
+            aabner foerst.
+            juraErDraft() spoerger paa tvaers af ALLE dokumenter, saa hub og
+            dokument ikke kan komme til at sige hver sit. */}
+        {juraErDraft() && (
+          <div className="uk-jura-draft" role="note">
+            <b>{T.jura.draftTitel}</b>
+            <p>{T.jura.draftBrod}</p>
+          </div>
+        )}
 
         <div className="section-title">{T.jura.dokumenter}</div>
         <div className="cards">

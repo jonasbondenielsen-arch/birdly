@@ -1,4 +1,5 @@
 import Salgsside from "../../components/salg/Salgsside";
+import SaetLang from "../../components/uk/SaetLang";
 import { hentOpgaveTal } from "../../lib/opgaveTal";
 import { baseUrl, MARKEDER } from "../../lib/markets";
 import { hreflangFor } from "../../lib/site";
@@ -95,5 +96,10 @@ export default async function UkForside() {
   // er derfor det flag findes.
   const tal = GB.dataLever ? await hentOpgaveTal("GB", baseUrl("GB")) : null;
 
-  return <Salgsside marked="GB" tal={tal} funnelHref="/uk/start" />;
+  return (
+    <>
+      <SaetLang lang="en-GB" />
+      <Salgsside marked="GB" tal={tal} funnelHref="/uk/start" />
+    </>
+  );
 }
