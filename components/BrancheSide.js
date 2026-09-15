@@ -16,7 +16,7 @@ import { Vaerdi } from "./salg/VaerdiSektion";
 import { TRUST } from "../lib/salgTekst";
 // Guide-kortene genbruger /viden-stilen frem for en kopi.
 import { KLARE_GUIDES } from "../lib/viden";
-import "../app/(dk)/viden/viden.css";
+import "../app/viden/viden.css";
 
 // Branche-landingsside (SEO). Server-renderet — alt indhold er i HTML ved load.
 // Genbruger forsidens design (.birdly-home + forside.css): samme header, hero,
