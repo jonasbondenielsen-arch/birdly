@@ -23,7 +23,7 @@
 import { readFileSync, existsSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
-import { UK_JURA, hubKort } from "../lib/uk/jura.js";
+import { UK_JURA, hubKort, aabnePladsholdere } from "../lib/uk/jura.js";
 import { TRIAL_DAYS, TRIAL_DAYS_FOER, PROEVE7_FRA_DATO_EN, VARSEL_DAGE } from "../lib/pakke.js";
 
 const KANDIDATER = [
@@ -152,6 +152,12 @@ const LAAST = [
   [PROEVE_TC_PAKKEN, PROEVE_TC_NU],
   [PROEVE_ST_PAKKEN, PROEVE_ST_NU],
   [FUNKTIONEL_PAKKEN, FUNKTIONEL_NU],
+  // ⚠️ BESPARELSEN: pakken sagde "If annual billing gives a stated saving, the
+  // saving shown must match the actual prices" - en instruks til skribenten,
+  // ikke en oplysning til kunden, og den stod som gaeldende betingelsestekst.
+  // Tallene er pakkens egne: 59x12 = 708 mod 590 = 118 sparet.
+  ["If annual billing gives a stated saving, the saving shown must match the actual prices.",
+   "The annual plan is £590 + VAT where applicable, against £708 for twelve months paid monthly — a saving of £118. You pay for ten months and get twelve."],
   [VARSEL_PAKKEN, VARSEL_NU],
   ["\n\nUK representative: `[UK_REPRESENTATIVE_DETAILS]`", ""],
 ];
@@ -172,10 +178,16 @@ console.log(`JURA-TJEK mod ${sti}\n`);
 for (const side of UK_JURA) {
   const krop = norm(side.md);
   if (KILDE.includes(krop)) {
-    const aabne = side.aabne.length;
+    // ⚠️ TAELLES PAA DET KUNDEN SER, IKKE PAA KILDEN (15-09-2026).
+    // Kilden BEHOLDER sine pladsholdere med vilje, saa sammenligningen ovenfor
+    // kan vaere ordret mod pakkefilen. Men "uudfyldte placeholders" skal
+    // beskrive den FAERDIGE side - ellers melder vagten 21 launch-blokkere paa
+    // sider hvor der ikke staar en eneste.
+    const aabneListe = aabnePladsholdere(side.md);
+    const aabne = aabneListe.length;
     console.log(
       `  ✓ ${side.rute.padEnd(28)} ${String(krop.length).padStart(6)} tegn` +
-        (aabne ? `   ${aabne} uudfyldt(e): ${side.aabne.join(", ")}` : "")
+        (aabne ? `   ${aabne} uudfyldt(e): ${aabneListe.join(", ")}` : "")
     );
     continue;
   }
@@ -220,7 +232,7 @@ for (const k of kort) {
 }
 console.log(`  → ${kort.length} kort, ${dokumenter.length} dokumenter`);
 
-const aabneIalt = UK_JURA.reduce((n, s) => n + s.aabne.length, 0);
+const aabneIalt = UK_JURA.reduce((n, s) => n + aabnePladsholdere(s.md).length, 0);
 console.log(
   fejl
     ? `\n✖ ${fejl} side(r) er ikke laengere ordret som i pakken.`

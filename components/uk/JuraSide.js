@@ -42,17 +42,26 @@ export default function JuraSide({ side, marked = "GB" }) {
         </Link>
       </header>
 
-      {/* ⚠️ VISES ALTID SÅ LÆNGE SIDEN ER DRAFT. Den dag juraen er godkendt,
-          fjernes banneret ét sted — ikke ti. */}
-      <div className="uk-jura-draft" role="note">
-        <b>{T.jura.draftTitel}</b>
-        <p>{T.jura.draftBrod}</p>
-        {antalAabne > 0 && (
+      {/* ⚠️ DRAFT-BANNERET ER FJERNET 15-09-2026, FORDI TALLET ER NUL.
+          Hele pointen med det var at gøre hullerne lovlige: et dokument med
+          [DATE] eller [UK ACQUIRER] i teksten må ikke stå som gældende
+          betingelser. Alle 21 pladsholdere er nu udfyldt med målte fakta eller
+          trufne beslutninger — se UDFYLD i lib/uk/jura.js.
+
+          ⚠️ DET KOMMER TILBAGE AF SIG SELV HVIS NOGEN ÅBNER ET HUL IGEN.
+          `aabne` udledes af teksten, ikke af en håndholdt liste, så en ny
+          pladsholder giver banneret tilbage uden at nogen skal huske det. Og
+          `udfyldJura` kaster på en pladsholder den ikke kender, så en ukendt
+          ét vælter builden i stedet for at blive publiceret. */}
+      {antalAabne > 0 && (
+        <div className="uk-jura-draft" role="note">
+          <b>{T.jura.draftTitel}</b>
+          <p>{T.jura.draftBrod}</p>
           <p className="uk-jura-todo">
             {T.jura.todoLabel} {side.aabne.join(", ")}
           </p>
-        )}
-      </div>
+        </div>
+      )}
 
       <article className="uk-jura-krop">
         <ReactMarkdown remarkPlugins={[remarkGfm]}>{side.md}</ReactMarkdown>
