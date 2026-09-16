@@ -92,7 +92,24 @@ console.log("\n══ D · VAGTEN BITER");
   ok(!(3600 > 86400), "asymmetri-tjekket kan fejle (3600 > 86400 er falsk)");
 }
 
+// ── E · FUNNELEN SLAAR OP FRA VERCELS IP, IKKE SUPABASES ──────────────────
+// ⚠️ MAALT 16-09-2026, IKKE FORMODET. cvrapi's graense er pr. IP/IP-range, ikke
+// pr. token, og Supabase deler sine udgaaende adresser paa tvaers af kunder:
+//   Vercels IP   (denne rute)      -> 3 af 3 opslag lykkedes
+//   Supabases IP (edge-funktionen) -> QUOTA_EXCEEDED, hver gang
+// Det er aarsagen til at 5 af 11 tilmeldinger staar som `cvr_opslag: "usikker"`
+// og dermed faar en faktura UDEN momsnummer: `signup` slaar op fra den udtoemte
+// IP, mens funnelen slaar op fra den sunde.
+//
+// Derfor skal den her rute blive ved med at kalde registeret DIREKTE. Edge-
+// funktionen `cvr-opslag` findes som delt cache og som sonde, men at laegge
+// funnelen om til den ville flytte opslaget til den IP der ikke virker.
+console.log("\n══ E · FUNNELEN GAAR IKKE OM AD SUPABASE");
+ok(/cvrapi\.dk\/api/.test(KILDE), "ruten kalder registeret direkte");
+ok(!/functions\/v1\/cvr-opslag/.test(KILDE),
+   "ruten gaar IKKE gennem edge-funktionen (det ville vaere en regression)");
+
 console.log("\n" + (fejl
   ? `✖ ${fejl} fejl — en fejl kan naa at blive cachet.`
-  : "✓ Fejl caches ikke — kun svar."));
+  : "✓ Fejl caches ikke — kun svar, og opslaget gaar fra den IP der virker."));
 process.exitCode = fejl ? 1 : 0;
