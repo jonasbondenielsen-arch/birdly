@@ -18,12 +18,13 @@ import { sporEnGang } from "../lib/pixel";
 // objektet er tomt. Der er hverken rørt en gate, en pris eller en hændelse — kun
 // et felt der lå ubrugt i den anden ende, som nu bliver udfyldt.
 import { hentAttribution } from "../lib/attribution";
+import { hentAnonId } from "../lib/anonId";
 // ⚠️ VAERDI_ANKER er den GENERISKE sætning og bruges kun ét sted i funnelen:
 // checkoutens højre kolonne. Skærm 7's anker er PERSONLIGT og regnes af kundens
 // eget valg — se lib/vaerdiAnker.js. Byt dem aldrig om: den generiske sætning på
 // skærm 7 ville smide den personalisering væk, der er hele pointen med skærmen.
 import { GARANTI, GARANTI_LINK, VAERDI_ANKER, VIND_EN, OFFENTLIGE } from "../lib/salgTekst";
-import { sporFunnel } from "../lib/ctaSporing";
+import { sporFunnel, sporEvent } from "../lib/ctaSporing";
 import { erLoebende, MAANEDSVAERDI, PROJEKTVAERDI, byggAnker, FORBEHOLD, BETINGET_LINJE } from "../lib/vaerdiAnker";
 import OpgaveKort from "./salg/OpgaveKort";
 import VaerdiKort from "./salg/VaerdiKort";
@@ -217,8 +218,64 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
   // som den altid har gjort. Vi lover derfor kun at vi holder øje — ikke at der er
   // trukket eller oprettet noget bestemt.
   const [trin, setTrin] = useState(1);
+
+  // ============================================================================
+  // TRINNENES STABILE NAVNE (18-09-2026).
+  //
+  // ⚠️ NAVNE, IKKE NUMRE. Trinnene er nummereret 1–10 med et hul ved 6, og
+  // rækkefølgen har ændret sig før ("FEM TRIN, IKKE FIRE", 02-08). Et tal i en
+  // rapport ville betyde noget andet efter næste omlægning; "kontakt" betyder
+  // det samme om et år. Numrene bliver her i koden, navnene går i basen.
+  // ============================================================================
+  const TRIN_NAVN = {
+    1: "cvr", 2: "foerste-scan", 3: "fag", 4: "kontakt", 5: "omraade",
+    7: "birdly-scan", 8: "vaerdianker", 9: "plan", 10: "betaling",
+  };
   const [katalog, setKatalog] = useState(null);
-  const [fejl, setFejl] = useState("");
+  const [fejl, setFejlRaa] = useState("");
+
+  // ============================================================================
+  // VALIDERINGSFEJL MÅLES ÉT STED (18-09-2026).
+  //
+  // ⚠️ EN WRAPPER, IKKE FJORTEN KALDESTEDER. `setFejl` kaldes fjorten steder i
+  // filen. Instrumenteres hvert enkelt, bliver det femten den dag nogen
+  // tilføjer en validering — og den femtende bliver glemt. Her fanges de alle,
+  // også dem der ikke er skrevet endnu. Kaldernes signatur er uændret, så
+  // ingen UX og intet flow ændrer sig.
+  //
+  // ⚠️ KATEGORIEN GEMMES, ALDRIG INDTASTNINGEN. Vi skal kunne se at
+  // postnummer-feltet spærrede for 27 % af mobilbrugerne på trin 2 — aldrig
+  // hvilket postnummer hun skrev, og aldrig hendes mail eller telefonnummer.
+  // Derfor en opslagstabel fra besked til (felt, kode) frem for at sende
+  // beskeden med: en fritekst kan komme til at bære et input.
+  // ============================================================================
+  const FEJL_KODER = [
+    [/branche/i,            ["fag", "mangler_branche"]],
+    [/arbejdsområde/i,      ["fag", "mangler_arbejdsomraade"]],
+    [/landsdel/i,           ["omraade", "mangler_landsdel"]],
+    [/CVR-nummer/i,         ["cvr", "ugyldigt_cvr"]],
+    [/dit navn/i,           ["navn", "mangler_navn"]],
+    [/gyldig e-mail/i,      ["email", "ugyldig_email"]],
+    [/telefonnummer/i,      ["telefon", "ugyldigt_telefonnummer"]],
+    [/handelsbetingelser/i, ["betingelser", "mangler_handelsbetingelser"]],
+    [/abonnementsbetingel/i,["betingelser", "mangler_abonnementsbetingelser"]],
+    [/skifte plan/i,        ["plan", "planskift_fejlede"]],
+  ];
+
+  const trinRef = useRef(1);
+  const setFejl = (besked) => {
+    setFejlRaa(besked);
+    try {
+      if (!besked) return; // "" rydder fejlen — det er ikke en spærring
+      const fundet = FEJL_KODER.find(([re]) => re.test(besked));
+      // ⚠️ UKENDT BESKED BLIVER "anden", IKKE BESKEDEN SELV. En ny fejltekst
+      // skal kunne ses i tallene uden at teksten — som kan bære et input —
+      // havner i et append-only lag.
+      const [felt, fejlkode] = fundet ? fundet[1] : ["ukendt", "anden"];
+      sporEvent("onboarding_validation_failed", TRIN_NAVN[trinRef.current] || String(trinRef.current),
+                { felt, fejlkode });
+    } catch { /* måling må aldrig forhindre at kunden ser sin fejl */ }
+  };
   const [arbejder, setArbejder] = useState(false);
 
   // Skærm 1 — virksomhed
@@ -361,6 +418,20 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
   // hændelse rører ikke Meta, og den må ikke gøre det — PageView fyres allerede
   // af pixlen bag samtykket, og en dublet ville forurene optimeringen.
   useEffect(() => { sporFunnel("FunnelStarted", { fag: startFag || null }); }, [startFag]);
+
+  // ⚠️ "VIST" ER IKKE "FULDFØRT", og uden begge kan man ikke regne. `sporFunnel`
+  // har altid målt hvad kunden GENNEMFØRTE; frafaldet er dem der så et trin og
+  // aldrig kom videre. Med kun det ene tal kan man se hvor mange der nåede
+  // igennem — ikke hvor mange der stod af, og slet ikke hvor.
+  //
+  // ⚠️ REF'EN OPDATERES HER, så valideringsfejl ved siden af kan mærkes med det
+  // trin de faktisk spærrede på. `trin` er et tal i en lukning; uden ref'en ville
+  // en fejl på trin 5 kunne blive mærket med trin 1.
+  useEffect(() => {
+    trinRef.current = trin;
+    const navn = TRIN_NAVN[trin];
+    if (navn) sporEvent("onboarding_step_viewed", navn, { trin_nr: trin });
+  }, [trin]);
 
 
   // ⚠️ STARTTRIAL VED RETUR FRA FRISBII. Kører kun når kunden faktisk kommer
@@ -750,6 +821,17 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
           // Tomt objekt for organisk trafik — serveren gemmer da ingenting, så
           // en kunde uden kampagne ser præcis ud som før.
           attribution: hentAttribution(),
+          // ⚠️ IDENTIFIKATIONSØJEBLIKKET. Her — og kun her — ved vi at den
+          // anonyme besøgende OG den nye kunde er samme virksomhed. Uden id'et
+          // her er den anonyme færd en løs ende, og tragten kan ikke svare på
+          // hvilken annonce der skaffede en betalende kunde.
+          //
+          // ⚠️ IKKE INDE I `attribution`. Attributionen ligger bag
+          // MARKETING-samtykket (lib/attribution.js), mens et funktionelt
+          // førsteparts-id hører til STATISTIK. Blandes de, forsvinder
+          // koblingen for enhver der siger nej til annoncemåling, og halvdelen
+          // af tragten ville mangle uden at nogen kunne se hvorfor.
+          anon_id: hentAnonId(),
           // Markerer kunden i signup_data. Serveren gemmer den kun når den er sat,
           // og det eneste den kan udløse er en varslingsmail og en lukning ved
           // prøveudløb — aldrig adgang, aldrig penge, aldrig en gratis periode.

@@ -73,6 +73,33 @@ kundens samleside, deleside pr. udbud og bud-skabelonen. Deploy: Vercel-projekt 
 - Pr. 27-07-2026: **499 kr./md.** / **4.990 kr./år** ex moms. Besparelsen (998 kr, ~17 %,
   "betal for 10 måneder, få 12") beregnes af `YEARLY_SAVING` — skriv den aldrig som tekst.
 
+## Måling og funnel (18-09-2026)
+
+- **`lib/ctaSporing.js` har nu en modtager.** `sporFunnel()`/`sporCta()` skriver stadig til
+  `sessionStorage` og `dataLayer` præcis som før — der er kommet en **tredje udgang**:
+  Edge Function `spor` i `birdly-admin`, som skriver til Birdlys eget event-lag.
+  **Byg ikke en parallel analytics-løsning.**
+- **To indgange, med vilje:** `sporFunnel(husetsNavn, data)` bærer husets 14 danske navne og
+  oversætter dem; `sporEvent(type, step, props)` er til de hændelser der ER kanoniske
+  (`landing_page_view`, `onboarding_step_viewed`, `onboarding_validation_failed`).
+- **`lib/anonId.js` er Birdlys førsteparts-id.** Tilfældigt, aldrig udledt af mail, CVR
+  eller IP. Formen `b` + 32 hex er aftalt med serveren, som afviser alt andet.
+  **localStorage** — modsat attributionens sessionStorage: en kunde der lander mandag og
+  tilmelder sig torsdag er stadig samme rejse.
+- **Samtykke: id og funnel-målinger ligger bag `statistik`, attributionen bag `marketing`.**
+  Trækkes statistik-samtykket tilbage, slettes id'et (`components/Maaling.js`). Blandes de
+  to kategorier, forsvinder halvdelen af tragten for alle der siger nej til annoncemåling.
+- **`sendBeacon`, aldrig et blokerende kald.** En måling må aldrig forsinke en navigation
+  eller en tilmelding. Fejler den, prøves der ikke igen.
+- **Valideringsfejl måles i wrapperen om `setFejl` i `Start.js`** — ét sted, så en
+  fremtidig validering også bliver målt. **Kun feltets KATEGORI og en fejlkode sendes,
+  aldrig kundens indtastning.**
+- **`anon_id` sendes med tilmeldingen** (`Start.js` → `signup`). Det er identifikations-
+  øjeblikket og det eneste sted anonym færd og kunde kan knyttes sammen.
+- **Meta-pixlen er urørt.** `lib/pixel.js` har præcis tre hændelser (PageView, Lead,
+  StartTrial), dubletsikret pr. kunde. Funnel-målingen rører dem ikke — en fjerde hændelse
+  ville lære algoritmen at trafikken konverterer bedre end den gør.
+
 ## Design
 
 - **Copy-opgaver må ALDRIG ændre struktur, layout, grafik, farver, typografi eller spacing.**
