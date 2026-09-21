@@ -100,6 +100,26 @@ kundens samleside, deleside pr. udbud og bud-skabelonen. Deploy: Vercel-projekt 
   StartTrial), dubletsikret pr. kunde. Funnel-målingen rører dem ikke — en fjerde hændelse
   ville lære algoritmen at trafikken konverterer bedre end den gør.
 
+## AI-adgang: "Brug Birdly i din AI" (21-09-2026)
+
+- **Egen underside, ikke en ændring af samlesiden.** `/mine-opgaver/[token]/ai` er additiv
+  og kan rulles tilbage ved at slette en mappe. `components/MineOpgaver.js` er live for
+  betalende kunder — rør den ikke for det her.
+- **Der er ingen "Tilknyt ChatGPT"-knap, og der skal ikke komme en.** Hverken ChatGPT
+  eller Claude understøtter i dag at et tredjepartswebsted starter en
+  connector-installation. Kunden indsætter Birdlys adresse inde i AI'en. En knap her
+  ville love noget platformen ikke kan levere, og kunden ville tro Birdly var i stykker.
+- **Dette repo afgør ingenting.** Adgang, samtykke og frakobling bor i `birdly-admin`,
+  som er det eneste sted med service-nøglen. En kopi af reglen her ville drive fra
+  serverens — samme grund som at fase 2 ikke må klassificere to steder.
+- **Ordene MCP, OAuth, scope, principal og tenant står ikke i noget kunden ser.** Det er
+  vores arkitektur, ikke hendes produkt. Hun forbinder "din AI".
+- **Frakobling er IKKE optimistisk.** Rækken fjernes først når serveren har sagt ja —
+  modsat fravalget på samlesiden, hvor vi hellere viser at vi lyttede. Her ville en
+  optimistisk visning betyde at kunden tror adgangen er væk, mens den lever.
+- **Vejledningen nævner at det kræver en betalt plan** hos begge platforme. Uden det går
+  kunden i stå ved trin tre uden at vide hvorfor.
+
 ## Design
 
 - **Copy-opgaver må ALDRIG ændre struktur, layout, grafik, farver, typografi eller spacing.**
