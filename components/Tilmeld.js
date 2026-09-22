@@ -6,7 +6,8 @@ import { Logo } from "./Logo";
 import { fetchCatalog, submitSignup, createSubscriptionSession } from "../lib/catalog";
 import { PLAN, TRIAL_DAYS, YEARLY_SAVING, priceText, planForInterval } from "../lib/pakke";
 import { hentAttribution } from "../lib/attribution";
-import { spor } from "../lib/pixel";
+import { spor, sporEnGang } from "../lib/pixel";
+import { metaEventId } from "../lib/metaEventId";
 import OpgaveTaeller from "./OpgaveTaeller";
 import "../app/tilmeld.css";
 
@@ -412,6 +413,13 @@ export default function Tilmeld({ initialFag = null, initialRegion = null, opgav
         id = r.id;
         setCreatedId(id);
         if (r.uden_proeve) { udenProeveNu = true; setUdenProeve(true); }
+        // ⚠️ LEAD BETYDER NU ÉT: "KONTOEN ER OPRETTET" (22-09-2026).
+        // Denne fil fyrede tidligere sin eneste Lead ved Reepay-Accept, mens
+        // Start.js fyrede sin ved kontooprettelsen. To forskellige
+        // forretningsmomenter under samme navn — og Metas Lead-kolonne blandede
+        // dem, uden at det kunne ses nogen steder. Nu er Lead det samme begge
+        // steder, og kortgodkendelsen hedder StartTrial begge steder.
+        sporEnGang(`lead_${id}`, "Lead", { content_category: billing }, await metaEventId("Lead", id));
       }
       const session_id = await makeSession(id, billing, false, udenProeveNu);
       setSessionId(session_id);
@@ -479,7 +487,24 @@ export default function Tilmeld({ initialFag = null, initialRegion = null, opgav
           // godkendt og prøveperioden reelt er startet — ikke submitSignup, ikke en
           // sidevisning på kvitteringen. Fyrer før setSubmitted' render, men spor()
           // kaster aldrig, så betalingsflowet kan ikke rammes.
-          spor("Lead", { content_category: billing });
+          //
+          // ⚠️ HED "Lead" INDTIL 22-09-2026, OG DET VAR FORKERT. Det her er
+          // nøjagtig samme forretningsmoment som Start.js kalder StartTrial:
+          // kortet er godkendt, prøven kører. Navnet er rettet, så Meta lærer
+          // ét begreb i stedet for to.
+          //
+          // ⚠️ IKKE `await` HER. Handleren er synkron og tilhører Reepay; et
+          // løfte ville gøre den til en floating promise midt i betalingen.
+          // Derfor .then(), og derfor fyrer den efter setSubmitted — kunden ser
+          // kvitteringen uanset hvad hashen gør.
+          // ⚠️ `createdId` TJEKKES, IKKE FORUDSAT. Uden id er der intet stabilt
+          // event_id at regne ud, og en StartTrial uden deduplikeringsmærke ville
+          // blive talt én gang til når serveren sender den samme konvertering.
+          if (!udenProeve && createdId) {
+            metaEventId("StartTrial", createdId).then((eid) => {
+              sporEnGang(`starttrial_${createdId}`, "StartTrial", { content_category: billing }, eid);
+            });
+          }
           window.scrollTo({ top: 0, behavior: "smooth" });
         });
         rp.addEventHandler(Reepay.Event.Error, () => {

@@ -6,6 +6,7 @@ import { fetchCatalog, submitSignup, createSubscriptionSession } from "../lib/ca
 import { hentKandidater, visResultat } from "../lib/kandidater";
 import { PLAN, YEARLY_SAVING, planForInterval, priceText, TRIAL_DAYS, VARSEL_DAGE } from "../lib/pakke";
 import { sporEnGang } from "../lib/pixel";
+import { metaEventId } from "../lib/metaEventId";
 // ⚠️ ATTRIBUTIONEN SENDES MED SIGNUP (06-09-2026, godkendt af Jonas).
 // fangAttribution() har hele tiden kørt i <Maaling> på hver eneste side og lagt
 // UTM'erne i sessionStorage — men KUN /opret-opgave (B2C) læste dem igen. Den
@@ -456,11 +457,17 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
       window.localStorage.removeItem(STASH);
     } catch { /* ingen stash — så kan én-gang ikke garanteres, og vi springer over */ }
     if (!stash?.id || stash.udenProeve) return;
-    sporEnGang(`starttrial_${stash.id}`, "StartTrial", {
-      content_name: `Birdly ${TRIAL_DAYS} dages prøve`,
-      content_category: Array.isArray(stash.fag) && stash.fag.length ? stash.fag.join(",") : stash.interval || "",
-      currency: "DKK",
-      value: 0,
+    // ⚠️ event_id UDREGNES, DERFOR ER DEN ASYNKRON. crypto.subtle.digest
+    // returnerer et løfte. Effekten venter ikke på noget kunden kan se — hun er
+    // allerede landet på kvitteringen — og et fejlet opslag giver `null`, hvor
+    // hændelsen så sendes uden id frem for slet ikke. Se lib/metaEventId.js.
+    metaEventId("StartTrial", stash.id).then((eid) => {
+      sporEnGang(`starttrial_${stash.id}`, "StartTrial", {
+        content_name: `Birdly ${TRIAL_DAYS} dages prøve`,
+        content_category: Array.isArray(stash.fag) && stash.fag.length ? stash.fag.join(",") : stash.interval || "",
+        currency: "DKK",
+        value: 0,
+      }, eid);
     });
   }, [betaling]);
 
@@ -849,7 +856,12 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
           //
           // Ligger inde i `if (!id)`, så en kunde der går tilbage til trin 4 og
           // frem igen ikke fyrer en Lead til.
-          sporEnGang(`lead_${id}`, "Lead", pixelParams());
+          //
+          // ⚠️ `await` PÅ EN HASH ER MIKROSEKUNDER, ikke et netværkskald. Vi står
+          // lige efter submitSignup, som var et rigtigt kald; en SHA-256 herefter
+          // er ikke det kunden venter på. Fejler den, bliver eid null og
+          // hændelsen sendes uden deduplikeringsmærke.
+          sporEnGang(`lead_${id}`, "Lead", pixelParams(), await metaEventId("Lead", id));
       }
       // ⚠️ KORTLØS: INGEN FRISBII-SESSION. Kunden er allerede oprettet med
       // status='trial' og prøvelængden (create_signup, migration 0145) — der mangler
@@ -863,7 +875,9 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
         // som rækken (migration 0010). Der er intet at vente på.
         //
         // Står efter submitSignup, så et fejlet kald aldrig kan udløse den.
-        if (!udenProeveNu) sporEnGang(`starttrial_${id}`, "StartTrial", pixelParams());
+        if (!udenProeveNu) {
+          sporEnGang(`starttrial_${id}`, "StartTrial", pixelParams(), await metaEventId("StartTrial", id));
+        }
         setTrin(10);
         window.scrollTo({ top: 0, behavior: "smooth" });
         return;
