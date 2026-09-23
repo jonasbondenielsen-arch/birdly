@@ -657,8 +657,22 @@ select.st-felt{appearance:none;background-image:url("data:image/svg+xml;utf8,<sv
    ⚠️ INGEN NYE FARVER. Alt er tokens fra globals.css.
    ============================================================================ */
 
-.st-pre{display:grid;grid-template-columns:1.05fr .95fr;gap:calc(44px * var(--sp));align-items:start}
-.st-pre-venstre h1{
+/* ⚠️ TRE BLOKKE, IKKE TO (23-09-2026). DOM-rækkefølgen er nu MOBILENS:
+   overskrift → CVR-kort → argument. Desktop får sin gamle to-spaltede form
+   tilbage ved eksplicit grid-placering, så intet flytter sig på en stor skærm.
+
+   ⚠️ RÆKKEMELLEMRUMMET ER 0 MED VILJE. `gap` gjaldt før både rækker og
+   kolonner, men da lå overskrift og argument i SAMME celle og blev adskilt af
+   deres egne margener (.st-vind{margin-top:20px}). Sætter man en rækkegap nu,
+   lægges de to oven i hinanden, og afstanden mellem overskrift og brødtekst
+   bliver dobbelt så stor som før. Kolonnegabet er uændret. */
+.st-pre{display:grid;grid-template-columns:1.05fr .95fr;gap:0 calc(44px * var(--sp));align-items:start}
+.st-pre-top{grid-column:1;grid-row:1}
+.st-pre-venstre{grid-column:1;grid-row:2}
+/* CVR-kortet spænder begge rækker, så det starter i toppen ud for overskriften —
+   præcis hvor det stod før omlægningen. */
+.st-pre-hoejre{grid-column:2;grid-row:1 / span 2}
+.st-pre-top h1{
   font-family:'Plus Jakarta Sans',sans-serif;font-size:clamp(calc(26px * var(--sk)), 3.2vw, calc(40px * var(--sk)));
   font-weight:800;line-height:1.12;letter-spacing:-.025em;color:var(--navy)
 }
@@ -780,8 +794,14 @@ select.st-felt{appearance:none;background-image:url("data:image/svg+xml;utf8,<sv
    SMS → mindre virksomheder → regnestykke → felt. Alt andet må vente.
    ============================================================================ */
 @media(max-width:900px){
+  /* ⚠️ ÉN SPALTE, OG DA GÆLDER DOM-RÆKKEFØLGEN: overskrift → CVR-kort →
+     argument. Placeringerne ovenfor nulstilles, ellers ville browseren stadig
+     forsøge at lægge kortet i en anden kolonne end den der findes. */
   .st-pre{grid-template-columns:1fr;gap:26px}
+  .st-pre-top,.st-pre-venstre,.st-pre-hoejre{grid-column:1;grid-row:auto}
   .st-pre-hoejre{position:static}
+  /* Overskriften skal klæbe til kortet, ikke svæve over det. */
+  .st-pre-top{margin-bottom:-8px}
 }
 @media(max-width:560px){
   /* To fliser ved siden af hinanden holder også på 390px: kortet er da ~354px
@@ -791,7 +811,7 @@ select.st-felt{appearance:none;background-image:url("data:image/svg+xml;utf8,<sv
   .st-stats{gap:8px}
   .st-stat{padding:12px 8px}
   .st-stat span{font-size:11.5px}
-  .st-pre-venstre h1{font-size:26px}
+  .st-pre-top h1{font-size:26px}
   .st-pre-sub{font-size:15.5px}
   .st-pre-sms{font-size:16px}
   .st-vind-under{font-size:24px}
@@ -808,3 +828,16 @@ select.st-felt{appearance:none;background-image:url("data:image/svg+xml;utf8,<sv
    endnu ikke kender kunden. .st-pulje-liste bar dem derefter som løs tekst i
    højre kolonne — de bor nu i et rigtigt stat-kort, se .st-pre-bevis og
    .st-stats ovenfor. Byg dem ikke op igen her. */
+
+/* ⚠️ KORTKRAVET UNDER CTA'EN (23-09-2026). Samme dæmpede vægt som linjen over
+   — den skal oplyse, ikke advare. Et rødt eller fed-sat kortkrav ville læses
+   som en betingelse man skal væk fra, og det er netop ikke pointen. */
+.st-kortkrav{margin-top:5px;font-size:12.5px;color:var(--navy-soft);opacity:.85}
+
+/* ⚠️ OVERGANGEN TIL KORTSKÆRMEN. Står FØR knappen, så den læses inden klikket
+   — ikke som en note man opdager bagefter. Samme sky-boks som husets øvrige
+   oplysningsbokse (.st-abon), så den ser native ud og ikke som en advarsel. */
+.st-naeste-trin{
+  margin-top:18px;background:var(--sky-soft);border:1px solid var(--sky-200);
+  border-radius:12px;padding:13px 15px;font-size:14.5px;line-height:1.55;color:var(--navy)
+}

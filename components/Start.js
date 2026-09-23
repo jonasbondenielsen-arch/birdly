@@ -7,6 +7,7 @@ import { hentKandidater, visResultat } from "../lib/kandidater";
 import { PLAN, YEARLY_SAVING, planForInterval, priceText, TRIAL_DAYS, VARSEL_DAGE } from "../lib/pakke";
 import { sporEnGang } from "../lib/pixel";
 import { metaEventId } from "../lib/metaEventId";
+import { milepael, naarSynlig } from "../lib/milepael";
 // ⚠️ ATTRIBUTIONEN SENDES MED SIGNUP (06-09-2026, godkendt af Jonas).
 // fangAttribution() har hele tiden kørt i <Maaling> på hver eneste side og lagt
 // UTM'erne i sessionStorage — men KUN /opret-opgave (B2C) læste dem igen. Den
@@ -228,10 +229,32 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
   // rapport ville betyde noget andet efter næste omlægning; "kontakt" betyder
   // det samme om et år. Numrene bliver her i koden, navnene går i basen.
   // ============================================================================
+  // ⚠️ RETTET 23-09-2026 — NAVNENE PASSEDE IKKE TIL SKÆRMENE.
+  //
+  // Funnel-auditten læste hver skærms overskrift og fandt at mappingen var
+  // forskubbet: navnet "fag" sad på METODE-skærmen ("Hvordan finder I typisk
+  // nye opgaver i dag?"), og "kontakt" sad på FAG-skærmen ("Hvilke opgaver vil
+  // I gerne have flere af?"). De rigtige kontaktfelter — navn, e-mail, mobil —
+  // ligger på trin 9, der hed "plan". Enhver frafaldsrapport på de navne var
+  // altså fejlmærket.
+  //
+  // ⚠️ KUN FREMADRETTET. De gamle rækker i birdly_events er IKKE migreret og
+  // skal ikke migreres: de er skrevet med den semantik der gjaldt dengang, og
+  // laget er append-only med god grund. En omskrivning ville betyde at et tal i
+  // en rapport fra i går ændrede betydning i dag, uden at nogen kunne se det.
+  //
+  // ⚠️ SKÆRINGSPUNKTET STÅR OGSÅ I BASEN. `birdly_event_types.note` på
+  // onboarding_step_viewed/_completed/_validation_failed bærer datoen og begge
+  // betydninger (migration 0173), så den der laver rapporten ser den uden at
+  // skulle finde denne fil.
   const TRIN_NAVN = {
-    1: "cvr", 2: "foerste-scan", 3: "fag", 4: "kontakt", 5: "omraade",
-    7: "birdly-scan", 8: "vaerdianker", 9: "plan", 10: "betaling",
+    1: "cvr", 2: "foerste-scan", 3: "metode", 4: "fag", 5: "omraade",
+    7: "birdly-scan", 8: "vaerdianker", 9: "kontakt-og-plan", 10: "betaling",
   };
+  // ⚠️ MILEPAELS-REFS. Se effekten laengere nede: de to elementer paa skaerm 1
+  // som afgoer om kunden overhovedet fik handlingen at se.
+  const overskriftRef = useRef(null);
+  const cvrFeltRef = useRef(null);
   const [katalog, setKatalog] = useState(null);
   const [fejl, setFejlRaa] = useState("");
 
@@ -419,6 +442,20 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
   // hændelse rører ikke Meta, og den må ikke gøre det — PageView fyres allerede
   // af pixlen bag samtykket, og en dublet ville forurene optimeringen.
   useEffect(() => { sporFunnel("FunnelStarted", { fag: startFag || null }); }, [startFag]);
+
+  // ⚠️ SKÆRM 1'S MILEPÆLE (23-09-2026). Tragten viste 23 → 6 på det allerførste
+  // skridt, men ikke HVORFOR: nåede feltet overhovedet at komme på skærmen?
+  // De to observatører herunder svarer på det, og fokus-milepælen på selve
+  // feltet deler resten op i "så det" og "begyndte at udfylde".
+  //
+  // ⚠️ KUN MENS SKÆRM 1 ER FREMME. Er kunden gået videre (bekraeftet) eller
+  // længere frem i flowet, findes elementerne ikke, og der observeres intet.
+  useEffect(() => {
+    if (trin !== 1 || bekraeftet) return;
+    const afOverskrift = naarSynlig(overskriftRef.current, "overskrift-set");
+    const afFelt = naarSynlig(cvrFeltRef.current, "cvr-felt-set");
+    return () => { afOverskrift(); afFelt(); };
+  }, [trin, bekraeftet]);
 
   // ⚠️ "VIST" ER IKKE "FULDFØRT", og uden begge kan man ikke regne. `sporFunnel`
   // har altid målt hvad kunden GENNEMFØRTE; frafaldet er dem der så et trin og
@@ -1226,60 +1263,27 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
               en kopi af den side kunden lige har forladt.
               ══════════════════════════════════════════════════════════════════ */}
           <div className="st-pre">
-            {/* ─────────── VENSTRE: argumentet ─────────── */}
-            <div className="st-pre-venstre">
+            {/* ─────────── ØVERST: løftet ───────────
+                ⚠️ PILLEN OG OVERSKRIFTEN ER FLYTTET UD I DERES EGEN BLOK (23-09-2026).
+                Ikke kosmetik: på mobil stablede .st-pre sine to spalter i
+                DOM-rækkefølge, så hele argumentet — otte blokke, ~700-800 px — lå
+                mellem overskriften og CVR-feltet. Målt: 23 besøgende startede på
+                skærm 1, seks nåede skærm 2. 74 % tog aldrig den første handling.
+
+                ⚠️ DOM'EN ER FLYTTET, IKKE KUN CSS'EN. En `order`-regel ville give
+                den rigtige visuelle rækkefølge, men efterlade tab- og
+                skærmlæserrækkefølgen som før — altså hele argumentet før feltet
+                for den der navigerer med tastatur. Rækkefølgen her ER nu
+                mobilrækkefølgen; desktop placeres eksplicit i grid'et.
+                ─────────────────────────────────── */}
+            <div className="st-pre-top">
               <span className="st-pre-pill">For rengørings- &amp; servicevirksomheder</span>
 
-              <h1>
+              <h1 ref={overskriftRef}>
                 {forvalgtLabel
                   ? <>Find {forvalgtLabel.toLowerCase()}sopgaver, der kan være flere hundredetusinde kroner værd.</>
                   : <>Find rengøringsopgaver, der kan være flere hundredetusinde kroner værd.</>}
               </h1>
-
-              {/* ⚠️ "I SKAL BARE VINDE ÉN" ER IKKE ET LØFTE. Den siger at der ikke
-                  skal MANGE vundne opgaver til, før årsprisen er lille i
-                  sammenligning. Skriv den aldrig om til "I vinder én". */}
-              <div className="st-vind">
-                <span className="st-vind-over">{VIND_EN.over}</span>
-                <span className="st-vind-under">{VIND_EN.underDel1}<b>{VIND_EN.underDel2}</b></span>
-              </div>
-
-              <p className="st-pre-sub">
-                Birdly finder automatisk relevante offentlige og private opgaver til jeres
-                virksomhed.
-              </p>
-              <p className="st-pre-sms">Når noget passer, får I det direkte på SMS.</p>
-
-              <ul className="st-pre-trust">
-                <li><span>✓</span> Ingen portal</li>
-                <li><span>✓</span> Ingen daglig søgning</li>
-                <li><span>✓</span> Ingen kompliceret opsætning</li>
-              </ul>
-
-              {/* ⚠️ INDVENDINGEN SKAL STÅ FØR FELTET, ikke efter. "Det er kun for
-                  de store" er den grund folk lukker fanen med — den skal være
-                  besvaret inden de bliver bedt om noget. */}
-              <div className="st-smaa">
-                <b>{OFFENTLIGE.overskrift}</b>
-                <p>Det behøver ikke være bøvlet. {OFFENTLIGE.rolle1} {OFFENTLIGE.rolle2}</p>
-              </div>
-
-              {/* ⚠️ KOMPAKT SAMMENLIGNING, IKKE EN PRISSEKTION. Den skal kun gøre
-                  det første klik økonomisk indlysende. Beløbene til venstre er
-                  størrelsesordener med "kan være" foran — ikke et konkret udbud,
-                  og aldrig et tal vi har fundet på. */}
-              <div className="st-minianker">
-                <div className="st-minianker-side">
-                  <span>En relevant opgave</span>
-                  <b>kan være</b>
-                  <i>100.000 kr. · 300.000 kr. · eller mere</i>
-                </div>
-                <div className="st-minianker-side st-minianker-pris">
-                  <span>Birdly et helt år</span>
-                  <b>{priceText.yearlyBare}</b>
-                  <i>ekskl. moms</i>
-                </div>
-              </div>
             </div>
 
             {/* ─────────── HØJRE: CVR ─────────── */}
@@ -1294,8 +1298,13 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
                 <label className="st-lab" htmlFor="cvr">CVR-nummer</label>
                 <input
                   id="cvr" className="st-felt" inputMode="numeric" autoComplete="off" maxLength={11}
+                  ref={cvrFeltRef}
                   value={cvr}
                   onChange={(e) => { setCvr(e.target.value); setFirma(""); setAdresse(null); setBranchetekst(null); setBekraeftet(false); setOpslagFejl(""); }}
+                  // ⚠️ FOKUS ER DEN SIDSTE MILEPÆL FØR HANDLINGEN. Den skiller
+                  // "hun så feltet" fra "hun begyndte at udfylde det" — og det
+                  // er præcis dér de 74 % skal deles op.
+                  onFocus={() => milepael("cvr-felt-fokus")}
                   onBlur={(e) => slaaOp(e.target.value)}
                   placeholder="12345678"
                 />
@@ -1324,6 +1333,25 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
                 <p className="st-under-knap">
                   0 kr. i dag · {TRIAL_DAYS} dage gratis · Ingen binding
                 </p>
+                {/* ⚠️ KORTKRAVET SIGES HER, IKKE FØRST PÅ SKÆRM 10 (23-09-2026).
+                    Kunden læste "0 kr. i dag" på skærm 1 og mødte et kortfelt ni
+                    skærme senere. Målt: fem nåede planskærmen, tre nåede
+                    betalingen, én bandt et kort.
+
+                    ⚠️ BETINGET, FORDI SÆTNINGEN IKKE ALTID ER SAND. Er
+                    feature-flaget `kortloes_onboarding` tændt, oprettes kunden
+                    UDEN kort (se `kortloes` ovenfor), og linjen ville da være en
+                    løgn på den mest skadelige måde. Flaget er slukket i dag;
+                    linjen følger flaget, ikke dagens værdi.
+
+                    ⚠️ "efter prøveperioden" ER PRÆCIST. Første træk sker når de
+                    {" "}{TRIAL_DAYS} dage er gået — der er ingen opsigelsesfrist,
+                    og varslet (VARSEL_DAGE) er en påmindelse, ikke en binding. */}
+                {!kortloes && (
+                  <p className="st-under-knap st-kortkrav">
+                    Kort kræves · første betaling efter prøveperioden
+                  </p>
+                )}
               </div>
 
               {/* ---- ÆGTE BEVIS: HELE PULJEN ----
@@ -1382,6 +1410,58 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
                   </div>
                 </div>
               )}
+            </div>
+
+            {/* ─────────── ARGUMENTET — UNDER FELTET PÅ MOBIL ───────────
+                ⚠️ INTET ER FJERNET ELLER OMSKREVET. Samme otte blokke i samme
+                rækkefølge; de står nu under handlingen i stedet for foran den.
+                På desktop er de præcis hvor de altid har været. */}
+            <div className="st-pre-venstre">
+
+              {/* ⚠️ "I SKAL BARE VINDE ÉN" ER IKKE ET LØFTE. Den siger at der ikke
+                  skal MANGE vundne opgaver til, før årsprisen er lille i
+                  sammenligning. Skriv den aldrig om til "I vinder én". */}
+              <div className="st-vind">
+                <span className="st-vind-over">{VIND_EN.over}</span>
+                <span className="st-vind-under">{VIND_EN.underDel1}<b>{VIND_EN.underDel2}</b></span>
+              </div>
+
+              <p className="st-pre-sub">
+                Birdly finder automatisk relevante offentlige og private opgaver til jeres
+                virksomhed.
+              </p>
+              <p className="st-pre-sms">Når noget passer, får I det direkte på SMS.</p>
+
+              <ul className="st-pre-trust">
+                <li><span>✓</span> Ingen portal</li>
+                <li><span>✓</span> Ingen daglig søgning</li>
+                <li><span>✓</span> Ingen kompliceret opsætning</li>
+              </ul>
+
+              {/* ⚠️ INDVENDINGEN SKAL STÅ FØR FELTET, ikke efter. "Det er kun for
+                  de store" er den grund folk lukker fanen med — den skal være
+                  besvaret inden de bliver bedt om noget. */}
+              <div className="st-smaa">
+                <b>{OFFENTLIGE.overskrift}</b>
+                <p>Det behøver ikke være bøvlet. {OFFENTLIGE.rolle1} {OFFENTLIGE.rolle2}</p>
+              </div>
+
+              {/* ⚠️ KOMPAKT SAMMENLIGNING, IKKE EN PRISSEKTION. Den skal kun gøre
+                  det første klik økonomisk indlysende. Beløbene til venstre er
+                  størrelsesordener med "kan være" foran — ikke et konkret udbud,
+                  og aldrig et tal vi har fundet på. */}
+              <div className="st-minianker">
+                <div className="st-minianker-side">
+                  <span>En relevant opgave</span>
+                  <b>kan være</b>
+                  <i>100.000 kr. · 300.000 kr. · eller mere</i>
+                </div>
+                <div className="st-minianker-side st-minianker-pris">
+                  <span>Birdly et helt år</span>
+                  <b>{priceText.yearlyBare}</b>
+                  <i>ekskl. moms</i>
+                </div>
+              </div>
             </div>
           </div>
         </>
@@ -2003,6 +2083,35 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
             <input type="checkbox" checked={abonnement} onChange={(e) => setAbonnement(e.target.checked)} />
             <span>Jeg accepterer <a href="/abonnementsbetingelser" target="_blank" rel="noreferrer">abonnementsbetingelserne</a> — herunder at abonnementet fornyes automatisk, og at mit betalingskort gemmes hos vores betalingsudbyder, indtil jeg siger op.</span>
           </label>
+
+          {/* ⚠️ OVERGANGEN SIGES FØR SPRINGET, IKKE EFTER (23-09-2026).
+              Knappen herunder fører til kortskærmen. Indtil nu fik kunden først
+              at vide at der skulle et kort til, NÅR hun stod der. Målt frafald
+              på netop den overgang: fem nåede hertil, tre nåede betalingen.
+
+              ⚠️ DEN STÅR HER OG IKKE PÅ SKÆRM 10. Checkout-panelets ordlyd om
+              sælger, ydelse, betaling, fornyelse og opsigelse skal stemme ORDRET
+              med /checkout-forhaandsvisning, som Clearhaus har fået forelagt —
+              se noten ved trin 10. En tilføjelse dér ville bryde den aftale;
+              her er der intet at bryde.
+
+              ⚠️ IKKE FOR uden_proeve-KUNDER. En genkommende kunde der har brugt
+              sin gratis prøve, trækkes med det samme — for hende ville "start
+              dine gratis dage" være forkert. Knappens egen tekst skifter
+              allerede for hende; det gør den her også.
+
+              ⚠️ HVERT LED ER EFTERPRØVET MOD BETALINGSLOGIKKEN:
+                "sidste trin"            — trin 10 er sidste skærm
+                "tilføj kort"            — kraevet naar kortloes er slukket
+                "0 kr. i dag"            — samme tal som checkout selv viser
+                "opsige inden"           — der er INGEN opsigelsesfrist; VARSEL_DAGE
+                                           er en paamindelse, ikke en binding */}
+          {!kortloes && !udenProeve && (
+            <p className="st-naeste-trin">
+              Sidste trin — tilføj kort for at starte dine {TRIAL_DAYS} gratis dage.
+              Du betaler 0 kr. i dag og kan opsige inden første betaling.
+            </p>
+          )}
 
           <button className="btn btn-teal st-bred" onClick={tilBetaling} disabled={arbejder}>
             {arbejder ? "Et øjeblik…" : "Start min overvågning →"}
