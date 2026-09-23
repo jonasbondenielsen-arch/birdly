@@ -31,6 +31,18 @@ import { erLoebende, MAANEDSVAERDI, PROJEKTVAERDI, byggAnker, FORBEHOLD, BETINGE
 import OpgaveKort from "./salg/OpgaveKort";
 import VaerdiKort from "./salg/VaerdiKort";
 import { daTal } from "../lib/opgaveTal";
+
+// ⚠️ EN FRIST SKRIVES KORT, og den skrives i dansk tid. En ISO-streng ville
+// vaere ulaeselig, og UTC ville kunne vise "31. maj" for en frist der i
+// Danmark er 1. juni. Ugyldig eller manglende dato giver null, saa linjen
+// bare udelades - aldrig "Invalid Date".
+const daFrist = (iso) => {
+  try {
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return null;
+    return d.toLocaleDateString("da-DK", { day: "numeric", month: "short", timeZone: "Europe/Copenhagen" });
+  } catch { return null; }
+};
 // ⚠️ forside.css importeres IKKE. Den er nested under `.birdly-home`, så dens
 // klasser virker alligevel ikke her — og importen ville kun sende hele forsidens
 // CSS med i bundlen uden at gøre noget. start.css bærer det vi bruger.
@@ -456,6 +468,28 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
     const afFelt = naarSynlig(cvrFeltRef.current, "cvr-felt-set");
     return () => { afOverskrift(); afFelt(); };
   }, [trin, bekraeftet]);
+
+  // ⚠️ KONKRETE EKSEMPLER BLEV FAKTISK VIST (23-09-2026).
+  //
+  // ⚠️ MAALES VED VISNING, IKKE VED SVAR. Havde vi fyret den naar
+  // preview-kandidater svarede, ville vi taelle et svar kunden aldrig naaede
+  // at se - fx hvis hun klikkede videre i samme oejeblik. Effekten koerer
+  // foerst naar skaerm 2 er renderet MED eksempler.
+  //
+  // ⚠️ PRAECIS ÉN GANG PR. BESOEG. `useRef` frem for state: en ref udloeser
+  // ingen ny render, og den overlever de re-renders scanningen selv skaber.
+  //
+  // ⚠️ KUN ANTALLET. Ingen titel, koeber, frist, beloeb eller internt id
+  // forlader browseren - hverken til Birdlys eget lag eller til PostHog.
+  const eksemplerMaalt = useRef(false);
+  useEffect(() => {
+    if (eksemplerMaalt.current) return;
+    if (trin !== 2 || scannerFoerste) return;
+    const antal = foersteScan?.eksempler?.length || 0;
+    if (!antal) return;
+    eksemplerMaalt.current = true;
+    sporEvent("onboarding_step_viewed", "match-eksempler", { antal });
+  }, [trin, scannerFoerste, foersteScan]);
 
   // ⚠️ "VIST" ER IKKE "FULDFØRT", og uden begge kan man ikke regne. `sporFunnel`
   // har altid målt hvad kunden GENNEMFØRTE; frafaldet er dem der så et trin og
@@ -1565,6 +1599,33 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
                   CVR, hvor vi endnu ikke ved hvem kunden er. Her skal tallet være
                   hendes eget — blandes de to, forsvinder pointen med at have
                   spurgt om CVR. */}
+
+              {/* ⚠️ KONKRETE OPGAVER, IKKE KUN ET TAL (23-09-2026).
+                  Skærm 1's knap lover "Vis mig relevante opgaver" — og indtil nu
+                  leverede skærm 2 et tal. Eksemplerne her kommer fra PRÆCIS det
+                  array tallet ovenfor er talt på (`lokal.data` i
+                  preview-kandidater), så de to aldrig kan vise hver sit.
+
+                  ⚠️ FEM FELTER, INTET ANDET. Titel, køber, frist og beløb. Ingen
+                  kildelink, intet udbudsmateriale, intet internt id — og aldrig
+                  `esender`, som match-reglen i øvrigt slet ikke returnerer.
+
+                  ⚠️ VISES KUN NÅR DER FAKTISK ER NOGET. Et tomt array giver
+                  ingen blok; nul eksempler er ikke en fejltilstand, og skærmen
+                  ser da ud præcis som før. */}
+              {foersteScan.eksempler?.length > 0 && (
+                <ul className="st-eks">
+                  {foersteScan.eksempler.map((e, i) => (
+                    <li key={i} className="st-eks-post">
+                      <b>{e.title}</b>
+                      <span>
+                        {[e.buyer_name, daFrist(e.deadline) ? `frist ${daFrist(e.deadline)}` : null]
+                          .filter(Boolean).join(" · ")}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
 
               <p className="st-bevis-tekst">
                 Det er den slags opgaver, Birdly kan holde øje med for jer. Når noget

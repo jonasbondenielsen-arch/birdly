@@ -841,3 +841,18 @@ select.st-felt{appearance:none;background-image:url("data:image/svg+xml;utf8,<sv
   margin-top:18px;background:var(--sky-soft);border:1px solid var(--sky-200);
   border-radius:12px;padding:13px 15px;font-size:14.5px;line-height:1.55;color:var(--navy)
 }
+
+/* ⚠️ KONKRETE OPGAVER PÅ SKÆRM 2 (23-09-2026). Samme formsprog som resten af
+   funnelen — samme radius, samme kant, samme tokens. Ingen nye farver.
+   Titlen må gerne wrappe: en udbudstitel er lang, og et afkortet "Udbud af
+   rengøring af…" ville skjule præcis det der gør den genkendelig. */
+.st-eks{list-style:none;margin-top:16px;display:flex;flex-direction:column;gap:8px}
+.st-eks-post{
+  background:#fff;border:1px solid var(--line);border-radius:12px;
+  padding:12px 14px;text-align:left
+}
+.st-eks-post b{
+  display:block;font-family:'Inter',sans-serif;font-size:14.5px;font-weight:600;
+  line-height:1.4;color:var(--navy)
+}
+.st-eks-post span{display:block;margin-top:4px;font-size:12.5px;color:var(--navy-soft)}
