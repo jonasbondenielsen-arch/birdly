@@ -882,7 +882,11 @@ export default function Tilmeld({ initialFag = null, initialRegion = null, opgav
                           </>
                         )}
                       </div>
-                      <div id="betalingsboks" />
+                      {/* ⚠️ Reepays kortfelter ligger i en iframe fra et andet
+                          domaene og kan hverken ses eller optages af Clarity —
+                          ingen omgaaelse er forsoegt. Maskeringen daekker
+                          vaerten og alt omkring den. */}
+                      <div id="betalingsboks" data-clarity-mask="True" />
                       <button type="button" className="btn-ghost betaling-fortryd"
                         onClick={() => setBetalingAaben(false)}>
                         Tilbage

@@ -1288,7 +1288,13 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
 
             {/* ─────────── HØJRE: CVR ─────────── */}
             <div className="st-pre-hoejre">
-              <div className="st-kort" id="cvr-kort">
+              {/* ⚠️ data-clarity-mask MASKERER NODEN OG ALLE BØRN, og det
+                  overtrumfer hvad der måtte være sat i Clarity-portalen —
+                  altså også hvis nogen en dag skifter maskeringstilstand til
+                  "Relaxed". Inputfelter maskeres i forvejen i alle tilstande,
+                  men et CVR-nummer kan også stå i hjælpeteksten ("Er det
+                  jer?"), og den er ikke et input. */}
+              <div className="st-kort" id="cvr-kort" data-clarity-mask="True">
                 <h2 className="st-pre-h2">Se hvad Birdly kan finde til jer</h2>
                 <p className="st-hj">
                   Indtast jeres CVR-nummer. Så finder Birdly virksomheden og begynder at
@@ -1468,7 +1474,9 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
       )}
 
       {trin === 1 && bekraeftet && (
-        <div className="st-kort">
+        /* ⚠️ HELE KORTET MASKERES. Her staar firmanavn, adresse, branche og
+           CVR — alt sammen oplysninger der udpeger en bestemt virksomhed. */
+        <div className="st-kort" data-clarity-mask="True">
           <h1>Er det jer?</h1>
           {firma ? (
             <div className="st-firmakort">
@@ -2049,6 +2057,10 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
           </div>
 
           <span className="st-lab" style={{ marginTop: 26 }}>Hvor skal beskederne sendes hen?</span>
+          {/* ⚠️ NAVN, E-MAIL OG MOBIL. Clarity maskerer inputfelter i alle
+              tilstande, men labels, hjaelpetekster og en evt. fejlbesked ved
+              siden af er ikke inputs. Wrapperen daekker dem alle. */}
+          <div data-clarity-mask="True">
 
           <label className="st-lab" htmlFor="navn">Navn</label>
           <input id="navn" className="st-felt" value={navn} onChange={(e) => setNavn(e.target.value)} autoComplete="name" />
@@ -2058,6 +2070,8 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
 
           <label className="st-lab" htmlFor="tlf">Mobilnummer <span className="st-valgfri">(det er her beskeden lander)</span></label>
           <input id="tlf" className="st-felt" inputMode="tel" value={tlf} onChange={(e) => setTlf(e.target.value)} autoComplete="tel" placeholder="12 34 56 78" />
+
+          </div>
 
           {/* ⚠️ OPLYSNINGSPLIGT, IKKE ET SAMTYKKE — og derfor bevidst IKKE et
               flueben. Nye kunder får wants_private_opgaver = true som standard
@@ -2157,7 +2171,13 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
            opretter kunden). Redigerbare felter her ville se ud som om de kunne
            ændre noget — og de kunne ikke.
            ══════════════════════════════════════════════════════════════════════ */
-        <div className="ck-wrap">
+        /* ⚠️ HELE BETALINGSSKAERMEN MASKERES (23-09-2026). Reepays kortfelter
+           ligger i en iframe fra et andet domaene — den kan Clarity hverken se
+           ind i eller optage, og det skal den heller ikke; ingen omgaaelse er
+           forsoegt. Men skaermen omkring den baerer plan, beloeb og
+           betalingsvalg, og en optagelse af den hoerer ikke til i et
+           adfaerdsvaerktoej. Maskeringen daekker noden og alle boern. */
+        <div className="ck-wrap" data-clarity-mask="True">
 
           {/* ─────────────────────────── VENSTRE: handlingen ─────────────────── */}
           <section className="ck-panel ck-action">
