@@ -47,9 +47,23 @@ function svar(body, cacheNoegle) {
 // `NEXT_PUBLIC_*`; denne fil er en route handler og kører kun på serveren.
 // Mangler variablen, springes skrivningen over i stilhed — det er den rigtige
 // opførsel i preview og lokalt, hvor cachen ikke skal fodres.
+// ⚠️ ANON-NØGLEN SKAL MED, OG DET ER BÆLTE-OG-SELER (01-10-2026).
+// Supabases gateway kan kræve en JWT før kaldet overhovedet når funktionen.
+// `cvr-opslag` kører i dag med `verify_jwt = false` — bevist ved at et POST
+// uden nøgle når frem til koden — men den indstilling blev sat i dashboardet og
+// stod ikke i repoets config.toml. Et fremtidigt deploy kunne slå kravet til.
+//
+// Og det værste: skrivningen her er fire-and-forget, så et 401 fra gatewayen
+// ville blive slugt i stilhed. Fase 3 ville se deployet ud og gøre INGENTING.
+// Nøglen er offentlig (den ligger i enhver browser), så den koster os intet at
+// sende — og den fjerner en hel klasse af tavs fejl.
+//
+// ⚠️ DEN ER IKKE AUTENTIFIKATIONEN. Adgangen afgøres af `x-cvr-cache-secret`,
+// som valideres i funktionen. Anon-nøglen får os bare gennem døren.
 function gemICache(cvr, svarKrop) {
   const base = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const secret = process.env.CVR_CACHE_SECRET;
+  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!base || !secret) return;
   // Kun DEFINITIVE svar. `lookup_failed` siger noget om vores infrastruktur,
   // ikke om virksomheden, og hører ikke i en cache.
@@ -57,7 +71,11 @@ function gemICache(cvr, svarKrop) {
   try {
     void fetch(`${base}/functions/v1/cvr-opslag`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", "x-cvr-cache-secret": secret },
+      headers: {
+        "Content-Type": "application/json",
+        "x-cvr-cache-secret": secret,
+        ...(anon ? { apikey: anon, Authorization: `Bearer ${anon}` } : {}),
+      },
       body: JSON.stringify({
         cvr,
         findes: svarKrop.found === true,
