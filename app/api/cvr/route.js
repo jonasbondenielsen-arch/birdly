@@ -26,6 +26,57 @@ function svar(body, cacheNoegle) {
 }
 
 
+// ⚠️ CACHE-SKRIVNINGEN: DEN RUNTIME DER KAN NÅ REGISTERET, AFLEVERER SVARET
+// (01-10-2026).
+//
+// `signup` i birdly-admin slår CVR op fra SUPABASES udgående IP og rammer
+// `QUOTA_EXCEEDED` hver gang — cvrapi måler pr. IP-range, og Supabase deler
+// sine adresser med fremmede. Vercels IP virker (målt 3/3). Konsekvensen var at
+// cachen stod frossen siden 08-09, at hver tilmelding siden 16-09 fik
+// `cvr_opslag: "usikker"`, og at fakturaerne derfor manglede momsnummer OG
+// adresse.
+//
+// Denne rute kaldes fra funnelen og lykkes. Derfor afleverer den nu sit svar
+// til den cache `signup` allerede læser, FØR kunden når betalingstrinnet.
+//
+// ⚠️ DEN MÅ ALDRIG FORSINKE ELLER VÆLTE SVARET TIL KUNDEN. Ingen `await` i
+// svarets vej, ingen fejl der bobler op. Lykkes skrivningen ikke, får kunden
+// præcis det samme svar som før — hun mærker intet.
+//
+// ⚠️ HEMMELIGHEDEN ER SERVER-SIDE. `CVR_CACHE_SECRET` må ALDRIG hedde
+// `NEXT_PUBLIC_*`; denne fil er en route handler og kører kun på serveren.
+// Mangler variablen, springes skrivningen over i stilhed — det er den rigtige
+// opførsel i preview og lokalt, hvor cachen ikke skal fodres.
+function gemICache(cvr, svarKrop) {
+  const base = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const secret = process.env.CVR_CACHE_SECRET;
+  if (!base || !secret) return;
+  // Kun DEFINITIVE svar. `lookup_failed` siger noget om vores infrastruktur,
+  // ikke om virksomheden, og hører ikke i en cache.
+  if (svarKrop.reason !== "found" && svarKrop.reason !== "not_found") return;
+  try {
+    void fetch(`${base}/functions/v1/cvr-opslag`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-cvr-cache-secret": secret },
+      body: JSON.stringify({
+        cvr,
+        findes: svarKrop.found === true,
+        navn: svarKrop.name || null,
+        branchekode: svarKrop.branchekode || null,
+        adresse: svarKrop.address || null,
+        postnummer: svarKrop.zipcode || null,
+        by: svarKrop.city || null,
+        market_id: "DK",
+      }),
+    }).then(
+      (r) => { if (!r.ok) console.warn("[api/cvr] cache-skrivning afvist:", r.status); },
+      (e) => console.warn("[api/cvr] cache-skrivning fejlede:", e?.message || e),
+    );
+  } catch (e) {
+    console.warn("[api/cvr] cache-skrivning kunne ikke startes:", e?.message || e);
+  }
+}
+
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const cvr = (searchParams.get("cvr") || "").replace(/\D/g, "");
@@ -64,7 +115,9 @@ export async function GET(request) {
     // Maalt paa rigtige numre: gyldigt CVR = 200 + data, ugyldigt = 404 + NOT_FOUND,
     // for mange kald = QUOTA_EXCEEDED.
     if (res.status === 404 && d?.error === "NOT_FOUND") {
-      return svar({ found: false, reason: "not_found" }, "not_found");
+      const krop = { found: false, reason: "not_found" };
+      gemICache(cvr, krop);
+      return svar(krop, "not_found");
     }
     if (!res.ok) {
       return svar({ found: false, reason: "lookup_failed" }, null);
@@ -73,7 +126,9 @@ export async function GET(request) {
       return svar({ found: false, reason: "lookup_failed" }, null);
     }
     if (d.error === "NOT_FOUND") {
-      return svar({ found: false, reason: "not_found" }, "not_found");
+      const krop = { found: false, reason: "not_found" };
+      gemICache(cvr, krop);
+      return svar(krop, "not_found");
     }
     if (d.error || !d.name) {
       // Alle andre fejlkoder (fx QUOTA_EXCEEDED) er VORES problem, ikke kundens.
@@ -83,7 +138,7 @@ export async function GET(request) {
     // industrycode = DB07-branchekode (6 cifre). Normalisér til kun cifre.
     const branchekode = String(d.industrycode || "").replace(/\D/g, "") || null;
 
-    return svar({
+    const krop = {
       found: true,
       reason: "found",
       name: d.name || null,
@@ -92,7 +147,10 @@ export async function GET(request) {
       address: d.address || null,
       zipcode: d.zipcode ? String(d.zipcode) : null,
       city: d.city || null,
-    }, "found");
+    };
+    // ⚠️ EFTER svaret er bygget, FOER det returneres — men uden await.
+    gemICache(cvr, krop);
+    return svar(krop, "found");
   } catch (err) {
     // Net-/parsefejl: lad kunden taste manuelt — bloker ikke flowet.
     return svar({ found: false, reason: "lookup_failed", error: "lookup_failed" }, null);
