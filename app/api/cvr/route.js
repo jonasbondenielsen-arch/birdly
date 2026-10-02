@@ -5,6 +5,8 @@
 // klienten. Branchekoden normaliseres til 6-cifret uden punktum — samme format
 // som branchekode_fag_map, så fag-gættet kan slå op.
 
+import { after } from "next/server";
+
 export const runtime = "nodejs";
 
 // ⚠️ TO SLAGS SVAR, TO SLAGS CACHE. Et rigtigt svar fra registeret — baade
@@ -60,38 +62,70 @@ function svar(body, cacheNoegle) {
 //
 // ⚠️ DEN ER IKKE AUTENTIFIKATIONEN. Adgangen afgøres af `x-cvr-cache-secret`,
 // som valideres i funktionen. Anon-nøglen får os bare gennem døren.
+// ⚠️⚠️ `void fetch(...)` VIRKEDE IKKE, OG DET BLEV FANGET I PRODUKTION
+// (02-10-2026). Det var min fejl, og den er værd at forstå:
+//
+// Første udgave affyrede kaldet uden at afvente det, netop for ikke at
+// forsinke kunden. I en serverless-runtime er det forkert: Vercel fryser
+// instansen i det øjeblik svaret er sendt, og en promise ingen venter på bliver
+// aldrig færdig. Resultatet var det værst tænkelige — koden deployet, alle
+// vagter grønne, `/api/cvr` svarede korrekt, og cachen rykkede sig ikke en
+// millimeter. Målt: 5 rækker før, 5 rækker efter, intet skrevet.
+//
+// Præcis den fejlklasse huset er dyrest ramt af: en ændring der består enhver
+// stikprøve og ikke gør noget. Og den kunne KUN fanges af et produktionsopslag,
+// ikke af en test.
+//
+// `after()` fra next/server er det rigtige værktøj: arbejdet planlægges til
+// EFTER svaret er sendt, og platformen holder instansen i live til det er
+// færdigt. Kunden venter stadig ikke — men skrivningen sker.
 function gemICache(cvr, svarKrop) {
   const base = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const secret = process.env.CVR_CACHE_SECRET;
   const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!base || !secret) return;
+  if (!base || !secret) return "sprunget_over:ingen_konfiguration";
   // Kun DEFINITIVE svar. `lookup_failed` siger noget om vores infrastruktur,
   // ikke om virksomheden, og hører ikke i en cache.
-  if (svarKrop.reason !== "found" && svarKrop.reason !== "not_found") return;
+  if (svarKrop.reason !== "found" && svarKrop.reason !== "not_found") return "sprunget_over:ikke_definitivt";
   try {
-    void fetch(`${base}/functions/v1/cvr-opslag`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-cvr-cache-secret": secret,
-        ...(anon ? { apikey: anon, Authorization: `Bearer ${anon}` } : {}),
-      },
-      body: JSON.stringify({
-        cvr,
-        findes: svarKrop.found === true,
-        navn: svarKrop.name || null,
-        branchekode: svarKrop.branchekode || null,
-        adresse: svarKrop.address || null,
-        postnummer: svarKrop.zipcode || null,
-        by: svarKrop.city || null,
-        market_id: "DK",
-      }),
-    }).then(
-      (r) => { if (!r.ok) console.warn("[api/cvr] cache-skrivning afvist:", r.status); },
-      (e) => console.warn("[api/cvr] cache-skrivning fejlede:", e?.message || e),
-    );
+    // ⚠️ await INDE I after() ER IKKE EN VENTETID FOR KUNDEN. Svaret er allerede
+    // sendt; her venter vi kun på at vores egen skrivning bliver færdig, så en
+    // fejl faktisk kan logges i stedet for at forsvinde.
+    after(async () => {
+      try {
+        const r = await fetch(`${base}/functions/v1/cvr-opslag`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-cvr-cache-secret": secret,
+            ...(anon ? { apikey: anon, Authorization: `Bearer ${anon}` } : {}),
+          },
+          body: JSON.stringify({
+            cvr,
+            findes: svarKrop.found === true,
+            navn: svarKrop.name || null,
+            branchekode: svarKrop.branchekode || null,
+            adresse: svarKrop.address || null,
+            postnummer: svarKrop.zipcode || null,
+            by: svarKrop.city || null,
+            market_id: "DK",
+          }),
+        });
+        // ⚠️ STATUSKODEN LOGGES UANSET UDFALD. En tavs afvisning er grunden til
+        // at den første udgave kunne se ud som om den virkede.
+        if (!r.ok) {
+          console.warn("[api/cvr] cache-skrivning afvist:", r.status, (await r.text().catch(() => "")).slice(0, 120));
+        } else {
+          console.log("[api/cvr] cache-skrivning ok:", cvr, r.status);
+        }
+      } catch (e) {
+        console.warn("[api/cvr] cache-skrivning fejlede:", e?.message || e);
+      }
+    });
+    return "planlagt";
   } catch (e) {
-    console.warn("[api/cvr] cache-skrivning kunne ikke startes:", e?.message || e);
+    console.warn("[api/cvr] cache-skrivning kunne ikke planlaegges:", e?.message || e);
+    return "sprunget_over:fejl";
   }
 }
 
@@ -134,7 +168,7 @@ export async function GET(request) {
     // for mange kald = QUOTA_EXCEEDED.
     if (res.status === 404 && d?.error === "NOT_FOUND") {
       const krop = { found: false, reason: "not_found" };
-      gemICache(cvr, krop);
+      krop.cache_write = gemICache(cvr, krop);
       return svar(krop, "not_found");
     }
     if (!res.ok) {
@@ -145,7 +179,7 @@ export async function GET(request) {
     }
     if (d.error === "NOT_FOUND") {
       const krop = { found: false, reason: "not_found" };
-      gemICache(cvr, krop);
+      krop.cache_write = gemICache(cvr, krop);
       return svar(krop, "not_found");
     }
     if (d.error || !d.name) {
@@ -166,8 +200,12 @@ export async function GET(request) {
       zipcode: d.zipcode ? String(d.zipcode) : null,
       city: d.city || null,
     };
-    // ⚠️ EFTER svaret er bygget, FOER det returneres — men uden await.
-    gemICache(cvr, krop);
+    // ⚠️ UDFALDET LAEGGES I SVARET, saa kaeden kan AFLAESES udefra frem for at
+    // skulle udledes. Den foerste udgave var tavs, og netop tavsheden var
+    // grunden til at et no-op kunne se ud som en succes. Feltet afsloerer
+    // intet: ingen hemmelighed, ingen kundedata — kun om VI planlagde en
+    // skrivning. Samme raesonnement som /api/version.
+    krop.cache_write = gemICache(cvr, krop);
     return svar(krop, "found");
   } catch (err) {
     // Net-/parsefejl: lad kunden taste manuelt — bloker ikke flowet.
