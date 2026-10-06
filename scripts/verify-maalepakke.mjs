@@ -46,7 +46,8 @@ const KRAEVEDE = {
   "onboarding_step_completed:BirdlyScanZeroMatches": "birdly_scan_zero_matches",
   "onboarding_step_completed:BirdlyScanFailed": "birdly_scan_failed",
   "onboarding_step_completed:BusinessIdentified": "business_identified",
-  "onboarding_step_completed:PlanSelected": "plan_selected",
+  "onboarding_step_completed:PlanSelected": "plan_changed",
+  "onboarding_step_completed:PlanConfirmed": "plan_confirmed",
   "cvr_opslag:found": "cvr_lookup_found",
   "cvr_opslag:not_found": "cvr_lookup_not_found",
   "cvr_opslag:lookup_failed": "cvr_lookup_failed",
@@ -178,6 +179,69 @@ console.log("\n8 · FUNNEL_VERSION SKILLER FOER FRA EFTER");
 const m = ana.match(/const FUNNEL_VERSION = "([^"]+)"/);
 ok(!!m, "FUNNEL_VERSION findes", m?.[1]);
 ok(m?.[1] !== "v2", "⚠️ den er bumpet vaek fra v2, saa data foer og efter kan skelnes", m?.[1]);
+
+// ── 9 · PLAN-TRINNET HAR EN RIGTIG GENNEMFOERELSE ─────────────────────────
+// ⚠️ DET HER ER FEJLEN DER KOSTEDE EN FORKERT KONKLUSION. `plan_reached 23 →
+// PlanSelected 12` blev laest som 48 % frafald. PlanSelected fyrer kun paa
+// maaned/aar-SKIFTEREN; de 11 "tabte" havde bare beholdt standardplanen.
+// Vagten her holder tre ting: at kaeden findes, at progressionen IKKE er
+// bundet til skifteren, og at de to events er to forskellige ting.
+console.log("\n9 · PLAN: PROGRESSION OG SKIFT ER TO FORSKELLIGE HAENDELSER");
+{
+  // Kaeden skal kunne laeses ende til ende i mappingen.
+  const kaede = ["plan_reached", "plan_confirmed", "payment_reached"];
+  const navne = Object.values(POSTHOG_NAVN);
+  for (const led of kaede) ok(navne.includes(led), `kaeden har ${led}`);
+
+  // ⚠️ TO NAVNE, ALDRIG ÉT. Faldt de sammen, ville tragten igen blande
+  // "skiftede plan" sammen med "gik videre".
+  ok(POSTHOG_NAVN["onboarding_step_completed:PlanConfirmed"]
+     !== POSTHOG_NAVN["onboarding_step_completed:PlanSelected"],
+     "skift og progression deler ikke navn",
+     `${POSTHOG_NAVN["onboarding_step_completed:PlanSelected"]} vs ${POSTHOG_NAVN["onboarding_step_completed:PlanConfirmed"]}`);
+  ok(!navne.includes("plan_selected"),
+     "⚠️ det tvetydige 'plan_selected' findes ikke laengere");
+
+  const rent = udenKommentarer(start);
+
+  // Praecis ét kaldested hver.
+  const antalBekraeft = (rent.match(/sporFunnel\("PlanConfirmed"/g) || []).length;
+  const antalSkift = (rent.match(/sporFunnel\("PlanSelected"/g) || []).length;
+  ok(antalBekraeft === 1, "PlanConfirmed har praecis ét kaldested", String(antalBekraeft));
+  ok(antalSkift === 1, "PlanSelected har stadig praecis ét kaldested", String(antalSkift));
+
+  // ⚠️ PROGRESSIONEN MAA IKKE LIGGE I SKIFTEREN. Laa den der, ville den arve
+  // praecis den fejl vi retter: kun de der roerte knappen ville taelle.
+  const iSkifteren = /setInterval_\([^)]*\);\s*sporFunnel\("PlanConfirmed"/.test(rent);
+  ok(!iSkifteren, "⚠️ progressionen fyrer IKKE fra maaned/aar-skifteren");
+
+  // ⚠️ DEN SKAL LIGGE I `tilBetaling` — knappen der foerer videre.
+  const i0 = rent.indexOf("async function tilBetaling()");
+  const i1 = rent.indexOf("setArbejder(true)", i0);
+  const hoved = rent.slice(i0, i1);
+  ok(i0 >= 0 && i1 > i0 && /sporFunnel\("PlanConfirmed", \{ interval \}\)/.test(hoved),
+     "den fyrer i tilBetaling, foer setArbejder(true)");
+
+  // ⚠️ EFTER VALIDERINGEN, IKKE FOER. Et event over `if (!betingelser) return`
+  // ville taelle hvert mislykket klik som en gennemfoert plan.
+  const vagter = ["navn.trim()", "EMAIL_RE.test", "tilE164(tlf)", "!betingelser", "!abonnement"];
+  const posBekraeft = hoved.indexOf('sporFunnel("PlanConfirmed"');
+  ok(vagter.every((v) => hoved.indexOf(v) >= 0 && hoved.indexOf(v) < posBekraeft),
+     "⚠️ alle fem valideringer staar FOER eventet",
+     `${vagter.length}/5 passeret`);
+
+  // ⚠️ NEGATIV PROEVE: ville vagten faelde, hvis eventet blev flyttet op over
+  // betingelses-fluebenet? Ellers maaler den kun sin egen antagelse.
+  const flyttet = hoved
+    .replace(/\s*sporFunnel\("PlanConfirmed", \{ interval \}\);/, "")
+    .replace('if (!betingelser)', 'sporFunnel("PlanConfirmed", { interval });\n    if (!betingelser)');
+  const posFlyttet = flyttet.indexOf('sporFunnel("PlanConfirmed"');
+  ok(!vagter.every((v) => flyttet.indexOf(v) >= 0 && flyttet.indexOf(v) < posFlyttet),
+     "og vagten faelder en udgave hvor eventet staar foer fluebenet");
+
+  // Prop'en skal naa frem, ellers kan vi ikke se HVILKEN plan.
+  ok(/typeof props\.interval === "string"/.test(ana), "interval er hvidlistet til PostHog");
+}
 
 console.log(`\n${fejl === 0 ? "GROEN" : "ROED"} — ${fejl} fejl`);
 process.exitCode = fejl === 0 ? 0 : 1;

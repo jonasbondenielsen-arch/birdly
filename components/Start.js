@@ -936,6 +936,28 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
     if (!betingelser) return setFejl("Sæt flueben i handelsbetingelserne for at fortsætte.");
     if (!abonnement) return setFejl("Sæt flueben i abonnementsbetingelserne for at fortsætte.");
     if (arbejder) return;
+
+    // ⚠️ TRAGTENS PLAN-TRIN HAVDE INGEN GENNEMFØRELSE (06-10-2026). `PlanSelected`
+    // fyrer KUN når kunden klikker på måned/år-skifteren — altså når hun bliver
+    // på trinnet. Beholdt hun standardplanen og gik videre, fyrede intet, og
+    // `kontakt-og-plan 23 → PlanSelected 12` lignede et frafald på 48 %. De 11
+    // var ikke faldet fra; de havde bare ikke rørt skifteren.
+    //
+    // ⚠️ HER OG IKKE PÅ KLIKKET. Over linjen står fem valideringer; et klik der
+    // rammer en af dem er ikke en progression, og et event dér ville tælle
+    // hvert mislykket forsøg som en gennemført plan. Her er navn, mail, telefon
+    // og BEGGE betingelser accepteret — kunden går videre med den plan der står.
+    //
+    // ⚠️ FØR `setArbejder(true)` OG FØR signup-kaldet, så en netværksfejl ikke
+    // kan slette en progression der FAKTISK skete. Det der måles er kundens
+    // handling, ikke serverens svar — serverens svar har sine egne hændelser
+    // (Lead, StartTrial, CheckoutStarted).
+    //
+    // ⚠️ `interval` ER NOK TIL AT SKELNE STANDARD FRA VALGT. Standarden er
+    // "yearly"; en "monthly" her kan kun være kommet fra skifteren. Derfor
+    // ingen ny state, intet nyt flag.
+    sporFunnel("PlanConfirmed", { interval });
+
     setArbejder(true);
     try {
       let id = oprettetId;
