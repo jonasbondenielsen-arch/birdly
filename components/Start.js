@@ -701,10 +701,25 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
   // ---- Trin 1: CVR-opslag ----
   async function slaaOp(vaerdi) {
     const d = cifre(vaerdi);
-    if (d.length !== 8) return;
+    // ⚠️ VALIDERINGEN ER ET UDFALD, IKKE EN STILHED (06-10-2026). Det største
+    // fald i tragten ligger mellem "CVR-feltet set" (111) og "CVR indsendt"
+    // (34), og indtil nu kunne vi ikke se OM opslaget overhovedet blev forsøgt.
+    // Et felt der forlades halvt udfyldt, er et andet problem end et CVR der
+    // ikke findes — og de to kræver hver sin rettelse.
+    if (d.length !== 8) {
+      sporEvent("cvr_opslag", "validation_failed", { cifre: d.length });
+      return;
+    }
     setSlaarOp(true); setOpslagFejl("");
+    // ⚠️ UDFALDENE ER DEM API'ET FAKTISK GIVER. `/api/cvr` svarer `found`,
+    // `not_found` eller `lookup_failed` (route.js:170-212); dertil kommer en
+    // klientside-undtagelse. Der findes INGEN "uncertain" på dette lag —
+    // `usikker` hører til signup-gaten og `cvr_opslag`-tabellen, ikke her, og
+    // den opfindes derfor ikke.
+    let udfald = "teknisk_fejl";
     try {
       const r = await fetch(`/api/cvr?cvr=${d}`).then((x) => x.json());
+      udfald = r?.name ? "found" : (r?.reason === "not_found" ? "not_found" : "lookup_failed");
       if (r?.name) {
         setFirma(r.name);
         setBranchekode(r.branchekode || null);
@@ -744,7 +759,17 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
       }
     } catch {
       setOpslagFejl("Vi kunne ikke slå CVR op lige nu. Du kan fortsætte alligevel.");
-    } finally { setSlaarOp(false); }
+    } finally {
+      setSlaarOp(false);
+      // ⚠️ MÅLINGEN LIGGER I `finally`, SÅ DEN IKKE KAN SPRINGES OVER. Lå den i
+      // try-blokken, ville netop den tekniske fejl vi vil måle, være den ene
+      // der ikke blev målt. `udfald` er sat til `teknisk_fejl` fra start og
+      // overskrives kun når serveren faktisk svarede.
+      //
+      // ⚠️ INGEN PII. Kun udfaldet og om branchekoden gav et fag-gæt — aldrig
+      // CVR-nummeret, firmanavnet eller adressen.
+      sporEvent("cvr_opslag", udfald, {});
+    }
   }
 
   // ---- Trin 3 → 4: hent det ægte tal ----
@@ -828,6 +853,17 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
     setTrin(7);
     window.scrollTo({ top: 0, behavior: "smooth" });
 
+    // ⚠️ SCANNINGEN SKAL MELDE AT DEN BEGYNDER (06-10-2026). Før dette fyrede
+    // kun `BirdlyScanCompleted` — og dermed var hele vinduet mellem "område
+    // udfyldt" og "resultat vist" sort: et hængende kald, en timeout eller en
+    // kunde der lukkede fanen midt i, efterlod INGEN spor. Nu er der et par:
+    // startede vi, og blev vi færdige?
+    sporFunnel("BirdlyScanStarted", {
+      fag: fagValgt.join(","),
+      omraade: regionKeys.join(","),
+      bredde,
+    });
+
     const [k] = await Promise.all([
       hentKandidater({
         fag_keys: fagValgt,
@@ -852,10 +888,43 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
     setScanner(false);
 
     const tilstand = visResultat(k);
-    sporFunnel("BirdlyScanCompleted", { antal: k?.i_omraade || 0, tilstand });
-    sporFunnel(tilstand === "intet" || !(k?.i_omraade > 0) ? "BirdlyScanZeroMatches" : "BirdlyScanHasMatches", {
+
+    // ⚠️ FIRE UDFALD, IKKE TO — OG DET ER DEN VIGTIGSTE RETTELSE I PAKKEN.
+    // Før faldt en teknisk fejl ned i `BirdlyScanZeroMatches`, fordi
+    // `visResultat()` kollapser `fejlede`, `effektive_koder === 0` og "reelt
+    // nul" til samme streng "intet". Vi målte altså en 500 som et
+    // produktresultat — og kunne derfor "optimere" et trin der i virkeligheden
+    // var i stykker.
+    //
+    // `udfald` er ét felt med fire gensidigt udelukkende værdier, så en tragt
+    // aldrig skal udlede tilstanden af tre andre props:
+    //   timeout       serveren svarede ikke inden for SCAN_TIMEOUT_MS
+    //   teknisk_fejl  netværk, HTTP-fejl eller et svar uden ok
+    //   nul_matches   opslaget LYKKEDES og fandt intet
+    //   matches       opslaget lykkedes og fandt noget
+    const udfald = k?.fejlede
+      ? (k.aarsag === "timeout" ? "timeout" : "teknisk_fejl")
+      : ((k?.i_omraade || 0) > 0 ? "matches" : "nul_matches");
+
+    const maaling = {
+      udfald,
+      aarsag: k?.aarsag || null,
       antal: k?.i_omraade || 0,
-    });
+      paa_landsplan: k?.paa_landsplan || 0,
+      // ⚠️ `effektive_koder === 0` ER IKKE EN FEJL, men det er heller ikke et
+      // ægte nul-resultat: kundens fagvalg gav slet ingen CPV-koder at søge på.
+      // Uden tallet kan de to ikke skelnes i analysen.
+      koder: k?.effektive_koder || 0,
+      tilstand,
+    };
+
+    sporFunnel("BirdlyScanCompleted", maaling);
+    // ⚠️ KUN ÉT AF DE TO FYRER, og de dækker nu KUN de lykkede opslag. En
+    // teknisk fejl er hverken "zero" eller "has" — den har sit eget udfald
+    // ovenfor, og at tvinge den ned i et af dem var præcis fejlen.
+    if (udfald === "matches") sporFunnel("BirdlyScanHasMatches", maaling);
+    else if (udfald === "nul_matches") sporFunnel("BirdlyScanZeroMatches", maaling);
+    else sporFunnel("BirdlyScanFailed", maaling);
   }
 
   // ---- Trin 4 → 5: opret kunden + betalingssession ----
@@ -1981,7 +2050,7 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
                 selv finde dem — når en ny mulighed matcher, får I den direkte på SMS og mail.
               </p>
 
-              <button className="btn btn-teal st-bred" onClick={() => { sporFunnel("ValueAnchorViewed"); setTrin(8); window.scrollTo({ top: 0, behavior: "smooth" }); }}>
+              <button className="btn btn-teal st-bred" onClick={() => { sporFunnel("ValueAnchorViewed", { sted: "funnel" }); setTrin(8); window.scrollTo({ top: 0, behavior: "smooth" }); }}>
                 Ja — hold øje for mig →
               </button>
             </>
@@ -2002,7 +2071,7 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
                   eventuelt at udvide området.
                 </p>
               )}
-              <button className="btn btn-teal st-bred" onClick={() => { sporFunnel("ValueAnchorViewed"); setTrin(8); window.scrollTo({ top: 0, behavior: "smooth" }); }}>
+              <button className="btn btn-teal st-bred" onClick={() => { sporFunnel("ValueAnchorViewed", { sted: "funnel" }); setTrin(8); window.scrollTo({ top: 0, behavior: "smooth" }); }}>
                 Start overvågning →
               </button>
               <button className="btn btn-ghost st-bred" onClick={() => setTrin(5)}>Udvid mine kriterier</button>
