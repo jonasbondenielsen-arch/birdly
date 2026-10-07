@@ -1,0 +1,75 @@
+/* ============================================================================
+   KUNDEUDTALELSER — KOMPAKT VARIANT I FUNNELEN
+
+   ⚠️ INGEN NYE TOKENS. Hver eneste værdi herunder er enten en eksisterende
+   variabel (--line, --navy, --navy-soft, --teal, --r, --sky-soft) eller den
+   samme radius/padding som `.st-hit` og `.st-pre-bevis` allerede bruger.
+   Ingen ny farve, ingen ny skygge, ingen ny font.
+
+   ⚠️ STAKKEN ER ET ETCELLES GRID, og det er hele grunden til at der ikke sker
+   layout shift. Begge citater ligger i samme celle, så kassen er altid så høj
+   som det LÆNGSTE af dem — skiftet flytter ingenting.
+   ============================================================================ */
+
+.kc-kompakt {
+  margin-top: 16px;
+  background: var(--sky-soft);
+  border: 1px solid var(--sky-200);
+  border-radius: var(--r);
+  padding: 16px 18px 14px;
+}
+
+/* ⚠️ `st-pre-kick` er `display:block`; her skal dioden staa paa linje med
+   teksten, og det er den eneste justering komponenten tilfoejer. */
+.kc-kick { display: inline-flex; align-items: center; margin-bottom: 0; }
+
+.kc-stak { display: grid; margin-top: 10px; }
+.kc-stak > * { grid-area: 1 / 1; }
+
+.kc-citat { margin: 0; }
+.kc-citat blockquote {
+  margin: 0;
+  font-size: 15.5px; line-height: 1.55; color: var(--navy);
+}
+.kc-citat figcaption {
+  margin-top: 8px; font-size: 13.5px; color: var(--navy-soft);
+}
+.kc-citat figcaption b { color: var(--navy); font-weight: 700; }
+
+/* Indikatorer — samme 8px-diode som .st-prik/.sg-prik, uden pulsen. */
+.kc-dots { display: flex; gap: 7px; margin-top: 12px; }
+.kc-dot {
+  width: 8px; height: 8px; padding: 0; border: 0; border-radius: 50%;
+  background: var(--sky-200); cursor: pointer;
+}
+.kc-dot.on { background: var(--teal); }
+.kc-dot:focus-visible { outline: 2px solid var(--sky); outline-offset: 2px; }
+
+@media (max-width: 560px) {
+  .kc-kompakt { padding: 14px 15px 12px; }
+  .kc-citat blockquote { font-size: 15px; }
+}
+
+/* ============================================================================
+   PREVIEW-STILLADSET — KUN TIL /preview/growth2
+
+   ⚠️ DEN HER BLOK HØRER IKKE TIL PRODUKTET. Den tegner rammerne omkring de to
+   viewport-visninger på inspektionssiden, så desktop og 390 px kan ses ved
+   siden af hinanden. Ingen produktionsside importerer den.
+   ============================================================================ */
+
+.pv-topbar {
+  position: sticky; top: 0; z-index: 10;
+  background: var(--navy); color: #fff;
+  padding: 14px 22px; font-size: 14px;
+}
+.pv-topbar b { color: var(--teal); }
+.pv-rammer { display: flex; gap: 28px; align-items: flex-start; flex-wrap: wrap; padding: 24px; }
+.pv-ramme h3 {
+  font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; font-weight: 700;
+  color: var(--navy-soft); margin: 0 0 10px; letter-spacing: .04em; text-transform: uppercase;
+}
+.pv-ramme iframe {
+  border: 1px solid var(--line); border-radius: var(--r);
+  box-shadow: var(--shadow); background: #fff; display: block;
+}

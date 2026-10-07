@@ -15,8 +15,22 @@ import { synkroniserAnalytics } from "../lib/analytics";
 // Attributionen fanges ved landing (UTM'er er ikke persondata), mens pixel'en først
 // indlæses når marketing-samtykket er givet. Derfor to forskellige betingelser i samme
 // komponent — ikke en forglemmelse.
+// ⚠️ PREVIEW-RUTER MÅLES IKKE (07-10-2026). `<Maaling />` sidder i
+// root-layoutet og rammer derfor HVER side — også et growth-preview. Uden den
+// her linje ville hvert kig på /preview/… skrive et `landing_page_view` ind i
+// produktionens tragt, blive talt med i v4's kohorte og forurene præcis det
+// tal previewet skal kunne sammenlignes med. Et preview skal kunne ses uden at
+// ændre det, det måles imod.
+//
+// ⚠️ PRÆFIKS, IKKE EN LISTE. Nye preview-ruter er automatisk dækket; en liste
+// ville skulle vedligeholdes og ville før eller siden mangle den nyeste.
+const erPreview = () => {
+  try { return window.location.pathname.startsWith("/preview/"); } catch { return false; }
+};
+
 export default function Maaling() {
   useEffect(() => {
+    if (erPreview()) return;
     // ⚠️ ÉN GANG PR. BESØG, IKKE PR. SIDESKIFT. Layoutet monteres én gang ved
     // fuld indlæsning og overlever klient-navigation — og det er præcis det
     // "landing" betyder: den side annoncen bar hende ind på. Et event pr.
