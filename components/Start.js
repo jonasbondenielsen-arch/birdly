@@ -1420,10 +1420,14 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
                   men et CVR-nummer kan også stå i hjælpeteksten ("Er det
                   jer?"), og den er ikke et input. */}
               <div className="st-kort" id="cvr-kort" data-clarity-mask="True">
-                <h2 className="st-pre-h2">Se hvad Birdly kan finde til jer</h2>
+                {/* ⚠️ RESULTATET, IKKE PROCESSEN (v4, 07-10-2026). Den gamle
+                    hjælpetekst beskrev hvad BIRDLY gør ("finder virksomheden og
+                    begynder at lede") — altså maskineriet. Kunden skal på to
+                    sekunder kunne se hvad HUN får. Kortere sætninger, ingen
+                    forklaring af systemet. */}
+                <h2 className="st-pre-h2">Se hvilke opgaver der passer til jeres virksomhed</h2>
                 <p className="st-hj">
-                  Indtast jeres CVR-nummer. Så finder Birdly virksomheden og begynder at
-                  lede efter relevante opgaver.
+                  Indtast jeres CVR. Birdly finder relevante opgaver til jer.
                 </p>
 
                 <label className="st-lab" htmlFor="cvr">CVR-nummer</label>
@@ -1439,11 +1443,24 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
                   onBlur={(e) => slaaOp(e.target.value)}
                   placeholder="12345678"
                 />
+                {/* ⚠️ DEN SVARER PÅ DET SPØRGSMÅL DER STOPPER HENDE (v4).
+                    Målt: 107 så feltet, 41 rørte det — og raten var FLAD over
+                    både viewport-højde og trafikkilde, mens 108 ud af 108 havde
+                    set overskriften. Det var hverken folden eller trafikken. Det
+                    der stod i beslutningsøjeblikket, var prøveperiode, binding
+                    og kortkrav — om en knap der kun slår et CVR op.
+                    Her står nu hvad knappen faktisk gør, og hvad den ikke gør.
+                    ⚠️ INGEN NY KLASSE OG INGEN NY FARVE. `st-hj` er kortets
+                    egen hjælpetekst-stil, den samme som "Slår op…" bruger. */}
+                <p className="st-hj">Se jeres matches først. Opret jer bagefter.</p>
                 {slaarOp && <p className="st-hj">Slår op…</p>}
                 {opslagFejl && <p className="st-hj">{opslagFejl}</p>}
 
                 {/* ⚠️ CTA'EN LOVER BELØNNINGEN, ikke handlingen. "Fortsæt" siger
-                    hvad kunden skal gøre; den her siger hvad hun får. */}
+                    hvad kunden skal gøre; den her siger hvad hun får.
+                    ⚠️ "Vis mine matches" I STEDET FOR "Vis mig relevante
+                    opgaver" (v4): hendes ord om hendes resultat, tre ord kortere
+                    — og den samme mentale model som linjen over feltet. */}
                 <button
                   className="btn btn-teal st-bred"
                   onClick={async () => {
@@ -1456,33 +1473,35 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
                     window.scrollTo({ top: 0, behavior: "smooth" });
                   }}
                 >
-                  Vis mig relevante opgaver →
+                  Vis mine matches →
                 </button>
-                {/* ⚠️ SÆTNINGEN ER SAND, OG DET ER DERFOR DEN MÅ STÅ. Kortet
-                    bindes først på skærm 10. Ændrer den rækkefølge sig, skal
-                    linjen væk samme dag. */}
-                <p className="st-under-knap">
-                  0 kr. i dag · {TRIAL_DAYS} dage gratis · Ingen binding
-                </p>
-                {/* ⚠️ KORTKRAVET SIGES HER, IKKE FØRST PÅ SKÆRM 10 (23-09-2026).
-                    Kunden læste "0 kr. i dag" på skærm 1 og mødte et kortfelt ni
-                    skærme senere. Målt: fem nåede planskærmen, tre nåede
-                    betalingen, én bandt et kort.
+                {/* ⚠️ HER STOD PRØVEPERIODE, BINDING OG KORTKRAV — OG DE ER
+                    FJERNET FRA DETTE TRIN (v4, 07-10-2026). Ikke skjult: flyttet
+                    hen hvor beslutningen faktisk træffes.
 
-                    ⚠️ BETINGET, FORDI SÆTNINGEN IKKE ALTID ER SAND. Er
-                    feature-flaget `kortloes_onboarding` tændt, oprettes kunden
-                    UDEN kort (se `kortloes` ovenfor), og linjen ville da være en
-                    løgn på den mest skadelige måde. Flaget er slukket i dag;
-                    linjen følger flaget, ikke dagens værdi.
+                    ⚠️ HVORFOR DE OVERHOVEDET STOD HER. De blev lagt ind 23-09
+                    (commit 1812c9f) for at lukke et NEDSTRØMS tab: kunden læste
+                    "0 kr. i dag" på skærm 1 og mødte et kortfelt ni skærme
+                    senere. Den bekymring er reel og er IKKE droppet.
 
-                    ⚠️ "efter prøveperioden" ER PRÆCIST. Første træk sker når de
-                    {" "}{TRIAL_DAYS} dage er gået — der er ingen opsigelsesfrist,
-                    og varslet (VARSEL_DAGE) er en påmindelse, ikke en binding. */}
-                {!kortloes && (
-                  <p className="st-under-knap st-kortkrav">
-                    Kort kræves · første betaling efter prøveperioden
-                  </p>
-                )}
+                    ⚠️ MEN DE VAR IKKE SANDE OM DENNE KNAP. Knappen slår et CVR
+                    op. Den opretter ingen kunde, starter ingen prøve og beder
+                    ikke om et kort — `submitSignup()` kaldes først på skærm 9.
+                    At nævne kortkrav her er altså en forpligtelse otte skærme
+                    før den findes.
+
+                    ⚠️ VILKÅRENE STÅR FULDT OG KORREKT PÅ SKÆRM 9, FØR
+                    `tilBetaling()` opretter kunden og starter prøven: pris
+                    (md./år, ekskl. moms), {TRIAL_DAYS} dage gratis, ingen
+                    binding, "Sidste trin — tilføj kort for at starte dine
+                    gratis dage", og de to PÅKRÆVEDE samtykker (handels- og
+                    abonnementsbetingelser, herunder automatisk fornyelse og at
+                    kortet gemmes). Og igen på skærm 10 i checkouten med
+                    Clearhaus' forelagte ordlyd. Verificeret 07-10-2026 før
+                    denne ændring.
+
+                    ⚠️ RULLER NOGEN SIGNUP-KALDET TILBAGE TIL SKÆRM 1, skal
+                    linjerne tilbage samme dag. */}
               </div>
 
               {/* ---- ÆGTE BEVIS: HELE PULJEN ----
@@ -1692,7 +1711,7 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
                   spurgt om CVR. */}
 
               {/* ⚠️ KONKRETE OPGAVER, IKKE KUN ET TAL (23-09-2026).
-                  Skærm 1's knap lover "Vis mig relevante opgaver" — og indtil nu
+                  Skærm 1's knap lover "Vis mine matches" — og indtil nu
                   leverede skærm 2 et tal. Eksemplerne her kommer fra PRÆCIS det
                   array tallet ovenfor er talt på (`lokal.data` i
                   preview-kandidater), så de to aldrig kan vise hver sit.

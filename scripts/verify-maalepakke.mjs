@@ -243,5 +243,58 @@ console.log("\n9 · PLAN: PROGRESSION OG SKIFT ER TO FORSKELLIGE HAENDELSER");
   ok(/typeof props\.interval === "string"/.test(ana), "interval er hvidlistet til PostHog");
 }
 
+// ── 10 · v4: FORPLIGTELSEN STÅR HVOR DEN INDGÅS ───────────────────────────
+// ⚠️ DEN HER ER JURIDISK, IKKE KOSMETISK. Growth #1 fjernede prøveperiode,
+// binding og kortkrav fra CVR-trinnet, fordi knappen kun slår et CVR op.
+// Det er KUN forsvarligt så længe de samme vilkår står fuldt og tydeligt på
+// skærm 9, hvor `tilBetaling()` opretter kunden og starter prøven. Går den
+// ene halvdel af den byttehandel tabt i en fremtidig redigering, skjuler vi
+// pris og vilkår — og det må aldrig ske uopdaget.
+console.log("\n10 · v4: VILKAARENE STAAR PAA SKAERM 9, IKKE PAA CVR-TRINNET");
+{
+  const rent = udenKommentarer(start);
+
+  // Selve CVR-kortet: fra kortets id til den næste søskende-blok.
+  const k0 = rent.indexOf('id="cvr-kort"');
+  const k1 = rent.indexOf("st-pre-bevis", k0);
+  const kort = k0 >= 0 && k1 > k0 ? rent.slice(k0, k1) : "";
+  ok(kort.length > 200, "CVR-kortet kunne afgraenses", `${kort.length} tegn`);
+
+  // ⚠️ INGEN FORPLIGTELSE I BESLUTNINGSOEJEBLIKKET.
+  for (const forbudt of ["Kort kræves", "dage gratis", "Ingen binding", "0 kr. i dag"]) {
+    ok(!kort.includes(forbudt), `CVR-kortet naevner ikke "${forbudt}"`);
+  }
+  // Og den nye mentale model skal faktisk staa der.
+  ok(/Se jeres matches først\. Opret jer bagefter\./.test(kort), "men det staar hvad knappen IKKE goer");
+  ok(/Vis mine matches →/.test(kort), "og CTA'en lover resultatet");
+
+  // Skærm 9 — hvor forpligtelsen faktisk indgås.
+  const n0 = rent.indexOf("{trin === 9 && (");
+  const n1 = rent.indexOf("{trin === 10 &&", n0);
+  const trin9 = n0 >= 0 && n1 > n0 ? rent.slice(n0, n1) : "";
+  ok(trin9.length > 1000, "skaerm 9 kunne afgraenses", `${trin9.length} tegn`);
+
+  ok(/priceText\.yearly/.test(trin9), "⚠️ PRISEN staar paa skaerm 9");
+  ok(/\{TRIAL_DAYS\} dage gratis/.test(trin9), "⚠️ PROEVEPERIODEN staar paa skaerm 9");
+  ok(/Ingen binding/.test(trin9), "⚠️ INGEN BINDING staar paa skaerm 9");
+  ok(/tilføj kort for at starte/.test(trin9), "⚠️ KORTKRAVET staar paa skaerm 9");
+  ok(/0 kr\. trækkes i dag/.test(trin9), "⚠️ FOERSTE BETALING staar paa skaerm 9");
+  ok(/handelsbetingelser/.test(trin9) && /abonnementsbetingelser/.test(trin9),
+     "⚠️ BEGGE paakraevede samtykker staar paa skaerm 9");
+  ok(/fornyes automatisk/.test(trin9), "⚠️ AUTOMATISK FORNYELSE er oplyst");
+
+  // ⚠️ OG FORPLIGTELSEN SKAL FAKTISK INDGAAS DER — ikke paa skaerm 1.
+  // Flyttes signup-kaldet frem, falder hele begrundelsen for at fjerne
+  // linjerne, og vagten skal sige fra.
+  ok(/onClick=\{tilBetaling\}/.test(trin9), "og signup-kaldet ligger paa skaerm 9");
+  ok(!kort.includes("submitSignup") && !kort.includes("tilBetaling"),
+     "⚠️ CVR-trinnet opretter stadig ingenting");
+
+  // ⚠️ NEGATIV PROEVE: vagten skal kunne faelde begge veje.
+  ok(kort.replace("Vis mine matches", "x").includes("Vis mine matches") === false
+     && (kort + "Kort kræves").includes("Kort kræves"),
+     "og proeven reagerer paa baade mangel og tilfoejelse");
+}
+
 console.log(`\n${fejl === 0 ? "GROEN" : "ROED"} — ${fejl} fejl`);
 process.exitCode = fejl === 0 ? 0 : 1;
