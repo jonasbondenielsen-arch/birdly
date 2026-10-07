@@ -255,8 +255,14 @@ console.log("\n10 · v4: VILKAARENE STAAR PAA SKAERM 9, IKKE PAA CVR-TRINNET");
   const rent = udenKommentarer(start);
 
   // Selve CVR-kortet: fra kortets id til den næste søskende-blok.
+  // ⚠️ SLUT-LANDEMAERKET FLYTTEDE SIG (Growth #2). Vagten pejlede paa
+  // `st-pre-bevis` — statistikgriddet under kortet — og da Growth #2 fjernede
+  // det, blev udsnittet TOMT og alle "kortet naevner ikke X"-proever groenne
+  // paa ingenting. Praecis den fejlklasse vagten selv findes for at fange.
+  // Nu afgraenses kortet af det der faktisk FOELGER det: kundecitatet.
+  // `kort.length > 200` nedenfor er det der ville have faeldet den tomme.
   const k0 = rent.indexOf('id="cvr-kort"');
-  const k1 = rent.indexOf("st-pre-bevis", k0);
+  const k1 = rent.indexOf("<KundecitatEnkelt", k0);
   const kort = k0 >= 0 && k1 > k0 ? rent.slice(k0, k1) : "";
   ok(kort.length > 200, "CVR-kortet kunne afgraenses", `${kort.length} tegn`);
 

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Logo } from "./Logo";
+import { KundecitatEnkelt } from "./Kundecitater";
 import { fetchCatalog, submitSignup, createSubscriptionSession } from "../lib/catalog";
 import { hentKandidater, visResultat } from "../lib/kandidater";
 import { PLAN, YEARLY_SAVING, planForInterval, priceText, TRIAL_DAYS, VARSEL_DAGE } from "../lib/pakke";
@@ -47,6 +48,7 @@ const daFrist = (iso) => {
 // klasser virker alligevel ikke her — og importen ville kun sende hele forsidens
 // CSS med i bundlen uden at gøre noget. start.css bærer det vi bruger.
 import "../app/start.css";
+import "../app/kundecitater.css";
 
 // ============================================================================
 // /start — den korte onboarding. Fire skærme, ét spørgsmål ad gangen.
@@ -110,7 +112,7 @@ const ETAPER = ["Virksomhed", "Opgaver", "Dine match", "Start Birdly"];
 // setTrin-kald og JSX-gates, og en renummerering ville roere husets pengekanal
 // for at spare et hul i et opslag. Hullet koster ingenting; en forkert gate
 // koster en tilmelding.
-const SKAERM_ETAPE = { 1: 0, 2: 0, 3: 1, 4: 1, 5: 1, 7: 2, 8: 2, 9: 3, 10: 3 };
+const SKAERM_ETAPE = { 1: 0, 2: 0, 4: 1, 5: 1, 7: 2, 8: 2, 9: 3, 10: 3 };  // 3 fjernet
 const SIDSTE_SKAERM = 10;
 
 // Samme SDK-indlæsning som /tilmeld. ⚠️ Bevidst duplikeret frem for at refaktorere
@@ -159,37 +161,9 @@ function FunnelTop() {
   );
 }
 
-// De fire svar på "hvordan finder I opgaver i dag".
-//
-// ⚠️ SVARENE TALER IKKE NOGEN NED. "Vi bruger allerede en anden tjeneste" mødes
-// med at Birdly ikke behøver erstatte den — det er sandt, og det er stærkere end
-// at angribe en konkurrent, som kunden måske selv har valgt med omhu.
-const METODER = [
-  {
-    key: "selv",
-    titel: "Vi søger selv",
-    under: "Fx på udbudsportaler, websites og andre kilder.",
-    svar: "Så kender I arbejdet. Birdly kan holde øje og sortere de irrelevante muligheder fra.",
-  },
-  {
-    key: "netvaerk",
-    titel: "Netværk og eksisterende kunder",
-    under: "Det meste arbejde kommer gennem relationer.",
-    svar: "Netværk er stærkt — men viser kun de muligheder, der når frem til jer.",
-  },
-  {
-    key: "anden",
-    titel: "Vi bruger allerede en anden tjeneste",
-    under: null,
-    svar: "Birdly behøver ikke erstatte det, I allerede bruger. Forskellen er, at relevante match kommer direkte til jer.",
-  },
-  {
-    key: "ingen",
-    titel: "Vi leder ikke aktivt efter nye opgaver",
-    under: null,
-    svar: "Så kan Birdly holde øje uden at ændre jeres hverdag.",
-  },
-];
+// ⚠️ `METODER` ER FJERNET MED SKÆRM 3 (Growth #2, 07-10-2026). De fire svar
+// hoerte til "Hvordan finder I typisk nye opgaver i dag?", som blev fjernet
+// fordi den kostede 22 % af tragten uden at samle data eller levere vaerdi.
 
 // ⚠️ PROJEKTFAGENES BELØB ER DE EKSISTERENDE max_amount-VÆRDIER. De tre tal
 // (1 mio., 5 mio., 20 mio.) er præcis dem funnelen altid har sendt til
@@ -260,7 +234,7 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
   // betydninger (migration 0173), så den der laver rapporten ser den uden at
   // skulle finde denne fil.
   const TRIN_NAVN = {
-    1: "cvr", 2: "foerste-scan", 3: "metode", 4: "fag", 5: "omraade",
+    1: "cvr", 2: "foerste-scan", 4: "fag", 5: "omraade",
     7: "birdly-scan", 8: "vaerdianker", 9: "kontakt-og-plan", 10: "betaling",
   };
   // ⚠️ MILEPAELS-REFS. Se effekten laengere nede: de to elementer paa skaerm 1
@@ -330,7 +304,6 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
   // Skærm 2 — hvordan finder I opgaver i dag. ⚠️ DIAGNOSE, IKKE ET KRITERIUM.
   // Svaret bruges til ÉN kontekstsætning på skærmen og til opsummeringen. Det
   // sendes ikke til signup og påvirker ikke matchning med et komma.
-  const [metode, setMetode] = useState(null);
 
   // Skærm 5 — værdi-spørgsmålet. ⚠️ ANKER, IKKE FILTER for løbende fag.
   // For projektfag ER det kundens max_amount (se `maks`); for rengøring og
@@ -802,7 +775,7 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
     // fra branchekoden. Kom det fra annoncen, har kunden selv sagt det, og da
     // ville sætningen påstå noget forkert om vores egen kilde.
     const fagKilde = kandidatFag === startFag ? "annonce" : kandidatFag === gaetFag ? "cvr" : "standard";
-    if (!kandidatFag) { setTrin(3); return; }
+    if (!kandidatFag) { setTrin(4); return; }  /* var 3 — skærmen findes ikke mere */
 
     setScannerFoerste(true);
     setTrin(2);
@@ -1337,10 +1310,9 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
   return (
     <main className={"st-wrap"
       + (trin === 10 && !kortloes ? " st-wrap-bred" : "")
-      // ⚠️ SKÆRM 1 ER TO KOLONNER og skal have den fulde bredde, ellers klemmes
-      // argumentet og CVR-kortet sammen. Skærm 2-9 er brede nok til kort og
-      // opsummering; kun de smalle spørgsmålsskærme bruger standardbredden.
-      + (trin === 1 ? " st-wrap-bred" : "")
+      // ⚠️ SKÆRM 1 VAR TO KOLONNER OG FIK DEN FULDE BREDDE. Growth #2 gjorde
+      // den til én kolonne, og 1120 px ville efterlade et kort paa 520 px midt
+      // i et tomt felt. Den bruger nu husets standardbredde som trin 2-4.
       + (trin >= 2 && trin <= 9 ? " st-wrap-mellem" : "")}>
       <FunnelTop />
 
@@ -1387,32 +1359,24 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
               (st-). Klistrede vi forsidens .sg-sektioner ind, ville /start blive
               en kopi af den side kunden lige har forladt.
               ══════════════════════════════════════════════════════════════════ */}
-          <div className="st-pre">
-            {/* ─────────── ØVERST: løftet ───────────
-                ⚠️ PILLEN OG OVERSKRIFTEN ER FLYTTET UD I DERES EGEN BLOK (23-09-2026).
-                Ikke kosmetik: på mobil stablede .st-pre sine to spalter i
-                DOM-rækkefølge, så hele argumentet — otte blokke, ~700-800 px — lå
-                mellem overskriften og CVR-feltet. Målt: 23 besøgende startede på
-                skærm 1, seks nåede skærm 2. 74 % tog aldrig den første handling.
+          {/* ⚠️ ÉN KOLONNE (Growth #2, 07-10-2026). Her stod en to-spalters
+              pre-funnel: pill, lang overskrift, "I skal bare vinde én",
+              produktforklaring, SMS-linje, tre trust-punkter, indvendingsboks,
+              100.000/300.000-anker og et statistikgrid — alt sammen FØR kunden
+              havde taget sin første handling.
 
-                ⚠️ DOM'EN ER FLYTTET, IKKE KUN CSS'EN. En `order`-regel ville give
-                den rigtige visuelle rækkefølge, men efterlade tab- og
-                skærmlæserrækkefølgen som før — altså hele argumentet før feltet
-                for den der navigerer med tastatur. Rækkefølgen her ER nu
-                mobilrækkefølgen; desktop placeres eksplicit i grid'et.
-                ─────────────────────────────────── */}
-            <div className="st-pre-top">
-              <span className="st-pre-pill">For rengørings- &amp; servicevirksomheder</span>
+              ⚠️ MÅLT: 107 så CVR-feltet, 41 rørte det. Raten var FLAD over både
+              viewport-højde (38/46/43 %) og trafikkilde (36/41 %), og 108 ud af
+              108 havde set overskriften. Det var hverken folden, trafikken
+              eller værdiløftet — forklaringen stod bare i vejen for handlingen.
 
-              <h1 ref={overskriftRef}>
-                {forvalgtLabel
-                  ? <>Find {forvalgtLabel.toLowerCase()}sopgaver, der kan være flere hundredetusinde kroner værd.</>
-                  : <>Find rengøringsopgaver, der kan være flere hundredetusinde kroner værd.</>}
-              </h1>
-            </div>
+              ⚠️ INTET ER SLETTET FRA KODEBASEN. De samme argumenter lever
+              uændret på forsiden og /kom-i-gang, som er salgssiderne. /start er
+              flowet BAG CTA'en — hun har allerede læst hvorfor.
 
-            {/* ─────────── HØJRE: CVR ─────────── */}
-            <div className="st-pre-hoejre">
+              ⚠️ `st-wrap` UDEN `st-wrap-bred`: 520 px er husets egen bredde for
+              trin 1-4. Den brede ramme fandtes kun fordi der var to spalter. */}
+          <div className="st-enkolonne">
               {/* ⚠️ data-clarity-mask MASKERER NODEN OG ALLE BØRN, og det
                   overtrumfer hvad der måtte være sat i Clarity-portalen —
                   altså også hvis nogen en dag skifter maskeringstilstand til
@@ -1425,7 +1389,12 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
                     begynder at lede") — altså maskineriet. Kunden skal på to
                     sekunder kunne se hvad HUN får. Kortere sætninger, ingen
                     forklaring af systemet. */}
-                <h2 className="st-pre-h2">Se hvilke opgaver der passer til jeres virksomhed</h2>
+                {/* ⚠️ `overskriftRef` SAD PAA DEN GAMLE H1, som Growth #2 fjernede. Den
+                    maaler `overskrift-set`: "naaede overskriften overhovedet frem
+                    paa skaermen". Flyttede vi den ikke med, ville milepaelen holde
+                    op med at fyre, og baselinen 108/108 ville blive uloeselig fra
+                    naeste besoegende. Kortets h2 ER skaermens overskrift nu. */}
+                <h2 className="st-pre-h2" ref={overskriftRef}>Se hvilke opgaver der passer til jeres virksomhed</h2>
                 <p className="st-hj">
                   Indtast jeres CVR. Birdly finder relevante opgaver til jer.
                 </p>
@@ -1504,115 +1473,13 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
                     linjerne tilbage samme dag. */}
               </div>
 
-              {/* ---- ÆGTE BEVIS: HELE PULJEN ----
-                  ⚠️ BREDE TAL FØR CVR, KONKRETE EFTER (07-09-2026).
-                  Her har vi ikke kundens CVR endnu og ved derfor ikke hvilket fag
-                  hun er i. Et fag-specifikt tal på dette trin ville være gættet ud
-                  fra ?fag= eller et forvalg — og dermed forkert for alle andre end
-                  dem der kom fra præcis den annonce. Totalerne gælder alle.
-                  Det konkrete, fag-specifikke tal kommer på næste skærm, hvor vi
-                  FAKTISK ved hvem hun er.
-
-                  ⚠️ SAMME KILDE SOM FORSIDEN. Felterne kommer fra get-opgave-tal
-                  via lib/opgaveTal.js — de samme værdier som bevis-bjælken viser
-                  på / og /kom-i-gang. Ingen nye tal, intet nyt opslag.
-
-                  ⚠️ MANGLER ET FELT, VISES DET IKKE. Er hele svaret null, står
-                  blokken der slet ikke — samme regel som forsiden. */}
-              {(bevisAabne != null || bevisNye != null || bevisBydbare != null) && (
-                /* ⚠️ ET KORT, IKKE EN TEKSTSTRIBE. Tallene stod som løs tekst med
-                   en streg over og lignede noget der var kastet ind ved siden af
-                   CVR-kortet. Nu er de et stat-kort i samme formsprog som resten
-                   af siden — samme radius, samme kant, samme padding.
-                   Præsentationen er det eneste der er ændret: felterne, kilden og
-                   værdierne er de samme. */
-                <div className="st-pre-bevis">
-                  <span className="st-pre-kick">
-                    <span className="st-prik" aria-hidden="true" /> Birdly holder allerede øje
-                  </span>
-
-                  {/* Hvert nøgletal som stort tal + lille label. ⚠️ Hver flise
-                      renderes kun hvis feltet FINDES — samme regel som forsidens
-                      bevis-bjælke: hellere et hul i grid'et end et gættet tal. */}
-                  <div className="st-stats">
-                    {bevisAabne != null && (
-                      <div className="st-stat">
-                        <b>{daTal(bevisAabne)}</b>
-                        <span>åbne opgaver lige nu</span>
-                      </div>
-                    )}
-                    {bevisNye != null && (
-                      <div className="st-stat">
-                        <b>{daTal(bevisNye)}</b>
-                        <span>nye de seneste 7 dage</span>
-                      </div>
-                    )}
-                    {bevisBydbare != null && (
-                      <div className="st-stat">
-                        <b>{daTal(bevisBydbare)}</b>
-                        <span>opgaver i alt</span>
-                      </div>
-                    )}
-                    <div className="st-stat">
-                      <b>2×</b>
-                      <span>opdateres dagligt</span>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* ─────────── ARGUMENTET — UNDER FELTET PÅ MOBIL ───────────
-                ⚠️ INTET ER FJERNET ELLER OMSKREVET. Samme otte blokke i samme
-                rækkefølge; de står nu under handlingen i stedet for foran den.
-                På desktop er de præcis hvor de altid har været. */}
-            <div className="st-pre-venstre">
-
-              {/* ⚠️ "I SKAL BARE VINDE ÉN" ER IKKE ET LØFTE. Den siger at der ikke
-                  skal MANGE vundne opgaver til, før årsprisen er lille i
-                  sammenligning. Skriv den aldrig om til "I vinder én". */}
-              <div className="st-vind">
-                <span className="st-vind-over">{VIND_EN.over}</span>
-                <span className="st-vind-under">{VIND_EN.underDel1}<b>{VIND_EN.underDel2}</b></span>
-              </div>
-
-              <p className="st-pre-sub">
-                Birdly finder automatisk relevante offentlige og private opgaver til jeres
-                virksomhed.
-              </p>
-              <p className="st-pre-sms">Når noget passer, får I det direkte på SMS.</p>
-
-              <ul className="st-pre-trust">
-                <li><span>✓</span> Ingen portal</li>
-                <li><span>✓</span> Ingen daglig søgning</li>
-                <li><span>✓</span> Ingen kompliceret opsætning</li>
-              </ul>
-
-              {/* ⚠️ INDVENDINGEN SKAL STÅ FØR FELTET, ikke efter. "Det er kun for
-                  de store" er den grund folk lukker fanen med — den skal være
-                  besvaret inden de bliver bedt om noget. */}
-              <div className="st-smaa">
-                <b>{OFFENTLIGE.overskrift}</b>
-                <p>Det behøver ikke være bøvlet. {OFFENTLIGE.rolle1} {OFFENTLIGE.rolle2}</p>
-              </div>
-
-              {/* ⚠️ KOMPAKT SAMMENLIGNING, IKKE EN PRISSEKTION. Den skal kun gøre
-                  det første klik økonomisk indlysende. Beløbene til venstre er
-                  størrelsesordener med "kan være" foran — ikke et konkret udbud,
-                  og aldrig et tal vi har fundet på. */}
-              <div className="st-minianker">
-                <div className="st-minianker-side">
-                  <span>En relevant opgave</span>
-                  <b>kan være</b>
-                  <i>100.000 kr. · 300.000 kr. · eller mere</i>
-                </div>
-                <div className="st-minianker-side st-minianker-pris">
-                  <span>Birdly et helt år</span>
-                  <b>{priceText.yearlyBare}</b>
-                  <i>ekskl. moms</i>
-                </div>
-              </div>
-            </div>
+              {/* ⚠️ ET KUNDEBEVIS LIGE UNDER HANDLINGEN (Growth #2, 07-10-2026).
+                  Ét citat, ikke to: to ville konkurrere med CTA'en om
+                  opmærksomheden netop dér hvor CVR → knap skal være det klare
+                  fokus. Ingen rotation — en tekst der flytter sig mens man
+                  læser den, er værre end ingen rotation. Citatet står ORDRET;
+                  se lib/kundecitater.js. */}
+              <KundecitatEnkelt nr={0} />
           </div>
         </>
       )}
@@ -1746,7 +1613,7 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
                   de næste skærme gør resultatet bedre — de tænder det ikke. */}
               <button
                 className="btn btn-teal st-bred"
-                onClick={() => { setTrin(3); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                onClick={() => { setTrin(4); window.scrollTo({ top: 0, behavior: "smooth" }); }}
               >
                 Gør jeres match endnu skarpere →
               </button>
@@ -1769,7 +1636,7 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
               </p>
               <button
                 className="btn btn-teal st-bred"
-                onClick={() => { setTrin(3); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                onClick={() => { setTrin(4); window.scrollTo({ top: 0, behavior: "smooth" }); }}
               >
                 Vælg jeres fag →
               </button>
@@ -1779,47 +1646,24 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
         </div>
       )}
 
-      {/* ═══════════════ SKÆRM 3 — HVORDAN FINDER I OPGAVER I DAG ═══════════════
-          ⚠️ DIAGNOSE, IKKE ET KRITERIUM. Svaret sendes ikke til signup og påvirker
-          ikke matchning med et komma. Det gør to ting: det får kunden til at sætte
-          ord på sin egen situation, og det lader os svare på præcis den situation
-          med én sætning.
-          ⚠️ INGEN ANGREB PÅ KONKURRENTER. Svaret til "vi bruger allerede en anden
-          tjeneste" siger at Birdly ikke behøver erstatte den. Det er både sandt og
-          stærkere end at tale nogen ned. */}
-      {trin === 3 && (
-        <div className="st-kort">
-          <h1>Hvordan finder I typisk nye opgaver i dag?</h1>
-          <p className="st-hj">Så kan Birdly vise, hvor vi faktisk kan gøre en forskel.</p>
+      {/* ⚠️ SKÆRM 3 ER FJERNET (Growth #2, 07-10-2026) — "Hvordan finder I
+          typisk nye opgaver i dag?".
 
-          <div className="st-valgkort">
-            {METODER.map((m) => (
-              <button
-                key={m.key}
-                type="button"
-                className={"st-valgkort-item" + (metode === m.key ? " on" : "")}
-                aria-pressed={metode === m.key}
-                onClick={() => { setMetode(m.key); sporFunnel("CurrentMethodSelected", { metode: m.key }); }}
-              >
-                <b>{m.titel}</b>
-                {m.under && <i>{m.under}</i>}
-              </button>
-            ))}
-          </div>
+          ⚠️ MÅLT, IKKE SMAG. Den kostede 22 % af tragten præcis dér
+          (BusinessIdentified 40 → metode 31), og den var det ENESTE trin der
+          hverken samlede data eller leverede værdi: `metode` blev aldrig sendt
+          til `submitSignup()` og indgik ikke i matchreglen med et komma. Den
+          gjorde ét: viste en tilpasset sætning tilbage.
 
-          {metode && <p className="st-svar">{METODER.find((m) => m.key === metode)?.svar}</p>}
+          ⚠️ SCAN/MATCH ER UROERT. Skærm 2 og 7 scanner præcis som før — og de
+          tabte ingen: birdly-scan → Completed → vaerdianker var 32 → 32 → 32.
+          Det var aldrig scanningerne der kostede.
 
-          <button
-            className="btn btn-teal st-bred"
-            disabled={!metode}
-            onClick={() => { setTrin(4); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-          >
-            Fortsæt →
-          </button>
-          <button className="st-tilbage" onClick={() => setTrin(2)}>← Tilbage</button>
-        </div>
-      )}
-
+          ⚠️ `CurrentMethodSelected` → `method_completed` STAAR STADIG I
+          lib/analytics.js. Eventet fyrer ikke længere, men navnet skal blive:
+          de historiske hændelser skal kunne læses, og admin-vagten
+          verify-analytics binder det. Et fjernet navn ville gøre fortiden
+          ulæselig for at rydde op i nutiden. */}
       {/* ═══════════════ SKÆRM 4 — HVILKE OPGAVER ═══════════════
           Fag + arbejdsområder + bredde. ⚠️ DET ER DE ÆGTE MATCHKRITERIER:
           fag_keys og cpv_selections går til match-reglen. Datakilden er
@@ -1936,7 +1780,7 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
           >
             Fortsæt →
           </button>
-          <button className="st-tilbage" onClick={() => setTrin(3)}>← Tilbage</button>
+          <button className="st-tilbage" onClick={() => setTrin(2)}>← Tilbage</button>
         </div>
       )}
 
@@ -2147,7 +1991,11 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
             <h2>Det har I fortalt os</h2>
             <dl>
               {firma && <div><dt>Virksomhed</dt><dd>{firma}</dd></div>}
-              {metode && <div><dt>Finder opgaver i dag</dt><dd>{METODER.find((m) => m.key === metode)?.titel}</dd></div>}
+              {/* ⚠️ "Finder opgaver i dag" ER FJERNET MED SKÆRM 3. Raekken kunne
+                  kun rendere naar `metode` var sat, og den eneste der satte den, var
+                  den skaerm Growth #2 fjernede. En raekke der aldrig kan vises, er
+                  ikke en harmloes rest — den faar naeste laeser til at tro at vi
+                  stadig spoerger. */}
               {fagResume && <div><dt>Leder efter</dt><dd>{fagResume}</dd></div>}
               {regionResume && <div><dt>Område</dt><dd>{regionResume}</dd></div>}
               {vaerdiLabel && <div><dt>{loebendeFag ? "Værdi pr. måned" : "Opgavestørrelse"}</dt><dd>{vaerdiLabel}</dd></div>}

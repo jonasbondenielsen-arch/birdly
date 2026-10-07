@@ -1,75 +1,88 @@
 /* ============================================================================
-   KUNDEUDTALELSER — KOMPAKT VARIANT I FUNNELEN
+   KUNDEUDTALELSER
 
-   ⚠️ INGEN NYE TOKENS. Hver eneste værdi herunder er enten en eksisterende
-   variabel (--line, --navy, --navy-soft, --teal, --r, --sky-soft) eller den
-   samme radius/padding som `.st-hit` og `.st-pre-bevis` allerede bruger.
-   Ingen ny farve, ingen ny skygge, ingen ny font.
-
-   ⚠️ STAKKEN ER ET ETCELLES GRID, og det er hele grunden til at der ikke sker
-   layout shift. Begge citater ligger i samme celle, så kassen er altid så høj
-   som det LÆNGSTE af dem — skiftet flytter ingenting.
+   ⚠️ INGEN NYE TOKENS. Hver værdi herunder er enten en eksisterende variabel
+   (--line, --navy, --navy-soft, --teal, --sky-200, --r, --shadow, --sp) eller
+   den samme radius/padding som husets øvrige kort allerede bruger. Ingen ny
+   farve, ingen ny font, ingen ny skygge.
    ============================================================================ */
 
-.kc-kompakt {
-  margin-top: 16px;
-  background: var(--sky-soft);
-  border: 1px solid var(--sky-200);
+/* ── FUNNELEN: ét citat under CVR-kortet ───────────────────────────────────
+   ⚠️ HVIDT KORT, IKKE EN BLÅ BOKS. Den lyseblå --sky-soft-kasse med kant er
+   husets formsprog for OPLYSNINGER (.st-hit, .st-abon, .st-naeste-trin). Et
+   kundecitat i den dragt læses som endnu en systembesked. Her bruges i stedet
+   CVR-kortets egen hvide flade, kant og skygge — så citatet ser ud som noget
+   et menneske har sagt, ikke som noget systemet fortæller.
+
+   ⚠️ DEN TEAL STREG ER DET ENESTE SÆRKENDE, og den er husets accentfarve i
+   4px — ikke en ny komponent, ikke et nyt mønster. */
+.kc-enkelt {
+  margin: 16px 0 0;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--teal);
   border-radius: var(--r);
-  padding: 16px 18px 14px;
+  padding: 16px 18px 15px;
+  box-shadow: var(--shadow);
 }
 
-/* ⚠️ `st-pre-kick` er `display:block`; her skal dioden staa paa linje med
-   teksten, og det er den eneste justering komponenten tilfoejer. */
+/* ⚠️ `st-pre-kick` er display:block; her skal dioden stå på linje med teksten. */
 .kc-kick { display: inline-flex; align-items: center; margin-bottom: 0; }
 
-.kc-stak { display: grid; margin-top: 10px; }
-.kc-stak > * { grid-area: 1 / 1; }
+/* ⚠️ ANFØRSELSTEGNET ER CSS, IKKE ET TEGN I STRENGEN. Lå det i citatet, ville
+   det følge med hver gang teksten blev kopieret til en mail, en annonce eller
+   et dokument — og så ville der stå to sæt. */
+.kc-enkelt blockquote {
+  margin: 10px 0 0;
+  font-size: 15.5px; line-height: 1.6; color: var(--navy);
+}
+.kc-enkelt blockquote::before { content: "\201C"; }
+.kc-enkelt blockquote::after  { content: "\201D"; }
 
-.kc-citat { margin: 0; }
-.kc-citat blockquote {
-  margin: 0;
-  font-size: 15.5px; line-height: 1.55; color: var(--navy);
+.kc-enkelt figcaption {
+  margin-top: 10px; font-size: 13.5px; color: var(--navy-soft);
 }
-.kc-citat figcaption {
-  margin-top: 8px; font-size: 13.5px; color: var(--navy-soft);
-}
-.kc-citat figcaption b { color: var(--navy); font-weight: 700; }
+.kc-enkelt figcaption b { color: var(--navy); font-weight: 700; }
 
-/* Indikatorer — samme 8px-diode som .st-prik/.sg-prik, uden pulsen. */
-.kc-dots { display: flex; gap: 7px; margin-top: 12px; }
-.kc-dot {
-  width: 8px; height: 8px; padding: 0; border: 0; border-radius: 50%;
-  background: var(--sky-200); cursor: pointer;
+/* ── FORSIDEN: to kort side om side ───────────────────────────────────────
+   ⚠️ TO SPALTER, IKKE `sg-tre`. To kort i et tre-spalters grid efterlader en
+   tom tredjedel og gør kortene smallere end de behøver. Samme gap og samme
+   900px-breakpoint som husets øvrige grids. */
+.sg-to {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: calc(22px * var(--sp)); margin-top: 20px;
 }
-.kc-dot.on { background: var(--teal); }
-.kc-dot:focus-visible { outline: 2px solid var(--sky); outline-offset: 2px; }
+@media (max-width: 900px) { .sg-to { grid-template-columns: 1fr; } }
+
+.kc-kort { margin: 0; border-left: 4px solid var(--teal); }
+.kc-kort blockquote {
+  margin: 0; font-size: 16.5px; line-height: 1.6; color: var(--navy);
+}
+.kc-kort blockquote::before { content: "\201C"; }
+.kc-kort blockquote::after  { content: "\201D"; }
+.kc-kort figcaption {
+  margin-top: 14px; font-size: 14.5px; color: var(--navy-soft);
+}
+.kc-kort figcaption b { color: var(--navy); font-weight: 700; }
 
 @media (max-width: 560px) {
-  .kc-kompakt { padding: 14px 15px 12px; }
-  .kc-citat blockquote { font-size: 15px; }
+  .kc-enkelt { padding: 14px 15px 13px; }
+  .kc-enkelt blockquote { font-size: 15px; }
+  .kc-kort blockquote { font-size: 15.5px; }
 }
 
-/* ============================================================================
-   PREVIEW-STILLADSET — KUN TIL /preview/growth2
-
-   ⚠️ DEN HER BLOK HØRER IKKE TIL PRODUKTET. Den tegner rammerne omkring de to
-   viewport-visninger på inspektionssiden, så desktop og 390 px kan ses ved
-   siden af hinanden. Ingen produktionsside importerer den.
-   ============================================================================ */
-
-.pv-topbar {
-  position: sticky; top: 0; z-index: 10;
-  background: var(--navy); color: #fff;
-  padding: 14px 22px; font-size: 14px;
-}
-.pv-topbar b { color: var(--teal); }
-.pv-rammer { display: flex; gap: 28px; align-items: flex-start; flex-wrap: wrap; padding: 24px; }
-.pv-ramme h3 {
-  font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; font-weight: 700;
-  color: var(--navy-soft); margin: 0 0 10px; letter-spacing: .04em; text-transform: uppercase;
-}
-.pv-ramme iframe {
-  border: 1px solid var(--line); border-radius: var(--r);
-  box-shadow: var(--shadow); background: #fff; display: block;
-}
+/* ── FORSIDENS FORENKLEDE HERO ────────────────────────────────────────────
+   ⚠️ KUN LAYOUT. Typografien kommer fra `sg-big` og `sg-lead`, knappen fra
+   `sg-btn sg-btn-teal sg-btn-stor`, trust-rækken fra `sg-trust`. Det eneste
+   der defineres her, er at kolonnen er centreret og har en læsbar maksbredde
+   — og `--sp` er husets egen lodrette skala. */
+.h2-hero { padding: calc(40px * var(--sp)) 0 calc(18px * var(--sp)); }
+.h2-hero .sg-midt { max-width: 760px; margin: 0 auto; }
+.h2-hero .sg-lead { margin-top: 14px; }
+.h2-hero-cta { margin-top: 24px; }
+.h2-hero-fin { margin-top: 12px; font-size: 13.5px; color: var(--navy-soft); }
+/* Trust-rækken centreres her; på de øvrige sider er den venstrestillet i en
+   to-kolonne-hero, og den regel røres ikke. */
+.h2-hero .sg-trust { justify-content: center; margin-top: 20px; }
+.h2-hero .sg-trust li { gap: 7px; }
+.h2-hero .sg-trust span { color: var(--teal); font-weight: 800; }

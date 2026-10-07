@@ -12,6 +12,8 @@ import LaunchBanner from "./LaunchBanner";
 import LaunchStreamer from "./LaunchStreamer";
 import OpgaveTaeller from "./OpgaveTaeller";
 import SalgHeader from "./salg/SalgHeader";
+import HeroEnkel from "./salg/HeroEnkel";
+import { KundecitatRaekke } from "./Kundecitater";
 import FagBevis from "./salg/FagBevis";
 import StickyCtaMobil from "./salg/StickyCtaMobil";
 import { FagProvider } from "./salg/FagKontekst";
@@ -28,6 +30,7 @@ import "../app/forside.css";
 // FAKTISK kunne kollidere (section-padding, details/summary) er hævet til to
 // klasser i salg.css, så resultatet ikke afhænger af den her linjes placering.
 import "../app/salg.css";
+import "../app/kundecitater.css";
 
 // Slider-chips → links til hver branchesides (/fag/[slug]). Udseende/animation uændret.
 const brands = [
@@ -255,7 +258,17 @@ export default function Forside({ opgaveTal, funnelHref = "/start" }) {
           dokumenteret ét sted — components/salg/Salgsside.js — og skal holdes i
           takt her. To forskellige rækkefølger på det samme indhold ville betyde
           at vi optimerede to sider og lærte af ingen af dem. */}
-      <Hero funnelHref={funnelHref} />
+      {/* ⚠️ GROWTH #2 (07-10-2026): ROD-RUTEN FIK EN FORENKLET HERO.
+          <Hero> er IKKE rørt — den lever uændret på /kom-i-gang,
+          /hvorfor-birdly, /priser og i det britiske marked. Hypotesen er at
+          Birdly forklarer for meget før første handling; derfor er pill,
+          chips, SMS-telefonen og den sekundære CTA væk HER og kun her.
+          Skal det rulles tilbage, er det én linje: <Hero funnelHref={funnelHref} />. */}
+      <HeroEnkel funnelHref={funnelHref} />
+      {/* ⚠️ BEVISET FRA RIGTIGE KUNDER STÅR FØR BEVISET FRA TALLENE. En
+          besøgende skal se at danske rengøringsvirksomheder bruger Birdly,
+          før hun skal forholde sig til hvor mange opgaver vi overvåger. */}
+      <KundecitatRaekke />
       <BevisBjaelke tal={opgaveTal} />
       {/* ⚠️ DET ØKONOMISKE ARGUMENT LIGGER HØJT. Kold trafik scroller ikke ned
           til en prissektion for at finde ud af hvad en opgave kan være værd. */}
