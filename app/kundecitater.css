@@ -2,81 +2,121 @@
    KUNDEUDTALELSER
 
    ⚠️ INGEN NYE TOKENS. Hver værdi herunder er enten en eksisterende variabel
-   (--line, --navy, --navy-soft, --teal, --sky-200, --r, --shadow, --sp) eller
-   den samme radius/padding som husets øvrige kort allerede bruger. Ingen ny
-   farve, ingen ny font, ingen ny skygge.
+   (--line, --navy, --navy-soft, --teal, --sky-soft, --sky-200, --r, --shadow,
+   --sp) eller den samme padding/radius husets øvrige kort allerede bruger.
+   Ingen ny farve, ingen ny font, ingen ny skygge, ingen gradient.
+
+   ⚠️ DET DER BLEV RETTET (polish 07-10-2026). Begge udgaver lignede en
+   informationsboks — lyseblå flade eller en kraftig teal venstrestreg, som er
+   husets formsprog for SYSTEMBESKEDER (.st-hit, .st-abon, .st-naeste-trin).
+   Et citat i den dragt læses som noget systemet fortæller. Nu er signalet et
+   stort dæmpet anførselstegn, og teal optræder kun i avatarens bogstaver.
    ============================================================================ */
 
-/* ── FUNNELEN: ét citat under CVR-kortet ───────────────────────────────────
-   ⚠️ HVIDT KORT, IKKE EN BLÅ BOKS. Den lyseblå --sky-soft-kasse med kant er
-   husets formsprog for OPLYSNINGER (.st-hit, .st-abon, .st-naeste-trin). Et
-   kundecitat i den dragt læses som endnu en systembesked. Her bruges i stedet
-   CVR-kortets egen hvide flade, kant og skygge — så citatet ser ud som noget
-   et menneske har sagt, ikke som noget systemet fortæller.
-
-   ⚠️ DEN TEAL STREG ER DET ENESTE SÆRKENDE, og den er husets accentfarve i
-   4px — ikke en ny komponent, ikke et nyt mønster. */
-.kc-enkelt {
-  margin: 16px 0 0;
+/* ── SELVE KORTET ─────────────────────────────────────────────────────────
+   Samme flade som `.st-kort` og `.sg-kort`: hvid, 1px --line, --r, --shadow.
+   Det ER husets kort — ikke en ny komponent der ligner et. */
+.kc-kort {
+  position: relative;
+  margin: 0;
   background: #fff;
   border: 1px solid var(--line);
-  border-left: 4px solid var(--teal);
   border-radius: var(--r);
-  padding: 16px 18px 15px;
+  padding: 18px 20px 16px;
   box-shadow: var(--shadow);
 }
 
-/* ⚠️ `st-pre-kick` er display:block; her skal dioden stå på linje med teksten. */
-.kc-kick { display: inline-flex; align-items: center; margin-bottom: 0; }
-
-/* ⚠️ ANFØRSELSTEGNET ER CSS, IKKE ET TEGN I STRENGEN. Lå det i citatet, ville
-   det følge med hver gang teksten blev kopieret til en mail, en annonce eller
-   et dokument — og så ville der stå to sæt. */
-.kc-enkelt blockquote {
-  margin: 10px 0 0;
-  font-size: 15.5px; line-height: 1.6; color: var(--navy);
+/* ⚠️ STORT, MEN DÆMPET. Tegnet skal kunne ses på et halvt sekund og aldrig
+   konkurrere med citatet. Derfor husets teal i lav alpha og en line-height der
+   trækker det op, så det sidder som et mærke over teksten i stedet for at
+   skubbe den ned. */
+.kc-citattegn {
+  display: block;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 44px; font-weight: 800; line-height: .72;
+  color: rgba(0, 179, 166, .22);
 }
-.kc-enkelt blockquote::before { content: "\201C"; }
-.kc-enkelt blockquote::after  { content: "\201D"; }
 
-.kc-enkelt figcaption {
-  margin-top: 10px; font-size: 13.5px; color: var(--navy-soft);
-}
-.kc-enkelt figcaption b { color: var(--navy); font-weight: 700; }
-
-/* ── FORSIDEN: to kort side om side ───────────────────────────────────────
-   ⚠️ TO SPALTER, IKKE `sg-tre`. To kort i et tre-spalters grid efterlader en
-   tom tredjedel og gør kortene smallere end de behøver. Samme gap og samme
-   900px-breakpoint som husets øvrige grids. */
-.sg-to {
-  display: grid; grid-template-columns: 1fr 1fr;
-  gap: calc(22px * var(--sp)); margin-top: 20px;
-}
-@media (max-width: 900px) { .sg-to { grid-template-columns: 1fr; } }
-
-.kc-kort { margin: 0; border-left: 4px solid var(--teal); }
 .kc-kort blockquote {
-  margin: 0; font-size: 16.5px; line-height: 1.6; color: var(--navy);
+  margin: 8px 0 0;
+  font-size: 15.5px; line-height: 1.58; color: var(--navy);
 }
-.kc-kort blockquote::before { content: "\201C"; }
-.kc-kort blockquote::after  { content: "\201D"; }
-.kc-kort figcaption {
-  margin-top: 14px; font-size: 14.5px; color: var(--navy-soft);
+
+/* ── PERSONEN ────────────────────────────────────────────────────────────
+   ⚠️ NEDERST OG MINDRE END CITATET. Beviset er det hun siger; navnet er
+   dokumentationen bagefter. Omvendt vægt ville gøre kortet til et visitkort. */
+.kc-person {
+  display: flex; align-items: center; gap: 11px;
+  margin-top: 16px; padding-top: 14px;
+  border-top: 1px solid var(--line);
 }
-.kc-kort figcaption b { color: var(--navy); font-weight: 700; }
+
+/* ⚠️ VIRKSOMHEDENS INITIALER, ikke personens — se noten i kilden. Fladen er
+   husets lyse sky, bogstaverne husets teal. Ingen billeder: vi har ikke
+   portrætter, og en genereret avatar ville være pynt uden indhold. */
+.kc-avatar {
+  flex: 0 0 36px; width: 36px; height: 36px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--sky-soft); border: 1px solid var(--sky-200);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 12.5px; font-weight: 800; letter-spacing: .02em;
+  color: var(--teal);
+}
+
+.kc-navn { display: flex; flex-direction: column; line-height: 1.35; }
+.kc-navn b { font-size: 14px; font-weight: 700; color: var(--navy); }
+.kc-navn i { font-style: normal; font-size: 13px; color: var(--navy-soft); }
+
+/* ── DE TO KORT VED SIDEN AF HINANDEN ────────────────────────────────────
+   ⚠️ `align-items: start` ER POINTEN. Uden den strækkes Tobias' fire ord op i
+   Tessies højde, og der opstår en tom flade der ser ud som om indholdet
+   mangler. Hvert kort er så højt som sit eget citat.
+   ⚠️ 900px ER HUSETS EGET BREAKPOINT — samme som .sg-to og .st-pre brugte. */
+.kc-par {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 16px; align-items: start;
+}
+@media (max-width: 900px) { .kc-par { grid-template-columns: 1fr; gap: 12px; } }
+
+/* I funnelen sidder parret lige under CVR-kortet. */
+.kc-par-funnel { margin-top: 16px; }
+
+/* ── FORSIDENS SEKTION ───────────────────────────────────────────────────
+   ⚠️ SMALLERE END `sg-wrap` (1180px). To citater strakt over hele viewporten
+   læses som indholdsbokse, ikke som anmeldelser. 900px holder hvert kort på
+   ~440px — bredt nok til tre linjer, smalt nok til at ligne et citat.
+   ⚠️ SIDEPADDING SOM HUSETS ØVRIGE WRAPS, så mobilen har samme gutter. */
+.kc-midte { max-width: 900px; margin: 0 auto; padding: 0 26px; }
+
+/* ⚠️ TÆTTERE PÅ HEROEN. `sg-sek-taet` er allerede husets tætte sektion; her
+   trækkes toppen yderligere ind, så hero → trust → anmeldelser læses som ét
+   forløb i stedet for tre adskilte afsnit. */
+.kc-sektion { padding-top: calc(18px * var(--sp)); }
+
+/* ⚠️ DISKRET, IKKE EN OVERSKRIFT. Samme kicker-typografi som husets øvrige
+   (`sg-kick`, `st-pre-kick`): lille, versal, dæmpet. Den skal kunne overses
+   af den der bare vil læse citaterne. */
+.kc-label {
+  display: block; margin: 0 0 14px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 11.5px; font-weight: 800; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--navy-soft);
+  text-align: center;
+}
 
 @media (max-width: 560px) {
-  .kc-enkelt { padding: 14px 15px 13px; }
-  .kc-enkelt blockquote { font-size: 15px; }
-  .kc-kort blockquote { font-size: 15.5px; }
+  .kc-kort { padding: 15px 16px 14px; }
+  .kc-citattegn { font-size: 38px; }
+  .kc-kort blockquote { font-size: 15px; }
+  .kc-person { margin-top: 13px; padding-top: 12px; }
+  .kc-midte { padding: 0 18px; }
 }
 
-/* ── FORSIDENS FORENKLEDE HERO ────────────────────────────────────────────
+/* ── FORSIDENS FORENKLEDE HERO ───────────────────────────────────────────
    ⚠️ KUN LAYOUT. Typografien kommer fra `sg-big` og `sg-lead`, knappen fra
    `sg-btn sg-btn-teal sg-btn-stor`, trust-rækken fra `sg-trust`. Det eneste
-   der defineres her, er at kolonnen er centreret og har en læsbar maksbredde
-   — og `--sp` er husets egen lodrette skala. */
-.h2-hero { padding: calc(40px * var(--sp)) 0 calc(18px * var(--sp)); }
+   der defineres her, er bredde og centrering — `--sp` er husets egen skala. */
+.h2-hero { padding: calc(40px * var(--sp)) 0 calc(10px * var(--sp)); }
 .h2-hero .sg-midt { max-width: 760px; margin: 0 auto; }
 .h2-hero .sg-lead { margin-top: 14px; }
 .h2-hero-cta { margin-top: 24px; }

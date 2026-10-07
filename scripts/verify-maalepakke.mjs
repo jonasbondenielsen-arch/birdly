@@ -262,7 +262,7 @@ console.log("\n10 · v4: VILKAARENE STAAR PAA SKAERM 9, IKKE PAA CVR-TRINNET");
   // Nu afgraenses kortet af det der faktisk FOELGER det: kundecitatet.
   // `kort.length > 200` nedenfor er det der ville have faeldet den tomme.
   const k0 = rent.indexOf('id="cvr-kort"');
-  const k1 = rent.indexOf("<KundecitatEnkelt", k0);
+  const k1 = rent.indexOf("<Kundecitat", k0);  // komponentens navn maa gerne skifte; at der FOELGER et citat, maa ikke
   const kort = k0 >= 0 && k1 > k0 ? rent.slice(k0, k1) : "";
   ok(kort.length > 200, "CVR-kortet kunne afgraenses", `${kort.length} tegn`);
 

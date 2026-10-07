@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Logo } from "./Logo";
-import { KundecitatEnkelt } from "./Kundecitater";
+import { KundecitatPar } from "./Kundecitater";
 import { fetchCatalog, submitSignup, createSubscriptionSession } from "../lib/catalog";
 import { hentKandidater, visResultat } from "../lib/kandidater";
 import { PLAN, YEARLY_SAVING, planForInterval, priceText, TRIAL_DAYS, VARSEL_DAGE } from "../lib/pakke";
@@ -1474,12 +1474,11 @@ export default function Start({ startFag = null, startRegion = null, betaling = 
               </div>
 
               {/* ⚠️ ET KUNDEBEVIS LIGE UNDER HANDLINGEN (Growth #2, 07-10-2026).
-                  Ét citat, ikke to: to ville konkurrere med CTA'en om
-                  opmærksomheden netop dér hvor CVR → knap skal være det klare
-                  fokus. Ingen rotation — en tekst der flytter sig mens man
-                  læser den, er værre end ingen rotation. Citatet står ORDRET;
-                  se lib/kundecitater.js. */}
-              <KundecitatEnkelt nr={0} />
+                  Begge godkendte citater staar her, side om side paa desktop og
+                  stablet paa mobil. Ingen rotation og ingen slider — en tekst
+                  der flytter sig mens man laeser den, er vaerre end ingen
+                  bevaegelse. Citaterne staar ORDRET; se lib/kundecitater.js. */}
+              <KundecitatPar />
           </div>
         </>
       )}

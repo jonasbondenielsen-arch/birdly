@@ -1,82 +1,89 @@
 import { KUNDECITATER, KUNDECITAT_KICK } from "../lib/kundecitater";
 
 // ============================================================================
-// KUNDEUDTALELSER — TO FLADER, ÉN KILDE (07-10-2026)
+// KUNDEUDTALELSER — ÉT KORT, TO FLADER (polish 07-10-2026)
 //
-// ⚠️ INGEN ROTATION, INGEN STJERNER. Begge dele er fravalgt bevidst: en
-// karrusel flytter tekst mens man læser den, og en stjernegrafik ville være en
-// rating ingen af de to har afgivet.
+// ⚠️ SAMME KORT BEGGE STEDER. Funnelen og forsiden havde hver sin udgave, og
+// de begyndte straks at drive: den ene fik en teal venstrestreg, den anden
+// ikke. Ét `KundecitatKort` og to tynde wrappere betyder at en rettelse af
+// hvordan et citat SER UD, kun skal laves ét sted.
 //
-// ⚠️ INGEN "use client". Komponenterne har ingen tilstand og ingen effekt —
-// de er ren markup. Et unødigt klient-direktiv ville trække dem ind i
-// klient-bundtet på en side der ellers er statisk.
+// ⚠️ HVAD DER BLEV RETTET. Begge udgaver lignede en informationsboks: lyseblå
+// flade eller en kraftig teal streg i venstre kant — husets eget formsprog for
+// SYSTEMBESKEDER (`.st-hit`, `.st-abon`, `.st-naeste-trin`). Et kundecitat i
+// den dragt læses som noget systemet fortæller, ikke som noget et menneske har
+// sagt. Nu: hvidt kort, husets kant, radius og skygge, et stort dæmpet
+// anførselstegn som signal, og teal KUN i avatarens bogstaver.
 //
-// ⚠️ INTET NYT DESIGNSPROG. `sg-kort` er forsidens kort (hvid, 1px --line,
-// --r, --shadow), `sg-kick`/`sg-prik` dens kicker, `st-pre-kick`/`st-prik`
-// funnelens. Figure/blockquote/figcaption-markuppen er den der allerede lå
-// klar i Sektioner.js' Kundebevis-sektion og ventede på ægte citater.
+// ⚠️ INGEN STJERNER, INGEN SLIDER, INGEN ROTATION. Ingen af de to har afgivet
+// en rating, og en tekst der flytter sig mens man læser den, er værre end
+// ingen bevægelse.
 //
-// ⚠️ SPORER INTET. Hverken ctaSporing, analytics eller pixel importeres.
+// ⚠️ INGEN "use client". Ren markup, ingen tilstand, ingen effekt — og derfor
+// heller ingen sporing herfra.
 // ============================================================================
 
 /**
- * FORSIDEN — to kort side om side, umiddelbart efter heroen.
+ * Ét citat. Avataren bærer VIRKSOMHEDENS initialer (felt i kilden, ikke udledt
+ * af navnet — se noten i lib/kundecitater.js).
  *
- * ⚠️ `sg-to` ER TO SPALTER PÅ DESKTOP OG ÉN PÅ MOBIL, defineret i
- * kundecitater.css med husets eget breakpoint (900px) og samme gap som
- * `sg-tre`. Vi bruger ikke `sg-tre`: to kort i et tre-spalters grid giver en
- * tom tredjedel, og kortene bliver smallere end de behøver.
+ * ⚠️ KORTENE TVINGES IKKE I SAMME HØJDE. Tobias' citat er fire ord; strakt op
+ * til Tessies tre linjer ville det give en tom flade der ser ud som om der
+ * mangler noget. `align-items: start` i griddet lader hvert kort være så højt
+ * som sit eget indhold.
  */
-export function KundecitatRaekke() {
+function KundecitatKort({ k }) {
   return (
-    <section className="sg-sek-taet">
-      <div className="sg-wrap">
-        <div className="sg-midt">
-          <span className="sg-kick">
-            <span className="sg-prik" aria-hidden="true" /> {KUNDECITAT_KICK}
-          </span>
-        </div>
-        <div className="sg-to">
-          {KUNDECITATER.map((k) => (
-            <figure className="sg-kort kc-kort" key={k.navn}>
-              <blockquote>{k.citat}</blockquote>
-              <figcaption>
-                <b>{k.navn}</b> · {k.firma}
-              </figcaption>
-            </figure>
-          ))}
-        </div>
-      </div>
-    </section>
+    <figure className="kc-kort">
+      {/* ⚠️ TEGNET ER DEKORATION OG SKAL IKKE LÆSES OP. Citatet står i
+          blockquote lige under; en skærmlæser der sagde "venstre dobbelt
+          anførselstegn" først, ville bare støje. */}
+      <span className="kc-citattegn" aria-hidden="true">&ldquo;</span>
+      <blockquote>{k.citat}</blockquote>
+      <figcaption className="kc-person">
+        <span className="kc-avatar" aria-hidden="true">{k.initialer}</span>
+        <span className="kc-navn">
+          <b>{k.navn}</b>
+          <i>{k.firma}</i>
+        </span>
+      </figcaption>
+    </figure>
   );
 }
 
 /**
- * FUNNELEN — ét citat under CVR-kortet.
+ * FUNNELEN — begge citater direkte under CVR-kortet.
  *
- * ⚠️ ET KUNDEBEVIS, IKKE EN SYSTEMBOKS. Første udgave var en lyseblå
- * `--sky-soft`-kasse med kant — præcis det formsprog huset bruger til
- * OPLYSNINGER (`.st-hit`, `.st-abon`, `.st-naeste-trin`). Et citat i den
- * dragt læses som endnu en systembesked, ikke som et menneske der har sagt
- * noget. Nu er det hvidt kort med husets egen kant og skygge — samme
- * `st-kort`-familie som CVR-kortet lige over — med et dæmpet anførselstegn og
- * en teal streg i venstre kant som det eneste der skiller det ud.
- *
- * ⚠️ KUN TESSIE. Ét citat under handlingen; to ville konkurrere med CTA'en om
- * opmærksomheden på præcis det trin hvor CVR → knap skal være det klare fokus.
+ * ⚠️ INGEN SEKTIONS-LABEL HER. "BRUGT AF DANSKE RENGØRINGSVIRKSOMHEDER" stod
+ * over kortet og gjorde det til en afdeling på siden. På /start skal
+ * anmeldelserne tale for sig selv — hierarkiet er CVR → knap → bevis, og en
+ * overskrift mere imellem ville stjæle af knappen.
  */
-export function KundecitatEnkelt({ nr = 0 }) {
-  const k = KUNDECITATER[nr];
-  if (!k) return null;
+export function KundecitatPar() {
   return (
-    <figure className="kc-enkelt">
-      <span className="st-pre-kick kc-kick">
-        <span className="st-prik" aria-hidden="true" /> {KUNDECITAT_KICK}
-      </span>
-      <blockquote>{k.citat}</blockquote>
-      <figcaption>
-        <b>{k.navn}</b> · {k.firma}
-      </figcaption>
-    </figure>
+    <div className="kc-par kc-par-funnel">
+      {KUNDECITATER.map((k) => <KundecitatKort k={k} key={k.navn} />)}
+    </div>
+  );
+}
+
+/**
+ * FORSIDEN — samme to kort, med en diskret label, tæt på heroen.
+ *
+ * ⚠️ `sg-sek-taet` IKKE `sg-sek`. Den tætte sektionspadding er husets egen, og
+ * den er valgt fordi hero → trust → anmeldelser skal læses som ÉT forløb. Med
+ * den normale sektionsafstand lå citaterne en halv skærm under trust-linjen og
+ * mistede forbindelsen til løftet de skulle bevise.
+ */
+export function KundecitatRaekke() {
+  return (
+    <section className="sg-sek-taet kc-sektion">
+      <div className="kc-midte">
+        <span className="kc-label">{KUNDECITAT_KICK}</span>
+        <div className="kc-par">
+          {KUNDECITATER.map((k) => <KundecitatKort k={k} key={k.navn} />)}
+        </div>
+      </div>
+    </section>
   );
 }
